@@ -77,7 +77,7 @@ function xd = state_derivatives(t, x, m, l, g)
 % g : double
 %   Acceleratoin due to gravity.
 
-% unpack the variables so that you can use the sympy equations as is
+% Unpack the variables so that you can use the sympy equations as is.
 q1 = x(1);
 q2 = x(2);
 u1 = x(3);
@@ -86,9 +86,10 @@ u2 = x(4);
 % Initialize a vector for the derivatives.
 xd = zeros(4, 1);
 % Calculate the derivatives of the states. These equations can be copied
-% directly from the sympy output but be sure to change the python `**` to
-% the matlab `^` and remove the `(t)`. Find and replace and regular
-% expressions are helpful for this.
+% directly from the sympy output but be sure to print with `mprint` in
+% sympy.physics.mechanics to remove the `(t)` and use Matlab's find and
+% replace and regular expressions to change the python `**` to the matlab
+% `^`.
 xd(1) = u1;
 xd(2) = u2;
 xd(3) = (-g * sin(q1) * sin(q2)^2 + 2 * g * sin(q1) - g * sin(q2) * ...
