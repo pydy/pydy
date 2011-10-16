@@ -26,7 +26,7 @@ xlabel('Time [s]')
 legend('q1 [rad]', 'q2 [rad]', 'u1 [rad/s]', 'u2 [rad/s]')
 
 % Save the figure as a png.
-saveas(fig,'double-pendulum-matlab-plot.png','png')
+saveas(fig, 'double-pendulum-matlab-plot.png', 'png')
 
 function [t, x] = double_pendulum_integrate(timeSpan, initialConditions, m, l, g)
 % function [t, x] = double_pendulum_integrate(timeSpan, initialConditions, m, l, g)
