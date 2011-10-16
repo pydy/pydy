@@ -16,7 +16,7 @@ l = 1.0;
 g = 9.8;
 
 % Integrate the equations of motion with the specified parameters.
-[t, x] = double_pendulum_integrate(timeSpan, initialConditions, m, l, g)
+[t, x] = double_pendulum_integrate(timeSpan, initialConditions, m, l, g);
 
 % Plot the results.
 fig = figure();
