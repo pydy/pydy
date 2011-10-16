@@ -1,6 +1,4 @@
 from sympy import symbols
-from numpy import array
-from scipy.integrate import odeint
 from sympy.physics.mechanics import *
 
 q1, q2 = dynamicsymbols('q1 q2')
@@ -43,9 +41,10 @@ KM.speeds([u1, u2])
 KM.kindiffeq(kd)
 
 (fr, frstar) = KM.kanes_equations(FL, BL)
+kdd = KM.kindiffdict()
 mm = KM.mass_matrix_full
 fo = KM.forcing_full
 qudots = mm.inv() * fo
+qudots = qudots.subs(kdd)
 qudots.simplify()
-
 
