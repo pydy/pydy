@@ -83,15 +83,16 @@ plate.mass = mB # mass
 plate.mc = Bo # mass center
 plate.inertia = (me.inertia(B, IBxx, IByy, IBzz), Bo) # inertia about the mass center
 
-## equations of motion with Kane's method ##
-
-# make a list of the bodies
-bodyList = [rod, plate]
-
 # forces #
 # add the gravitional force to each body
-forceList = [(Ao, N.z * gravity * mA),
-             (Bo, N.z * gravity * mB)]
+rodGravity = (Ao, N.z * gravity * mA)
+plateGravity = (Bo, N.z * gravity * mB)
+
+## equations of motion with Kane's method ##
+
+# make a list of the bodies and forces
+bodyList = [rod, plate]
+forceList = [rodGravity, plateGravity]
 
 # create a Kane object with respect to the Newtonian reference frame
 kane = me.Kane(N)
