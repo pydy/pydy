@@ -4,24 +4,27 @@
 # bob rotates about the pendulum rod. It can be shown to be chaotic when
 # simulated.
 
-import sympy as sp
+# import sympy and the mechanics module
+import sympy as sym
 import sympy.physics.mechanics as me
+
+# declare the constants #
+# gravity
+gravity = sym.symbols('g')
+# center of mass length, mass and  moment of inertia of the slender rod
+lA, mA, IAxx = sym.symbols('lA mA IAxx')
+# center of mass length, mass and moment of inertia of the plate
+lB, mB, IBxx, IByy, IBzz = sym.symbols('lB mB IBxx IByy IBzz')
+
+## kinematics ##
 
 # declare the coordinates and speeds and their derivatives #
 # theta : angle of the rod
-# phi : angle of the plate
+# phi : angle of the plate relative to the rod
 # omega : angular speed of the rod
 # alpha : angular speed of the plate
 theta, phi, omega, alpha = me.dynamicsymbols('theta phi omega alpha')
 thetad, phid, omegad, alphad = me.dynamicsymbols('theta phi omega alpha', 1)
-
-# declare the constants #
-# gravity
-gravity = sp.symbols('g')
-# center of mass length, mass and  moment of inertia of the slender rod
-lA, mA, IA11 = sp.symbols('lA mA IA11')
-# center of mass length, mass and moment of inertia of the plate
-lB, mB, IB11, IB22, IB33 = sp.symbols('lB mB IB11 IB22 IB33')
 
 # reference frames #
 # create a Newtonian reference frame
@@ -53,10 +56,10 @@ B.set_ang_vel(A, alpha * A.z)
 
 # take the derivative of the angular velocities to get angular accelerations
 A.set_ang_acc(N, A.ang_vel_in(N).dt(N))
-B.set_ang_acc(A, B.ang_vel_in(A).dt(A))
+B.set_ang_acc(N, B.ang_vel_in(N).dt(N))
 
 # linear velocities and accelerations #
-No.set_vel(N, 0)
+No.set_vel(N, 0) # the newtonian origin is fixed
 Ao.set_vel(N, omega * lA * A.x)
 Ao.a2pt_theory(No, N, A)
 Bo.set_vel(N, omega * lB * A.x)
@@ -65,32 +68,31 @@ Bo.a2pt_theory(No, N, A)
 # kinematical differential equations #
 kinDiffs = [omega - thetad, alpha - phid]
 
-# define the inertia dyadic for each body #
-IA = me.inertia(A, IA11, IA11, 0.0)
-IB = me.inertia(B, IB11, IB22, IB33)
+## kinetics ##
 
 # rigid bodies #
 rod = me.RigidBody() # create the empty rod object
 rod.frame = A # the reference frame
 rod.mass = mA # mass
 rod.mc = Ao # mass center
-rod.inertia = (IA, Ao) # inertia about the mass center
+rod.inertia = (me.inertia(A, IAxx, IAxx, 0.0), Ao) # inertia about the mass center
 
 plate = me.RigidBody() # create the empty plate object
 plate.frame = B # the reference frame
 plate.mass = mB # mass
 plate.mc = Bo # mass center
-plate.inertia = (IB, Bo) # inertia about the mass center
+plate.inertia = (me.inertia(B, IBxx, IByy, IBzz), Bo) # inertia about the mass center
+
+## equations of motion with Kane's method ##
 
 # make a list of the bodies
 bodyList = [rod, plate]
 
 # forces #
 # add the gravitional force to each body
-forceList = [(Ao, -N.z * gravity * mA),
-             (Bo, -N.z * gravity * mB)]
+forceList = [(Ao, N.z * gravity * mA),
+             (Bo, N.z * gravity * mB)]
 
-# equations of motion with Kane's method #
 # create a Kane object with respect to the Newtonian reference frame
 kane = me.Kane(N)
 # set the coordinates
@@ -104,6 +106,13 @@ kane.kindiffeq(kinDiffs)
 fr, frstar = kane.kanes_equations(forceList, bodyList)
 zero = fr + frstar
 # solve Kane's equations for the derivatives of the speeds
-eom = sp.solvers.solve(zero, omegad, alphad)
+eom = sym.solvers.solve(zero, omegad, alphad)
 # add the kinematical differential equations to get the equations of motion
 eom.update(kane.kindiffdict())
+
+# print the results
+for k, v in eom.items():
+    me.mprint(k)
+    print('=')
+    me.mprint(v)
+    print('\n')
