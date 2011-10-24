@@ -76,6 +76,11 @@ function xd = state_derivatives(t, x, m, l, g)
 %   Length of each link.
 % g : double
 %   Acceleratoin due to gravity.
+%
+% Returns
+% -------
+% xd : matrix, 4 x 1
+%   The derivatives of the states in this order [q1, q2, u1, u2].
 
 % Unpack the variables so that you can use the sympy equations as is.
 q1 = x(1);
