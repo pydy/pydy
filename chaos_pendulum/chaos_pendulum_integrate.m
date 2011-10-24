@@ -75,7 +75,14 @@ function xd = state_derivatives(t, x, p)
 % t : double
 %   Current time.
 % x : vector, (4, 1)
-%   Current state.
+%   Current state [theta, phi, omega, alpha].
+% p : structure
+%   Contains all of the model parameters.
+%
+% Returns
+% -------
+% xd : matrix, 4 x 1
+%   The derivative of the current state.
 
 % Unpack the variables so that you can use the sympy equations as is.
 theta = x(1);
