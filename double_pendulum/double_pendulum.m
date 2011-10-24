@@ -19,14 +19,14 @@ g = 9.8;
 [t, x] = double_pendulum_integrate(timeSpan, initialConditions, m, l, g);
 
 % Plot the results.
-fig = figure();
+fig1 = figure(1);
 plot(t, x)
 title('Double pendulum states as a function of time')
 xlabel('Time [s]')
 legend('q1 [rad]', 'q2 [rad]', 'u1 [rad/s]', 'u2 [rad/s]')
 
 % Save the figure as a png.
-saveas(fig, 'double-pendulum-matlab-plot.png', 'png')
+saveas(fig1, 'double-pendulum-matlab-plot.png', 'png')
 
 function [t, x] = double_pendulum_integrate(timeSpan, initialConditions, m, l, g)
 % function [t, x] = double_pendulum_integrate(timeSpan, initialConditions, m, l, g)
