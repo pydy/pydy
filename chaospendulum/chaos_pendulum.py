@@ -111,8 +111,4 @@ eom = sym.solvers.solve(zero, omegad, alphad)
 eom.update(kane.kindiffdict())
 
 # print the results
-for k, v in eom.items():
-    me.mprint(k)
-    print('=')
-    me.mprint(v)
-    print('\n')
+me.mprint(eom)
