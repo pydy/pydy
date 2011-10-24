@@ -88,8 +88,10 @@ xd = zeros(4, 1);
 % Calculate the derivatives of the states. These equations can be copied
 % directly from the sympy output but be sure to print with `mprint` in
 % sympy.physics.mechanics to remove the `(t)` and use Matlab's find and
-% replace and regular expressions to change the python `**` to the matlab
-% `^`.
+% replace to change the python `**` to the matlab `^`. Also note that the
+% structure `p` was used to pass in the parameters and each parameter must
+% be prepended with `p.`.
+
 % theta'
 xd(1) = omega;
 % phi'
