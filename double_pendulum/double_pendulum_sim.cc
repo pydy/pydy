@@ -17,8 +17,10 @@ int main(int argc, char *argv[])
   // Simulation conditions
   double params[] = {1.0, 9.81, 1.0};       // m, g, l
   simdata s = {0.0, {0.1, 0.2, 0.0, 0.0}};  // initial time and state
+  s.ke = double_pendulum_ke(s.x, params);
+  s.pe = double_pendulum_pe(s.x, params);
   const double tf = 5.0;                    // final time
-  const int N = 50;                         // number of points
+  const int N = 501;                        // number of points
   
   // GSL setup code
   gsl_odeiv2_system sys = {double_pendulum_ode, NULL, 4, params};

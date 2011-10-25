@@ -5,14 +5,14 @@
 
 double double_pendulum_ke(double x[4], double params[3])
 {
-  double m = params[0], g = params[1], l = params[2];
+  double m = params[0], l = params[2];
   return 1.0*pow(l, 2)*(sin(x[0])*sin(x[1]) + cos(x[0])*cos(x[1]))*x[2]*x[3]/m + 1.0*pow(l, 2)*pow(x[2], 2)/m + 0.5*pow(l, 2)*pow(x[3], 2)/m;
 }
 
 double double_pendulum_pe(double x[4], double params[3])
 {
   double m = params[0], g = params[1], l = params[2];
-  return g*m*(2*l*cos(x[0]) + l*cos(x[1]) - 3*l);
+  return -g*m*(2*l*cos(x[0]) + l*cos(x[1]) - 3*l);
 }
 
 int double_pendulum_ode(double t, const double x[], double dxdt[], void *_params)
