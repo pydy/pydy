@@ -1,0 +1,11 @@
+These are examples of using the various tools in PyDy to simulate and study the
+motion of classical dynamic systems.
+
+Tools
+-----
+sympy (latest dev build)
+Matlab
+SciPy
+GSL
+
+Visit www.pydy.org to learn more or contribute.
