@@ -17,8 +17,10 @@ You can now see what functions and variables that are available to you with::
 
    >>> dir()
 
-This is a long list of available function, as both packages have. Read the
-python documentation to learn about better ways to import only what you need.
+This is a long list of available functions, as both packages have many. Read
+the about the python import statement to learn about better ways to import only
+what you need. One good explanation is
+<http://effbot.org/zone/import-confusion.htm>.
 
 To get started working with vectors we will need to create a reference frame,
 as all vectors need to be defined with respect to a reference frame. If you
@@ -142,20 +144,20 @@ do a simple rotation through `alpha` about the `N.x` axis::
 Now the direction cosine matrix with of `A` with respect to `N` can be
 computed::
 
-   >>> A.dcm()
-   [1,       0,      0]
-   [0,  cos(A), sin(A)]
-   [0, -sin(A), cos(A)]
+   >>> A.dcm(N)
+   [1,           0,          0]
+   [0,  cos(alpha), sin(alpha)]
+   [0, -sin(alpha), cos(alpha)]
 
 Now that SymPy knows that `A` and `N` are oriented with respect to each other
 we can express the vectors that we originally wrote in the `A` frame::
 
    >>> v.express(A)
-   A.x + (3*sin(A) + 2*cos(A))*A.y + (-2*sin(A) + 3*cos(A))*A.z
+   A.x + (3*sin(alpha) + 2*cos(alpha))*A.y + (-2*sin(alpha) + 3*cos(alpha))*A.z
    >>> z = cross(x, y)
    >>> z.express(A)
-   >>> (a2*b3 - a3*b2)*A.x + ((a1*b2 - a2*b1)*sin(A) + (-a1*b3 +
-   a3*b1)*cos(A))*A.y + ((a1*b2 - a2*b1)*cos(A) + (a1*b3 - a3*b1)*sin(A))*A.z
+   >>> (a2*b3 - a3*b2)*A.x + ((a1*b2 - a2*b1)*sin(alpha) + (-a1*b3 +
+   a3*b1)*cos(alpha))*A.y + ((a1*b2 - a2*b1)*cos(alpha) + (a1*b3 - a3*b1)*sin(alpha))*A.z
 
 In dynamics systems at least some of the relative orientation of reference
 frames and vectors are time varying. The mechanics module provides a way to
