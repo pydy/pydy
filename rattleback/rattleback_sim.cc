@@ -22,16 +22,16 @@ int main(int argc, char *argv[]) {
 
   // Initial time and state
   simdata s = {0.0, {0.0,              // Yaw (ignorable)
-                     1.5*M_PI/180.0,   // Roll
-                     1.5*M_PI/180.0,   // Pitch
+                     0.1*M_PI/180.0,   // Roll
+                     0.1*M_PI/180.0,   // Pitch
                      0.0, 0.0,         // x, y of contact (ignorable)
                      0.0,              // u0
                      0.0,              // u1
                      -5.0} };          // u2
 
   rattleback_outputs(&s, &p);
-  const double tf = 5.0;                          // final time
-  const int N = 5001;                             // number of points
+  const double tf = 20.0;                          // final time
+  const int N = 20001;                             // number of points
   
   // GSL setup code
   gsl_odeiv2_system sys = {rattleback_ode, NULL, 8, &p};

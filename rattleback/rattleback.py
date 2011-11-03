@@ -37,20 +37,7 @@ P.set_vel(N, ua[0]*Y.x + ua[1]*Y.y + ua[2]*Y.z)
 # Rattleback ellipsoid center location, see:
 # "Realistic mathematical modeling of the rattleback", Kane, Thomas R. and
 # David A. Levinson, 1982, International Journal of Non-Linear Mechanics
-x1, x2, x3, lam = symbols('x1 x2 x3 lam')
-f_surface = (x1/a)**2 + (x2/b)**2 + (x3/c)**2 - 1
-df_surface = [f_surface.diff(xi)/2 for xi in [x1, x2, x3]]
-vec_eqn = x1/a/a*R.x + x2/b/b*R.y + x3/c/c*R.z - lam*Y.z
-print vec_eqn
-for uv in R:
-  print dot(vec_eqn, uv)
-print dot(vec_eqn, Y.z)
-
-
 mew = [dot(rk, Y.z) for rk in R]
-for mewi in mew:
-  print mewi
-
 eps = sqrt((a*mew[0])**2 + (b*mew[1])**2 + (c*mew[2])**2)
 O = P.locatenew('O', -(a*a*mew[0]/eps)*R.x
                      -(b*b*mew[1]/eps)*R.y
