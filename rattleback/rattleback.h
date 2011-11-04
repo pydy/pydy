@@ -4,7 +4,7 @@ struct rattleback_params {
  double a, b, c, d, e, f, m, Ixx, Iyy, Izz, Ixy, Iyz, Ixz, g;
 };
 
-struct simdata { double t, x[8], CF[3], ke, pe, te, delta; };
+struct simdata { double t, x[8], alpha[3], CF[3], ke, pe, te, delta; };
 
 int rattleback_ode(double t, const double x[], double dxdt[], void *params);
 

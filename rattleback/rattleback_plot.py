@@ -12,6 +12,9 @@ simdata = np.dtype([('t', np.float64),
                     ('u0', np.float64),
                     ('u1', np.float64),
                     ('u2', np.float64),
+                    ('alpha0', np.float64),
+                    ('alpha1', np.float64),
+                    ('alpha2', np.float64),
                     ('Rx', np.float64),
                     ('Ry', np.float64),
                     ('Rz', np.float64),
@@ -52,9 +55,6 @@ plt.legend(loc=0)
 
 #plt.plot(data['t'], data['q1'], label='Roll')
 #plt.plot(data['t'], data['q2'], label='Pitch')
-#plt.plot(data['t'], data['u0'], label='$u_0$')
-#plt.plot(data['t'], data['u1'], label='$u_1$')
-#plt.plot(data['t'], data['u2'], label='$u_2$')
 plt.figure()
 plt.subplot(211)
 plt.plot(data['t'], data['Rx'], label='$\mathbf{F} \cdot \mathbf{y}_x$')
@@ -65,6 +65,20 @@ plt.subplot(212)
 plt.plot(data['t'], data['Rz'], label='$\mathbf{F} \cdot \mathbf{y}_z$')
 plt.legend(loc=0)
 plt.title('Contact point reaction force')
+plt.legend(loc=0)
+
+plt.figure()
+plt.plot(data['t'], data['u0'], label='$u_0$')
+plt.plot(data['t'], data['u1'], label='$u_1$')
+plt.plot(data['t'], data['u2'], label='$u_2$')
+plt.title('Body fixed angular velocity')
+plt.legend(loc=0)
+
+plt.figure()
+plt.plot(data['t'], data['alpha0'], label='$\dot{u}_0$')
+plt.plot(data['t'], data['alpha1'], label='$\dot{u}_1$')
+plt.plot(data['t'], data['alpha2'], label='$\dot{u}_2$')
+plt.title('Body fixed angular acceleration')
 plt.legend(loc=0)
 
 plt.show()

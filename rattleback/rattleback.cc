@@ -131,8 +131,10 @@ void rattleback_outputs(simdata *s, rattleback_params *p)
   s->te = s->ke + s->pe;
 
   s->delta = acos(cos(x[1])*cos(x[2]));
-
   // End copy paste
+  s->alpha[0] = dxdt[5];
+  s->alpha[1] = dxdt[6];
+  s->alpha[2] = dxdt[7];
   
 }
 
