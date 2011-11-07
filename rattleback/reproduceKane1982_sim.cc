@@ -3,28 +3,25 @@
 #include <cmath>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_odeiv2.h>
-#include "rattleback.h"
+#include "reproduceKane1982.h"
 
 int main(int argc, char *argv[]) {
   rattleback_params p;
   p.a = 0.2;
   p.b = 0.03;
   p.c = 0.02;
-  p.d = p.e = 0.0;
-  p.f = 0.01;
-  p.m = 1.0;
+  p.h = 0.01;
+  p.M = 1.0;
   p.g = 9.81;
-  p.Ixx =  0.0002;
-  p.Iyy =  0.0016;
-  p.Izz =  0.0017;
-  p.Ixy = -0.00002;
-  p.Iyz = p.Ixz = 0.0;
+  p.A =  0.0002;
+  p.B =  0.0016;
+  p.C =  0.0017;
+  p.D = -0.00002;
 
   // Initial time and state
-  simdata s = {0.0, {0.0,              // Yaw (ignorable)
-                     0.5*M_PI/180.0,   // Roll
-                     0.5*M_PI/180.0,   // Pitch
-                     0.0, 0.0,         // x, y of contact (ignorable)
+  simdata s = {0.0, {0.5*M_PI/180.0,   // alpha
+                     0.5*M_PI/180.0,   // beta
+                     0.0,              // gamma (ignorable)
                      0.0,              // u0
                      0.0,              // u1
                      -5.0} };          // u2
@@ -34,9 +31,9 @@ int main(int argc, char *argv[]) {
   const int N = 5001;                             // number of points
   
   // GSL setup code
-  gsl_odeiv2_system sys = {rattleback_ode, NULL, 8, &p};
+  gsl_odeiv2_system sys = {rattleback_ode, NULL, 6, &p};
   
-  double scale_abs[] = {0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0};
+  double scale_abs[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
   gsl_odeiv2_driver * d = gsl_odeiv2_driver_alloc_scaled_new(&sys,
       gsl_odeiv2_step_rk8pd,
       1e-3,       // Initial step size
