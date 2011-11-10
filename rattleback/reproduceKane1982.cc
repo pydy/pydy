@@ -123,6 +123,56 @@ void rattleback_outputs(simdata *s, rattleback_params *p)
 {
   double dxdt[6];
   double *x = s->x;
+  // x = {alpha, beta, gamma, omega_1, omega_2, omega_3}
+  double alpha = x[0],
+         beta =  x[1],
+         gamma = x[2],
+         w1 = x[3],
+         w2 = x[4],
+         w3 = x[5];
+  // parameters
+  double a = p->a,
+         b = p->b,
+         c = p->c,
+         h = p->h,
+         M = p->M,
+         A = p->A,
+         B = p->B,
+         C = p->C,
+         D = p->D,
+         g = p->g;
+  
+  // Kane & Levinson 1982, equations 40, 41, 42, checked DLP
+  double alpha_dot = w3*sin(beta) + w1*cos(beta),
+         beta_dot  = (-w3*cos(beta) + w1*sin(beta))*tan(alpha) + w2,
+         gamma_dot = (w3*cos(beta) - w1*sin(beta))/cos(alpha);
+
+  // Air resistance
+  double sigma = 0.0;
+
+  // Equations 37, checked DLP
+  double mu1 = -cos(alpha)*sin(beta),
+         mu2 = sin(alpha),
+         mu3 = cos(alpha)*cos(beta);
+  
+  // Equations 23, checked DLP
+  double mu1_dot = w3*mu2 - w2*mu3,
+         mu2_dot = w1*mu3 - w3*mu1,
+         mu3_dot = w2*mu1 - w1*mu2;
+
+  // Equations 16, 19, checked DLP
+  double epsilon = sqrt((a*mu1)*(a*mu1) + (b*mu2)*(b*mu2) + (c*mu3)*(c*mu3)),
+         epsilon_dot = (a*a*mu1*mu1_dot + b*b*mu2*mu2_dot + c*c*mu3*mu3_dot)/epsilon;
+
+  // Equations 17, 18, checked DLP
+  double x1 = a*a*mu1/epsilon,
+         x2 = b*b*mu2/epsilon,
+         x3 = c*c*mu3/epsilon;
+
+  // Equations 26, checked DLP
+  double v1 = w2*(h - x3) + w3*x2,
+         v2 = -w3*x1 - w1*(h - x3),
+         v3 = -w1*x2 + w2*x1;
 
   // Compute dxdt
   rattleback_ode(s->t, s->x, dxdt, static_cast<void *>(p));
@@ -134,4 +184,8 @@ void rattleback_outputs(simdata *s, rattleback_params *p)
   s->alpha[0] = dxdt[3];
   s->alpha[1] = dxdt[4];
   s->alpha[2] = dxdt[5];
+
+  // energy
+  s->ke = 0.5*M*(v1*v1 + v2*v2 + v3*v3) + 0.5*(A*w1*w1 + B*w2*w2 + C*w3*w3 + 2*D*w1*w2);
+  // s->pe = -g*M*((-pow(b, 2)*sin(x[1])/sqrt(pow(a, 2)*pow(sin(x[2]), 2)*pow(cos(x[1]), 2) + pow(b, 2)*pow(sin(x[1]), 2) + pow(c, 2)*pow(cos(x[1]), 2)*pow(cos(x[2]), 2)) + e)*sin(x[1]) - (pow(a, 2)*sin(x[2])*cos(x[1])/sqrt(pow(a, 2)*pow(sin(x[2]), 2)*pow(cos(x[1]), 2) + pow(b, 2)*pow(sin(x[1]), 2) + pow(c, 2)*pow(cos(x[1]), 2)*pow(cos(x[2]), 2)) + d)*sin(x[2])*cos(x[1]) + (-pow(c, 2)*cos(x[1])*cos(x[2])/sqrt(pow(a, 2)*pow(sin(x[2]), 2)*pow(cos(x[1]), 2) + pow(b, 2)*pow(sin(x[1]), 2) + pow(c, 2)*pow(cos(x[1]), 2)*pow(cos(x[2]), 2)) + f)*cos(x[1])*cos(x[2]));
 }

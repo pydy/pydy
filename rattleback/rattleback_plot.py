@@ -24,18 +24,17 @@ simdata = np.dtype([('t', np.float64),
                     ('delta', np.float64)])
 
 
-os.system('rm -rf ./datafile.dat')
-os.system('make')
-os.system('./rattleback_sim')                # run the simulation
+os.system('make datafile.dat')
 data = np.fromfile('datafile.dat', dtype=simdata) # read the data
 
 plt.figure()
 plt.subplot(211)
-plt.plot(data['t'], data['q0'], label=r'$\alpha$')
-plt.legend(loc=0)
+plt.plot(data['t'], data['delta']*180./np.pi)
+plt.ylabel(r'$\delta$')
 plt.subplot(212)
-plt.plot(data['t'], data['delta'], label=r'$\delta$')
-plt.legend(loc=0)
+plt.plot(data['t'], data['q0']*180./np.pi)
+plt.ylabel(r'$\gamma$')
+plt.xlabel('time, seconds')
 
 plt.figure()
 plt.plot(data['q3'],data['q4'])
@@ -50,7 +49,7 @@ plt.subplot(312)
 plt.plot(data['t'], data['pe'], label='pe')
 plt.legend(loc=0)
 plt.subplot(313)
-plt.plot(data['t'], data['te'], label='ke + pe')
+plt.plot(data['t'], data['te'] - max(data['te']), label='ke + pe')
 plt.legend(loc=0)
 
 #plt.plot(data['t'], data['q1'], label='Roll')

@@ -27,8 +27,8 @@ int main(int argc, char *argv[]) {
                      -5.0} };          // u2
 
   rattleback_outputs(&s, &p);
-  const double tf = 5.0;                          // final time
-  const int N = 5001;                             // number of points
+  const double tf = 50.0;                          // final time
+  const int N = 50001;                             // number of points
   
   // GSL setup code
   gsl_odeiv2_system sys = {rattleback_ode, NULL, 6, &p};

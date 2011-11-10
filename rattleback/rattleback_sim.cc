@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
   // GSL setup code
   gsl_odeiv2_system sys = {rattleback_ode, NULL, 8, &p};
   
-  double scale_abs[] = {0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0};
+  double scale_abs[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
   gsl_odeiv2_driver * d = gsl_odeiv2_driver_alloc_scaled_new(&sys,
       gsl_odeiv2_step_rk8pd,
       1e-3,       // Initial step size
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
       1.0,        // a_y
       1.0,        // a_dydt
       scale_abs);
-  gsl_odeiv2_driver_set_hmin(d, 1e-6);
+//   gsl_odeiv2_driver_set_hmin(d, 1e-6);
   gsl_odeiv2_driver_set_hmax(d, 1e-3);
 
   // Open a file for writing

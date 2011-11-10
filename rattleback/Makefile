@@ -9,6 +9,9 @@ rattleback_sim.o : rattleback_sim.cc
 rattleback_sim : rattleback_sim.o rattleback.o
 	g++ -Wall -O3 -o rattleback_sim rattleback_sim.o rattleback.o -lgsl -lgslcblas
 
+datafile.dat : rattleback_sim
+	./rattleback_sim
+
 reproduceKane1982.o : reproduceKane1982.cc
 	g++ -Wall -O3 -c reproduceKane1982.cc -I/home/luke/usr/include
 
