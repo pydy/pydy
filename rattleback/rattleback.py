@@ -1,4 +1,4 @@
-from sympy import (symbols, sqrt, zeros, ccode, acos, Symbol, sin,
+from sympy import (symbols, sqrt, ccode, acos, Symbol, sin,
     cos, tan, cse, numbered_symbols)
 from sympy.physics.mechanics import (dynamicsymbols, ReferenceFrame, Vector,
     Point, inertia, dot, cross)
