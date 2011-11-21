@@ -24,8 +24,8 @@ simdata = np.dtype([('t', np.float64),
                     ('delta', np.float64)])
 
 
-os.system('make datafile.dat')
-data = np.fromfile('datafile.dat', dtype=simdata) # read the data
+os.system('make simulation.dat')
+data = np.fromfile('simulation.dat', dtype=simdata) # read the data
 
 plt.figure()
 plt.subplot(211)
@@ -37,8 +37,12 @@ plt.ylabel(r'$\gamma$')
 plt.xlabel('time, seconds')
 
 plt.figure()
-plt.plot(data['q3'],data['q4'])
-plt.title('Contact point location')
+plt.plot(data['t'], data['u0'], label='$u_0$')
+plt.plot(data['t'], data['u1'], label='$u_1$')
+plt.plot(data['t'], data['u2'], label='$u_2$')
+plt.title('Body fixed angular velocity')
+plt.legend(loc=0)
+
 
 plt.figure()
 plt.title('Mechanical energy')
@@ -49,11 +53,10 @@ plt.subplot(312)
 plt.plot(data['t'], data['pe'], label='pe')
 plt.legend(loc=0)
 plt.subplot(313)
-plt.plot(data['t'], data['te'] - max(data['te']), label='ke + pe')
+plt.plot(data['t'], data['te'], label='ke + pe')
 plt.legend(loc=0)
 
-#plt.plot(data['t'], data['q1'], label='Roll')
-#plt.plot(data['t'], data['q2'], label='Pitch')
+
 plt.figure()
 plt.subplot(211)
 plt.plot(data['t'], data['Rx'], label='$\mathbf{F} \cdot \mathbf{y}_x$')
@@ -79,5 +82,9 @@ plt.plot(data['t'], data['alpha1'], label='$\dot{u}_1$')
 plt.plot(data['t'], data['alpha2'], label='$\dot{u}_2$')
 plt.title('Body fixed angular acceleration')
 plt.legend(loc=0)
+
+plt.figure()
+plt.plot(data['q3'],data['q4'])
+plt.title('Contact point location')
 
 plt.show()
