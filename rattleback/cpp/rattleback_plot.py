@@ -43,7 +43,6 @@ plt.plot(data['t'], data['u2'], label='$u_2$')
 plt.title('Body fixed angular velocity')
 plt.legend(loc=0)
 
-
 plt.figure()
 plt.title('Mechanical energy')
 plt.subplot(311)
@@ -53,9 +52,8 @@ plt.subplot(312)
 plt.plot(data['t'], data['pe'], label='pe')
 plt.legend(loc=0)
 plt.subplot(313)
-plt.plot(data['t'], data['te'], label='ke + pe')
+plt.plot(data['t'], data['te'] - data['te'][0], label=r'$\Delta E$')
 plt.legend(loc=0)
-
 
 plt.figure()
 plt.subplot(211)

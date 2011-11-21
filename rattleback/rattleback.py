@@ -219,24 +219,14 @@ for i in range(8):
     output_code += "  dfdx[{0}] = {1};\n".format(8*i + j,
         ccode(exp_jac_red[8*i + j]))
 
+# Perform text substitutions to change symbols used for state variables and
+# their derivatives (qi, ui, qdi, udi) to the names used by the ode integrator.
 import re
 output_code = re.sub(r"z(\d+)", r"z[\1]", output_code)
-output_code = re.sub(r"q0", r"x[0]", output_code)
-output_code = re.sub(r"q1", r"x[1]", output_code)
-output_code = re.sub(r"q2", r"x[2]", output_code)
-output_code = re.sub(r"q3", r"x[3]", output_code)
-output_code = re.sub(r"q4", r"x[4]", output_code)
-output_code = re.sub(r"u0", r"x[5]", output_code)
-output_code = re.sub(r"u1", r"x[6]", output_code)
-output_code = re.sub(r"u2", r"x[7]", output_code)
-output_code = re.sub(r"qd0", r"dxdt[0]", output_code)
-output_code = re.sub(r"qd1", r"dxdt[1]", output_code)
-output_code = re.sub(r"qd2", r"dxdt[2]", output_code)
-output_code = re.sub(r"qd3", r"dxdt[3]", output_code)
-output_code = re.sub(r"qd4", r"dxdt[4]", output_code)
-output_code = re.sub(r"ud0", r"dxdt[5]", output_code)
-output_code = re.sub(r"ud1", r"dxdt[6]", output_code)
-output_code = re.sub(r"ud2", r"dxdt[7]", output_code)
+output_code = re.sub(r"q([01234])", r"x[\1]", output_code)
+output_code = re.sub(r"qd([01234])", r"dxdt[\1]", output_code)
+output_code = re.sub(r"u([012])", r"x[\1 + 5]", output_code)
+output_code = re.sub(r"ud([012])", r"dxdt[\1 + 5]", output_code)
 
 f = file("rattleback_output.txt", 'w')
 f.write(output_code)
