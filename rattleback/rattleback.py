@@ -4,9 +4,10 @@ from sympy.physics.mechanics import (dynamicsymbols, ReferenceFrame, Vector,
     Point, inertia, dot, cross)
 
 Vector.simp = False         # Prevent the use of trigsimp and simplify
-t, g = symbols('t g')        # Time and gravitational constant
+t, g = symbols('t g')       # Time and gravitational constant
 a, b, c = symbols('a b c')  # semi diameters of ellipsoid
 d, e, f = symbols('d e f')  # mass center location parameters
+s = symbols('s')            # coefficient of viscous friction
 
 # Mass and Inertia scalars
 m, Ixx, Iyy, Izz, Ixy, Iyz, Ixz = symbols('m Ixx Iyy Izz Ixy Iyz Ixz')
@@ -42,7 +43,6 @@ eps = sqrt((a*mu[0])**2 + (b*mu[1])**2 + (c*mu[2])**2)
 O = P.locatenew('O', -a*a*mu[0]/eps*R.x
                      -b*b*mu[1]/eps*R.y
                      -c*c*mu[2]/eps*R.z)
-#O = P.locatenew('O', sum([-ri*uv for ri, uv in zip(r, R)]))
 O.set_vel(N, P.vel(N) + cross(R.ang_vel_in(N), O.pos_from(P)))
 
 # Mass center position and velocity
@@ -71,13 +71,15 @@ R.set_ang_acc(N, ud[0]*R.x + ud[1]*R.y + ud[2]*R.z)
 # Acceleration of mass center
 RO.set_acc(N, RO.vel(N).diff(t, R) + cross(R.ang_vel_in(N), RO.vel(N)))
 
-# Forces
+# Forces and Torques
 F_P = sum([cf*uv for cf, uv in zip(CF, Y)])
 F_RO = m*g*Y.z
+T_R = -s*R.ang_vel_in(N)
 
 # Generalized Active forces
 gaf_P = [dot(F_P, pv) for pv in partial_v_P]
 gaf_RO = [dot(F_RO, pv) for pv in partial_v_RO]
+gaf_R = [dot(T_R, pv) for pv in partial_w]
 
 # Generalized Inertia forces
 # First, compute R^* and T^* for the rigid body
@@ -115,7 +117,7 @@ for i in range(len(u + ua)):
 f_dyn = [0]*3
 M_dyn = [0]*9
 for i in range(3):
-  f_dyn[i] = - (gaf_P[i] + gaf_RO[i] + gif_other[i])
+  f_dyn[i] = - (gaf_P[i] + gaf_RO[i] + gaf_R[i] + gif_other[i])
   for j in range(3):
     M_dyn[3*i + j] = gif_udot[i].diff(ud[j])
 
@@ -124,9 +126,9 @@ for i in range(3):
 # ultimately need to be solved for the constraint forces.  With this in mind we
 # rearrange them as:
 # CF = f_cf(q, u, ud)
-f_cf = [0, 0, 0]
+f_cf = [0]*3
 for i in range(3):
-  f_cf[i] = - (gaf_RO[i + 3] + gif_udot[i + 3] + gif_other[i + 3])
+  f_cf[i] = - (gaf_RO[i + 3] + gaf_R[i + 3] + gif_udot[i + 3] + gif_other[i + 3])
   assert(gaf_P[i + 3] == CF[i])
 
 # Kinetic and potential energy
@@ -146,12 +148,14 @@ for i, de_rhs in enumerate(qd_rhs[:3]):
 # dynamic differential equations
 for i, de_rhs in enumerate(qd_rhs[3:5] + f_dyn):
   for j, xi in enumerate(q + u):
-    J[8*(i+3) + j] = de_rhs.subs(dict(zip(qd, qd_rhs))).diff(xi)
+    J[8*(i+3) + j] = de_rhs.diff(xi)
+    for qdk, qdk_rhs in zip(qd, qd_rhs):
+      J[8*(i+3) + j] += de_rhs.diff(qdk)*qdk_rhs.diff(xi)
 
 # Build a big list of all expressions to do CSE on
 exp_ode = qd_rhs + M_dyn + f_dyn
 exp_output = f_cf + [ke, pe, ke + pe, delta]
-exp_jac = J
+exp_jac = J + M_dyn
 
 # Subsitution dictionary to replace dynamic symbols with regular symbols
 subs_dict = {q[0]: Symbol('q0'), q[1]: Symbol('q1'), q[2]: Symbol('q2'),
@@ -216,8 +220,13 @@ for zi_lhs, zi_rhs in z:
 output_code += "\n  // Entries of Jacobian matrix\n"
 for i in range(8):
   for j in range(8):
-    output_code += "  dfdx[{0}] = {1};\n".format(8*i + j,
+    output_code += "  J({0}, {1}) = {2};\n".format(i, j,
         ccode(exp_jac_red[8*i + j]))
+output_code += "\n  // Entries of Mass matrix\n"
+for i in range(3):
+  for j in range(3):
+    output_code += "  M_dyn({0}, {1}) = {2};\n".format(i, j,
+        ccode(exp_jac_red[64 + 3*i + j]))
 
 # Perform text substitutions to change symbols used for state variables and
 # their derivatives (qi, ui, qdi, udi) to the names used by the ode integrator.

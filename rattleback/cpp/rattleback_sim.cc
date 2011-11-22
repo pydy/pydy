@@ -17,6 +17,7 @@ int main() {
   p.Izz =  0.0017;          // zz moment of inertia
   p.Ixy = -0.00002;         // xy product of inertia
   p.Iyz = p.Ixz = 0.0;      // yz, xz products of inertia
+  p.s = 1.0e-4;             // sigma, viscous air damping
 
   // Initial time and state
   simdata s = {0.0, {0.0,              // Yaw (ignorable)
@@ -25,7 +26,7 @@ int main() {
                      0.0, 0.0,         // x, y of contact (ignorable)
                      0.0,              // u0
                      0.0,              // u1
-                     -5.0} };          // u2  (spin)
+                     3.0} };           // u2  (spin)
 
   // GSL setup code
   gsl_odeiv2_system sys = {rattleback_ode, rattleback_jacobian, 8, &p};
@@ -35,8 +36,8 @@ int main() {
   std::ofstream f("simulation.dat", std::ios::binary | std::ios::out);
 
   // Simulation
-  const double tf = 5.0;                // final time
-  const int N = 5001;                   // number of points
+  const double tf = 20.0;                // final time
+  const int N = 20001;                   // number of points
   rattleback_outputs(&s, &p);           // compute initial output quantities
   f.write((char *) &s, sizeof(simdata));// Write initial time data
   for (int i = 1; i <= N; ++i) {
