@@ -1,12 +1,12 @@
-from sympy import (symbols, sqrt, ccode, acos, Symbol, sin,
+from sympy import (symbols, ccode, acos, Symbol, sin,
     cos, tan, cse, numbered_symbols)
 from sympy.physics.mechanics import (dynamicsymbols, ReferenceFrame, Vector,
     Point, inertia, dot, cross)
 
 Vector.simp = False         # Prevent the use of trigsimp and simplify
 t, g = symbols('t g')       # Time and gravitational constant
-a, b, c = symbols('a b c')  # semi diameters of ellipsoid
-d, e, f = symbols('d e f')  # mass center location parameters
+a, b = symbols('a b')       # Parabaloid parameters
+c, d, e = symbols('c d e')  # Mass center location parameters
 s = symbols('s')            # coefficient of viscous friction
 
 # Mass and Inertia scalars
@@ -35,18 +35,19 @@ R.set_ang_vel(N, u[0]*R.x + u[1]*R.y + u[2]*R.z)
 P = Point('P')
 P.set_vel(N, ua[0]*Y.x + ua[1]*Y.y + ua[2]*Y.z)
 
-# Rattleback ellipsoid center location, see:
-# "Realistic mathematical modeling of the rattleback", Kane, Thomas R. and
-# David A. Levinson, 1982, International Journal of Non-Linear Mechanics
+# Rattleback parabaloid -- parameterize coordinates of contact point by the
+# roll and pitch angles, and the geometry
 mu = [dot(rk, Y.z) for rk in R]
-eps = sqrt((a*mu[0])**2 + (b*mu[1])**2 + (c*mu[2])**2)
-O = P.locatenew('O', -a*a*mu[0]/eps*R.x
-                     -b*b*mu[1]/eps*R.y
-                     -c*c*mu[2]/eps*R.z)
+rx = a*a*mu[0]/mu[2]/2
+ry = b*b*mu[1]/mu[2]/2
+rz = c - (rx/a)**2 - (ry/b)**2
+
+# Locate origin of parabaloid coordinate system relative to contact point
+O = P.locatenew('O', -rx*R.x - ry*R.y - rz*R.z)
 O.set_vel(N, P.vel(N) + cross(R.ang_vel_in(N), O.pos_from(P)))
 
 # Mass center position and velocity
-RO = O.locatenew('RO', d*R.x + e*R.y + f*R.z)
+RO = O.locatenew('RO', d*R.x + e*R.y)
 RO.set_vel(N, P.vel(N) + cross(R.ang_vel_in(N), RO.pos_from(P)))
 
 qd_rhs = [(u[2]*cos(q[2]) - u[0]*sin(q[2]))/cos(q[1]),
@@ -138,7 +139,7 @@ pe = -m*g*dot(RO.pos_from(P), Y.z)
 # Delta -- angle between Y.z and R.z
 delta = acos(dot(Y.z, R.z))
 
-# Jacobian matrix
+# Jacobian matrix, first 3 of the orientation kinematic differential equations
 J = [0]*64
 for i, de_rhs in enumerate(qd_rhs[:3]):
   for j, xi in enumerate(q + u):
@@ -237,6 +238,6 @@ output_code = re.sub(r"qd([01234])", r"dxdt[\1]", output_code)
 output_code = re.sub(r"u([012])", r"x[\1 + 5]", output_code)
 output_code = re.sub(r"ud([012])", r"dxdt[\1 + 5]", output_code)
 
-f = file("rattleback_output.txt", 'w')
+f = file("rattleback_paraboloid_no_slip.txt", 'w')
 f.write(output_code)
 f.close()
