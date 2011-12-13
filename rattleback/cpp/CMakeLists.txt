@@ -19,13 +19,26 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${C_CPP_FLAGS} -O3 -ggdb3")
 # Find required libraries
 find_package(GSL 1.15 REQUIRED)
 find_package(Eigen3 3.0 REQUIRED)
+find_package(VTK REQUIRED)
+add_definitions(-DVTK_LEGACY_REMOVE)
+include(${VTK_USE_FILE})
 
 include_directories(${EIGEN3_INCLUDE_DIR}
                     ${GSL_INCLUDE_DIR})
 
-add_library(rattleback rattleback_ellipsoidal_no_slip.cc)
+add_library(rattleback ellipsoid_no_slip.cc
+                       paraboloid_no_slip.cc
+                       ellipsoid_equilibrium.cc)
 
-add_executable(rattleback_sim rattleback_sim.cc)
-target_link_libraries(rattleback_sim
+add_executable(ellipsoid_sim ellipsoid_sim.cc)
+target_link_libraries(ellipsoid_sim
                       rattleback
                       ${GSL_LIBRARIES})
+
+add_executable(paraboloid_sim paraboloid_sim.cc)
+target_link_libraries(paraboloid_sim
+                      rattleback
+                      ${GSL_LIBRARIES})
+
+add_executable(ellipsoid_equilibrium ellipsoid_eq.cc)
+target_link_libraries(ellipsoid_equilibrium rattleback vtkRendering)
