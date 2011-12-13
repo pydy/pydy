@@ -1,10 +1,10 @@
 #include <fstream>
 #include <cmath>
 #include <gsl/gsl_odeiv2.h>
-#include "rattleback_ellipsoidal_no_slip.h"
+#include "ellipsoid_no_slip.h"
 
 int main() {
-  using namespace Mechanics::Rattleback::Ellipsoidal::NoSlip;
+  using namespace Mechanics::Rattleback::Ellipsoid::NoSlip;
   parameters p;
   p.a = 0.2;                // x semi-diameter
   p.b = 0.03;               // y semi-diameter
@@ -18,7 +18,7 @@ int main() {
   p.Izz =  0.0017;          // zz moment of inertia
   p.Ixy = -0.00002;         // xy product of inertia
   p.Iyz = p.Ixz = 0.0;      // yz, xz products of inertia
-  p.s = 0.0e-4;             // sigma, viscous air damping
+  p.s = 0.0;             // sigma, viscous air damping
 
   // Initial time and state
   simdata s = {0.0,              // time
@@ -28,7 +28,7 @@ int main() {
                0.0, 0.0,         // x, y of contact (ignorable)
                0.0,              // u0
                0.0,              // u1
-               -5.0} };           // u2  (spin)
+               -5.0} };          // u2  (spin)
 
   // GSL setup code
   gsl_odeiv2_system sys = {ode, jacobian, 8, &p};
