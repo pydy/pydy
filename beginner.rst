@@ -18,7 +18,7 @@ You can now see what functions and variables that are available to you with::
    >>> dir()
 
 This is a long list of available functions, as both packages have many. Read
-the about the python import statement to learn about better ways to import only
+about the python import statement to learn about better ways to import only
 what you need. One good explanation is
 <http://effbot.org/zone/import-confusion.htm>.
 
@@ -26,7 +26,7 @@ To get started working with vectors we will need to create a reference frame,
 as all vectors need to be defined with respect to a reference frame. If you
 know the name of the command that you want to use simply use the builtin help
 function to bring up the documentation for the function. In our case we need to
-use the ReferenceFrame function::
+use the ReferenceFrame class::
 
    >>> help(ReferenceFrame)
 
@@ -43,7 +43,7 @@ and functions associated with it. To see a list of them type::
 
 Notice that three of the properties are `x`, `y`, and `z`. These are the
 orthonormal unit vectors associated with the reference frame and are the
-buidling blocks for creating vectors. We can create a vector by simply
+building blocks for creating vectors. We can create a vector by simply
 building a linear combination of the unit vectors::
 
    >>> v = 1 * N.x + 2 * N.y + 3 * N.z
@@ -74,18 +74,18 @@ You can add and subtract vectors::
    >>> v - w
    - 4*N.x - 5*N.y + 3*N.z
 
-Vectors also have some properites::
+Vectors also have some useful properties::
 
    >>> dir(v)
 
 You can find the magnitude of a vector by typing::
 
-   >>> v.mag
+   >>> v.magnitude()
    sqrt(14)
 
 You can compute a unit vector in the direction of `v`::
 
-   >>> v.unit
+   >>> v.normalize()
    sqrt(14)/14*N.x + sqrt(14)/7*N.y + 3*sqrt(14)/14*N.z
 
 You can find the measure numbers and the reference frame the vector was defined in
@@ -119,12 +119,12 @@ And create two new vectors that are completely symbolic::
    >>> cross(x, y)
    (a2*b3 - a3*b2)*N.x + (-a1*b3 + a3*b1)*N.y + (a1*b2 - a2*b1)*N.z
 
-Numbers and symbols work together seemlessly::
+Numbers and symbols work together seamlessly::
 
    >>> dot(v, x)
    a1 + 2*a2 + 3*a3
 
-You can also differentiate a vector or with respect to a variable in a
+You can also differentiate a vector with respect to a variable in a
 reference frame::
 
    >>> x.diff(a1, N)
@@ -161,13 +161,13 @@ we can express the vectors that we originally wrote in the `A` frame::
 
 In dynamics systems at least some of the relative orientation of reference
 frames and vectors are time varying. The mechanics module provides a way to
-specify quanties as time varying. Let's define two variables `beta` and `d` as
-variable which is a function of time::
+specify quantities as time varying. Let's define two variables `beta` and `d` as
+variables which are functions of time::
 
    >>> beta, d = dynamicsymbols('beta d')
 
 Now we can create a new reference frame that is oriented with respect to the A
-frame by beta and create a vector in that new frame that is a function of `d`.
+frame by `beta` and create a vector in that new frame that is a function of `d`.
 This time we will use the `orientnew` method of the `A` frame to create the new
 reference frame `B`::
 
@@ -192,13 +192,14 @@ a reference frame::
    cos(A)*cos(beta)*d')*N.z
 
 The `dynamicsymbols` function also allows you to store the derivatives of time
-varying variables. For example if we define omega as the time derivative of
-beta::
+varying variables. For example, we can define `omega` as the first time
+derivative of `beta` which allows you to explicitly interact with the
+derivatives::
 
    >>> theta = dynamicsymbols('theta')
-   >>> omega = dynamicssymbols('theta', 1)
+   >>> omega = dynamicsymbols('theta', 1)
 
-At this point we now have all the tools need to setup the kinematics for a
+At this point we now have all the tools needed to setup the kinematics for a
 dynamic system. Let's start with a simple system where a point can move back
 and forth on a spinning disc. First create an inertial reference frame::
 
@@ -218,7 +219,7 @@ Define one point at the origin of rotation which is fixed in `N`::
    >>> no = Point('no')
    >>> no.set_vel(N, 0)
 
-The point can move through `x` along the `D.y` axis::
+The second point, `p`, can move through `x` along the `D.y` axis::
 
    >>> p = Point('p')
    >>> r = x * D.y
@@ -238,3 +239,6 @@ use of the fact that both `do` and `no` are in the reference frame and use the
 
    >>> p.a2pt_theory(no, N, D)
    - x*theta'**2*D.y + x*theta''*D.z
+
+Now let's imagine that the point, `p`, is constrained by a spring with
+stiffness, `k`, to point, `no`. This means that a force 
