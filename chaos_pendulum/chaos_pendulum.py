@@ -71,17 +71,8 @@ kinDiffs = [omega - thetad, alpha - phid]
 ## kinetics ##
 
 # rigid bodies #
-rod = me.RigidBody() # create the empty rod object
-rod.frame = A # the reference frame
-rod.mass = mA # mass
-rod.mc = Ao # mass center
-rod.inertia = (me.inertia(A, IAxx, IAxx, 0.0), Ao) # inertia about the mass center
-
-plate = me.RigidBody() # create the empty plate object
-plate.frame = B # the reference frame
-plate.mass = mB # mass
-plate.mc = Bo # mass center
-plate.inertia = (me.inertia(B, IBxx, IByy, IBzz), Bo) # inertia about the mass center
+rod = me.RigidBody('rod', Ao, A, mA, (me.inertia(A, IAxx, IAxx, 0.0), Ao)) # create the empty rod object
+plate = me.RigidBody('plate', Bo, B, mB, (me.inertia(B, IBxx, IByy, IBzz), Bo)) # create the empty plate object
 
 # forces #
 # add the gravitional force to each body

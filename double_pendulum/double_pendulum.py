@@ -22,13 +22,8 @@ O.set_vel(N, 0)
 P.v2pt_theory(O, N, A)
 R.v2pt_theory(P, N, B)
 
-ParP = Particle()
-ParR = Particle()
-
-ParP.point = P
-ParR.point = R
-ParP.mass = m
-ParR.mass = m
+ParP = Particle('ParP', P, m)
+ParR = Particle('ParR', R, m)
 
 kd = [q1d - u1, q2d - u2]
 FL = [(P, m * g * N.x), (R, m * g * N.x)]
