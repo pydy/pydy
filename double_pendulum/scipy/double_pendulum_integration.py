@@ -2,7 +2,7 @@
 
 # This is an example of integrating the equations of motion for a double
 # pendulum which were generated with sympy.physics.mechanics. We make use of
-# SciPy/NumPy for the intergration routines and Matplotlib for plotting.
+# SciPy/NumPy for the integration routines and Matplotlib for plotting.
 #
 # Steps taken:
 # 1. Turned on mechanics_printing() in sympy.physics.mechanics for proper
@@ -103,7 +103,7 @@ ax = fig.add_subplot(1, 1, 1)
 # Plot the states versus time.
 ax.plot(t, y)
 
-# Add some a title, axes labels and a legend.
+# Add a title, axes labels and a legend.
 ax.set_title('Double Pendulum Example')
 ax.set_xlabel('Time (s)')
 ax.set_ylabel('Angle, Angluar rate (rad, rad/s)')
