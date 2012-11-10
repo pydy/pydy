@@ -86,13 +86,8 @@ bodyList = [rod, plate]
 forceList = [rodGravity, plateGravity]
 
 # create a Kane object with respect to the Newtonian reference frame
-kane = me.Kane(N)
-# set the coordinates
-kane.coords([theta, phi])
-# set the speeds
-kane.speeds([omega, alpha])
-# set the kinematical differential equations
-kane.kindiffeq(kinDiffs)
+kane = me.KanesMethod(N, q_ind=[theta, phi], u_ind=[omega, alpha], kd_eqs=kinDiffs)
+
 
 # calculate Kane's equations
 fr, frstar = kane.kanes_equations(forceList, bodyList)
