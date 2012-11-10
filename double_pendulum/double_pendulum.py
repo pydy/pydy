@@ -30,10 +30,8 @@ FL = [(P, m * g * N.x), (R, m * g * N.x)]
 BL = [ParP, ParR]
 
 
-KM = Kane(N)
-KM.coords([q1, q2])
-KM.speeds([u1, u2])
-KM.kindiffeq(kd)
+KM = KanesMethod(N, q_ind=[q1, q2], u_ind=[u1, u2], kd_eqs=kd)
+
 
 (fr, frstar) = KM.kanes_equations(FL, BL)
 kdd = KM.kindiffdict()
