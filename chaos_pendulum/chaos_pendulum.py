@@ -71,17 +71,10 @@ kinDiffs = [omega - thetad, alpha - phid]
 ## kinetics ##
 
 # rigid bodies #
-rod = me.RigidBody() # create the empty rod object
-rod.frame = A # the reference frame
-rod.mass = mA # mass
-rod.mc = Ao # mass center
-rod.inertia = (me.inertia(A, IAxx, IAxx, 0.0), Ao) # inertia about the mass center
-
-plate = me.RigidBody() # create the empty plate object
-plate.frame = B # the reference frame
-plate.mass = mB # mass
-plate.mc = Bo # mass center
-plate.inertia = (me.inertia(B, IBxx, IByy, IBzz), Bo) # inertia about the mass center
+# create the empty rod object
+rod = me.RigidBody('rod', Ao, A, mA, (me.inertia(A, IAxx, IAxx, 0.0), Ao))
+# create the empty plate object
+plate = me.RigidBody('plate', Bo, B, mB, (me.inertia(B, IBxx, IByy, IBzz), Bo))
 
 # forces #
 # add the gravitional force to each body
@@ -95,19 +88,16 @@ bodyList = [rod, plate]
 forceList = [rodGravity, plateGravity]
 
 # create a Kane object with respect to the Newtonian reference frame
-kane = me.Kane(N)
-# set the coordinates
-kane.coords([theta, phi])
-# set the speeds
-kane.speeds([omega, alpha])
-# set the kinematical differential equations
-kane.kindiffeq(kinDiffs)
+kane = me.KanesMethod(N, q_ind=[theta, phi], u_ind=[omega, alpha],
+        kd_eqs=kinDiffs)
 
 # calculate Kane's equations
 fr, frstar = kane.kanes_equations(forceList, bodyList)
 zero = fr + frstar
+
 # solve Kane's equations for the derivatives of the speeds
 eom = sym.solvers.solve(zero, omegad, alphad)
+
 # add the kinematical differential equations to get the equations of motion
 eom.update(kane.kindiffdict())
 
