@@ -147,7 +147,7 @@ Fr_star_u = Matrix([dot(R_star_O, pv) + dot(T_star_C, pav) for pv, pav in
 # Form nonholonomic Fr and nonholonomic Fr_star
 # See equations 4.4.3 and  4.11.4 of Kane & Levinson
 Fr_c = Fr_u[:3, :].col_join(Fr_u[6:, :]) + A_rs.T * Fr_u[3:6, :]
-Fr_star_c = Fr_star_u[:3, :].col_join(Fr_star_u[6:, :])
+Fr_star_c = Fr_star_u[:3, :].col_join(Fr_star_u[6:, :])\
             + A_rs.T * Fr_star_u[3:6, :]
 Fr_star_steady = Fr_star_c.subs(ud_zero).subs(u_dep_dict)\
         .subs(steady_conditions).subs({q[3]: -r*cos(q[1])}).expand()
