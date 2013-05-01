@@ -7,7 +7,7 @@ Keep in mind that the approach below is diabolical.  This problem can be solved
 much more simply.  The diabolical nature is only here to make sure that the
 results from KanesMethod are correct.
 """
-    
+
 from sympy import symbols, Matrix, solve, Poly, sin, cos, zeros
 from sympy.physics.mechanics import *
 
@@ -34,7 +34,7 @@ qd = [qi.diff(t) for qi in q]
 # u[5] -- disc velocity component, A.z direction
 u = dynamicsymbols('u:6')
 ud = [ui.diff(t) for ui in u]
-ud_zero = {udi : 0 for udi in ud}     # 
+ud_zero = {udi : 0 for udi in ud}
 
 # Auxiliary generalized speeds
 # ua[0] -- contact point auxiliary generalized speed, A.x direction

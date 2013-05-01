@@ -17,7 +17,7 @@ public:
 
   // Evaluate the gradient to the quadric equation.
   void EvaluateGradient(double x[3], double g[3]);
-  
+
   // Set the rattleback parameters
   void SetParameters(parameters &params);
 

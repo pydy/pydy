@@ -9,7 +9,7 @@ namespace NoSlip {
   {
     using namespace Eigen;
     parameters *p = static_cast<parameters *>(params);
-    static const double a = p->a,
+    const double a = p->a,
                         b = p->b,
                         c = p->c,
                         d = p->d,
@@ -151,7 +151,7 @@ namespace NoSlip {
   {
     using namespace Eigen;
     parameters *p = static_cast<parameters *>(params);
-    static const double a = p->a,
+    const double a = p->a,
                         b = p->b,
                         c = p->c,
                         d = p->d,
@@ -167,10 +167,10 @@ namespace NoSlip {
                         g = p->g,
                         s = p->s;
     dfdt[0] = dfdt[1] = dfdt[2] = dfdt[3] = dfdt[4] = dfdt[5] = dfdt[6] = dfdt[7] = 0.0;
-    static Matrix<double, 8, 8> J; 
-    static Matrix<double, 3, 3> M_dyn;
-    static double z[356];
-    static double dxdt[8];
+    Matrix<double, 8, 8> J; 
+    Matrix<double, 3, 3> M_dyn;
+    double z[356];
+    double dxdt[8];
 
     // Compute dxdt
     ode(t, x, dxdt, params);
@@ -625,11 +625,11 @@ namespace NoSlip {
     ode(sd->t, sd->x, sd->dxdt, static_cast<void *>(p));
 
     // Pointers to state and state derivative vectors
-    static const double * const x = sd->x;
-    static const double * const dxdt = sd->dxdt;
+    const double * const x = sd->x;
+    const double * const dxdt = sd->dxdt;
 
     // Parameters
-    static const double a = p->a,
+    const double a = p->a,
                         b = p->b,
                         c = p->c,
                         d = p->d,
@@ -643,7 +643,7 @@ namespace NoSlip {
                         Iyz = p->Iyz,
                         Ixz = p->Ixz,
                         g = p->g;
-    static double z[90];
+    double z[90];
     
     // Output quantites (evaluated at each output time-step)
     z[0] = cos(x[2]);
@@ -758,7 +758,7 @@ namespace NoSlip {
   {
     parameters *p = static_cast<parameters *>(params);
     // Parameters
-    static const double a = p->a,
+    const double a = p->a,
                         b = p->b,
                         c = p->c,
                         d = p->d,

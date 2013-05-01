@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import os
+#import os
 
 # Define a data type for the simdata structure
 simdata = np.dtype([('t', np.float64),
@@ -39,6 +39,15 @@ plt.subplot(212)
 plt.plot(data['t'], data['q0']*180./np.pi)
 plt.ylabel(r'$\gamma$')
 plt.xlabel('time, seconds')
+
+plt.figure()
+#plt.subplot(211)
+plt.ylabel(r'degrees, degrees/second')
+plt.plot(data['t'], data['qd0']*180./np.pi, label='$\dot{\psi}$')
+plt.plot(data['t'], data['q0']*180./np.pi, label='$\psi$')
+plt.legend(loc=0)
+plt.xlabel('time, seconds')
+
 
 plt.figure()
 plt.plot(data['t'], data['u0'], label='$\omega_x$')

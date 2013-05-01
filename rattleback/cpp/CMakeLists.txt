@@ -42,3 +42,7 @@ target_link_libraries(paraboloid_sim
 
 add_executable(ellipsoid_equilibrium ellipsoid_eq.cc)
 target_link_libraries(ellipsoid_equilibrium rattleback vtkRendering)
+
+add_executable(RattleBackAnimation RattleBackAnimation.cc
+                                   RattleBackCallback.cc)
+target_link_libraries(RattleBackAnimation rattleback vtkRendering)

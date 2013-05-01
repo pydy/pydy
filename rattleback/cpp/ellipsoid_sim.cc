@@ -18,7 +18,7 @@ int main() {
   p.Izz =  0.0017;          // zz moment of inertia
   p.Ixy = -0.00002;         // xy product of inertia
   p.Iyz = p.Ixz = 0.0;      // yz, xz products of inertia
-  p.s = 0.0;             // sigma, viscous air damping
+  p.s = 0.0001;             // sigma, viscous air damping
 
   // Initial time and state
   simdata s = {0.0,              // time
@@ -38,7 +38,7 @@ int main() {
   std::ofstream f("simulation.dat", std::ios::binary | std::ios::out);
 
   // Simulation
-  const double tf = 20.0;                // final time
+  const double tf = 60.0;                // final time
   const int N = 20001;                   // number of points
   outputs(&s, &p);           // compute initial output quantities
   f.write((char *) &s, sizeof(simdata));// Write initial time data

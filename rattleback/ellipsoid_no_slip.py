@@ -139,18 +139,14 @@ pe = -m*g*dot(RO.pos_from(P), Y.z)
 delta = acos(dot(Y.z, R.z))
 
 # Jacobian matrix
-J = [0]*64
-for i, de_rhs in enumerate(qd_rhs[:3]):
-  for j, xi in enumerate(q + u):
-    J[8*i + j] = de_rhs.diff(xi)
-
-# translational kinematic differential equations and the right hand side of the
-# dynamic differential equations
-for i, de_rhs in enumerate(qd_rhs[3:5] + f_dyn):
-  for j, xi in enumerate(q + u):
-    J[8*(i+3) + j] = de_rhs.diff(xi)
+J = [0]*25    # only consider the 5 states (ignore x, y, yaw ode's)
+for i, de_rhs in enumerate(qd_rhs[1:3] + f_dyn):
+  for j, xi in enumerate(q[1:3] + u):
+    J[5*i + j] = de_rhs.diff(xi)
     for qdk, qdk_rhs in zip(qd, qd_rhs):
-      J[8*(i+3) + j] += de_rhs.diff(qdk)*qdk_rhs.diff(xi)
+      J[5*i + j] += de_rhs.diff(qdk)*qdk_rhs.diff(xi)
+
+stop
 
 # Build lists of grouped equations to do CSE on
 exp_ode = qd_rhs + M_dyn + f_dyn

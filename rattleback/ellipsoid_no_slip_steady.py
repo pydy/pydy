@@ -1,47 +1,69 @@
-from sympy import (symbols, ccode, Symbol, cse, numbered_symbols, sqrt)
+from sympy import (symbols, ccode, Symbol, cse, numbered_symbols, solve)
 from sympy.physics.mechanics import (dynamicsymbols, ReferenceFrame, Vector,
-    Point, inertia, dot, cross)
+    Point, inertia, dot, cross, mprint)
 
 Vector.simp = False         # Prevent the use of trigsimp and simplify
 t, g = symbols('t g')       # Time and gravitational constant
 a, b, c = symbols('a b c')  # semi diameters of ellipsoid
 d, e, f = symbols('d e f')  # mass center location parameters
-s = symbols('s')            # coefficient of viscous friction
 
 # Mass and Inertia scalars
 m, Ixx, Iyy, Izz, Ixy, Iyz, Ixz = symbols('m Ixx Iyy Izz Ixy Iyz Ixz')
 
 q = dynamicsymbols('q:3')             # Generalized coordinates
 qd = [qi.diff(t) for qi in q]         # Generalized coordinate time derivatives
-r = dynamicsymbols('r:3')             # Coordinates, in R frame, from O to P
-rd = [ri.diff(t) for ri in r]         # Time derivatives of xi
+wx, wy, wz = symbols('wx wy wz')
+rx, ry, rz = symbols('rx ry rz')             # Coordinates, in R frame, from O to P
+Fx, Fy, Fz = symbols('Fx Fy Fz')
+mu_x, mu_y, mu_z = symbols('mu_x mu_y mu_z')
 
 N = ReferenceFrame('N')                   # Inertial Reference Frame
 Y = N.orientnew('Y', 'Axis', [q[0], N.z]) # Yaw Frame
 L = Y.orientnew('L', 'Axis', [q[1], Y.x]) # Lean Frame
 R = L.orientnew('R', 'Axis', [q[2], L.y]) # Rattleback body fixed frame
 
+print R.dcm(Y)
+
 I = inertia(R, Ixx, Iyy, Izz, Ixy, Iyz, Ixz)    # Inertia dyadic
-
-# Angular velocity using u's as body fixed measure numbers of angular velocity
-R.set_ang_vel(N, qd[0]*Y.z + qd[1]*Y.x + qd[2]*L.y)
-
+print I.express(Y)
+stop
 # Rattleback ground contact point
 P = Point('P')
 
 # Rattleback ellipsoid center location, see:
 # "Realistic mathematical modeling of the rattleback", Kane, Thomas R. and
 # David A. Levinson, 1982, International Journal of Non-Linear Mechanics
-mu = [dot(rk, Y.z) for rk in R]
-eps = sqrt((a*mu[0])**2 + (b*mu[1])**2 + (c*mu[2])**2)
-O = P.locatenew('O', -a*a*mu[0]/eps*R.x
-                     -b*b*mu[1]/eps*R.y
-                     -c*c*mu[2]/eps*R.z)
-O.set_vel(N, cross(R.ang_vel_in(N), O.pos_from(P)))
+#mu = [dot(rk, Y.z) for rk in R]
+#eps = sqrt((a*mu[0])**2 + (b*mu[1])**2 + (c*mu[2])**2)
+O = P.locatenew('RO', -rx*R.x - rx*R.y - rx*R.z)
+RO = O.locatenew('O', d*R.x + e*R.y + f*R.z)
 
+w_r_n = wx*R.x + wy*R.y + wz*R.z
+omega_dict = {wx: dot(qd[0]*Y.z, R.x),
+              wy: dot(qd[0]*Y.z, R.y),
+              wz: dot(qd[0]*Y.z, R.z)}
+v_ro_n = cross(w_r_n, RO.pos_from(P))
+a_ro_n = cross(w_r_n, v_ro_n)
+
+mu_dict = {mu_x: dot(R.x, Y.z), mu_y: dot(R.y, Y.z), mu_z: dot(R.z, Y.z)}
+#F_RO = m*g*Y.z + Fx*Y.x + Fy*Y.y + Fz*Y.z
+
+#F_RO = Fx*R.x + Fy*R.y + Fz*R.z + m*g*Y.z
+F_RO = Fx*R.x + Fy*R.y + Fz*R.z + m*g*(mu_x*R.x + mu_y*R.y + mu_z*R.z)
+newton_eqn = F_RO - m*a_ro_n
+force_scalars = solve([dot(newton_eqn, uv).expand() for uv in R], [Fx, Fy, Fz])
+#print "v_ro_n =", v_ro_n
+#print "a_ro_n =", a_ro_n
+#print "Force scalars =", force_scalars
+euler_eqn = cross(P.pos_from(RO), F_RO) - cross(w_r_n, dot(I, w_r_n))
+#print euler_eqn
+
+print dot(euler_eqn, R.x).subs(omega_dict).expand()
+print dot(euler_eqn, R.y).subs(omega_dict).expand()
+print dot(euler_eqn, R.z).subs(omega_dict).expand().subs(force_scalars).expand().subs(mu_dict).expand()
+stop
 # Mass center position and velocity
 RO = O.locatenew('RO', d*R.x + e*R.y + f*R.z)
-RO.set_vel(N, O.vel(N) + cross(R.ang_vel_in(N), RO.pos_from(O)))
 
 # Partial angular velocities and partial velocities
 partial_w = [R.ang_vel_in(N).diff(qdi, N) for qdi in qd]
