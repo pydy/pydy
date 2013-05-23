@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 6.10 from Kane 1985
+"""Exercise 6.13 from Kane 1985
 """
 
 from __future__ import division
