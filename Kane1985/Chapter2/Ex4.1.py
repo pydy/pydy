@@ -4,26 +4,31 @@
 
 from sympy.physics.mechanics import dot, dynamicsymbols, MechanicsStrPrinter
 from sympy.physics.mechanics import ReferenceFrame, Point
-from sympy import solve, symbols, pi
+from sympy import solve, symbols, pi, sin, cos
 from sympy.simplify.simplify import trigsimp
 
 def msprint(expr):
     pr = MechanicsStrPrinter()
     return pr.doprint(expr)
 
-theta1, theta2, theta3 = symbols('theta1 theta2 theta3')
-x1, x2, x3 = symbols('x1 x2 x3')
+theta = symbols('theta:3')
+x = symbols('x:3')
+q = symbols('q')
 
 A = ReferenceFrame('A')
-A_1 = A.orientnew('A_1', 'Axis', [theta1, A.x])
-A_2 = A_1.orientnew('A_2', 'Axis', [theta2, A.y])
-B = A_2.orientnew('B', 'Axis', [theta3, A.z])
+B = A.orientnew('B', 'SPACE', theta, 'xyz')
 
 O = Point('O')
-P = O.locatenew('P', x1 * A.x + x2 * A.y + x3 * A.z)
+P = O.locatenew('P', x[0] * A.x + x[1] * A.y + x[2] * A.z)
 p = P.pos_from(O)
 
-# Point P is on L (span(B.x)) when:
-print("{0} = 0".format(trigsimp(dot(p, B.x))))
+# From problem, point P is on L (span(B.x)) when:
+constraint_eqs = {x[0] : q*cos(theta[1])*cos(theta[2]),
+                  x[1] : q*cos(theta[1])*sin(theta[2]),
+                  x[2] : -q*sin(theta[1])}
 
+# If point P is on line L then r^{P/O} will have no components in the B.y or
+# B.z directions since point O is also on line L and B.x is parallel to L.
+assert(trigsimp(dot(P.pos_from(O), B.y).subs(constraint_eqs)) == 0)
+assert(trigsimp(dot(P.pos_from(O), B.z).subs(constraint_eqs)) == 0)
 
