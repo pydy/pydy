@@ -1,29 +1,26 @@
-from IPython.display import Javascript, display
+from IPython.display import Javascript, display, HTML
 import re
 import os
 
 
-# Load required assets on import
+# Get to the current directory
 path = os.path.dirname(os.path.realpath(__file__))
-js = {"three": "js/three.min.js",
-      "controls": "js/TrackballControls.js",
-      "bob": "js/bob.js"}
-for key, filename in js.items():
-    with open(os.path.join(path, filename)) as in_js:
-        js[key] = in_js.read()
 
-# This is the only way I found to use local copies of js libraries in IPython
-js["script"] = js["three"] + js["controls"] + js["bob"]
+#Loading basic Js libraries
+display(HTML("""<script src="files/js/three.min.js"></script></script> 
+                <script src="files/js/TrackballControls.js"></script>
+                """))
+
+display(Javascript('console.log("Imported JS libraries");'))
+
+#opening the Js file
+filename  = 'js/bob.js'      
+js  = open(os.path.join(path, filename)).read()
+      
 
 
-def visualize(coordinates):
-	for coordinate in coordinates:
-		
-		
-		
-		replacer = {'y':str(coordinate[0]),'time':str(coordinate[1])}
-		
-		js_data = re.sub("#\(\w+\)", lambda m: replacer[m.group()[2:-1]], js["script"])
-		
-		display(Javascript(js_data))
-	
+
+def visualize(coordinate_time):
+    #we will replace the data in the js_data file
+    js_data = re.sub("#\(coordinates_time\)", str(coordinate_time),  js)
+    display(Javascript(js_data))
