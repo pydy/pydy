@@ -1,0 +1,9 @@
+This example is used to simulate the 1D mass spring problem, 
+according to the PyDy workflow
+
+To run the simulation,run 
+
+ipython notebook
+
+from this folder and run the notebook mass_spring_system in the browser
+
