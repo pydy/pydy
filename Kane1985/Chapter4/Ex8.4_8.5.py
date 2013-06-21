@@ -4,7 +4,6 @@
 """
 
 from __future__ import division
-from collections import OrderedDict
 from sympy import diff, factor, pi, solve, simplify, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import dot
@@ -36,8 +35,7 @@ def partial_velocities(system, generalized_speeds, frame,
             v = v.subs(kde_map)
         if constraint_map is not None:
             v = v.subs(constraint_map)
-        v_r_p = OrderedDict((u, v.diff(u, express_frame))
-                            for u in generalized_speeds)
+        v_r_p = dict((u, v.diff(u, express_frame)) for u in generalized_speeds)
         partials[p] = v_r_p
     return partials
 

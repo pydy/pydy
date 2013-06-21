@@ -4,102 +4,12 @@
 """
 
 from __future__ import division
-from collections import OrderedDict
-from sympy import diff, factor, solve, simplify, symbols
-from sympy.physics.mechanics import ReferenceFrame, Point
-from sympy.physics.mechanics import dot
-from sympy.physics.mechanics import dynamicsymbols
-from sympy.physics.mechanics import partial_velocity
-from sympy.physics.mechanics import MechanicsStrPrinter
+from sympy import diff, solve, simplify, symbols
+from sympy.physics.mechanics import ReferenceFrame, Point, Particle
+from sympy.physics.mechanics import dot, dynamicsymbols
+from util import msprint, subs, partial_velocities
+from util import generalized_active_forces, generalized_inertia_forces
 
-def msprint(expr):
-    pr = MechanicsStrPrinter()
-    return pr.doprint(expr)
-
-def subs(x, *args, **kwargs):
-    if not hasattr(x, 'subs'):
-        if hasattr(x, '__iter__'):
-            return map(lambda x: subs(x, *args, **kwargs), x)
-    return x.subs(*args, **kwargs)
-
-class PartialVelocity(dict):
-    def __init__(self, frame, *args, **kwargs):
-        self._set_frame(frame)
-        dict.__init__(self, *args, **kwargs)
-
-    def _set_frame(self, f):
-        if not isinstance(f, ReferenceFrame):
-            raise TypeError(
-                    '{0} is not an instance of ReferenceFrame'.format(f))
-        self._frame = f
-
-    @property
-    def frame(self):
-        return self._frame
-
-def partial_velocities(system, generalized_speeds, frame,
-                       kde_map=None, constraint_map=None, express_frame=None):
-    partials = PartialVelocity(frame)
-    if express_frame is None:
-        express_frame = frame
-
-    for p in system:
-        if p in partials:
-            continue
-        if isinstance(p, Point):
-            v = p.vel(frame)
-        elif isinstance(p, ReferenceFrame):
-            v = p.ang_vel_in(frame)
-        if kde_map is not None:
-            v = v.subs(kde_map)
-        if constraint_map is not None:
-            v = v.subs(constraint_map)
-
-        v_r_p = OrderedDict()
-        for u in generalized_speeds:
-            v_r_p[u] = 0 if v == 0 else v.diff(u, express_frame)
-        partials[p] = v_r_p
-    return partials
-
-def generalized_active_forces(partials, point_forces):
-    # use the same frame used in calculating partial velocities
-    v = partials.values()[0] # dict of partial velocities of the first item
-    ulist = v.keys() # list of generalized speeds in case user wants it
-
-    Fr = [0] * len(ulist)
-    for ft in point_forces:
-        p = ft[0]
-        f = ft[1]
-        for i, u in enumerate(ulist):
-            if partials[p][u] != 0 and f != 0:
-                r = dot(partials[p][u], f)
-                if len(ft) == 2:
-                    Fr[i] += r
-                # if more than 2 args, 3rd is an integral function, where the
-                # input is the integrand
-                if len(ft) > 2:
-                    Fr[i] += ft[2](r)
-    return Fr, ulist
-
-def generalized_inertia_forces(partials, point_masses,
-                               kde_map=None, constraint_map=None):
-    # use the same frame used in calculating partial velocities
-    v = partials.values()[0] # dict of partial velocities of the first item
-    ulist = v.keys() # list of generalized speeds in case user wants it
-    frame = partials.frame
-
-    Fr_star = [0] * len(ulist)
-    for p, m in point_masses:
-        for i, u in enumerate(ulist):
-            if partials[p][u] != 0 and m != 0:
-                a = p.acc(frame)
-                if kde_map is not None:
-                    a = a.subs(kde_map)
-                if constraint_map is not None:
-                    a = a.subs(constraint_map)
-                if a != 0:
-                    Fr_star[i] += dot(partials[p][u], -m*a)
-    return Fr_star, ulist
 
 g, L, m1, m2, omega, t = symbols('g L m1 m2 omega t')
 C, X, Y, Z = symbols('C X Y Z')
@@ -133,7 +43,7 @@ R1 = X*B.z + C*E.x - m1*g*B.y
 R2 = Y*E.y + Z*E.z - C*E.x - m2*g*B.y
 resultants = [R1, R2]
 forces = [(pP1, R1), (pDs, R2)]
-point_masses = [(pP1, m1), (pDs, m2)]
+point_masses = [Particle('P1', pP1, m1), Particle('P2', pDs, m2)]
 points = [f[0] for f in forces]
 
 # define generalized speeds
