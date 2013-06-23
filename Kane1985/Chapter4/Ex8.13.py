@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 8.13 from Kane 1985.
-"""
+"""Exercise 8.13 from Kane 1985."""
 
 from __future__ import division
 from sympy import simplify, symbols, trigsimp
@@ -60,7 +59,8 @@ forces += [forces[-1]] * 2
 torques = []
 
 ## --- define partial velocities ---
-partials = partial_velocities([f[0] for f in forces + torques], [u1, u2, u3], C)
+partials = partial_velocities([f[0] for f in forces + torques],
+                              [u1, u2, u3], C)
 
 ## -- calculate generalized active forces ---
 Fr, _ = generalized_active_forces(partials, forces + torques)

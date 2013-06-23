@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 7.2 from Kane 1985
-"""
+"""Exercise 7.2 from Kane 1985."""
 
 from __future__ import division
 from sympy import acos, pi, solve, symbols

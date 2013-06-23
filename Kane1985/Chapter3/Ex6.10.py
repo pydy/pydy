@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 6.10 from Kane 1985
-"""
+"""Exercise 6.10 from Kane 1985."""
 
 from __future__ import division
 from sympy import Matrix
@@ -11,18 +10,22 @@ from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import inertia, inertia_of_point_mass
 from sympy.physics.mechanics import cross, dot
 
+
 def inertia_matrix(dyadic, rf):
     """Return the inertia matrix of a given dyadic for a specified
     reference frame.
     """
     return Matrix([[dot(dot(dyadic, i), j) for j in rf] for i in rf])
 
+
 def angle_between_vectors(a, b):
     """Return the minimum angle between two vectors. The angle returned for
     vectors a and -a is 0.
     """
-    angle = (acos(dot(a, b)/(a.magnitude() * b.magnitude())) * 180 / pi).evalf()
+    angle = (acos(dot(a, b)/(a.magnitude() * b.magnitude())) *
+             180 / pi).evalf()
     return min(angle, 180 - angle)
+
 
 m, m_R, m_C, rho, r = symbols('m m_R m_C rho r', real=True, nonnegative=True)
 

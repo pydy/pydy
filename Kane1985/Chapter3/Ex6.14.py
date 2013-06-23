@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 6.14 from Kane 1985
-"""
+"""Exercise 6.14 from Kane 1985."""
 
 from __future__ import division
 from sympy import Matrix, S
@@ -10,19 +9,22 @@ from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import cross, dot
 from sympy.physics.mechanics import inertia, inertia_of_point_mass
 
+
 def inertia_matrix(dyadic, rf):
     """Return the inertia matrix of a given dyadic for a specified
     reference frame.
     """
     return Matrix([[dot(dot(dyadic, i), j) for j in rf] for i in rf])
 
+
 def integrate_v(integrand, rf, bounds):
-    """Return the integral for a Vector integrand.
-    """
+    """Return the integral for a Vector integrand."""
     return sum(simplify(integrate(dot(integrand, n), bounds)) * n for n in rf)
+
 
 def index_min(values):
     return min(range(len(values)), key=values.__getitem__)
+
 
 m, a, b, c = symbols('m a b c', real=True, nonnegative=True)
 x, y, r = symbols('x y r', real=True)

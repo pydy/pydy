@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Convenient utility functions for exercises in Chapter 4 of Kane 1985.
-"""
+"""Convenient utility functions for exercises in Chapter 4 of Kane 1985."""
 
 from __future__ import division
 from sympy import diff
@@ -10,9 +9,11 @@ from sympy.physics.mechanics import cross, dot, Vector
 from sympy.physics.mechanics import MechanicsStrPrinter
 from sympy.physics.mechanics import inertia_of_point_mass
 
+
 def msprint(expr):
     pr = MechanicsStrPrinter()
     return pr.doprint(expr)
+
 
 def subs(x, *args, **kwargs):
     if x == 0:
@@ -21,6 +22,7 @@ def subs(x, *args, **kwargs):
         if hasattr(x, '__iter__'):
             return map(lambda x: subs(x, *args, **kwargs), x)
     return x.subs(*args, **kwargs).doit()
+
 
 class PartialVelocity(dict):
     def __init__(self, frame, ulist, *args, **kwargs):
@@ -48,6 +50,7 @@ class PartialVelocity(dict):
     def ulist(self):
         return self._ulist
 
+
 def partial_velocities(system, generalized_speeds, frame,
                        kde_map=None, constraint_map=None, express_frame=None):
     partials = PartialVelocity(frame, generalized_speeds)
@@ -71,6 +74,7 @@ def partial_velocities(system, generalized_speeds, frame,
             v_r_p[u] = Vector([]) if v == 0 else v.diff(u, express_frame)
         partials[p] = v_r_p
     return partials
+
 
 def generalized_active_forces(partials, forces, uaux=None):
     # use the same frame used in calculating partial velocities
@@ -96,6 +100,7 @@ def generalized_active_forces(partials, forces, uaux=None):
                     r = subs(r, uaux_zero)
                 Fr[i] += r
     return Fr, ulist
+
 
 def _calculate_T_star(rb, frame, kde_map, constraint_map, uaux):
     # get central inertia
@@ -177,4 +182,3 @@ def generalized_inertia_forces(partials, bodies,
             Fr_star[i] += force_term + torque_term
 
     return Fr_star, ulist
-

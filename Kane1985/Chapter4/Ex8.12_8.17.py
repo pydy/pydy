@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercises 8.12, 8.17 from Kane 1985.
-"""
+"""Exercises 8.12, 8.17 from Kane 1985."""
 
 from __future__ import division
 from sympy import simplify, solve, symbols
@@ -38,7 +37,8 @@ for p in [pS_star, pQ]:
     p.v2pt_theory(pD, F, A)
 
 ## --- define partial velocities ---
-partials = partial_velocities([pD, pS_star, pQ], [u1, u2, u3], F, express_frame=A)
+partials = partial_velocities([pD, pS_star, pQ], [u1, u2, u3],
+                              F, express_frame=A)
 
 forces = [(pS_star, -M*g*F.x), (pQ, Q1*A.x + Q2*A.y + Q3*A.z)]
 torques = []
@@ -78,7 +78,7 @@ pC_hat.v2pt_theory(pC_star, F, C)
 #kde = [dot(p.vel(F), b) for b in A for p in [pB_hat, pC_hat]]
 kde = [dot(p.vel(F), A.y) for p in [pB_hat, pC_hat]]
 kde_map = solve(kde, [q2d, q3d])
-# need to add q2'', q3'' terms manually since subs does not replace 
+# need to add q2'', q3'' terms manually since subs does not replace
 # Derivative(q(t), t, t) with Derivative(Derivative(q(t), t))
 for k, v in kde_map.items():
     kde_map[k.diff(t)] = v.diff(t)
@@ -103,7 +103,8 @@ bodies = [rbA, rbB, rbC]
 system = []
 for b in bodies:
     system += [b.masscenter, b.frame]
-partials2 = partial_velocities(system, [u1, u2, u3], F, kde_map, express_frame=A)
+partials2 = partial_velocities(system, [u1, u2, u3], F,
+                               kde_map, express_frame=A)
 
 Fr_star, _ = generalized_inertia_forces(partials2, bodies, kde_map, uaux=[u3])
 print("Generalized inertia forces:")

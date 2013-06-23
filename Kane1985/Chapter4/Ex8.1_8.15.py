@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercises 8.1, 8.15 from Kane 1985.
-"""
+"""Exercises 8.1, 8.15 from Kane 1985."""
 
 from __future__ import division
 from sympy import sin, solve, simplify, symbols

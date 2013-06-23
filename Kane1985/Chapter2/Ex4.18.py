@@ -6,9 +6,11 @@ from sympy.physics.mechanics import dynamicsymbols, MechanicsStrPrinter
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy import solve, symbols, pi
 
+
 def msprint(expr):
     pr = MechanicsStrPrinter()
     return pr.doprint(expr)
+
 
 # Define generalized coordinates, speeds, and constants:
 qi = dynamicsymbols('q0 q1 q2 q3 q4 q5')

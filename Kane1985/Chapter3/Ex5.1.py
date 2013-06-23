@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 5.1 from Kane 1985
-"""
+"""Exercise 5.1 from Kane 1985."""
 
 from __future__ import division
 from sympy.physics.mechanics import ReferenceFrame, Point
@@ -11,16 +10,18 @@ from sympy import sin, cos, tan, pi, acos
 from sympy import Matrix, S, simplify
 import scipy.integrate
 
+
 def eval_v(v, N):
     return sum(dot(v, n).evalf() * n for n in N)
 
+
 def integrate_v(integrand, rf, bounds):
-    """Return the integral for a Vector integrand.
-    """
+    """Return the integral for a Vector integrand."""
     # integration problems if option meijerg=True is not used
     return sum(simplify(integrate(dot(integrand, n),
                                   bounds,
                                   meijerg=True)) * n for n in rf)
+
 
 m, R = symbols('m R', real=True, nonnegative=True)
 theta, r, x, y, z = symbols('theta r x y z', real=True)

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 5.12 from Kane 1985
-"""
+"""Exercise 5.12 from Kane 1985."""
 
 from __future__ import division
 import numpy as np
