@@ -4,55 +4,11 @@
 """
 
 from __future__ import division
-from collections import OrderedDict
 from sympy import diff, solve, simplify, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
-from sympy.physics.mechanics import dot
 from sympy.physics.mechanics import dynamicsymbols
-from sympy.physics.mechanics import MechanicsStrPrinter
+from util import partial_velocities, generalized_active_forces
 
-
-def msprint(expr):
-    pr = MechanicsStrPrinter()
-    return pr.doprint(expr)
-
-def subs(x, *args, **kwargs):
-    if not hasattr(x, 'subs'):
-        if hasattr(x, '__iter__'):
-            return map(lambda x: subs(x, *args, **kwargs), x)
-    return x.subs(*args, **kwargs)
-
-def partial_velocities(system, generalized_speeds, frame,
-                       kde_map=None, constraint_map=None, express_frame=None):
-    partials = {}
-    if express_frame is None:
-        express_frame = frame
-
-    for p in system:
-        if isinstance(p, Point):
-            v = p.vel(frame)
-        elif isinstance(p, ReferenceFrame):
-            v = p.ang_vel_in(frame)
-        if kde_map is not None:
-            v = v.subs(kde_map)
-        if constraint_map is not None:
-            v = v.subs(constraint_map)
-        v_r_p = OrderedDict((u, v.diff(u, express_frame))
-                            for u in generalized_speeds)
-        partials[p] = v_r_p
-    return partials
-
-def generalized_active_forces(partials, force_pairs):
-    # use the same frame used in calculating partial velocities
-    v = partials.values()[0] # dict of partial velocities of the first item
-    ulist = v.keys() # list of generalized speeds in case user wants it
-
-    Flist = [0] * len(ulist)
-    for p, f in force_pairs:
-        for i, u in enumerate(ulist):
-            if partials[p][u] and f:
-                Flist[i] += dot(partials[p][u], f)
-    return Flist, ulist
 
 ## --- Declare symbols ---
 q1, q2 = dynamicsymbols('q1 q2')

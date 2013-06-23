@@ -4,64 +4,11 @@
 """
 
 from __future__ import division
-from collections import OrderedDict
-from sympy import diff, simplify, solve, symbols, trigsimp
+from sympy import simplify, solve, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import dot, dynamicsymbols
-from sympy.physics.mechanics import MechanicsStrPrinter
+from util import msprint, partial_velocities, generalized_active_forces
 
-
-def msprint(expr):
-    pr = MechanicsStrPrinter()
-    return pr.doprint(expr)
-
-def subs(x, *args, **kwargs):
-    if not hasattr(x, 'subs'):
-        if hasattr(x, '__iter__'):
-            return map(lambda x: subs(x, *args, **kwargs), x)
-    return x.subs(*args, **kwargs)
-
-def partial_velocities(system, generalized_speeds, frame,
-                       kde_map=None, constraint_map=None, express_frame=None):
-    partials = {}
-    if express_frame is None:
-        express_frame = frame
-
-    for p in system:
-        if isinstance(p, Point):
-            v = p.vel(frame)
-        elif isinstance(p, ReferenceFrame):
-            v = p.ang_vel_in(frame)
-        if kde_map is not None:
-            v = v.subs(kde_map)
-        if constraint_map is not None:
-            v = v.subs(constraint_map)
-
-        v_r_p = OrderedDict()
-        for u in generalized_speeds:
-            v_r_p[u] = 0 if v == 0 else v.diff(u, express_frame)
-        partials[p] = v_r_p
-    return partials
-
-def generalized_active_forces(partials, force_tuples):
-    # use the same frame used in calculating partial velocities
-    v = partials.values()[0] # dict of partial velocities of the first item
-    ulist = v.keys() # list of generalized speeds in case user wants it
-
-    Flist = [0] * len(ulist)
-    for ft in force_tuples:
-        p = ft[0]
-        f = ft[1]
-        for i, u in enumerate(ulist):
-            if partials[p][u] != 0 and f != 0:
-                r = dot(partials[p][u], f)
-                if len(ft) == 2:
-                    Flist[i] += r
-                # if more than 2 args, 3rd is an integral function, where the
-                # input is the integrand
-                if len(ft) > 2:
-                    Flist[i] += ft[2](r)
-    return Flist, ulist
 
 # Define generalized coordinates, speeds, and constants:
 q0, q1, q2 = dynamicsymbols('q0 q1 q2')

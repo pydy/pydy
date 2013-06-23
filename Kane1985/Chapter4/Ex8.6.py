@@ -4,56 +4,11 @@
 """
 
 from __future__ import division
-from collections import OrderedDict
-from sympy import diff, solve, simplify, symbols
-from sympy import pi, sin, cos
+from sympy import cos, sin, solve, simplify, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
-from sympy.physics.mechanics import dot
 from sympy.physics.mechanics import dynamicsymbols
-from sympy.physics.mechanics import MechanicsStrPrinter
+from util import msprint, subs, partial_velocities, generalized_active_forces
 
-
-def msprint(expr):
-    pr = MechanicsStrPrinter()
-    return pr.doprint(expr)
-
-def subs(x, *args, **kwargs):
-    if not hasattr(x, 'subs'):
-        if hasattr(x, '__iter__'):
-            return map(lambda x: subs(x, *args, **kwargs), x)
-    return x.subs(*args, **kwargs)
-
-def partial_velocities(system, generalized_speeds, frame,
-                       kde_map=None, constraint_map=None, express_frame=None):
-    partials = {}
-    if express_frame is None:
-        express_frame = frame
-
-    for p in system:
-        if isinstance(p, Point):
-            v = p.vel(frame)
-        elif isinstance(p, ReferenceFrame):
-            v = p.ang_vel_in(frame)
-        if kde_map is not None:
-            v = v.subs(kde_map)
-        if constraint_map is not None:
-            v = v.subs(constraint_map)
-        v_r_p = OrderedDict((u, v.diff(u, express_frame))
-                            for u in generalized_speeds)
-        partials[p] = v_r_p
-    return partials
-
-def generalized_active_forces(partials, force_pairs):
-    # use the same frame used in calculating partial velocities
-    v = partials.values()[0] # dict of partial velocities of the first item
-    ulist = v.keys() # list of generalized speeds in case user wants it
-
-    Flist = [0] * len(ulist)
-    for p, f in force_pairs:
-        for i, u in enumerate(ulist):
-            if partials[p][u] and f:
-                Flist[i] += dot(partials[p][u], f)
-    return Flist, ulist
 
 ## --- Declare symbols ---
 # Define the system with 6 generalized speeds as follows:
@@ -93,5 +48,5 @@ partials = partial_velocities([pP1, pP2], [u1], A, kde_map, vc_map)
 Fr, _ = generalized_active_forces(partials, forces)
 print("Generalized active forces:")
 for i, f in enumerate(Fr, 1):
-    print("F{0}_tilde = {1}".format(i, simplify(f)))
+    print("F{0}_tilde = {1}".format(i, msprint(simplify(f))))
 

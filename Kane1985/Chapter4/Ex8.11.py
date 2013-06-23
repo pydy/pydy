@@ -4,43 +4,11 @@
 """
 
 from __future__ import division
-from collections import OrderedDict
-from sympy import diff, simplify, symbols
+from sympy import simplify, symbols
 from sympy import sin, cos, pi, integrate, Matrix
-from sympy.physics.mechanics import ReferenceFrame, Point
-from sympy.physics.mechanics import dot, dynamicsymbols
-from sympy.physics.mechanics import MechanicsStrPrinter
+from sympy.physics.mechanics import ReferenceFrame, Point, dynamicsymbols
+from util import msprint, partial_velocities, generalized_active_forces
 
-
-def msprint(expr):
-    pr = MechanicsStrPrinter()
-    return pr.doprint(expr)
-
-def subs(x, *args, **kwargs):
-    if not hasattr(x, 'subs'):
-        if hasattr(x, '__iter__'):
-            return map(lambda x: subs(x, *args, **kwargs), x)
-    return x.subs(*args, **kwargs)
-
-def partial_velocities(system, generalized_speeds, frame,
-                       kde_map=None, constraint_map=None, express_frame=None):
-    partials = {}
-    if express_frame is None:
-        express_frame = frame
-
-    for p in system:
-        if isinstance(p, Point):
-            v = p.vel(frame)
-        elif isinstance(p, ReferenceFrame):
-            v = p.ang_vel_in(frame)
-        if kde_map is not None:
-            v = v.subs(kde_map)
-        if constraint_map is not None:
-            v = v.subs(constraint_map)
-        v_r_p = OrderedDict((u, v.diff(u, express_frame))
-                            for u in generalized_speeds)
-        partials[p] = v_r_p
-    return partials
 
 ## --- Declare symbols ---
 u1, u2, u3, u4, u5, u6, u7, u8, u9 = dynamicsymbols('u1:10')
@@ -80,20 +48,13 @@ J = Matrix([cart_sph_map.values()]).jacobian([r, phi, theta])
 dJ = simplify(J.det())
 
 dtheta = -c * pP.vel(B) * dJ
-forces = [(pP, dtheta), (pP_prime, -dtheta)]
-torques = []
+integral = lambda i: integrate(integrate(i.subs(cart_sph_map),
+                                         (theta, 0, 2*pi)),
+                               (phi, -pi/2, pi/2)).subs(r, R)
 
+forces = [(pP, dtheta, integral), (pP_prime, -dtheta, integral)]
 partials = partial_velocities([pP, pP_prime], [u2, u4], A, express_frame=B)
-Flist = [0, 0]
-for i, u in enumerate([u2, u4]):
-    integrand = 0
-    for p, f in forces:
-        if partials[p][u] != 0 and f != 0:
-            integrand += dot(partials[p][u], f)
-    Flist[i] = integrate(integrate(integrand.subs(cart_sph_map),
-                                   (theta, 0, 2*pi)),
-                         (phi, -pi/2, pi/2)).subs(r, R)
-
+Flist, _ = generalized_active_forces(partials, forces)
 
 print("Generalized active forces:")
 for f, i in zip(Flist, [2, 4]):

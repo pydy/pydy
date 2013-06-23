@@ -4,22 +4,11 @@
 """
 
 from __future__ import division
-from sympy import diff, factor, solve, simplify, symbols
+from sympy import factor, solve, simplify, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
-from sympy.physics.mechanics import dot
-from sympy.physics.mechanics import dynamicsymbols
-from sympy.physics.mechanics import partial_velocity
-from sympy.physics.mechanics import MechanicsStrPrinter
+from sympy.physics.mechanics import dot, dynamicsymbols, partial_velocity
+from util import msprint, subs
 
-def msprint(expr):
-    pr = MechanicsStrPrinter()
-    return pr.doprint(expr)
-
-def subs(x, *args, **kwargs):
-    if not hasattr(x, 'subs'):
-        if hasattr(x, '__iter__'):
-            return map(lambda x: subs(x, *args, **kwargs), x)
-    return x.subs(*args, **kwargs)
 
 g, L, m1, m2, omega, t = symbols('g L m1 m2 omega t')
 C, f1, f2 = symbols('C f1 f2')
