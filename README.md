@@ -16,6 +16,7 @@ roughly adhere to PEP8: http://www.python.org/dev/peps/pep-0008/. There are
 some exceptions, such as naming of variables. Use your best judgment.
 
 Commit Guidelines:
+
 When submitting, please follow the commit guidelines used for Git: 
 http://git-scm.com/book/ch5-2.html#Commit-Guidelines.
 The first line should have a soft limit of 50 characters, and subsequent lines
