@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 8.7 from Kane 1985.
-"""
+"""Exercise 8.7 from Kane 1985."""
 
 from __future__ import division
 from sympy import cos, sin, solve, simplify, symbols
@@ -49,7 +48,8 @@ forces = [(pP1, 6*m*g*N.x),
           (pP5, 6*m*g*N.x),
           (pP6, R*N.y + 5*m*g*N.x)]
 
-partials = partial_velocities([pP1, pP2, pP3, pP4, pP5, pP6], [u1, u2, u3], N, kde_map)
+partials = partial_velocities([pP1, pP2, pP3, pP4, pP5, pP6],
+                              [u1, u2, u3], N, kde_map)
 Fr, _ = generalized_active_forces(partials, forces)
 print("Generalized active forces:")
 for i, f in enumerate(Fr, 1):

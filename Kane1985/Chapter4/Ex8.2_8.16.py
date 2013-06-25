@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercises 8.2, 8.16 from Kane 1985.
-"""
+"""Exercises 8.2, 8.16 from Kane 1985."""
 
 from __future__ import division
 from sympy import diff, solve, simplify, symbols

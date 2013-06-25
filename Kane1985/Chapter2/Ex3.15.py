@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 3.15 from Kane 1985
+"""Exercise 3.15 from Kane 1985.
 A robot arm, composed of Rigid Bodies 'A', 'B', 'C', operates in Reference
 Frame E. 'A*', 'B*', 'C*' are Points marking the centers of mass for the Rigid
 Bodies 'A', 'B', 'C'.
@@ -26,9 +26,11 @@ from sympy.physics.mechanics import dynamicsymbols, MechanicsStrPrinter
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy import solve, symbols, pi
 
+
 def msprint(expr):
     pr = MechanicsStrPrinter()
     return pr.doprint(expr)
+
 
 # Define generalized coordinates, speeds, and constants:
 q0, q1, q2 = dynamicsymbols('q0 q1 q2')

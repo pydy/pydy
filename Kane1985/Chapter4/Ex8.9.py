@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 8.9 from Kane 1985.
-"""
+"""Exercise 8.9 from Kane 1985."""
 
 from __future__ import division
 from sympy import solve, trigsimp, symbols, S
@@ -49,7 +48,7 @@ def print_fr(forces, ulist):
     partials = partial_velocities(zip(*forces + torques)[0], ulist, N, kde_map)
     Fr, _ = generalized_active_forces(partials, forces + torques)
     for i, f in enumerate(Fr, 1):
-        print("F{0} = {1}".format(i, msprint(trigsimp(f)))) 
+        print("F{0} = {1}".format(i, msprint(trigsimp(f))))
 print_fr(forces, [u1])
 
 print("\npart b")
@@ -74,4 +73,3 @@ for p in [pA, pB, pR_star]:
     p.v1pt_theory(pO, N, C)
 forces += [(pA, NA*A.z), (pB, NB*B.z)]
 print_fr(forces, [u1, u2, u3])
-

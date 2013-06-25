@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 6.13 from Kane 1985
-"""
+"""Exercise 6.13 from Kane 1985."""
 
 from __future__ import division
 from sympy import S, Matrix
@@ -10,14 +9,15 @@ from sympy import simplify, sqrt, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import inertia, inertia_of_point_mass
 from sympy.physics.mechanics import cross, dot
-
 import numpy as np
+
 
 def inertia_matrix(dyadic, rf):
     """Return the inertia matrix of a given dyadic for a specified
     reference frame.
     """
     return Matrix([[dot(dot(dyadic, i), j) for j in rf] for i in rf])
+
 
 def convert_eigenvectors_matrix_vector(eigenvectors, rf):
     """Return a list of Vectors converted from a list of Matrices.
@@ -27,12 +27,15 @@ def convert_eigenvectors_matrix_vector(eigenvectors, rf):
     return [sum(simplify(v[0][i]).evalf() * n for i, n in enumerate(N))
             for v in eigenvectors]
 
+
 def angle_between_vectors(a, b):
     """Return the minimum angle between two vectors. The angle returned for
     vectors a and -a is 0.
     """
-    angle = (acos(dot(a, b)/(a.magnitude() * b.magnitude())) * 180 / pi).evalf()
+    angle = (acos(dot(a, b) / (a.magnitude() * b.magnitude())) *
+             180 / pi).evalf()
     return min(angle, 180 - angle)
+
 
 m = symbols('m', real=True, nonnegative=True)
 m_val = 1
@@ -57,7 +60,8 @@ M = inertia_matrix(I_C_Cs, N)
 # note that the eigenvlaues/eigenvectors are the
 # prinicpal moments of inertia/principal axes
 eigvals, eigvecs_np = np.linalg.eigh(np.matrix(M.subs(m, m_val).n().tolist()))
-eigvecs = [sum(eigvecs_np[i, j] * n for i, n in enumerate(N)) for j in range(3)]
+eigvecs = [sum(eigvecs_np[i, j] * n for i, n in enumerate(N))
+           for j in range(3)]
 
 # get the minimum moment of inertia and its associated principal axis
 e, v = min(zip(eigvals, eigvecs))

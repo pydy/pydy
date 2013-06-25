@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 6.6 from Kane 1985
-"""
+"""Exercise 6.6 from Kane 1985."""
 
 from __future__ import division
 from sympy.physics.mechanics import ReferenceFrame, Point

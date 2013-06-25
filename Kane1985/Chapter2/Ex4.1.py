@@ -7,9 +7,11 @@ from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy import solve, symbols, pi, sin, cos
 from sympy.simplify.simplify import trigsimp
 
+
 def msprint(expr):
     pr = MechanicsStrPrinter()
     return pr.doprint(expr)
+
 
 theta = symbols('theta:3')
 x = symbols('x:3')

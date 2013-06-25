@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercises 8.4, 8.5 from Kane 1985.
-"""
+"""Exercises 8.4, 8.5 from Kane 1985."""
 
 from __future__ import division
 from sympy import factor, solve, simplify, symbols
@@ -86,8 +85,7 @@ print("Generalized active forces:")
 for i, f in enumerate(Fr, 1):
     print("F{0}_tilde = {1}".format(i, factor(simplify(f))))
 
-"""For Exercise 8.5, define 2 new symbols and add 2 new velocity constraints.
-"""
+#For Exercise 8.5, define 2 new symbols and add 2 new velocity constraints.
 omega1, omega2 = symbols('omega1 omega2')
 # w_C1_S, w_C2_S are defined in terms of q1d, q2d. We want to substitute in the
 # values of ui using the kinematic DEs so that u1 determined in terms of

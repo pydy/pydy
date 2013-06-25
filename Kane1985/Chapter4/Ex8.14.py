@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 8.14 from Kane 1985.
-"""
+"""Exercise 8.14 from Kane 1985."""
 
 from __future__ import division
 from sympy import simplify, solve, symbols
@@ -40,11 +39,11 @@ pB_star.v2pt_theory(pP, E, B) # Point B* is fixed in Reference Frame B
 # Point C* is moving in Reference Frame B
 pC_star.set_vel(B, pC_star.pos_from(pB_star).diff(t, B))
 pC_star.v1pt_theory(pB_star, E, B)
-pD_star.set_vel(B, pC_star.vel(B)) # Point D* is fixed relative to Point C* in B
+pD_star.set_vel(B, pC_star.vel(B)) # Point D* is fixed rel to Point C* in B
 pD_star.v1pt_theory(pB_star, E, B) # Point D* is moving in Reference Frame B
 
 # --- define additional points for reaction forces ---
-pB_hat = pC_star.locatenew('B^', 0) # Point in frame B touching point C*
+pB_hat = pC_star.locatenew('B^', 0) # Point in frame B touching Point C*
 pB_hat.v2pt_theory(pP, E, B)
 
 ## --- generalized speeds ---

@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 7.12 from Kane 1985
-"""
+"""Exercise 7.12 from Kane 1985."""
 
 from __future__ import division
 from sympy import solve, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import cross, dot
 
+
 def subdict(d, keylist):
     return dict((k, d[k]) for k in keylist)
+
 
 # vectors A, B have equal magnitude 10 N
 alpha = 10 # [N]
