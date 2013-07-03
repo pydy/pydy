@@ -25,6 +25,13 @@ def test_cube():
     assert cube.get_origin == (0, 0, 0)
     assert isinstance(cube, Shape) == True
 
-#def test_cylinder():
+def test_cylinder():
+    cylinder = Cylinder('cylinder',length=10,radius=5,color="BLACK",\
+                                         origin=(0,0,0))
+    assert cylinder.color() == 'BLACK'
+    assert cylinder.get_name() == 'cylinder'
+    assert cylinder.get_origin() == (0, 0, 0)
+    assert isinstance(cylinder,Shape) == True
+                                                       
  
 
