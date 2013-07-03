@@ -7,20 +7,23 @@ def test_shape():
                                             origin=(0, 0, 0))
     assert shape.get_color() == 'RED'
     #How to compare lists?
-    assert shape.get_pt_list() ==  [(1, 0, 0), (2, 3, 1), \
+    assert shape.get_point_list() ==  [(1, 0, 0), (2, 3, 1), \
                                       (-1, 5, -1), (-4, 2, 5)]
     assert shape.get_name() == 'shape'
+    #Again how to compare tuples
+    assert shape.get_origin() == (0, 0, 0)
 
 
 def test_cube():
-    cube = Cube('cube',length=10,color="BLUE",origin=(0,0,0))
-    assert cube.get_color() == 'BLUE'
-    assert cube.get_pt_list() ==  [(5, 5, 5), (5, 5, -5), \
+    cube = Cube('cube', length=10, color="BLUE", origin=(0,0,0))
+    assert cube.color() == 'BLUE'
+    assert cube.get_point_list() ==  [(5, 5, 5), (5, 5, -5), \
                                      (5, -5, 5), (-5, -5, -5), \
                                        (-5 ,5 , 5), (-5, 5, -5), \
                                           (-5, -5, 5), (-5, -5, -5)]
     assert cube.get_name() == 'Cube'
-    assert isinstance(cube,Shape) == True
+    assert cube.get_origin == (0, 0, 0)
+    assert isinstance(cube, Shape) == True
 
 #def test_cylinder():
  
