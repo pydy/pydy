@@ -1,75 +1,122 @@
 from sympy.physics.mechanics import *
+from numpy.testing import assert_allclose
 #from pydy-viz import Shape, Cube, 
 
 def test_shape():
-    point_list = [(1, 0, 0), (2, 3, 1), (-1, 5, -1), (-4, 2, 5)]
+    point_list = [[1, 0, 0], [2, 3, 1], [-1, 5, -1], [-4, 2, 5]]
     shape = Shape('shape')
     
-    #checking setter methods ..
-    shape.set_point_list(point_list)
-    shape.set_color('RED')  #abstract method (abc package)
-    shape.set_center([0, 0, 0]) #abstract method
+    shape.point_list = point_list
+    shape.color = 'RED'  #abstract method (abc package), a @property  
+    shape.center = [0, 0, 0] #abstract method
     
-    #checking getter methods ...
-    assert shape.get_name() == 'shape' #abstract method
-    
-    #How to compare lists?
-    assert shape.get_point_list() ==  [(1, 0, 0), (2, 3, 1), \
-                                      (-1, 5, -1), (-4, 2, 5)]
-    
-    assert shape.get_color() == 'RED' #abstract method
-    #Again how to compare tuples
-    assert shape.get_center() == [0, 0, 0]  #abstractmethod
+    assert shape.name == 'shape' #abstract method, a @property
+    assert_allclose(shape.point_list, point_list)
+    assert shape.color == 'RED' #abstract method
+    assert_allclose(shape.center, [0, 0, 0])  
 
 
 def test_cube():
     cube = Cube('cube')
-    cube.set_length(10)
-    cube.set_color('BLUE')
-    cube.set_center([0, 0, 0])
+    cube.length = 10
+    cube.color = 'BLUE'
+    cube.center = [0, 0, 0]
     
-    assert cube.get_name() == 'Cube'
-    assert cube.get_length() == 10
-    assert cube.get_point_list() ==  [(5, 5, 5), (5, 5, -5), \
-                                     (5, -5, 5), (-5, -5, -5), \
-                                       (-5 ,5 , 5), (-5, 5, -5), \
-                                          (-5, -5, 5), (-5, -5, -5)]
-    assert cube.color() == 'BLUE'
-    assert cube.get_center() == [0, 0, 0]
+    assert cube.name == 'Cube'
+    assert cube.length == 10
+    assert cube.color == 'BLUE'
+    point_list = [[5, 5, 5], [5, 5, -5], \
+                    [5, -5, 5], [-5, -5, -5], \
+                        [-5, 5, 5], [-5, 5, -5], \
+                           [-5, -5, 5], [-5, -5, -5]]
+
+    assert_allclose(cube.point_list,point_list)
+    assert_allclose(cube.center, [0, 0, 0])
     
     assert isinstance(cube, Shape) == True
 
 def test_cylinder():
     cylinder = Cylinder('cylinder')
-    cylinder.set_height(10)
-    cylinder.set_radius(5)
-    cylinder.set_color('BLACK')
-    cylinder.set_center([0, 0, 0])
+    cylinder.height = 10
+    cylinder.radius = 5
+    cylinder.color = 'BLACK'
+    cylinder.center = [0, 0, 0]
     
     
-    assert cylinder.get_name() == 'cylinder'
-    assert cylinder.get_height() == 10
-    assert cylinder.get_radius() == 5
-    assert cylinder.color() == 'BLACK'
-    assert cylinder.get_center() == (0, 0, 0)
+    assert cylinder.name == 'cylinder'
+    assert cylinder.height == 10
+    assert cylinder.radius == 5
+    assert cylinder.color == 'BLACK'
+    assert_allclose(cylinder.center, [0, 0, 0])
     
-    assert isinstance(cylinder,Shape) == True
+    assert isinstance(cylinder, Shape) == True
     
 def test_cone():
     cone = Cone('cone')
-    cone.set_height(10)
-    cone.set_radius(5)
-    cone.set_color('GREEN')
-    cone.set_center([0, 0, 0])	 #base center, or geometric center?
+    cone.height = 10
+    cone.radius = 5
+    cone.color = 'GREEN'
+    cone.center = [0, 0, 0]	 #base center, or geometric center?
     
-    assert cone.get_name() == 'cone'
-    assert cone.get_height() == 10
-    assert cone.get_radius() == 5
-    assert cone.get_color() == 'GREEN'                                            
-    assert cone.get_center() == [0, 0, 0]
+    assert cone.name == 'cone'
+    assert cone.height == 10
+    assert cone.radius == 5
+    assert cone.color == 'GREEN'                                            
+    assert_allclose(cone.center, [0, 0, 0])
     
-    assert isinstance(cone,Shape) == True
+    assert isinstance(cone, Shape) == True
                             
-	                                                       
+def test_sphere():
+    sphere = Sphere('sphere')
+    sphere.radius = 10
+    sphere.color = 'GREY'
+    sphere.center = [0, 0, 0]	                                                       
+    
+    assert sphere.name == 'sphere'
+    assert sphere.radius == 10
+    assert sphere.color == 'GREY'
+    assert_allclose(sphere.center, [0, 0, 0])
+  
+    assert isinstance(sphere, Shape) == True
  
 
+
+def test_circle():
+    circle = Circle('circle')
+    circle.radius = 10
+    circle.color = 'CYAN'
+    circle.center = [0, 0, 0]
+
+    assert circle.name == 'circle'
+    assert circle.radius == 10
+    assert circle.color == 'CYAN'
+    assert_allclose(circle.center, [0, 0, 0])
+
+    assert isinstance(circle, Shape) == True
+
+def test_mesh_shape():
+    pass
+
+def test_tetrahedron():
+    pass
+
+def test_octahedron():
+    pass
+
+def test_icosahedron():
+    pass
+
+
+def test_plane():
+    pass
+ 
+def test_torus():
+    pass
+
+def test_tube():
+    pass
+
+def test_torus_knot():
+    pass
+
+ 
