@@ -95,7 +95,20 @@ def test_circle():
     assert isinstance(circle, Shape) == True
 
 def test_mesh_shape():
-    pass
+    mesh_shape = MeshShape('mesh_shape')
+    point_list = [[2, 3, 1], [4, 6, 2], \
+                         [5, 3, 1], [5, 3, 6], \
+                         [2, 8, 4], [7, 4, 1]]
+    mesh_shape.points = point_list
+    mesh_shape.color = 'PINK'
+    mesh_shape.origin = [0, 0, 0]
+    
+    assert mesh_shape.name == 'mesh_shape'
+    assert_allclose(mesh_shape.points,point_list)
+    assert mesh_shape.color == 'PINK'
+    assert_allclose(mesh_shape.origin, point_list)
+    
+    assert isinstance(mesh_shape, Shape)                      
 
 def test_tetrahedron():
     pass

@@ -1,4 +1,7 @@
+from sympy.physics.mechanics import *
 #from pydy-viz import VisualizationFrame
 
 def test_visualizattion_frame():
-	frame1 = VisualizationFrame('frame1')
+    pass
+    
+    
