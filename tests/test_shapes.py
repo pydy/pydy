@@ -121,7 +121,20 @@ def test_icosahedron():
 
 
 def test_plane():
-    pass
+    plane = Plane('plane')
+    plane.length = 10
+    plane.width = 20
+    plane.color = 'BLACK'
+    plane.center = [0, 0, 0]
+    
+    
+    assert plane.name == 'plane'
+    assert plane.length == 10
+    assert plane.width == 20
+    assert plane.color == 'BLACK'
+    assert_allclose(plane.center, [0, 0, 0])
+    
+    assert isinstance(plane, Shape) == True
  
 def test_torus():
     pass
