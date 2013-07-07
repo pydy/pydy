@@ -188,8 +188,30 @@ def test_icosahedron():
 
  
 def test_torus():
-    pass
+    torus = Torus('torus', radius=10, tube_radius=2, \
+                        color='BLUE', center=[0,0,0])
 
+   assert torus.name == 'torus' 			
+   assert torus.radius == 10
+   assert torus.tube_radius == 2
+   assert torus.color == 'BLUE'
+   assert_allclose(torus.center, [0,0,0]) 
+
+   torus.name = 'torus1'
+   assert torus.name == 'torus1'
+
+   torus.radius = 15
+   assert torus.radius == 15
+
+   torus.tube_radius = 4
+   assert torus.tube_radius == 4
+
+   torus.center = [4. 7. 9]
+   assert_allclose(torus.center, [4, 7, 9])
+
+   assert isinstance(torus, Shape)
+
+    
 def test_tube():
     pass
 
