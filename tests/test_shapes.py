@@ -191,30 +191,57 @@ def test_torus():
     torus = Torus('torus', radius=10, tube_radius=2, \
                         color='BLUE', center=[0,0,0])
 
-   assert torus.name == 'torus' 			
-   assert torus.radius == 10
-   assert torus.tube_radius == 2
-   assert torus.color == 'BLUE'
-   assert_allclose(torus.center, [0,0,0]) 
+    assert torus.name == 'torus' 			
+    assert torus.radius == 10
+    assert torus.tube_radius == 2
+    assert torus.color == 'BLUE'
+    assert_allclose(torus.center, [0,0,0]) 
 
-   torus.name = 'torus1'
-   assert torus.name == 'torus1'
+    torus.name = 'torus1'
+    assert torus.name == 'torus1'
+ 
+    torus.radius = 15
+    assert torus.radius == 15
 
-   torus.radius = 15
-   assert torus.radius == 15
-
-   torus.tube_radius = 4
-   assert torus.tube_radius == 4
-
-   torus.center = [4. 7. 9]
-   assert_allclose(torus.center, [4, 7, 9])
-
-   assert isinstance(torus, Shape)
-
+    torus.tube_radius = 4
+    assert torus.tube_radius == 4
     
-def test_tube():
-    pass
+    torus.color = 'RED'
+    assert torus.color == 'RED'
 
+    torus.center = [4. 7. 9]
+    assert_allclose(torus.center, [4, 7, 9])
+
+    assert isinstance(torus, Shape)
+
+def test_tube():
+    point_list = [[2, 4, 5], [2, 6, 4], [1, 5, 8]]
+    tube = Tube('tube', radius=10, points=point_list, \
+                        color='RED', origin=[0,0,0])
+
+    assert tube.name == 'tube' 			
+    assert tube.radius == 10
+    assert_allclose(tube.points, point_list)
+    assert tube.color == 'RED'
+    assert_allclose(tube.origin, [0,0,0]) 
+
+    tube.name = 'tube1'
+    assert tube.name == 'tube1'
+
+    tube.radius = 15
+    assert tube.radius == 15
+
+    new_points_list = [[3, 4, 5], [1, 6 ,8], [2, 7, 3]
+    tube.points = new_point_list
+    assert_allclose(tube.points, new_point_list)
+    
+    tube.color = 'PINK'
+    assert tube.color == 'PINK'
+    
+    tube.origin = [4. 7. 9]
+    assert_allclose(tube.origin, [4, 7, 9])
+
+    assert isinstance(tube, Shape)
 def test_torus_knot():
     pass
 
