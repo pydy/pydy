@@ -1,4 +1,3 @@
-
 from sympy.physics.mechanics import *
 from numpy.testing import assert_allclose
 #from pydy-viz import Shape, Cube, 
@@ -228,30 +227,28 @@ def test_octahedron():
     assert isinstance(octahedron, Shape)
 
 def test_icosahedron():
-    octahedron = Octahedron('octahedron', radius=12, \
-                                    color='BLACK', center=[0,0,0])
-    assert octahedron.name == 'octahedron'
-    assert octahedron.radius == 12
-    assert octahedron.color == 'RED'
-    assert_allclose(octahedron.center, [0, 0, 0])
+    icosahedron = Icosahedron('icosahedron', radius=11, \
+                                    color='BLUE', center=[0,0,0])
+    assert icosahedron.name == 'icosahedron'
+    assert icosahedron.radius == 11
+    assert icosahedron.color == 'BLUE'
+    assert_allclose(icosahedron.center, [0, 0, 0])
     
     
-    octahedron.name = 'octahedron1'
-    assert octahedron.name == 'octahedron1'
+    icosahedron.name = 'icosahedron1'
+    assert icosahedron.name == 'icosahedron1'
 
-    octahedron.radius = 2
-    assert octahedron.radius == 2
+    icosahedron.radius = 3
+    assert icosahedron.radius == 3
 
-    octahedron.color = 'YELLOW'
-    assert octahedron.color == 'YELLOW'
+    icosahedron.color = 'PINK'
+    assert icosahedron.color == 'PINK'
 
-    octahedron.center = [21, 11, 21]
-    assert_allclose(octahedron.center, [21, 11, 21])
+    icosahedron.center = [10, 11, 12]
+    assert_allclose(icosahedron.center, [10, 11, 12])
     
-    assert isinstance(octahedron, Shape)
+    assert isinstance(icosahedron, Shape)
 
-
- 
 def test_torus():
     torus = Torus('torus', radius=10, tube_radius=2, \
                         color='BLUE', center=[0,0,0])
