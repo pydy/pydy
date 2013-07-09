@@ -1,3 +1,4 @@
+
 from sympy.physics.mechanics import *
 from numpy.testing import assert_allclose
 #from pydy-viz import Shape, Cube, 
@@ -177,13 +178,77 @@ def test_plane():
     assert isinstance(plane, Shape)
 
 def test_tetrahedron():
-    pass
+    #Tetrahedron,Octahedron and Icosahedron
+    # geometry is defined by the radius of the
+    #circumscribed sphere. It would be mentioned explicitly in the
+    #docstrings
+    tetrahedron = Tetrahedron('tetrahedron', radius=5, \
+                                    color='BLACK', center=[0,0,0])
+    assert tetrahedron.name == 'tetrahedron'
+    assert tetrahedron.radius == 5
+    assert tetrahedron.color == 'BLACK'
+    assert_allclose(tetrahedron.center, [0, 0, 0])
+    
+    
+    tetrahedron.name = 'tetrahedron1'
+    assert tetrahedron.name == 'tetrahedron1'
+
+    tetrahedron.radius = 7
+    assert tetrahedron.radius == 7
+
+    tetrahedron.color = 'BLUE'
+    assert tetrahedron.color == 'BLUE'
+
+    tetrahedron.center = [0, 1, -4]
+    assert_allclose(tetrahedron.center, [0, 1, -4])
+    
+    assert isinstance(tetrahedron, Shape)
 
 def test_octahedron():
-    pass
+    octahedron = Octahedron('octahedron', radius=12, \
+                                    color='BLACK', center=[0,0,0])
+    assert octahedron.name == 'octahedron'
+    assert octahedron.radius == 12
+    assert octahedron.color == 'RED'
+    assert_allclose(octahedron.center, [0, 0, 0])
+    
+    
+    octahedron.name = 'octahedron1'
+    assert octahedron.name == 'octahedron1'
+
+    octahedron.radius = 2
+    assert octahedron.radius == 2
+
+    octahedron.color = 'YELLOW'
+    assert octahedron.color == 'YELLOW'
+
+    octahedron.center = [21, 11, 21]
+    assert_allclose(octahedron.center, [21, 11, 21])
+    
+    assert isinstance(octahedron, Shape)
 
 def test_icosahedron():
-    pass
+    octahedron = Octahedron('octahedron', radius=12, \
+                                    color='BLACK', center=[0,0,0])
+    assert octahedron.name == 'octahedron'
+    assert octahedron.radius == 12
+    assert octahedron.color == 'RED'
+    assert_allclose(octahedron.center, [0, 0, 0])
+    
+    
+    octahedron.name = 'octahedron1'
+    assert octahedron.name == 'octahedron1'
+
+    octahedron.radius = 2
+    assert octahedron.radius == 2
+
+    octahedron.color = 'YELLOW'
+    assert octahedron.color == 'YELLOW'
+
+    octahedron.center = [21, 11, 21]
+    assert_allclose(octahedron.center, [21, 11, 21])
+    
+    assert isinstance(octahedron, Shape)
 
 
  
@@ -242,7 +307,31 @@ def test_tube():
     assert_allclose(tube.origin, [4, 7, 9])
 
     assert isinstance(tube, Shape)
+    
 def test_torus_knot():
-    pass
+    
+    torus_knot = TorusKnot('torus_knot', radius=10, tube_radius=2, \
+                        color='PINK', center=[0,0,0])
 
+    assert torus_knot.name == 'torus_knot' 			
+    assert torus_knot.radius == 10
+    assert torus_knot.tube_radius == 2
+    assert torus_knot.color == 'BLUE'
+    assert_allclose(torus_knot.center, [0,0,0]) 
+
+    torus_knot.name = 'torus_knot1'
+    assert torus_knot.name == 'torus_knot1'
  
+    torus_knot.radius = 12
+    assert torus_knot.radius == 12
+
+    torus_knot.tube_radius = 1
+    assert torus_knot.tube_radius == 1
+    
+    torus_knot.color = 'BLACK'
+    assert torus_knot.color == 'BLACK'
+
+    torus_knot.center = [1. 2. 1]
+    assert_allclose(torus_knot.center, [1, 2, 1])
+
+    assert isinstance(torus_knot, Shape)
