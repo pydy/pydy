@@ -4,13 +4,13 @@ from numpy.testing import assert_allclose
 
 def test_cube():
     cube = Cube('cube', length=10, \
-                         color='BLUE', center=[0,0,0])
+                         color='BLUE', center=[0., 0., 0.])
     assert cube.name == 'cube'
     assert cube.__str__ == 'cube'
     assert cube.__repr__ == 'cube'
     assert cube.length == 10
     assert cube.color == 'BLUE'
-    assert_allclose(cube.center, [0, 0, 0])
+    assert_allclose(cube.center, [0., 0., 0.])
     
     cube.name = 'cube1'
     assert cube.name == 'cube1'
@@ -23,21 +23,21 @@ def test_cube():
     cube.color = 'RED'
     assert cube.color == 'RED'
 
-    cube.center = [6, 5, 3]
-    assert_allclose(cube.center, [6, 5, 3])
+    cube.center = [6., 5., 3.]
+    assert_allclose(cube.center, [6., 5., 3.])
     
     assert isinstance(cube, Shape)
 
 def test_cylinder():
     cylinder = Cylinder('cylinder', height=10, radius=5, \
-                                    color='blue', center=[0,0,0])
+                                    color='blue', center=[0., 0., 0.])
     assert cylinder.name == 'cylinder'
     assert cylinder.__str__ == 'cylinder'
     assert cylinder.__repr__ == 'cylinder'
     assert cylinder.height == 10
     assert cylinder.radius == 5
     assert cylinder.color == 'blue'
-    assert_allclose(cylinder.center, [0, 0, 0])
+    assert_allclose(cylinder.center, [0., 0., 0.])
     
     
     cylinder.name = 'cylinder1'
@@ -54,21 +54,21 @@ def test_cylinder():
     cylinder.color = 'cyan'
     assert cylinder.color == 'cyan'
 
-    cylinder.center = [3, 6, -2]
-    assert_allclose(cylinder.center, [3, 6, -2])
+    cylinder.center = [3., 6., -2.]
+    assert_allclose(cylinder.center, [3., 6., -2.])
     
     assert isinstance(cylinder, Shape)
     
 def test_cone():
     cone = Cone('cone',heigth=10, radius=5, \
-                        color='darkblue', center=[0,0,0])
+                        color='darkblue', center=[0., 0., 0.])
     assert cone.name == 'cone'
     assert cone.__str__ == 'cone'
     assert cone.__repr__ == 'cone'
     assert cone.height == 10
     assert cone.radius == 5
     assert cone.color == 'darkblue'
-    assert_allclose(cone.center, [0, 0, 0])
+    assert_allclose(cone.center, [0., 0., 0.])
     
     cone.name = 'cone1'
     assert cone.name == 'cone1'
@@ -84,20 +84,20 @@ def test_cone():
     cone.color = 'darkcyan'
     assert cone.color == 'darkcyan'                                            
     
-    cone.center = [3, 7, 3]
-    assert_allclose(cone.center, [3, 7, 3])
+    cone.center = [3., 7., 3.]
+    assert_allclose(cone.center, [3., 7., 3.])
     
     assert isinstance(cone, Shape)
                             
 def test_sphere():
     sphere = Sphere('sphere', radius=10, color='azure', \
-                                   center=[0,0,0])
+                                   center=[0., 0., 0.])
     assert sphere.name == 'sphere'
     assert sphere.__str__ == 'sphere'
     assert sphere.__repr__ == 'sphere'
     assert sphere.radius == 10
     assert sphere.color == 'azure'
-    assert_allclose(sphere.center, [0, 0, 0])	                                                       
+    assert_allclose(sphere.center, [0., 0., 0.])	                                                       
     
     sphere.name = 'sphere1'
     assert sphere.name == 'sphere1'
@@ -110,8 +110,8 @@ def test_sphere():
     sphere.color = 'aqua'
     assert sphere.color == 'aqua'
 
-    sphere.center = [5, 2, 6]
-    assert_allclose(sphere.center, [5, 2, 6])
+    sphere.center = [5., 2., 6.]
+    assert_allclose(sphere.center, [5., 2., 6.])
   
     assert isinstance(sphere, Shape)
  
@@ -119,14 +119,14 @@ def test_sphere():
 
 def test_circle():
     circle = Circle('circle', radius=10, \
-                           color='gold',center=[0,0,0])
+                           color='gold',center=[0., 0., 0.])
 
     assert circle.name == 'circle'
     assert circle.__str__ == 'circle'
     assert circle.__repr__ == 'circle'
     assert circle.radius == 10
     assert circle.color == 'gold'
-    assert_allclose(circle.center, [0, 0, 0])
+    assert_allclose(circle.center, [0., 0., 0.])
 
     circle.name = 'circle1'
     assert circle.name == 'circle1'
@@ -139,18 +139,18 @@ def test_circle():
     circle.color = 'black'
     assert circle.color == 'black'
 
-    circle.center = [0, -3, 5]
-    assert_allclose(circle.center, [0, -3, 5])
+    circle.center = [0., -3., 5.]
+    assert_allclose(circle.center, [0., -3., 5.])
     
     assert isinstance(circle, Shape)
 
 def test_mesh():
-    point_list = [[2, 3, 1], [4, 6, 2], \
-                         [5, 3, 1], [5, 3, 6], \
-                         [2, 8, 4], [7, 4, 1]]
+    point_list = [[2., 3., 1.], [4., 6., 2.], \
+                         [5., 3., 1.], [5., 3., 6.], \
+                         [2., 8., 4.], [7., 4., 1.]]
     
     mesh = Mesh('mesh', points=point_list, \
-                               color='green', origin=[0,0,0])                     
+                               color='green', origin=[0., 0., 0.])                     
     assert mesh_shape.name == 'mesh'
     assert mesh_shape.__str__ == 'mesh'
     assert mesh_shape.__repr__ == 'mesh'
@@ -163,7 +163,7 @@ def test_mesh():
     assert mesh_shape.__str__ == 'mesh1'
     assert mesh_shape.__repr__ == 'mesh1'
     
-    new_point_list = [[3, 4, 12], [2, 4, 4], [3, 2, 41], [2, 5, 4]]
+    new_point_list = [[3., 4., 12.], [2., 4., 4.], [3., 2., 41.], [2., 5., 4.]]
     mesh_shape.points = new_point_list
     assert_allclose(mesh_shape.points, new_point_list)
     
@@ -177,14 +177,14 @@ def test_mesh():
 
 def test_plane():
     plane = Plane('plane', length=10, width=20, \
-                       color='indigo', center=[0,0,0])
+                       color='indigo', center=[0., 0., 0.])
     assert plane.name == 'plane'
     assert plane.__str__ == 'plane'
     assert plane.__repr__ == 'plane'
     assert plane.length == 10
     assert plane.width == 20
     assert plane.color == 'indigo'
-    assert_allclose(plane.center, [0, 0, 0])
+    assert_allclose(plane.center, [0., 0., 0.])
     
     plane.name = 'plane1'
     assert plane.name == 'plane1'
@@ -200,8 +200,8 @@ def test_plane():
     plane.color = 'lavender'
     assert plane.color == 'lavender'
     
-    plane.center = [7, 4, 5]
-    assert_allclose(plane.center, [7, 4, 5])
+    plane.center = [7., 4., 5.]
+    assert_allclose(plane.center, [7., 4., 5.])
     
     assert isinstance(plane, Shape)
 
@@ -211,13 +211,13 @@ def test_tetrahedron():
     #circumscribed sphere. It would be mentioned explicitly in the
     #docstrings
     tetrahedron = Tetrahedron('tetrahedron', radius=5, \
-                                    color='maroon', center=[0,0,0])
+                                    color='maroon', center=[0., 0., 0.])
     assert tetrahedron.name == 'tetrahedron'
     assert tetrahedron.__str__ == 'tetrahedron'
     assert tetrahedron.__repr__ == 'tetrahedron'
     assert tetrahedron.radius == 5
     assert tetrahedron.color == 'maroon'
-    assert_allclose(tetrahedron.center, [0, 0, 0])
+    assert_allclose(tetrahedron.center, [0., 0., 0.])
     
     
     tetrahedron.name = 'tetrahedron1'
@@ -231,20 +231,20 @@ def test_tetrahedron():
     tetrahedron.color = 'orange'
     assert tetrahedron.color == 'orange'
 
-    tetrahedron.center = [0, 1, -4]
-    assert_allclose(tetrahedron.center, [0, 1, -4])
+    tetrahedron.center = [0., 1., -4.]
+    assert_allclose(tetrahedron.center, [0., 1., -4.])
     
     assert isinstance(tetrahedron, Shape)
 
 def test_octahedron():
     octahedron = Octahedron('octahedron', radius=12, \
-                                    color='purple', center=[0,0,0])
+                                    color='purple', center=[0., 0., 0.])
     assert octahedron.name == 'octahedron'
     assert octahedron.__str__ == 'octahedron'
     assert octahedron.__repr__ == 'octahedron'
     assert octahedron.radius == 12
     assert octahedron.color == 'purple'
-    assert_allclose(octahedron.center, [0, 0, 0])
+    assert_allclose(octahedron.center, [0., 0., 0.])
     
     
     octahedron.name = 'octahedron1'
@@ -258,20 +258,20 @@ def test_octahedron():
     octahedron.color = 'red'
     assert octahedron.color == 'red'
 
-    octahedron.center = [21, 11, 21]
-    assert_allclose(octahedron.center, [21, 11, 21])
+    octahedron.center = [21., 11., 21.]
+    assert_allclose(octahedron.center, [21., 11., 21.])
     
     assert isinstance(octahedron, Shape)
 
 def test_icosahedron():
     icosahedron = Icosahedron('icosahedron', radius=11, \
-                                    color='#FDF5E6', center=[0,0,0])
+                                    color='#FDF5E6', center=[0., 0., 0.])
     assert icosahedron.name == 'icosahedron'
     assert icosahedron.__str__ == 'icosahedron'
     assert icosahedron.__repr__ == 'icosahedron'
     assert icosahedron.radius == 11
     assert icosahedron.color == '#FDF5E6'
-    assert_allclose(icosahedron.center, [0, 0, 0])
+    assert_allclose(icosahedron.center, [0., 0., 0.])
     
     
     icosahedron.name = 'icosahedron1'
@@ -285,14 +285,14 @@ def test_icosahedron():
     icosahedron.color = '#FFC0CB'
     assert icosahedron.color == '#FFC0CB'
 
-    icosahedron.center = [10, 11, 12]
-    assert_allclose(icosahedron.center, [10, 11, 12])
+    icosahedron.center = [10., 11., 12.]
+    assert_allclose(icosahedron.center, [10., 11., 12.])
     
     assert isinstance(icosahedron, Shape)
 
 def test_torus():
     torus = Torus('torus', radius=10, tube_radius=2, \
-                        color='#FFFF00', center=[0,0,0])
+                        color='#FFFF00', center=[0., 0., 0.])
 
     assert torus.name == 'torus' 			
     assert torus.__str__ == 'torus' 			
@@ -300,7 +300,7 @@ def test_torus():
     assert torus.radius == 10
     assert torus.tube_radius == 2
     assert torus.color == '#FFFF00'
-    assert_allclose(torus.center, [0,0,0]) 
+    assert_allclose(torus.center, [0., 0., 0.]) 
 
     torus.name = 'torus1'
     assert torus.name == 'torus1'
@@ -316,15 +316,15 @@ def test_torus():
     torus.color = '#FFFFFF'
     assert torus.color == '#FFFFFF'
 
-    torus.center = [4. 7. 9]
-    assert_allclose(torus.center, [4, 7, 9])
+    torus.center = [4., 7., 9.]
+    assert_allclose(torus.center, [4., 7., 9.])
 
     assert isinstance(torus, Shape)
 
 def test_tube():
-    point_list = [[2, 4, 5], [2, 6, 4], [1, 5, 8]]
+    point_list = [[2., 4., 5.], [2., 6., 4.], [1., 5., 8.]]
     tube = Tube('tube', radius=10, points=point_list, \
-                        color='#4682B4', origin=[0,0,0])
+                        color='#4682B4', origin=[0., 0., 0.])
 
     assert tube.name == 'tube' 			
     assert tube.__str__ == 'tube' 			
@@ -332,7 +332,7 @@ def test_tube():
     assert tube.radius == 10
     assert_allclose(tube.points, point_list)
     assert tube.color == '#4682B4'
-    assert_allclose(tube.origin, [0,0,0]) 
+    assert_allclose(tube.origin, [0., 0., 0.]) 
 
     tube.name = 'tube1'
     assert tube.name == 'tube1'
@@ -342,22 +342,22 @@ def test_tube():
     tube.radius = 15
     assert tube.radius == 15
 
-    new_points_list = [[3, 4, 5], [1, 6 ,8], [2, 7, 3]
+    new_points_list = [[3., 4., 5.], [1, 6., 8.], [2., 7., 3.]]
     tube.points = new_point_list
     assert_allclose(tube.points, new_point_list)
     
     tube.color = 'pink'
     assert tube.color == 'pink'
     
-    tube.origin = [4. 7. 9]
-    assert_allclose(tube.origin, [4, 7, 9])
+    tube.origin = [4., 7., 9.]
+    assert_allclose(tube.origin, [4., 7., 9.])
 
     assert isinstance(tube, Shape)
     
 def test_torus_knot():
     
     torus_knot = TorusKnot('torus_knot', radius=10, tube_radius=2, \
-                        color='#C0C0C0', center=[0,0,0])
+                        color='#C0C0C0', center=[0., 0., 0.])
 
     assert torus_knot.name == 'torus_knot' 			
     assert torus_knot.__str__ == 'torus_knot' 			
@@ -365,7 +365,7 @@ def test_torus_knot():
     assert torus_knot.radius == 10
     assert torus_knot.tube_radius == 2
     assert torus_knot.color == '#C0C0C0'
-    assert_allclose(torus_knot.center, [0,0,0]) 
+    assert_allclose(torus_knot.center, [0., 0., 0.]) 
 
     torus_knot.name = 'torus_knot1'
     assert torus_knot.name == 'torus_knot1'
@@ -381,7 +381,7 @@ def test_torus_knot():
     torus_knot.color = '#2E8B57'
     assert torus_knot.color == '#2E8B57'
 
-    torus_knot.center = [1. 2. 1]
-    assert_allclose(torus_knot.center, [1, 2, 1])
+    torus_knot.center = [1., 2., 1.]
+    assert_allclose(torus_knot.center, [1., 2., 1.])
 
     assert isinstance(torus_knot, Shape)
