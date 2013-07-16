@@ -19,6 +19,9 @@ def test_cube():
 
     cube.color = 'RED'
     assert cube.color == 'RED'
+    
+    cube.generate_dict() == {"color": "RED","type": "Cube", \
+                                   "name": "cube1", "length": 16}
 
     assert isinstance(cube, Shape)
 
@@ -43,6 +46,9 @@ def test_cylinder():
     cylinder.color = 'cyan'
     assert cylinder.color == 'cyan'
 
+    cylinder.generate_dict() == {"color": "cyan","type": "Cylinder", \
+                                   "name": "cylinder1", "height": 14, \
+                                       "radius" : 7}
     assert isinstance(cylinder, Shape)
     
 def test_cone():
@@ -66,6 +72,9 @@ def test_cone():
     cone.color = 'darkcyan'
     assert cone.color == 'darkcyan'                                            
     
+    cone.generate_dict() == {"color": "darkcyan","type": "Cone", \
+                                   "name": "cone1", "height": 16, \
+                                       "radius" : 3}
     assert isinstance(cone, Shape)
                             
 def test_sphere():
@@ -85,6 +94,8 @@ def test_sphere():
     sphere.color = 'aqua'
     assert sphere.color == 'aqua'
 
+    cylinder.generate_dict() == {"color": "aqua","type": "Sphere", \
+                                   "name": "sphere1", "radius" : 5}
     assert isinstance(sphere, Shape)
  
 def test_circle():
@@ -112,7 +123,7 @@ def test_mesh():
                          [5., 3., 1.], [5., 3., 6.], \
                          [2., 8., 4.], [7., 4., 1.]]
     
-    mesh = Mesh('mesh', points=point_list, color='green')                     
+    mesh_shape = Mesh('mesh', points=point_list, color='green')                     
     assert mesh_shape.name == 'mesh'
     assert mesh_shape.__str__ == 'Mesh green'
     assert mesh_shape.__repr__ == 'Mesh'
