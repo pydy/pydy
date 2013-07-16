@@ -20,7 +20,7 @@ def test_cube():
     cube.color = 'RED'
     assert cube.color == 'RED'
     
-    cube.generate_dict() == {"color": "RED","type": "Cube", \
+    cube.generate_dict() == {"color": (1.0, 0.0, 0.0), "type": "Cube", \
                                    "name": "cube1", "length": 16}
 
     assert isinstance(cube, Shape)
@@ -46,7 +46,7 @@ def test_cylinder():
     cylinder.color = 'cyan'
     assert cylinder.color == 'cyan'
 
-    cylinder.generate_dict() == {"color": "cyan","type": "Cylinder", \
+    cylinder.generate_dict() == {"color": (0.0, 1.0, 1.0),"type": "Cylinder", \
                                    "name": "cylinder1", "height": 14, \
                                        "radius" : 7}
     assert isinstance(cylinder, Shape)
@@ -72,7 +72,8 @@ def test_cone():
     cone.color = 'darkcyan'
     assert cone.color == 'darkcyan'                                            
     
-    cone.generate_dict() == {"color": "darkcyan","type": "Cone", \
+    cone.generate_dict() == {"color": 0.0, 0.5450980392156862, \
+                                    0.5450980392156862,"type": "Cone", \
                                    "name": "cone1", "height": 16, \
                                        "radius" : 3}
     assert isinstance(cone, Shape)
@@ -94,8 +95,9 @@ def test_sphere():
     sphere.color = 'aqua'
     assert sphere.color == 'aqua'
 
-    cylinder.generate_dict() == {"color": "aqua","type": "Sphere", \
-                                   "name": "sphere1", "radius" : 5}
+    sphere.generate_dict() == {"color":  (0.0, 1.0, 1.0), \
+                                            "type": "Sphere", \
+                                      "name": "sphere1", "radius" : 14}
     assert isinstance(sphere, Shape)
  
 def test_circle():
@@ -116,6 +118,9 @@ def test_circle():
     circle.color = 'black'
     assert circle.color == 'black'
 
+    circle.generate_dict() == {"color":  (0.0, 0.0, 0.0), "type": "Circle", \
+                                   "name": "circle1", "radius" : 12}
+                                   
     assert isinstance(circle, Shape)
 
 def test_mesh():
@@ -141,6 +146,7 @@ def test_mesh():
     
     mesh_shape.color = 'pink'
     assert mesh_shape.color == 'pink'
+    
     
     assert isinstance(mesh_shape, Shape)                      
 
