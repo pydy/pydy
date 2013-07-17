@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Convenient utility functions for exercises in Chapter 4 of Kane 1985."""
+"""Convenient utility functions for exercises in Chapter 5 of Kane 1985."""
 
 from __future__ import division
-from sympy import diff
+from sympy import Dummy, Matrix
+from sympy import diff, expand, expand_trig, integrate, solve, symbols
+from sympy import sin, cos, tan, trigsimp
 from sympy.physics.mechanics import ReferenceFrame, Point, Particle, RigidBody
 from sympy.physics.mechanics import cross, dot, Vector
 from sympy.physics.mechanics import MechanicsStrPrinter
@@ -184,3 +186,108 @@ def generalized_inertia_forces(partials, bodies,
             Fr_star[i] += force_term + torque_term
 
     return Fr_star, ulist
+
+
+def _equivalent_derivatives(dV_dq_list, q):
+    dV_eq = []
+    for r in range(len(q)):
+        for s in range(r + 1, len(q)):
+            dV_eq.append(dV_dq_list[r].diff(q[s]) - dV_dq_list[s].diff(q[r]))
+    return dV_eq
+
+
+def _f_variables(Fr, q, dV_eq, dV_dq):
+    Fr_qi_only = []
+    non_arg = set()
+    for i, fr in enumerate(Fr):
+        dfrdqi = [j for j, x in enumerate(q) if fr.diff(x) != 0]
+        # If generalized force is only a function of one generalized coordinate
+        # save the indices of force, coordinate.
+        if len(dfrdqi) == 1:
+            Fr_qi_only.append((i, dfrdqi[0]))
+
+    for fr_idx, qi_idx in Fr_qi_only:
+        # If Fr = -∂V/∂qi, then fs-p is independent of qi.
+        if Fr[fr_idx] - dV_eq[fr_idx] == dV_dq[qi_idx]:
+            non_arg.add(q[qi_idx])
+    return sorted(list(set(q) - non_arg)) + [symbols('t')]
+
+
+def potential_energy(Fr, q, u, kde_map, vc_map=None):
+    if vc_map is not None:
+        u += sorted(vc_map.keys())
+
+    m = len(u) - len(Fr)
+    dV_dq = symbols('∂V/∂q1:{0}'.format(len(q) + 1))
+    dV_eq = Matrix(Fr).T
+    W_sr = Matrix([map(lambda x: v.diff(x), u)
+                   for k, v in sorted(kde_map.iteritems())])
+    if vc_map is not None:
+        A_kr = Matrix([map(lambda x: diff(v, x), u[:len(Fr)])
+                       for k, v in sorted(vc_map.iteritems())])
+    else:
+        A_kr = Matrix.zeros(m, len(Fr))
+
+    for s in range(W_sr.shape[0]):
+        dV_eq += dV_dq[s] * (W_sr[s, :len(Fr)] + W_sr[s, len(Fr):]*A_kr)
+
+    if vc_map is not None:
+        f = map(lambda x: x(*_f_variables(Fr, q, dV_eq, dV_dq)),
+                symbols('f1:{0}'.format(m + 1)))
+        dV_eq = subs(dV_eq, dict(zip(dV_dq[-m:], f)))
+        dV_dq = dV_dq[:-m]
+
+    dV_dq_map = solve(dV_eq, dV_dq)
+    dV_dq_list = map(lambda x: dV_dq_map[x], dV_dq)
+
+    if vc_map is None:
+        print('Checking ∂/∂qr(∂V/∂qs) = ∂/∂qs(∂V/∂qr) for all r, s '
+              '= 1, ..., n.')
+        dV_eq = _equivalent_derivatives(dV_dq_list, q)
+        if dV_eq != [0] * len(q):
+            rs = [(r, s) for r in range(len(q)) for s in range(r + 1, len(q))]
+            for (r, s), x in zip(rs, dV_eq):
+                if x != 0:
+                    print(('∂/∂q{0}(∂V/∂q{1}) != ∂/∂q{1}(∂V/∂q{0}). ' +
+                           'V does NOT exist.').format(r + 1, s + 1))
+                    print('∂/∂q{0}(∂V/∂q{1}) = {2}'.format(
+                            r + 1, s + 1, dV_dq_list[r].diff(q[s])))
+                    print('∂/∂q{1}(∂V/∂q{0}) = {2}'.format(
+                            r + 1, s + 1, dV_dq_list[s].diff(q[r])))
+                    break
+            return None
+    else:
+        dV_dq_list += f
+        # Unable to take diff of 'fm.diff(qs)', replace with dummy symbols.
+        dfdq = [Dummy('∂f{0}/∂q{1}'.format(i + 1, j + 1))
+                for i in range(len(f)) for j in range(len(q))]
+        dfdq_replace = lambda x: reduce(
+                lambda y, z: y.replace(z[0], z[1]),
+                zip([fm.diff(qs) for fm in f for qs in q], dfdq),
+                x)
+        dV_eq = map(dfdq_replace,
+                    _equivalent_derivatives(dV_dq_list, q))
+
+        X = Matrix(dfdq)
+        Z = Matrix([map(lambda x: diff(dV_eqi, x), dfdq)
+                    for dV_eqi in dV_eq])
+        if Z.rank() == len(q) * (len(q) - 1) / 2:
+            print('ρ == n(n - 1)/2')
+            print('V may exist but cannot be found by this procedure.')
+            return None
+
+        Y = expand(Z*X - Matrix(dV_eq))
+        ZI_rref, _ = Matrix.hstack(Z, Matrix.eye(Z.shape[0])).rref()
+        # E is the matrix of elementary row operations that gives rref(Z).
+        E = ZI_rref[:, Z.shape[1]:]
+        f_eq = (E * Y)[Z.rank():]
+        f_map = solve(f_eq, f)
+        dV_dq_list = map(trigsimp, (subs(dV_dq_list, f_map)))
+
+    alpha = symbols('α1:{0}'.format(len(q) + 1))
+    V, zeta = symbols('C ζ')
+    q_alpha = zip(q, alpha)
+    for i, dV_dqr in enumerate(dV_dq_list):
+        integrand = dV_dqr.subs(dict(q_alpha[i + 1:])).subs(q[i], zeta)
+        V += integrate(expand_trig(integrand), (zeta, alpha[i], q[i]))
+    return V
