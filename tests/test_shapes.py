@@ -46,9 +46,11 @@ def test_cylinder():
     cylinder.color = 'cyan'
     assert cylinder.color == 'cyan'
 
-    cylinder.generate_dict() == {"color": (0.0, 1.0, 1.0), "type": "Cylinder", \
+    cylinder.generate_dict() == {"color": (0.0, 1.0, 1.0), \
+                                         "type": "Cylinder", \
                                    "name": "cylinder1", "height": 14, \
                                        "radius" : 7}
+                                       
     assert isinstance(cylinder, Shape)
     
 def test_cone():
@@ -119,7 +121,8 @@ def test_circle():
     circle.color = 'black'
     assert circle.color == 'black'
 
-    circle.generate_dict() == {"color":  (0.0, 0.0, 0.0), "type": "Circle", \
+    circle.generate_dict() == {"color":  (0.0, 0.0, 0.0), \
+                                         "type": "Circle", \
                                    "name": "circle1", "radius" : 12}
                                    
     assert isinstance(circle, Shape)
@@ -207,7 +210,7 @@ def test_tetrahedron():
     assert tetrahedron.color == 'orange'
 
     tetrahedron.generate_dict() == {"color":  (1.0, \
-                                        0.6470588235294118, 0.0) \
+                                        0.6470588235294118, 0.0), \
                                           "type": "Tetrahedron", \
                                    "name": "tetrahedron1", "radius" : 7}
     assert isinstance(tetrahedron, Shape)
@@ -229,7 +232,7 @@ def test_octahedron():
     octahedron.color = 'red'
     assert octahedron.color == 'red'
 
-    octahedron.generate_dict() == {"color": (1.0, 0.0, 0.0) \
+    octahedron.generate_dict() == {"color": (1.0, 0.0, 0.0), \
                                           "type": "Octahedron", \
                                    "name": "octahedron1", "radius" : 2}
                                    
