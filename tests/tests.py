@@ -1,28 +1,31 @@
 from sympy.physics.mechanics import *
+from sympy import sin, cos, symbols
+#from pydy-viz import *
 
-class test_vframe_scene(object):
+class test_visualizationframe_scene(object):
     
     def __init__(self):
         #We define some quantities required for tests here..
         self.p = dynamicsymbols('p:3')
         self.q = dynamicsymbols('q:3')
+        
         self.I = ReferenceFrame('I')
-        self.A = self.I.orientnew('A', 'body', p, 'XYZ') #p= [p1,p2,p3]
-        self.B = self.A.orientnew('B', 'body', q, 'XYZ')
+        self.A = self.I.orientnew('A', 'body', self.p, 'XYZ') #p= [p1,p2,p3]
+        self.B = self.A.orientnew('B', 'body', self.q, 'XYZ')
         
         self.O = Point('O')
-        self.P1 = O.locatenew('P1', 10 * self.I.x + \
+        self.P1 = self.O.locatenew('P1', 10 * self.I.x + \
                                       10 * self.I.y + 10 * self.I.z)
-        self.P2 = P1.locatenew('P2', 10 * self.I.x + \
+        self.P2 = self.P1.locatenew('P2', 10 * self.I.x + \
                                     10 * self.I.y + 10 * self.I.z)
         
         self.point_list1 = [[2, 3, 1], [4, 6, 2], [5, 3, 1], [5, 3, 6]]
         self.point_list2 = [[3, 1, 4], [3, 8, 2], [2, 1, 6], [2, 1, 1]]
 
         self.mesh_shape1 = MeshShape('mesh_shape1', \
-                                       points=self.point_list1, color='blue')    
+                                points=self.point_list1, color='blue')    
         self.mesh_shape2 = MeshShape('mesh_shape2', \
-                                        points=self.point_list2, color='red')     
+                                   points=self.point_list2, color='red')     
                                
                                
         self.Ixx, self.Iyy, self.Izz = symbols('Ixx Iyy Izz')
@@ -38,16 +41,18 @@ class test_vframe_scene(object):
 
         self.particle = Particle('particle1', self.P1, self.mass)                            
 
-        self.transformation_matrix = [[cos(p[1])*cos(p[2]),  \
-                  sin(p[0])*sin(p[1])*cos(p[2]) + sin(p[2])*cos(p[0]), \
-                  sin(p[0])*sin(p[2]) - sin(p[1])*cos(p[0])*cos(p[2]), \
-                  10], [-sin(p[2])*cos(p[1]), \
-                     -sin(p[0])*sin(p[1])*sin(p[2]) + \
-                             cos(p[0])*cos(p[2]), \
-                             sin(p[0])*cos(p[2]) + \
-                     sin(p[1])*sin(p[2])*cos(p[0]),10], \
-                       [sin(p[1]), -sin(p[0])*cos(p[1]), \
-                                    cos(p[0])*cos(p[1]),10], \
+        self.transformation_matrix = [[cos(self.p[1])*cos(self.p[2]),  \
+                  sin(self.p[0])*sin(self.p[1])*cos(self.p[2]) + \
+                                     sin(self.p[2])*cos(self.p[0]), \
+                  sin(self.p[0])*sin(self.p[2]) - \
+                        sin(self.p[1])*cos(self.p[0])*cos(self.p[2]), \
+                  10], [-sin(self.p[2])*cos(self.p[1]), \
+                     -sin(self.p[0])*sin(self.p[1])*sin(self.p[2]) + \
+                             cos(self.p[0])*cos(self.p[2]), \
+                             sin(self.p[0])*cos(self.p[2]) + \
+                     sin(self.p[1])*sin(self.p[2])*cos(self.p[0]),10], \
+                    [sin(self.p[1]), -sin(self.p[0])*cos(self.p[1]), \
+                                   cos(self.p[0])*cos(self.p[1]),10], \
                                      [0, 0, 0, 1]]
     
 
