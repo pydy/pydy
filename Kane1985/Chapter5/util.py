@@ -213,23 +213,82 @@ def _f_variables(Fr, q, dV_eq, dV_dq):
     return sorted(list(set(q) - non_arg)) + [symbols('t')], list(non_arg)
 
 
+def kde_matrix(u, kde_map):
+    """Returns the matrices W_sr, X_s which are defined by the equation
+    q_dot = W_sr*u_r + X_s
+
+    where q_dot is the vector [q1', q2', ..., qn'] and u_r is the
+    vector [u1, u2, ..., un].
+    The arg 'u' is u_r. Each element of q_dot is a key in 'kde_map' where
+    the corresponding value is sum(W_sr[s, r] * u_r[r], (r, 1, n)) + X_s[s].
+    """
+    q_dot_values = Matrix(zip(*sorted(kde_map.items()))[1])
+    W_sr = Matrix(map(lambda x: q_dot_values.T.diff(x), u)).T
+    X_s = q_dot_values - W_sr*Matrix(u)
+    return W_sr, X_s
+
+
+def vc_matrix(u, vc_map):
+    """Returns the matrices A_kr, B_k which are defined by the equation
+    u_k = A_kr*u_r + B_k
+
+    where u_k is the vector [up+1, ..., un] and u_r is the
+    vector [u1, u2, ..., un].
+    The arg 'u' is u_r. Each element of u_k is a key in 'vc_map' where
+    the corresponding value is sum(A_kr[k, r] * u_r[r], (r, 1, n)) + B_k[k].
+    """
+    vc_map_values = Matrix(zip(*sorted(vc_map.items()))[1])
+    A_kr = Matrix(map(lambda x: vc_map_values.T.diff(x), u)).T
+    B_k = vc_map_values - A_kr*Matrix(u)
+    return A_kr, B_k
+
+
+def generalized_active_forces_V(V, q, u, kde_map, vc_map=None):
+    """Returns a list of the generalized active forces using equation 5.1.18
+    from Kane 1985.
+
+    'V' is a potential energy function for the system.
+    'q' is a list of generalized coordinates.
+    'u' is a list of the independent generalized speeds.
+    'kde_map' is a dictionary with q dots as keys and the equivalent
+        expressions in terms of q's and u's as values.
+    """
+    n = len(q)
+    p = len(u)
+    m = n - p
+    if vc_map is None:
+        A_kr = Matrix.zeros(m, p)
+    else:
+        A_kr, _ = vc_matrix(u, vc_map)
+        u += sorted(vc_map.keys())
+    W_sr, _ = kde_matrix(u, kde_map)
+
+    dV_dq = map(lambda x: diff(V, x), q)
+    Fr = Matrix.zeros(1, p)
+    for s in range(n):
+        Fr -= dV_dq[s] * (W_sr[s, :p] + W_sr[s, p:]*A_kr)
+    return Fr[:]
+
+
 def potential_energy(Fr, q, u, kde_map, vc_map=None):
+    n = len(q)
+    p = len(u)
+    m = n - p
+
     if vc_map is not None:
         u += sorted(vc_map.keys())
 
-    m = len(u) - len(Fr)
-    dV_dq = symbols('∂V/∂q1:{0}'.format(len(q) + 1))
+    dV_dq = symbols('∂V/∂q1:{0}'.format(n + 1))
     dV_eq = Matrix(Fr).T
-    W_sr = Matrix([map(lambda x: v.diff(x), u)
-                   for k, v in sorted(kde_map.iteritems())])
+
+    W_sr, _ = kde_matrix(u, kde_map)
     if vc_map is not None:
-        A_kr = Matrix([map(lambda x: diff(v, x), u[:len(Fr)])
-                       for k, v in sorted(vc_map.iteritems())])
+        A_kr, _ = vc_matrix(u, vc_map)
     else:
-        A_kr = Matrix.zeros(m, len(Fr))
+        A_kr = Matrix.zeros(m, p)
 
     for s in range(W_sr.shape[0]):
-        dV_eq += dV_dq[s] * (W_sr[s, :len(Fr)] + W_sr[s, len(Fr):]*A_kr)
+        dV_eq += dV_dq[s] * (W_sr[s, :p] + W_sr[s, p:]*A_kr)
 
     if vc_map is not None:
         f_arg, non_arg = _f_variables(Fr, q, dV_eq, dV_dq)
@@ -242,11 +301,11 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
     dV_dq_list = map(lambda x: dV_dq_map[x], dV_dq)
 
     if vc_map is None:
-        print('Checking ∂/∂qr(∂V/∂qs) = ∂/∂qs(∂V/∂qr) for all r, s '
-              '= 1, ..., n.')
+        #print('Checking ∂/∂qr(∂V/∂qs) = ∂/∂qs(∂V/∂qr) for all r, s '
+        #      '= 1, ..., n.')
         dV_eq = _equivalent_derivatives(dV_dq_list, q)
-        if dV_eq != [0] * len(q):
-            rs = [(r, s) for r in range(len(q)) for s in range(r + 1, len(q))]
+        if dV_eq != [0] * (n*(n - 1)//2):
+            rs = [(r, s) for r in range(n) for s in range(r + 1, n)]
             for (r, s), x in zip(rs, dV_eq):
                 if x != 0:
                     print(('∂/∂q{0}(∂V/∂q{1}) != ∂/∂q{1}(∂V/∂q{0}). ' +
@@ -261,7 +320,7 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
         dV_dq_list += f
         # Unable to take diff of 'fm.diff(qs)', replace with dummy symbols.
         dfdq = [Dummy('∂f{0}/∂q{1}'.format(i + 1, j + 1))
-                for i in range(len(f)) for j in range(len(q))]
+                for i in range(len(f)) for j in range(n)]
         dfdq_replace = lambda x: reduce(
                 lambda y, z: y.replace(z[0], z[1]) if z[0] != 0 else y,
                 zip([fm.diff(qs) for fm in f for qs in q], dfdq),
@@ -272,7 +331,7 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
         X = Matrix(dfdq)
         Z = Matrix([map(lambda x: diff(dV_eqi, x), dfdq)
                     for dV_eqi in dV_eq])
-        if Z.rank() == len(q) * (len(q) - 1) / 2:
+        if Z.rank() == n * (n - 1) / 2:
             print('ρ == n(n - 1)/2')
             print('V may exist but cannot be found by this procedure.')
             return None
@@ -293,7 +352,7 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
                     return None
         dV_dq_list = map(trigsimp, (subs(dV_dq_list, f_map)))
 
-    alpha = symbols('α1:{0}'.format(len(q) + 1))
+    alpha = symbols('α1:{0}'.format(n + 1))
     V, zeta = symbols('C ζ')
     q_alpha = zip(q, alpha)
     for i, dV_dqr in enumerate(dV_dq_list):
