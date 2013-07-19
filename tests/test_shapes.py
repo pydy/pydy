@@ -20,7 +20,7 @@ def test_cube():
     cube.color = 'RED'
     assert cube.color == 'RED'
     
-    cube.generate_dict() == {"color": (1.0, 0.0, 0.0), "type": "Cube", \
+    assert cube.generate_dict() == {"color": (1.0, 0.0, 0.0), "type": "Cube", \
                                    "name": "cube1", "length": 16}
 
     assert isinstance(cube, Shape)
@@ -33,9 +33,9 @@ def test_cube():
     assert cube_.__repr__() == 'Cube'
     
     #Checking equalities/inequalites
-    cube1 = Cube('cube1',length=16, color='RED')
+    cube1 = Cube('cube1', length=16, color='RED')
     assert cube1 == cube
-    assert cube1 !=cube_
+    assert cube1 != cube_
     
 def test_cylinder():
     cylinder = Cylinder('cylinder', height=10, radius=5, color='blue')
@@ -58,7 +58,7 @@ def test_cylinder():
     cylinder.color = 'cyan'
     assert cylinder.color == 'cyan'
 
-    cylinder.generate_dict() == {"color": (0.0, 1.0, 1.0), \
+    assert cylinder.generate_dict() == {"color": (0.0, 1.0, 1.0), \
                                          "type": "Cylinder", \
                                    "name": "cylinder1", "height": 14, \
                                        "radius" : 7}
@@ -75,7 +75,7 @@ def test_cylinder():
     assert cylinder1 != cylinder_
     
 def test_cone():
-    cone = Cone('cone',heigth=10, radius=5, color='darkblue')
+    cone = Cone('cone', heigth=10, radius=5, color='darkblue')
     assert cone.name == 'cone'
     assert cone.__str__() == 'Cone height=10,radius=5'
     assert cone.__repr__() == 'Cone'
@@ -95,7 +95,7 @@ def test_cone():
     cone.color = 'darkcyan'
     assert cone.color == 'darkcyan'                                            
     
-    cone.generate_dict() == {"color": (0.0, 0.5450980392156862, \
+    assert cone.generate_dict() == {"color": (0.0, 0.5450980392156862, \
                                             0.5450980392156862), \
                                               "type": "Cone", \
                                        "name": "cone1", "height": 16, \
@@ -107,7 +107,7 @@ def test_cone():
     assert cone_.__str__() == 'Cone height=10,radius=5'
     assert cone_.__repr__() == 'Cone'
     
-    cone1 = Cone('cone1',heigth=16, radius=3, color='darkcyan')
+    cone1 = Cone('cone1', heigth=16, radius=3, color='darkcyan')
     assert cone1 == cone
     assert cone1 != cone_
     
@@ -129,7 +129,7 @@ def test_sphere():
     sphere.color = 'aqua'
     assert sphere.color == 'aqua'
 
-    sphere.generate_dict() == {"color":  (0.0, 1.0, 1.0), \
+    assert sphere.generate_dict() == {"color":  (0.0, 1.0, 1.0), \
                                             "type": "Sphere", \
                                       "name": "sphere1", "radius" : 14}
     assert isinstance(sphere, Shape)
@@ -161,7 +161,7 @@ def test_circle():
     circle.color = 'black'
     assert circle.color == 'black'
 
-    circle.generate_dict() == {"color":  (0.0, 0.0, 0.0), \
+    assert circle.generate_dict() == {"color":  (0.0, 0.0, 0.0), \
                                          "type": "Circle", \
                                    "name": "circle1", "radius" : 12}
                                    
@@ -185,7 +185,7 @@ def test_mesh():
     assert mesh_shape.name == 'mesh'
     assert mesh_shape.__str__() == 'Mesh green'
     assert mesh_shape.__repr__() == 'Mesh'
-    assert_allclose(mesh_shape.points,point_list)
+    assert_allclose(mesh_shape.points, point_list)
     assert mesh_shape.color == 'green'
     
     
@@ -193,14 +193,16 @@ def test_mesh():
     assert mesh_shape.name == 'mesh1'
     
     
-    new_point_list = [[3., 4., 12.], [2., 4., 4.], [3., 2., 41.], [2., 5., 4.]]
+    new_point_list = [[3., 4., 12.], [2., 4., 4.], [3., 2., 41.], \
+                                                          [2., 5., 4.]]
     mesh_shape.points = new_point_list
     assert_allclose(mesh_shape.points, new_point_list)
     
     mesh_shape.color = 'pink'
     assert mesh_shape.color == 'pink'
     
-    mesh_shape.generate_dict() == {"color":  (1.0, 0.7529411764705882, \
+    assert mesh_shape.generate_dict() == {"color":  \
+                                          (1.0, 0.7529411764705882, \
                                           0.796078431372549), \
                                                "type": "Mesh", \
                                         "name": "mesh1", \
@@ -238,7 +240,7 @@ def test_plane():
     plane.color = 'lavender'
     assert plane.color == 'lavender'
     
-    plane.generate_dict() == {"color":  (0.9019607843137255, \
+    assert plane.generate_dict() == {"color":  (0.9019607843137255, \
                                     0.9019607843137255, \
                                     0.9803921568627451), \
                                          "type": "Plane", \
@@ -276,7 +278,7 @@ def test_tetrahedron():
     tetrahedron.color = 'orange'
     assert tetrahedron.color == 'orange'
 
-    tetrahedron.generate_dict() == {"color":  (1.0, \
+    assert tetrahedron.generate_dict() == {"color":  (1.0, \
                                         0.6470588235294118, 0.0), \
                                           "type": "Tetrahedron", \
                                    "name": "tetrahedron1", "radius" : 7}
@@ -308,7 +310,7 @@ def test_octahedron():
     octahedron.color = 'red'
     assert octahedron.color == 'red'
 
-    octahedron.generate_dict() == {"color": (1.0, 0.0, 0.0), \
+    assert octahedron.generate_dict() == {"color": (1.0, 0.0, 0.0), \
                                           "type": "Octahedron", \
                                    "name": "octahedron1", "radius" : 2}
                                    
@@ -340,7 +342,7 @@ def test_icosahedron():
     icosahedron.color = '#FFC0CB'
     assert icosahedron.color == '#FFC0CB'
 
-    icosahedron.generate_dict() == {"color": (1.0, \
+    assert icosahedron.generate_dict() == {"color": (1.0, \
                                     0.7529411764705882, \
                                           0.796078431372549), \
                                           "type": "Icosahedron", \
@@ -380,7 +382,7 @@ def test_torus():
     torus.color = '#FFFFFF'
     assert torus.color == '#FFFFFF'
 
-    torus.generate_dict() == {"color": (1.0, 1.0, 1.0), \
+    assert torus.generate_dict() == {"color": (1.0, 1.0, 1.0), \
                                           "type": "Torus", \
                                    "name": "torus1", "radius" : 15, \
                                         "tube_radius" : 4}
@@ -422,7 +424,7 @@ def test_tube():
     tube.color = 'pink'
     assert tube.color == 'pink'
     
-    tube.generate_dict() == {"color": (1.0, \
+    assert tube.generate_dict() == {"color": (1.0, \
                                       0.7529411764705882, \
                                         0.796078431372549), \
                                           "type": "Tube", \
@@ -447,7 +449,8 @@ def test_torus_knot():
                                                        color='#C0C0C0')
 
     assert torus_knot.name == 'torus_knot' 			
-    assert torus_knot.__str__() == 'TorusKnot #C0C0C0 radius=10,tube radius=2' 			
+    assert torus_knot.__str__() == 'TorusKnot #C0C0C0 radius=10,\
+                                                         tube radius=2' 			
     assert torus_knot.__repr__() == 'TorusKnot' 			
     assert torus_knot.radius == 10
     assert torus_knot.tube_radius == 2
@@ -465,18 +468,20 @@ def test_torus_knot():
     torus_knot.color = ''
     assert torus_knot.color == '#2E8B57'
 
-    torus_knot.generate_dict() == {"color": (0.1803921568627451, \
-                                              0.5450980392156862, \
+    assert torus_knot.generate_dict() == {"color": \
+                                            (0.1803921568627451, \
+                                               0.5450980392156862, \
                                               0.3411764705882353), \
                                           "type": "TorusKnot", \
-                                   "name": "torus_knot1", "radius" : 12, \
+                                "name": "torus_knot1", "radius" : 12, \
                                     "tube_radius" : 1}
 
     assert isinstance(torus_knot, Shape)
 
     torus_knot_ = TorusKnot(radius=10, tube_radius=2, color='#C0C0C0')
     assert torus_knot_.name == 'unnamed' 			
-    assert torus_knot_.__str__() == 'TorusKnot #C0C0C0 radius=10,tube radius=2' 			
+    assert torus_knot_.__str__() == 'TorusKnot #C0C0C0 radius=10,\
+                                                          tube radius=2' 			
     assert torus_knot_.__repr__() == 'TorusKnot' 			
 
     torus_knot1 = TorusKnot('torus_knot1', radius=12, tube_radius=1, \
