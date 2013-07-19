@@ -1,123 +1,186 @@
 from sympy.physics.mechanics import *
-from sympy import symbols, sin, cos
+from sympy import sin, cos, symbols
+#from pydy-viz import *
 
-#from pydy-viz import VisualizationFrame
-#First we need to define some quantities... 
-p = dynamicsymbols('p:3')
-q = dynamicsymbols('q:3')
+class TestVisualizationFrameScene(object):
+    
+    def __init__(self):
+        #We define some quantities required for tests here..
+        self.p = dynamicsymbols('p:3')
+        self.q = dynamicsymbols('q:3')
+        
+        self.I = ReferenceFrame('I')
+        self.A = self.I.orientnew('A', 'body', self.p, 'XYZ') #p= [p1,p2,p3]
+        self.B = self.A.orientnew('B', 'body', self.q, 'XYZ')
+        
+        self.O = Point('O')
+        self.P1 = self.O.locatenew('P1', 10 * self.I.x + \
+                                      10 * self.I.y + 10 * self.I.z)
+        self.P2 = self.P1.locatenew('P2', 10 * self.I.x + \
+                                    10 * self.I.y + 10 * self.I.z)
+        
+        self.point_list1 = [[2, 3, 1], [4, 6, 2], [5, 3, 1], [5, 3, 6]]
+        self.point_list2 = [[3, 1, 4], [3, 8, 2], [2, 1, 6], [2, 1, 1]]
 
-I = ReferenceFrame('I')
-A = I.orientnew('A', 'body', p, 'XYZ') #p= [p1,p2,p3]
-B = A.orientnew('B', 'body', q, 'XYZ')
-
-
-
-O = Point('O')
-P1 = O.locatenew('P1', 10*I.x + 10*I.y + 10*I.z)
-P2 = P1.locatenew('P2', 10*I.x + 10*I.y + 10*I.z)
-
-
-point_list1 = [[2, 3, 1], [4, 6, 2], [5, 3, 1], [5, 3, 6]]
-point_list2 = [[3, 1, 4], [3, 8, 2], [2, 1, 6], [2, 1, 1]]
-
-mesh_shape1 = MeshShape('mesh_shape1', points=point_list1, color='blue')    
-mesh_shape2 = MeshShape('mesh_shape2', points=point_list2, color='red')     
+        self.mesh_shape1 = MeshShape('mesh_shape1', \
+                                points=self.point_list1, color='blue')    
+        self.mesh_shape2 = MeshShape('mesh_shape2', \
+                                points=self.point_list2, color='red')     
                                
                                
-Ixx = symbols('Ixx:2')
-Iyy = symbols('Iyy:2')
-Izz = symbols('Izz:2')
-mass = symbols('mass:2')
-    
-inertia1 = inertia(A, Ixx[0], Iyy[0], Izz[0])
+        self.Ixx, self.Iyy, self.Izz = symbols('Ixx Iyy Izz')
+        
+        self.mass = symbols('mass')
+         
+        self.inertia = inertia(self.A, self.Ixx, self.Iyy, self.Izz)
 
-rigid_body = RigidBody('rigid_body1', P1, A, mass[0], (inertia1, P1))
+        self.rigid_body = RigidBody('rigid_body1', self.P1, self.A, \
+                                 self.mass, (self.inertia, self.P1))
+                          
 
 
-particle = Particle('particle1', P1, mass[0])                            
+        self.particle = Particle('particle1', self.P1, self.mass)                            
 
-#This is the transformation matrix from (A,P1) to (I,O)
+        self.transformation_matrix = [[cos(self.p[1])*cos(self.p[2]),  \
+                  sin(self.p[0])*sin(self.p[1])*cos(self.p[2]) + \
+                                     sin(self.p[2])*cos(self.p[0]), \
+                  sin(self.p[0])*sin(self.p[2]) - \
+                        sin(self.p[1])*cos(self.p[0])*cos(self.p[2]), \
+                  10], [-sin(self.p[2])*cos(self.p[1]), \
+                     -sin(self.p[0])*sin(self.p[1])*sin(self.p[2]) + \
+                             cos(self.p[0])*cos(self.p[2]), \
+                             sin(self.p[0])*cos(self.p[2]) + \
+                     sin(self.p[1])*sin(self.p[2])*cos(self.p[0]),10], \
+                    [sin(self.p[1]), -sin(self.p[0])*cos(self.p[1]), \
+                                   cos(self.p[0])*cos(self.p[1]),10], \
+                                     [0, 0, 0, 1]]
+    
 
-transformation_matrix = [[cos(p[1])*cos(p[2]),  \
-                sin(p[0])*sin(p[1])*cos(p[2]) + sin(p[2])*cos(p[0]), \
-                sin(p[0])*sin(p[2]) - sin(p[1])*cos(p[0])*cos(p[2]), \
-                10], [-sin(p[2])*cos(p[1]), \
-                   -sin(p[0])*sin(p[1])*sin(p[2]) + \
-                          cos(p[0])*cos(p[2]), \
-                          sin(p[0])*cos(p[2]) + \
-                  sin(p[1])*sin(p[2])*cos(p[0]),10], \
-                   [sin(p[1]), -sin(p[0])*cos(p[1]), \
-                                   cos(p[0])*cos(p[1]),10], \
-                                    [0, 0, 0, 1]]
-   
-def test_vframe_with_rframe():
-    frame1 = VisualizationFrame('frame1', [I, O], shape=mesh_shape1)
+    def test_vframe_with_rframe(self):
+        self.frame1 = VisualizationFrame('frame1', self.I, self.O, \
+                                                shape=self.mesh_shape1)
     
-    assert frame1.name == 'frame1'
-    assert frame1.reference_frame == I
-    assert frame1.origin == O
-    assert frame1.shape == mesh_shape1
-    
-    frame1.name = 'frame1_'
-    assert frame1.name == 'frame1_'
-    
-    frame1.reference_frame = A
-    assert frame1.reference_frame == A
-    
-    frame1.origin = P1
-    assert frame1.origin == P1
-    
-    frame1.shape = mesh_shape2
-    assert frame1.shape == mesh_shape2    
-    
-    assert frame1.transform(I, O).tolist() == transformation_matrix
-    
-def test_vframe_with_rbody():
-    
-    frame2 = VisualizationFrame('frame2', rigid_body, shape=mesh_shape1)
-    
-    assert frame2.name == 'frame2'
-    assert frame2.reference_frame == A
-    assert frame2.origin == P1
-    assert frame2.shape == mesh_shape1
-    
-    frame2.name = 'frame2_'
-    assert frame2.name == 'frame2_'
-    
-    frame2.reference_frame = B
-    assert frame2.reference_frame == B
-    
-    frame2.origin = P2
-    assert frame2.origin == P2
-    
-    frame2.shape = mesh_shape2
-    assert frame2.shape == mesh_shape2    
+        assert self.frame1.name == 'frame1'
+        assert self.frame1.reference_frame == self.I
+        assert self.frame1.origin == self.O
+        assert self.frame1.shape == self.mesh_shape1
+        
+        self.frame1.name = 'frame1_'
+        assert self.frame1.name == 'frame1_'
+        
+        self.frame1.reference_frame = self.A
+        assert self.frame1.reference_frame == self.A
+        
+        self.frame1.origin = self.P1
+        assert self.frame1.origin == self.P1
+        
+        self.frame1.shape = self.mesh_shape2
+        assert self.frame1.shape == self.mesh_shape2    
+        
+        assert self.frame1.transform(self.I, self.O).tolist() == \
+                                             self.transformation_matrix
 
-    frame2.reference_frame = A
-    frame2.origin = P1
-    assert frame2.transform(I, O).tolist() == transformation_matrix
-    
-def test_vframe_with_particle():
-    
-    frame3 = VisualizationFrame('frame3', [particle1, A], shape=mesh_shape1)
-    
-    assert frame3.name == 'frame3'
-    assert frame3.reference_frame == A
-    assert frame3.origin == P1
-    assert frame3.shape == mesh_shape1
-    
-    frame3.name = 'frame3_'
-    assert frame3.name == 'frame3_'
-    
-    frame3.reference_frame = B
-    assert frame3.reference_frame == B
-    
-    frame3.origin = P2
-    assert frame3.origin == P2
-    
-    frame3.shape = mesh_shape2
-    assert frame3.shape == mesh_shape2        
 
-    frame3.reference_frame = A
-    frame3.origin = P1
-    assert frame3.transform(I, O).tolist() == transformation_matrix
+    def test_vframe_with_rbody(self):
+    
+        self.frame2 = VisualizationFrame('frame2', self.rigid_body, \
+                                                shape=self.mesh_shape1)
+        
+        assert self.frame2.name == 'frame2'
+        assert self.frame2.reference_frame == self.A
+        assert self.frame2.origin == self.P1
+        assert self.frame2.shape == self.mesh_shape1
+        
+        self.frame2.name = 'frame2_'
+        assert self.frame2.name == 'frame2_'
+        
+        self.frame2.reference_frame = self.B
+        assert self.frame2.reference_frame == self.B
+        
+        self.frame2.origin = self.P2
+        assert self.frame2.origin == self.P2
+        
+        self.frame2.shape = self.mesh_shape2
+        assert self.frame2.shape == self.mesh_shape2    
+
+        self.frame2.reference_frame = self.A
+        self.frame2.origin = self.P1
+        assert self.frame2.transform(self.I, self.O).tolist() == \
+                                            self.transformation_matrix
+                                            
+
+
+    def test_vframe_with_particle(self):
+        
+        self.frame3 = VisualizationFrame('frame3', \
+                                          self.particle1, self.A, \
+                                                shape=self.mesh_shape1)
+        
+        assert self.frame3.name == 'frame3'
+        assert self.frame3.reference_frame == self.A
+        assert self.frame3.origin == self.P1
+        assert self.frame3.shape == self.mesh_shape1
+        
+        self.frame3.name = 'frame3_'
+        assert self.frame3.name == 'frame3_'
+        
+        self.frame3.reference_frame = self.B
+        assert self.frame3.reference_frame == self.B
+        
+        self.frame3.origin = self.P2
+        assert self.frame3.origin == self.P2
+        
+        self.frame3.shape = self.mesh_shape2
+        assert self.frame3.shape == self.mesh_shape2        
+
+        self.frame3.reference_frame = self.A
+        self.frame3.origin = self.P1
+        assert self.frame3.transform(self.I, self.O).tolist() == \
+                                             self.transformation_matrix
+
+    def test_vframe_without_name(self):
+        self.frame4 = VisualizationFrame(self.I, self.O, \
+                                               shape=self.mesh_shape1)
+        
+        assert self.frame4.name == 'unnamed'
+        #To check if referenceframe and origin are defined 
+        #properly without name arg
+        assert self.frame4.reference_frame == self.I 
+        assert self.frame4.origin == self.O
+        assert self.frame4.shape == self.mesh_shape1
+        
+        self.frame4.name = 'frame1_'
+        assert self.frame4.name == 'frame1_'
+    
+    def test_equality_and_inequality(self):
+        self.frame1_ = VisualizationFrame('frame1', self.I, self.O, \
+                                                shape=self.mesh_shape1)
+        self.frame2_ = VisualizationFrame('frame2', self.rigid_body, \
+                                                shape=self.mesh_shape1)
+  
+        self.frame3_ = VisualizationFrame('frame3', \
+                                          self.particle1, self.A, \
+                                                shape=self.mesh_shape1)                                                   
+                                                                                           
+        assert self.frame1 == self.frame1_
+        assert self.frame2 == self.frame2_
+        assert self.frame3 == self.frame3_
+        
+        assert self.frame1 != self.frame2
+        assert self.frame1 != self.frame3
+        
+        assert self.frame2 != self.frame1
+        assert self.frame2 != self.frame3
+        
+        assert self.frame3 != self.frame1
+        assert self.frame3 != self.frame2
+                                                
+                                                
+    def test_vframe_nesting(self):
+        self.frame5 = VisualizationFrame('parent-frame'self.I, self.O, \
+                                               shape=self.mesh_shape1)
+        
+        self.frame5.add_child_frames(frame1,frame2,frame3)                                                        
+        assert self.frame5.get_children() == [frame1,frame2,frame3]
+                                               
+           
