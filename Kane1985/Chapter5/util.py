@@ -210,7 +210,7 @@ def _f_variables(Fr, q, dV_eq, dV_dq):
         # If Fr = -∂V/∂qi, then fs-p is independent of qi.
         if Fr[fr_idx] - dV_eq[fr_idx] == dV_dq[qi_idx]:
             non_arg.add(q[qi_idx])
-    return sorted(list(set(q) - non_arg)) + [symbols('t')]
+    return sorted(list(set(q) - non_arg)) + [symbols('t')], list(non_arg)
 
 
 def potential_energy(Fr, q, u, kde_map, vc_map=None):
@@ -232,7 +232,8 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
         dV_eq += dV_dq[s] * (W_sr[s, :len(Fr)] + W_sr[s, len(Fr):]*A_kr)
 
     if vc_map is not None:
-        f = map(lambda x: x(*_f_variables(Fr, q, dV_eq, dV_dq)),
+        f_arg, non_arg = _f_variables(Fr, q, dV_eq, dV_dq)
+        f = map(lambda x: x(*f_arg),
                 symbols('f1:{0}'.format(m + 1)))
         dV_eq = subs(dV_eq, dict(zip(dV_dq[-m:], f)))
         dV_dq = dV_dq[:-m]
@@ -262,7 +263,7 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
         dfdq = [Dummy('∂f{0}/∂q{1}'.format(i + 1, j + 1))
                 for i in range(len(f)) for j in range(len(q))]
         dfdq_replace = lambda x: reduce(
-                lambda y, z: y.replace(z[0], z[1]),
+                lambda y, z: y.replace(z[0], z[1]) if z[0] != 0 else y,
                 zip([fm.diff(qs) for fm in f for qs in q], dfdq),
                 x)
         dV_eq = map(dfdq_replace,
@@ -282,6 +283,14 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
         E = ZI_rref[:, Z.shape[1]:]
         f_eq = (E * Y)[Z.rank():]
         f_map = solve(f_eq, f)
+        if sorted(f_map.keys()) != f:
+            print('Unable to solve for all f uniquely.')
+            return None
+        for k, v in f_map.iteritems():
+            for qi in non_arg:
+                if v.diff(qi) != 0:
+                    print('{0} should not be a function of {1}'.format(k, qi))
+                    return None
         dV_dq_list = map(trigsimp, (subs(dV_dq_list, f_map)))
 
     alpha = symbols('α1:{0}'.format(len(q) + 1))
