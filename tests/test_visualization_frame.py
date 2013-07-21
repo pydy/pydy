@@ -152,30 +152,6 @@ class TestVisualizationFrameScene(object):
         self.frame4.name = 'frame1_'
         assert self.frame4.name == 'frame1_'
     
-    def test_equality_and_inequality(self):
-        self.frame1_ = VisualizationFrame('frame1', self.I, self.O, \
-                                                shape=self.mesh_shape1)
-        self.frame2_ = VisualizationFrame('frame2', self.rigid_body, \
-                                                shape=self.mesh_shape1)
-  
-        self.frame3_ = VisualizationFrame('frame3', \
-                                          self.particle1, self.A, \
-                                                shape=self.mesh_shape1)                                                   
-                                                                                           
-        assert self.frame1 == self.frame1_
-        assert self.frame2 == self.frame2_
-        assert self.frame3 == self.frame3_
-        
-        assert self.frame1 != self.frame2
-        assert self.frame1 != self.frame3
-        
-        assert self.frame2 != self.frame1
-        assert self.frame2 != self.frame3
-        
-        assert self.frame3 != self.frame1
-        assert self.frame3 != self.frame2
-                                                
-                                                
     def test_vframe_nesting(self):
         self.frame5 = VisualizationFrame('parent-frame'self.I, self.O, \
                                                shape=self.mesh_shape1)
