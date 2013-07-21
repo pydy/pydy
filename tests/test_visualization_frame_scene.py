@@ -10,7 +10,7 @@ class TestVisualizationFrameScene(object):
         self.q = dynamicsymbols('q:3')
         
         self.I = ReferenceFrame('I')
-        self.A = self.I.orientnew('A', 'body', self.p, 'XYZ') #p= [p1,p2,p3]
+        self.A = self.I.orientnew('A', 'body', self.p, 'XYZ') 
         self.B = self.A.orientnew('B', 'body', self.q, 'XYZ')
         
         self.O = Point('O')
@@ -113,7 +113,7 @@ class TestVisualizationFrameScene(object):
     def test_vframe_with_particle(self):
         
         self.frame3 = VisualizationFrame('frame3', \
-                                          self.particle1, self.A, \
+                                          self.particle, self.A, \
                                                 shape=self.mesh_shape1)
         
         assert self.frame3.name == 'frame3'
@@ -153,11 +153,12 @@ class TestVisualizationFrameScene(object):
         assert self.frame4.name == 'frame1_'
     
     def test_vframe_nesting(self):
-        self.frame5 = VisualizationFrame('parent-frame'self.I, self.O, \
-                                               shape=self.mesh_shape1)
+        self.frame5 = VisualizationFrame('parent-frame', self.I, \
+                                        self.O, shape=self.mesh_shape1)
         
-        self.frame5.add_child_frames(frame1,frame2,frame3)                                                        
-        assert self.frame5.get_children()[0] is self.frame1,
+        self.frame5.add_child_frames(self.frame1, self.frame2, \
+                                                       self.frame3)                                                        
+        assert self.frame5.get_children()[0] is self.frame1
         assert self.frame5.get_children()[1] is self.frame2
         assert self.frame5.get_children()[2] is self.frame3
            
@@ -165,26 +166,55 @@ class TestVisualizationFrameScene(object):
         #Camera is a subclass of VisualizationFrame, but without any
         #specific shape attached. We supply only ReferenceFrame,Point
         #to camera. and it inherits methods from VisualizationFrame
-        camera = Camera('camera',I,O)
+        camera = Camera('camera', self.I, self.O)
         
         assert camera.name == 'camera'
-        assert camera.reference_frame == I
-        assert cameta.origin == O
+        assert camera.reference_frame == self.I
+        assert camera.origin == self.O
         
         camera.name = 'camera1'
         assert camera.name == 'camera1'
         
-        camera.reference_frame = A
-        assert camera.reference_frame == A
+        camera.reference_frame = self.A
+        assert camera.reference_frame == sel.A
         
-        camera.origin = P1
-        assert camera.origin == P1
+        camera.origin = self.P1
+        assert camera.origin == self.P1
         
         #We can check transformation matrix for camera, in the extended 
         #example.
         
         #unnamed camera
-        camera1 = Camera(I,O)
+        camera1 = Camera(self.I, self.O)
         assert camera1.name == 'unnamed'
-        assert camera1.reference_frame == I
-        assert cameta1.origin == O
+        assert camera1.reference_frame == self.I
+        assert camera1.origin == self.O
+
+    def test_scene(self):
+        self.scene = Scene('scene', self.I, self.O)
+        self.scene.add_visualization_frames(self.frame1, self.frame2, \
+                                                      self.frame3)
+        assert self.scene.name == 'scene'                                                      
+        assert self.scene.reference_frame == self.I
+        assert self.scene.origin == self.O
+        assert self.scene.get_visualization_frames[0] is self.frame1
+        assert self.scene.get_visualization_frames[1] is self.frame2
+        assert self.scene.get_visualization_frames[2] is self.frame3
+        
+        
+        self.scene.name = 'scene1'
+        assert self.scene.name == 'scene1'
+        
+        self.scene.reference_frame = self.A
+        assert self.scene.reference_frame == self.A
+        
+        self.scene.remove_frame(self.frame1)
+        assert self.scene.frames[0] is self.frame2
+        assert self.scene.frames[1] is self.frame3
+        
+        self.scene.add_visualization_frame(self.frame1)
+        assert self.scene.frames[0] is self.frame1
+        assert self.scene.frames[1] is self.frame2
+        assert self.scene.frames[2] is self.frame3
+        #TODO check for multiple frame insertion 
+        #add_visualization_frames
