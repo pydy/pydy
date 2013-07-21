@@ -63,7 +63,7 @@ class TestVisualizationFrameScene(object):
         assert self.frame1.name == 'frame1'
         assert self.frame1.reference_frame == self.I
         assert self.frame1.origin == self.O
-        assert self.frame1.shape == self.mesh_shape1
+        assert self.frame1.shape is self.mesh_shape1
         
         self.frame1.name = 'frame1_'
         assert self.frame1.name == 'frame1_'
@@ -75,7 +75,7 @@ class TestVisualizationFrameScene(object):
         assert self.frame1.origin == self.P1
         
         self.frame1.shape = self.mesh_shape2
-        assert self.frame1.shape == self.mesh_shape2    
+        assert self.frame1.shape is self.mesh_shape2    
         
         assert self.frame1.transform(self.I, self.O).tolist() == \
                                              self.transformation_matrix
@@ -101,7 +101,7 @@ class TestVisualizationFrameScene(object):
         assert self.frame2.origin == self.P2
         
         self.frame2.shape = self.mesh_shape2
-        assert self.frame2.shape == self.mesh_shape2    
+        assert self.frame2.shape is self.mesh_shape2    
 
         self.frame2.reference_frame = self.A
         self.frame2.origin = self.P1
@@ -119,7 +119,7 @@ class TestVisualizationFrameScene(object):
         assert self.frame3.name == 'frame3'
         assert self.frame3.reference_frame == self.A
         assert self.frame3.origin == self.P1
-        assert self.frame3.shape == self.mesh_shape1
+        assert self.frame3.shape is self.mesh_shape1
         
         self.frame3.name = 'frame3_'
         assert self.frame3.name == 'frame3_'
@@ -131,7 +131,7 @@ class TestVisualizationFrameScene(object):
         assert self.frame3.origin == self.P2
         
         self.frame3.shape = self.mesh_shape2
-        assert self.frame3.shape == self.mesh_shape2        
+        assert self.frame3.shape is self.mesh_shape2        
 
         self.frame3.reference_frame = self.A
         self.frame3.origin = self.P1
@@ -147,7 +147,7 @@ class TestVisualizationFrameScene(object):
         #properly without name arg
         assert self.frame4.reference_frame == self.I 
         assert self.frame4.origin == self.O
-        assert self.frame4.shape == self.mesh_shape1
+        assert self.frame4.shape is self.mesh_shape1
         
         self.frame4.name = 'frame1_'
         assert self.frame4.name == 'frame1_'
@@ -157,8 +157,9 @@ class TestVisualizationFrameScene(object):
                                                shape=self.mesh_shape1)
         
         self.frame5.add_child_frames(frame1,frame2,frame3)                                                        
-        assert self.frame5.get_children() == [frame1,frame2,frame3]
-                                               
+        assert self.frame5.get_children()[0] is self.frame1,
+        assert self.frame5.get_children()[1] is self.frame2
+        assert self.frame5.get_children()[2] is self.frame3
            
     def test_camera(self):
         #Camera is a subclass of VisualizationFrame, but without any
