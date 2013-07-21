@@ -184,3 +184,30 @@ class TestVisualizationFrameScene(object):
         assert self.frame5.get_children() == [frame1,frame2,frame3]
                                                
            
+    def test_camera(self):
+        #Camera is a subclass of VisualizationFrame, but without any
+        #specific shape attached. We supply only ReferenceFrame,Point
+        #to camera. and it inherits methods from VisualizationFrame
+        camera = Camera('camera',I,O)
+        
+        assert camera.name == 'camera'
+        assert camera.reference_frame == I
+        assert cameta.origin == O
+        
+        camera.name = 'camera1'
+        assert camera.name == 'camera1'
+        
+        camera.reference_frame = A
+        assert camera.reference_frame == A
+        
+        camera.origin = P1
+        assert camera.origin == P1
+        
+        #We can check transformation matrix for camera, in the extended 
+        #example.
+        
+        #unnamed camera
+        camera1 = Camera(I,O)
+        assert camera1.name == 'unnamed'
+        assert camera1.reference_frame == I
+        assert cameta1.origin == O
