@@ -188,3 +188,32 @@ class TestVisualizationFrameScene(object):
         assert camera1.name == 'unnamed'
         assert camera1.reference_frame == I
         assert cameta1.origin == O
+
+    def test_scene(self):
+        self.scene = Scene('scene', I, O)
+        self.scene.add_visualization_frames(self.frame1, self.frame2, \
+                                                      self.frame3)
+        assert self.scene.name == 'scene'                                                      
+        assert self.scene.reference_frame == I
+        assert self.scene.origin == O
+        assert self.scene.get_visualization_frames[0] is self.frame1
+        assert self.scene.get_visualization_frames[1] is self.frame2
+        assert self.scene.get_visualization_frames[2] is self.frame3
+        
+        
+        self.scene.name = 'scene1'
+        assert self.scene.name == 'scene1'
+        
+        self.scene.reference_frame = A
+        assert self.scene.reference_frame == A
+        
+        self.scene.remove_frame(self.frame1)
+        self.scene.frames[0] is self.frame2
+        self.scene.frames[1] is self.frame3
+        
+        self.scene.add_visualization_frame(self.frame1)
+        assert self.scene.frames[0] is self.frame1
+        assert self.scene.frames[1] is self.frame2
+        assert self.scene.frames[2] is self.frame3
+        #TODO check for multiple frame insertion 
+        #add_visualization_frames
