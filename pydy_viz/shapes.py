@@ -1,6 +1,8 @@
 #importing matplotlib's colorconverter here,
 #module can be copied later in our source.
-__all__ = ['Shape']
+__all__ = ['Shape', \
+           'Cube',  \
+           'Cylinder']
 
 
 from matplotlib.colors import ColorConverter
@@ -247,7 +249,7 @@ class Cube(object):
         
     def __str__(self):
         return 'Cube ' + self._name + ' color:' + self._color + \
-                                            'length: ' + self._length
+                                        ' length: ' + str(self._length)
     
     def __repr__(self):
         return 'Cube'    
@@ -349,8 +351,8 @@ class Cylinder(object):
             
     def __str__(self):
         return 'Cylinder ' + self._name + ' color:' + self._color + \
-                                        'length: ' + self._length + \
-                                        'radius: ' + self._radius
+                                    ' length: ' + str(self._length) + \
+                                        ' radius: ' + str(self._radius)
     def __repr__(self):
         return 'Cylinder'    
 
