@@ -124,6 +124,10 @@ class Shape(object):
 
     def generate_visualization_frame(self, reference_frame, origin,\
                                                       name='UnNamed'):
+        ## I am not sure whether we want to include this method.
+        ## Or we want to generate VisualizationFrames from Scene class 
+        #Instead. 
+        
         """
         creates a VisualizationFrame with origin as the center
         of this shape.
