@@ -1,6 +1,6 @@
 from sympy.physics.mechanics import *
 from numpy.testing import assert_allclose
-#from pydy-viz import Shape, Cube, 
+from pydy-viz.shapes import Shape, Cube
 
 def test_cube():
     cube = Cube('cube', length=10, color='BLUE')
