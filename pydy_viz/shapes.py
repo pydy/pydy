@@ -4,6 +4,7 @@ __all__ = ['Shape']
 
 
 from matplotlib.colors import ColorConverter
+from sympy.physics.mechanics import Point, ReferenceFrame
 
 
 convert = ColorConverter()
