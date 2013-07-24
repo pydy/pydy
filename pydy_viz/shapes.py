@@ -225,7 +225,7 @@ class Cube(object):
     
     """
     
-    def __init__(self, length, name='UnNamed', color='grey'):
+    def __init__(self, name='UnNamed', color='grey', length=10):
         if not isinstance(name, str):
             raise TypeError('name should be a valid str object.')
         else:
@@ -320,7 +320,9 @@ class Cylinder(object):
     
     """
     
-    def __init__(self, length, radius, name='UnNamed', color='grey'):
+    def __init__(self, name='UnNamed', \
+                                  color='grey', length=10, radius=5):
+                                      
         if not isinstance(name, str):
             raise TypeError('name should be a valid str object.')
         else:
@@ -346,8 +348,8 @@ class Cylinder(object):
             
     def __str__(self):
         return 'Cylinder ' + self._name + ' color:' + self._color + \
-                                              'length: ' + self._length
-    
+                                        'length: ' + self._length + \
+                                        'radius: ' + self._radius
     def __repr__(self):
         return 'Cylinder'    
 
