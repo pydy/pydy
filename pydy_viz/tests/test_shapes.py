@@ -1,6 +1,33 @@
 from sympy.physics.mechanics import *
 from numpy.testing import assert_allclose
-#from pydy-viz import Shape, Cube, 
+from shapes import *
+
+def test_shape():
+    shape = Shape('shape', color='BLUE')
+    
+    assert shape.name == 'shape'
+    assert shape.__str__() == 'Shape shape color:BLUE'
+    assert shape.__repr__() == 'Shape'
+    assert shape.color == 'BLUE'
+    
+    shape.name = 'shape1'
+    assert shape.name == 'shape1'
+    
+    shape.color = 'RED'
+    assert shape.color == 'RED'
+    
+    assert shape.generate_dict() == {"color": (1.0, 0.0, 0.0), \
+                                                "type": "Shape", \
+                                   "name": "shape1"}
+
+    assert isinstance(shape, Shape)
+    
+    #testing unnamed
+    shape_ = Shape(color='BLUE')
+    
+    assert shape_.name == 'UnNamed'
+    assert shape_.__str__() == 'shape UnNamed color:BLUE'
+    assert shape_.__repr__() == 'Shape'
 
 def test_cube():
     cube = Cube('cube', length=10, color='BLUE')
@@ -20,7 +47,8 @@ def test_cube():
     cube.color = 'RED'
     assert cube.color == 'RED'
     
-    assert cube.generate_dict() == {"color": (1.0, 0.0, 0.0), "type": "Cube", \
+    assert cube.generate_dict() == {"color": (1.0, 0.0, 0.0), \
+                                               "type": "Cube", \
                                    "name": "cube1", "length": 16}
 
     assert isinstance(cube, Shape)
