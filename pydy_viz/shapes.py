@@ -125,6 +125,7 @@ class Shape(object):
         self._data_dict['name'] = self._name
         self._data_dict['color'] = self._color_rgb
         self._data_dict['type'] = self.__repr__()
+        return self._data_dict
         
     def __str__(self):
         return 'Shape ' + self._name + ' color:' + self._color
@@ -132,7 +133,7 @@ class Shape(object):
     def __repr__(self):
         return 'Shape'    
         
-class Cube(object):
+class Cube(Shape):
     """
     A Cube. This class generates a Cube, with given length of side, 
     and color.Default color is grey.
@@ -153,13 +154,13 @@ class Cube(object):
     >>> from pydy_viz.shapes import Cube
     >>> 
     >>> s = Cube(10)
-    >>> s.name()
+    >>> s.name
     'UnNamed'
-    >>> s.color()
+    >>> s.color
     'grey'
     >>> s.color_in_rgb()
     (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
-    >>>s.length()
+    >>>s.length
     10
     >>>#These can be changed later too ..
     >>> s.name = 'my-shape1'
@@ -169,7 +170,7 @@ class Cube(object):
     >>> s.color
     'blue'
     >>> s.length = 12
-    >>> s.length()
+    >>> s.length
     12
     >>> a = Cube(10, 'my-shape2', 'red')
     >>> a.name
@@ -204,7 +205,7 @@ class Cube(object):
         
     def __str__(self):
         return 'Cube ' + self._name + ' color:' + self._color + \
-                                        ' length: ' + str(self._length)
+                                        ' length:' + str(self._length)
     
     def __repr__(self):
         return 'Cube'    
@@ -220,7 +221,22 @@ class Cube(object):
         else:
             self._length = new_length
 
-class Cylinder(object):
+    def generate_dict(self):
+        """
+        Generates data dict along with the Shape info
+        for Cube, 
+        to be used by VisualizationFrame class.
+        """
+        self._data_dict = {}
+        self._data_dict['name'] = self._name
+        self._data_dict['color'] = self._color_rgb
+        self._data_dict['type'] = self.__repr__()
+        self._data_dict['length'] = self._length
+        
+        return self._data_dict
+        
+        
+class Cylinder(Shape):
     """
     A Cylinder. This class generates a Cylinder with given length,
     radius, and color. Default color is Grey.
@@ -241,15 +257,15 @@ class Cylinder(object):
     >>> from pydy_viz.shapes import Cylinder
     >>> 
     >>> s = Cylinder(10, 5)
-    >>> s.name()
+    >>> s.name
     'UnNamed'
-    >>> s.color()
+    >>> s.color
     'grey'
     >>> s.color_in_rgb()
     (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
-    >>> s.length()
+    >>> s.length
     10
-    >>> s.radius()
+    >>> s.radius
     5
     >>>#These can be changed later too ..
     >>> s.name = 'my-shape1'
@@ -259,10 +275,10 @@ class Cylinder(object):
     >>> s.color
     'blue'
     >>> s.length = 12
-    >>> s.length()
+    >>> s.length
     12
     >>> s.radius = 6
-    >>> s.radius()
+    >>> s.radius
     6
     >>> a = Cylinder(10, 5, 'my-shape2', 'red')
     >>> a.name
@@ -306,8 +322,8 @@ class Cylinder(object):
             
     def __str__(self):
         return 'Cylinder ' + self._name + ' color:' + self._color + \
-                                    ' length: ' + str(self._length) + \
-                                        ' radius: ' + str(self._radius)
+                                    ' length:' + str(self._length) + \
+                                        ' radius:' + str(self._radius)
     def __repr__(self):
         return 'Cylinder'    
 
@@ -332,3 +348,17 @@ class Cylinder(object):
             raise TypeError('''Radius should be a float or int''')
         else:
             self._radius = new_radius
+
+    def generate_dict(self):
+        """
+        Generates data dict along with the Shape info
+        for Cube, 
+        to be used by VisualizationFrame class.
+        """
+        self._data_dict = {}
+        self._data_dict['name'] = self._name
+        self._data_dict['color'] = self._color_rgb
+        self._data_dict['type'] = self.__repr__()
+        self._data_dict['length'] = self._length
+        self._data_dict['radius'] = self._radius
+        return self._data_dict
