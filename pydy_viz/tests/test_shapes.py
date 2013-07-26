@@ -16,6 +16,8 @@ def test_shape():
     shape.color = 'RED'
     assert shape.color == 'RED'
     
+    assert_allclose(shape.color_in_rgb(), (1.0, 0.0, 0.0))
+    
     assert shape.generate_dict() == {"color": (1.0, 0.0, 0.0), \
                                                 "type": "Shape", \
                                    "name": "shape1"}
@@ -26,7 +28,7 @@ def test_shape():
     shape_ = Shape(color='BLUE')
     
     assert shape_.name == 'UnNamed'
-    assert shape_.__str__() == 'shape UnNamed color:BLUE'
+    assert shape_.__str__() == 'Shape UnNamed color:BLUE'
     assert shape_.__repr__() == 'Shape'
 
 def test_cube():
@@ -47,6 +49,7 @@ def test_cube():
     cube.color = 'RED'
     assert cube.color == 'RED'
     
+    assert_allclose(cube.color_in_rgb(), (1.0, 0.0, 0.0))
     assert cube.generate_dict() == {"color": (1.0, 0.0, 0.0), \
                                                "type": "Cube", \
                                    "name": "cube1", "length": 16}
@@ -61,20 +64,19 @@ def test_cube():
     assert cube_.__repr__() == 'Cube'
     
 def test_cylinder():
-    cylinder = Cylinder('cylinder', height=10, radius=5, color='blue')
+    cylinder = Cylinder('cylinder', length=10, radius=5, color='blue')
     assert cylinder.name == 'cylinder'
-    assert cylinder.__str__() == 'Cylinder cylinder color:blue \
-    height:10 radius:5'
+    assert cylinder.__str__() == 'Cylinder cylinder color:blue length:10 radius:5'
     assert cylinder.__repr__() == 'Cylinder'
-    assert cylinder.height == 10
+    assert cylinder.length == 10
     assert cylinder.radius == 5
     assert cylinder.color == 'blue'
     
     cylinder.name = 'cylinder1'
     assert cylinder.name == 'cylinder1'
     
-    cylinder.height = 14
-    assert cylinder.height == 14
+    cylinder.length = 14
+    assert cylinder.length == 14
 
     cylinder.radius = 7
     assert cylinder.radius == 7
@@ -82,34 +84,33 @@ def test_cylinder():
     cylinder.color = 'cyan'
     assert cylinder.color == 'cyan'
 
+    assert_allclose(cylinder.color_in_rgb(), (0.0, 1.0, 1.0))
     assert cylinder.generate_dict() == {"color": (0.0, 1.0, 1.0), \
                                          "type": "Cylinder", \
-                                   "name": "cylinder1", "height": 14, \
+                                   "name": "cylinder1", "length": 14, \
                                        "radius" : 7}
                                        
     assert isinstance(cylinder, Shape)
     
-    cylinder_ = Cylinder(height=10, radius=5, color='blue')
+    cylinder_ = Cylinder(length=10, radius=5, color='blue')
     assert cylinder_.name == 'UnNamed'
-    assert cylinder_.__str__() == 'Cylinder UnNamed color:blue \
-    height:10 radius:5'
+    assert cylinder_.__str__() == 'Cylinder UnNamed color:blue length:10 radius:5'
     assert cylinder_.__repr__() == 'Cylinder'
     
 def test_cone():
     cone = Cone('cone', length=10, radius=5, color='darkblue')
     assert cone.name == 'cone'
-    assert cone.__str__() == 'Cone cone color:darkblue \
-    length:10 radius:5'
+    assert cone.__str__() == 'Cone cone color:darkblue length:10 radius:5'
     assert cone.__repr__() == 'Cone'
-    assert cone.height == 10
+    assert cone.length == 10
     assert cone.radius == 5
     assert cone.color == 'darkblue'
     
     cone.name = 'cone1'
     assert cone.name == 'cone1'
     
-    cone.height = 16
-    assert cone.height == 16
+    cone.length = 16
+    assert cone.length == 16
 
     cone.radius = 3
     assert cone.radius == 3
@@ -117,17 +118,19 @@ def test_cone():
     cone.color = 'darkcyan'
     assert cone.color == 'darkcyan'                                            
     
+    assert_allclose(cone.color_in_rgb(), (0.0, 0.5450980392156862, \
+                                            0.5450980392156862))
+                                            
     assert cone.generate_dict() == {"color": (0.0, 0.5450980392156862, \
                                             0.5450980392156862), \
                                               "type": "Cone", \
-                                       "name": "cone1", "height": 16, \
+                                       "name": "cone1", "length": 16, \
                                        "radius" : 3}
     assert isinstance(cone, Shape)
     
     cone_ = Cone(heigth=10, radius=5, color='darkblue')
     assert cone_.name == 'UnNamed'
-    assert cone_.__str__() == 'Cone UnNamed color:darkblue \
-    length:10 radius:5'
+    assert cone_.__str__() == 'Cone UnNamed color:darkblue length:10 radius:5'
     assert cone_.__repr__() == 'Cone'
                             
 def test_sphere():
@@ -147,6 +150,8 @@ def test_sphere():
     sphere.color = 'aqua'
     assert sphere.color == 'aqua'
 
+    assert_allclose(sohere.color_in_rgb(), (0.0, 1.0, 1.0))
+    
     assert sphere.generate_dict() == {"color":  (0.0, 1.0, 1.0), \
                                             "type": "Sphere", \
                                       "name": "sphere1", "radius" : 14}
@@ -175,6 +180,8 @@ def test_circle():
     circle.color = 'black'
     assert circle.color == 'black'
 
+    assert_allclose(circle.color_in_rgb(), (0.0, 0.0, 0.0))
+    
     assert circle.generate_dict() == {"color":  (0.0, 0.0, 0.0), \
                                          "type": "Circle", \
                                    "name": "circle1", "radius" : 12}
@@ -209,6 +216,9 @@ def test_mesh():
     
     mesh_shape.color = 'pink'
     assert mesh_shape.color == 'pink'
+    
+    assert_allclose(mesh_shape.color_in_rgb(), (1.0, 0.7529411764705882, \
+                                          0.796078431372549))
     
     assert mesh_shape.generate_dict() == {"color":  \
                                           (1.0, 0.7529411764705882, \
@@ -246,6 +256,10 @@ def test_plane():
     plane.color = 'lavender'
     assert plane.color == 'lavender'
     
+    assert_allclose(plane.color_in_rgb(), (0.9019607843137255, \
+                                             0.9019607843137255, \
+                                               0.9803921568627451))
+                                               
     assert plane.generate_dict() == {"color":  (0.9019607843137255, \
                                     0.9019607843137255, \
                                     0.9803921568627451), \
@@ -282,6 +296,9 @@ def test_tetrahedron():
     tetrahedron.color = 'orange'
     assert tetrahedron.color == 'orange'
 
+    assert_allclose(tetrahedron.color_in_rgb(), (1.0, 0.6470588235294118, \
+                                                                 0.0))
+                                               
     assert tetrahedron.generate_dict() == {"color":  (1.0, \
                                         0.6470588235294118, 0.0), \
                                           "type": "Tetrahedron", \
@@ -312,6 +329,8 @@ def test_octahedron():
     octahedron.color = 'red'
     assert octahedron.color == 'red'
 
+    assert_allclose(ocatahedron.color_in_rgb(), (1.0, 0.0, 0.0))
+    
     assert octahedron.generate_dict() == {"color": (1.0, 0.0, 0.0), \
                                           "type": "Octahedron", \
                                    "name": "octahedron1", "radius" : 2}
@@ -342,6 +361,10 @@ def test_icosahedron():
     icosahedron.color = '#FFC0CB'
     assert icosahedron.color == '#FFC0CB'
 
+    assert_allclose(icosahedron.color_in_rgb(), (1.0, \
+                                           0.7529411764705882, \
+                                                 0.796078431372549))
+                                                 
     assert icosahedron.generate_dict() == {"color": (1.0, \
                                     0.7529411764705882, \
                                           0.796078431372549), \
@@ -379,6 +402,8 @@ def test_torus():
     torus.color = '#FFFFFF'
     assert torus.color == '#FFFFFF'
 
+    assert_allclose(torus.color_in_rgb(), (1.0, 1.0, 1.0))
+    
     assert torus.generate_dict() == {"color": (1.0, 1.0, 1.0), \
                                           "type": "Torus", \
                                    "name": "torus1", "radius" : 15, \
@@ -418,6 +443,10 @@ def test_tube():
     tube.color = 'pink'
     assert tube.color == 'pink'
     
+    assert_allclose(tube.color_in_rgb(), (1.0, \
+                                             0.7529411764705882, \
+                                                 0.796078431372549))
+                                           
     assert tube.generate_dict() == {"color": (1.0, \
                                       0.7529411764705882, \
                                         0.796078431372549), \
@@ -457,6 +486,10 @@ def test_torus_knot():
     torus_knot.color = '#2E8B57'
     assert torus_knot.color == '#2E8B57'
 
+    assert_allclose(torus_knot.color_in_rgb(), (0.1803921568627451, \
+                                               0.5450980392156862, \
+                                                   0.3411764705882353))
+                                                 
     assert torus_knot.generate_dict() == {"color": \
                                             (0.1803921568627451, \
                                                0.5450980392156862, \
