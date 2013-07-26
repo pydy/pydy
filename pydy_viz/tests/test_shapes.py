@@ -128,7 +128,7 @@ def test_cone():
                                        "radius" : 3}
     assert isinstance(cone, Shape)
     
-    cone_ = Cone(heigth=10, radius=5, color='darkblue')
+    cone_ = Cone(length=10, radius=5, color='darkblue')
     assert cone_.name == 'UnNamed'
     assert cone_.__str__() == 'Cone UnNamed color:darkblue length:10 radius:5'
     assert cone_.__repr__() == 'Cone'
@@ -150,7 +150,7 @@ def test_sphere():
     sphere.color = 'aqua'
     assert sphere.color == 'aqua'
 
-    assert_allclose(sohere.color_in_rgb(), (0.0, 1.0, 1.0))
+    assert_allclose(sphere.color_in_rgb(), (0.0, 1.0, 1.0))
     
     assert sphere.generate_dict() == {"color":  (0.0, 1.0, 1.0), \
                                             "type": "Sphere", \
@@ -159,7 +159,7 @@ def test_sphere():
     
     sphere_ = Sphere(radius=10, color='azure')
     assert sphere_.name == 'UnNamed'
-    assert sphere_.__str__() == 'Sphere sphere color:azure radius:10'
+    assert sphere_.__str__() == 'Sphere UnNamed color:azure radius:10'
     assert sphere_.__repr__() == 'Sphere'
  
 def test_circle():
@@ -237,8 +237,7 @@ def test_mesh():
 def test_plane():
     plane = Plane('plane', length=10, width=20, color='indigo')
     assert plane.name == 'plane'
-    assert plane.__str__() == 'Plane plane color:indigo \
-    length:10 width:20'
+    assert plane.__str__() == 'Plane plane color:indigo length:10 width:20'
     assert plane.__repr__() == 'Plane'
     assert plane.length == 10
     assert plane.width == 20
@@ -270,9 +269,8 @@ def test_plane():
     
     plane_ = Plane(length=10, width=20, color='indigo')
     assert plane_.name == 'UnNamed'
-    assert plane.__str__() == 'Plane plane color:indigo \
-    length:10 width:20'
-    assert plane.__repr__() == 'Plane'
+    assert plane_.__str__() == 'Plane UnNamed color:indigo length:10 width:20'
+    assert plane_.__repr__() == 'Plane'
     
 def test_tetrahedron():
     #Tetrahedron,Octahedron and Icosahedron
