@@ -279,8 +279,7 @@ def test_tetrahedron():
     #docstrings
     tetrahedron = Tetrahedron('tetrahedron', radius=5, color='maroon')
     assert tetrahedron.name == 'tetrahedron'
-    assert tetrahedron.__str__() == 'Tetrahedron tetrahedron \
-    color:maroon radius:5'
+    assert tetrahedron.__str__() == 'Tetrahedron tetrahedron color:maroon radius:5'
     assert tetrahedron.__repr__() == 'Tetrahedron'
     assert tetrahedron.radius == 5
     assert tetrahedron.color == 'maroon'
@@ -305,15 +304,13 @@ def test_tetrahedron():
     
     tetrahedron_ = Tetrahedron(radius=5, color='maroon')
     assert tetrahedron_.name == 'UnNamed'
-    assert tetrahedron_.__str__() == 'Tetrahedron tetrahedron \
-    color:maroon radius:5'
+    assert tetrahedron_.__str__() == 'Tetrahedron UnNamed color:maroon radius:5'
     assert tetrahedron_.__repr__() == 'Tetrahedron'
 
 def test_octahedron():
     octahedron = Octahedron('octahedron', radius=12, color='purple')
     assert octahedron.name == 'octahedron'
-    assert octahedron.__str__() == 'Octahedron octahedron \
-    color:purple radius:12'
+    assert octahedron.__str__() == 'Octahedron octahedron color:purple radius:12'
     assert octahedron.__repr__() == 'Octahedron'
     assert octahedron.radius == 12
     assert octahedron.color == 'purple'
@@ -327,7 +324,7 @@ def test_octahedron():
     octahedron.color = 'red'
     assert octahedron.color == 'red'
 
-    assert_allclose(ocatahedron.color_in_rgb(), (1.0, 0.0, 0.0))
+    assert_allclose(octahedron.color_in_rgb(), (1.0, 0.0, 0.0))
     
     assert octahedron.generate_dict() == {"color": (1.0, 0.0, 0.0), \
                                           "type": "Octahedron", \
@@ -337,15 +334,13 @@ def test_octahedron():
     
     octahedron_ = Octahedron(radius=12, color='purple')
     assert octahedron_.name == 'UnNamed'
-    assert octahedron_.__str__() == 'Octahedron UnNamed \
-    color:purple radius:12'
+    assert octahedron_.__str__() == 'Octahedron UnNamed color:purple radius:12'
     assert octahedron_.__repr__() == 'Octahedron'
 
 def test_icosahedron():
     icosahedron = Icosahedron('icosahedron', radius=11, color='#FDF5E6')
     assert icosahedron.name == 'icosahedron'
-    assert icosahedron.__str__() == 'Icosahedron icosahedron \
-    color:#FDF5E6 radius:11'
+    assert icosahedron.__str__() == 'Icosahedron icosahedron color:#FDF5E6 radius:11'
     assert icosahedron.__repr__() == 'Icosahedron'
     assert icosahedron.radius == 11
     assert icosahedron.color == '#FDF5E6'
@@ -373,16 +368,14 @@ def test_icosahedron():
     
     icosahedron_ = Icosahedron(radius=11, color='#FDF5E6')
     assert icosahedron_.name == 'UnNamed'
-    assert icosahedron_.__str__() == 'Icosahedron UnNamed \
-    color:#FDF5E6 radius:11'
+    assert icosahedron_.__str__() == 'Icosahedron UnNamed color:#FDF5E6 radius:11'
     assert icosahedron_.__repr__() == 'Icosahedron'
                                                          
 def test_torus():
     torus = Torus('torus', radius=10, tube_radius=2, color='#FFFF00')
 
     assert torus.name == 'torus' 			
-    assert torus.__str__() == 'Torus torus color:#FFFF00 \
-    radius:10 tube radius:2' 			
+    assert torus.__str__() == 'Torus torus color:#FFFF00 radius:10 tube radius:2' 			
     assert torus.__repr__() == 'Torus' 			
     assert torus.radius == 10
     assert torus.tube_radius == 2
@@ -411,8 +404,7 @@ def test_torus():
     
     torus_ = Torus(radius=10, tube_radius=2, color='#FFFF00')
     assert torus_.name == 'UnNamed' 			
-    assert torus_.__str__() == 'Torus UnNamed color:#FFFF00 \
-    radius:10 tube radius:2' 			
+    assert torus_.__str__() == 'Torus UnNamed color:#FFFF00 radius:10 tube radius:2' 			
     assert torus_.__repr__() == 'Torus' 			
     
 def test_tube():
@@ -465,8 +457,7 @@ def test_torus_knot():
                                                        color='#C0C0C0')
 
     assert torus_knot.name == 'torus_knot' 			
-    assert torus_knot.__str__() == 'TorusKnot torus_knot color:#C0C0C0 \
-    radius:10 tube radius:2' 			
+    assert torus_knot.__str__() == 'TorusKnot torus_knot color:#C0C0C0 radius:10 tube radius:2' 			
     assert torus_knot.__repr__() == 'TorusKnot' 			
     assert torus_knot.radius == 10
     assert torus_knot.tube_radius == 2
@@ -500,6 +491,5 @@ def test_torus_knot():
 
     torus_knot_ = TorusKnot(radius=10, tube_radius=2, color='#C0C0C0')
     assert torus_knot_.name == 'UnNamed' 			
-    assert torus_knot_.__str__() == 'TorusKnot UnNamed color:#C0C0C0 \
-    radius:10 tube radius:2' 			
+    assert torus_knot_.__str__() == 'TorusKnot UnNamed color:#C0C0C0 radius:10 tube radius:2' 			
     assert torus_knot_.__repr__() == 'TorusKnot' 			
