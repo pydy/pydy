@@ -3,6 +3,10 @@
 __all__ = ['Shape', \
            'Cube',  \
            'Cylinder', \
+           'Cone', \
+           'Sphere', \
+           'Circle', \
+           'Plane', \
            ]
 
 
@@ -801,9 +805,9 @@ class Plane(Shape):
     def width(self):
         return self._width
     
-    @radius.setter
-    def radius(self, new_width):
-        if not isinstance(new_radius, (int, float)):
+    @width.setter
+    def width(self, new_width):
+        if not isinstance(new_width, (int, float)):
             raise TypeError('''Width should be a float or int''')
         else:
             self._width = new_width
@@ -822,3 +826,314 @@ class Plane(Shape):
         self._data_dict['width'] = self._width
         return self._data_dict
 
+class Tetrahedron(Shape):
+    """
+    A Tetrahedron. This class generates a Tetrahedron.
+    The argument given is the radius of the circumscribing sphere of the 
+    tetrahedron, 
+    and color. Default color is grey.
+    
+    Parameters
+    ==========
+    name : str
+        Name assigned to shape
+    color: str
+        A color string from list of colors in pydy_viz.colors module
+        This color is used in drawing visualizations for Tetrahedron
+    radius: int or float.
+        Radius of circum-scribing sphere of Tetrahedron
+
+    Examples
+    ========
+
+    >>> from pydy_viz.shapes import Tetrahedron
+    >>> 
+    >>> s = Tetrahedron(10)
+    >>> s.name
+    'UnNamed'
+    >>> s.color
+    'grey'
+    >>> s.color_in_rgb()
+    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
+    >>>s.radius
+    10
+    >>>#These can be changed later too ..
+    >>> s.name = 'my-shape1'
+    >>> s.name
+    'my-shape1'
+    >>> s.color = 'blue'
+    >>> s.color
+    'blue'
+    >>> s.radius = 12
+    >>> s.radius
+    12
+    >>> a = Tetrahedron('my-shape2', 'red', radius=10)
+    >>> a.name
+    'my-shape2'
+    >>> a.color
+    'red'
+    >>> a.radius
+    10
+    >>> a.color_in_rgb()
+    (1.0, 0.0, 0.0)
+    
+    """
+    
+    def __init__(self, name='UnNamed', color='grey', radius=10):
+        if not isinstance(name, str):
+            raise TypeError('name should be a valid str object.')
+        else:
+            self._name = name
+        
+        if not isinstance(color, str):
+            raise TypeError('''color should be a valid \
+                               colors string. for info on colors, see \
+                               pydy_viz.colors module''')       
+        else:
+            self._color = color
+            self._color_rgb = convert.to_rgb(color)                       
+        
+        if not isinstance(radius, (int, float)):
+            raise TypeError('''Radius should be a float or int''')
+        else:
+            self._radius = radius    
+        
+    def __str__(self):
+        return 'Tetrahedron ' + self._name + ' color:' + self._color + \
+                                        ' radius:' + str(self._radius)
+    
+    def __repr__(self):
+        return 'Tetrahedron'    
+
+    @property
+    def radius(self):
+        return self._radius
+    
+    @radius.setter
+    def radius(self, new_radius):
+        if not isinstance(new_radius, (int, float)):
+            raise TypeError('''Radius should be a float or int''')
+        else:
+            self._radius = new_radius
+
+    def generate_dict(self):
+        """
+        Generates data dict along with the Shape info
+        for Cube, 
+        to be used by VisualizationFrame class.
+        """
+        self._data_dict = {}
+        self._data_dict['name'] = self._name
+        self._data_dict['color'] = self._color_rgb
+        self._data_dict['type'] = self.__repr__()
+        self._data_dict['radius'] = self._radius
+        
+        return self._data_dict
+
+class Octahedron(Shape):
+    """
+    A Octahedron. This class generates a Octahedron.
+    The argument given is the radius of the circumscribing sphere of the 
+    octahedron, 
+    and color. Default color is grey.
+    
+    Parameters
+    ==========
+    name : str
+        Name assigned to shape
+    color: str
+        A color string from list of colors in pydy_viz.colors module
+        This color is used in drawing visualizations for Octahedron
+    radius: int or float.
+        Radius of the circum-scribing sphere for Octahedron
+
+    Examples
+    ========
+
+    >>> from pydy_viz.shapes import Octahedron
+    >>> 
+    >>> s = Octahedron(10)
+    >>> s.name
+    'UnNamed'
+    >>> s.color
+    'grey'
+    >>> s.color_in_rgb()
+    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
+    >>>s.radius
+    10
+    >>>#These can be changed later too ..
+    >>> s.name = 'my-shape1'
+    >>> s.name
+    'my-shape1'
+    >>> s.color = 'blue'
+    >>> s.color
+    'blue'
+    >>> s.radius = 12
+    >>> s.radius
+    12
+    >>> a = Octahedron('my-shape2', 'red', radius=10)
+    >>> a.name
+    'my-shape2'
+    >>> a.color
+    'red'
+    >>> a.radius
+    10
+    >>> a.color_in_rgb()
+    (1.0, 0.0, 0.0)
+    
+    """
+    
+    def __init__(self, name='UnNamed', color='grey', radius=10):
+        if not isinstance(name, str):
+            raise TypeError('name should be a valid str object.')
+        else:
+            self._name = name
+        
+        if not isinstance(color, str):
+            raise TypeError('''color should be a valid \
+                               colors string. for info on colors, see \
+                               pydy_viz.colors module''')       
+        else:
+            self._color = color
+            self._color_rgb = convert.to_rgb(color)                       
+        
+        if not isinstance(radius, (int, float)):
+            raise TypeError('''Radius should be a float or int''')
+        else:
+            self._radius = radius    
+        
+    def __str__(self):
+        return 'Octahedron ' + self._name + ' color:' + self._color + \
+                                        ' radius:' + str(self._radius)
+    
+    def __repr__(self):
+        return 'Octahedron'    
+
+    @property
+    def radius(self):
+        return self._radius
+    
+    @radius.setter
+    def radius(self, new_radius):
+        if not isinstance(new_radius, (int, float)):
+            raise TypeError('''Radius should be a float or int''')
+        else:
+            self._radius = new_radius
+
+    def generate_dict(self):
+        """
+        Generates data dict along with the Shape info
+        for Cube, 
+        to be used by VisualizationFrame class.
+        """
+        self._data_dict = {}
+        self._data_dict['name'] = self._name
+        self._data_dict['color'] = self._color_rgb
+        self._data_dict['type'] = self.__repr__()
+        self._data_dict['radius'] = self._radius
+        
+        return self._data_dict
+
+class Icosahedron(Shape):
+    """
+    A Icosahedron. This class generates a Icosahedron.
+    The argument given is the radius of the circumscribing sphere of the 
+    icosahedron, 
+    and color. Default color is grey.
+    
+    Parameters
+    ==========
+    name : str
+        Name assigned to shape
+    color: str
+        A color string from list of colors in pydy_viz.colors module
+        This color is used in drawing visualizations for Icosahedron
+    radius: int or float.
+        Radius of the circum-scribing sphere for Icosahedron
+
+    Examples
+    ========
+
+    >>> from pydy_viz.shapes import Icosahedron
+    >>> 
+    >>> s = Icosahedron(10)
+    >>> s.name
+    'UnNamed'
+    >>> s.color
+    'grey'
+    >>> s.color_in_rgb()
+    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
+    >>>s.radius
+    10
+    >>>#These can be changed later too ..
+    >>> s.name = 'my-shape1'
+    >>> s.name
+    'my-shape1'
+    >>> s.color = 'blue'
+    >>> s.color
+    'blue'
+    >>> s.radius = 12
+    >>> s.radius
+    12
+    >>> a = Icosahedron('my-shape2', 'red', radius=10)
+    >>> a.name
+    'my-shape2'
+    >>> a.color
+    'red'
+    >>> a.radius
+    10
+    >>> a.color_in_rgb()
+    (1.0, 0.0, 0.0)
+    
+    """
+    
+    def __init__(self, name='UnNamed', color='grey', radius=10):
+        if not isinstance(name, str):
+            raise TypeError('name should be a valid str object.')
+        else:
+            self._name = name
+        
+        if not isinstance(color, str):
+            raise TypeError('''color should be a valid \
+                               colors string. for info on colors, see \
+                               pydy_viz.colors module''')       
+        else:
+            self._color = color
+            self._color_rgb = convert.to_rgb(color)                       
+        
+        if not isinstance(radius, (int, float)):
+            raise TypeError('''Radius should be a float or int''')
+        else:
+            self._radius = radius    
+        
+    def __str__(self):
+        return 'Icosahedron ' + self._name + ' color:' + self._color + \
+                                        ' radius:' + str(self._radius)
+    
+    def __repr__(self):
+        return 'Icosahedron'    
+
+    @property
+    def radius(self):
+        return self._radius
+    
+    @radius.setter
+    def radius(self, new_radius):
+        if not isinstance(new_radius, (int, float)):
+            raise TypeError('''Radius should be a float or int''')
+        else:
+            self._radius = new_radius
+
+    def generate_dict(self):
+        """
+        Generates data dict along with the Shape info
+        for Cube, 
+        to be used by VisualizationFrame class.
+        """
+        self._data_dict = {}
+        self._data_dict['name'] = self._name
+        self._data_dict['color'] = self._color_rgb
+        self._data_dict['type'] = self.__repr__()
+        self._data_dict['radius'] = self._radius
+        
+        return self._data_dict
