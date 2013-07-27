@@ -8,10 +8,12 @@ class TestVisualizationFrameScene(object):
         #We define some quantities required for tests here..
         self.p = dynamicsymbols('p:3')
         self.q = dynamicsymbols('q:3')
+        self.dynamic = list(self.p) + list(self.q)
+        self.states = [0 for x in self.p] + [0 for x in self.q]
         
         self.I = ReferenceFrame('I')
-        self.A = self.I.orientnew('A', 'body', self.p, 'XYZ') 
-        self.B = self.A.orientnew('B', 'body', self.q, 'XYZ')
+        self.A = self.I.orientnew('A', 'space', self.p, 'XYZ') 
+        self.B = self.A.orientnew('B', 'space', self.q, 'XYZ')
         
         self.O = Point('O')
         self.P1 = self.O.locatenew('P1', 10 * self.I.x + \
@@ -29,9 +31,10 @@ class TestVisualizationFrameScene(object):
                                
                                
         self.Ixx, self.Iyy, self.Izz = symbols('Ixx Iyy Izz')
-        
         self.mass = symbols('mass')
-         
+        self.parameters = [self.Ixx, self.Iyy, self.Ixzz, self.mass]
+        self.param_vals = [0, 0, 0, 0] 
+        
         self.inertia = inertia(self.A, self.Ixx, self.Iyy, self.Izz)
 
         self.rigid_body = RigidBody('rigid_body1', self.P1, self.A, \
@@ -161,7 +164,39 @@ class TestVisualizationFrameScene(object):
         assert self.frame5.get_children()[0] is self.frame1
         assert self.frame5.get_children()[1] is self.frame2
         assert self.frame5.get_children()[2] is self.frame3
-           
+
+    def test_numeric_transform(self):
+        self.list2 = [[1.0, 0.0, 0.0, 0.0], \
+                      [0.0, 1.0, 0.0, 0.0], \
+                      [0.0, 0.0, 1.0, 0.0], \
+                      [10.0, 10.0, 10.0, 1.0]]
+        
+        self.list2 = [[1.0, 0.0, 0.0, 0.0], \
+                      [0.0, 1.0, 0.0, 0.0], \
+                      [0.0, 0.0, 1.0, 0.0], \
+                      [20.0, 20.0, 20.0, 1.0]]
+                      
+
+        self.frame1.transform(self.I, self.O)
+        self.frame1.generate_numeric_transform(self.dynamic, \
+                                                        self.parameters)
+        
+        assert self.frame1.evaluate_numeric_transform(self.states, \
+                                       self.param_vals).tolist() == \
+                                       self.list1
+        
+        self.frame1.reference_frame = self.B
+        self.frame1.origin = self.P2                                         
+        
+        self.frame1.transform(self.I, self.O)
+        self.frame1.generate_numeric_transform(self.dynamic, \
+                                                        self.parameters)
+        
+        assert self.frame1.evaluate_numeric_transform(self.states, \
+                                       self.param_vals).tolist() == \
+                                       self.list2
+        
+                   
     def test_camera(self):
         #Camera is a subclass of VisualizationFrame, but without any
         #specific shape attached. We supply only ReferenceFrame,Point
