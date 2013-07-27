@@ -11,7 +11,9 @@ __all__ = ['Shape', \
            'Octahedron', \
            'Icosahedron', \
            'Torus', \
-           'TorusKnot'
+           'TorusKnot', \
+           'Tube', \
+           'Mesh'
            ]
 
 
@@ -1652,3 +1654,122 @@ class Tube(Shape):
         self._data_dict['tube_radius'] = self._tube_radius
         return self._data_dict
 
+class Mesh(Shape):
+    """
+    A Mesh. This class generates a general Mesh from given points,
+    by drawing a curve passing through given points,
+    and color. Default color is grey.
+    
+    Parameters
+    ==========
+    name : str
+        Name assigned to Plane
+    color: str
+        A color string from list of colors in pydy_viz.colors module
+        This color is used in drawing visualizations for Plane
+    points: list of points which are used for making mesh
+    
+    Examples
+    ========
+
+    >>> from pydy_viz.shapes import Mesh
+    >>> point_list = [[1, 2, 1], [2, 1, 1], [2, 3, 4]]
+    >>> s = Mesh(points=point_list)
+    >>> s.name
+    'UnNamed'
+    >>> s.color
+    'grey'
+    >>> s.color_in_rgb()
+    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
+    >>> s.points
+    [[1, 2, 1], [2, 1, 1], [2, 3, 4]]
+    >>>#These can be changed later too ..
+    >>> s.name = 'my-shape1'
+    >>> s.name
+    'my-shape1'
+    >>> s.color = 'blue'
+    >>> s.color
+    'blue'
+    >>> s.points = [[2, 1, 4], [1, 2, 4], [2, 3, 1], [1, 1, 3]]
+    >>> s.points
+    [[2, 1, 4], [1, 2, 4], [2, 3, 1], [1, 1, 3]]
+    >>> a = Mesh('my-shape2', 'red', points=point_list)
+    >>> a.name
+    'my-shape2'
+    >>> a.color
+    'red'
+    >>> a.points
+    [[1, 2, 1], [2, 1, 1], [2, 3, 4]]
+    >>> a.color_in_rgb()
+    (1.0, 0.0, 0.0)
+    
+    """
+    
+    def __init__(self, name='UnNamed', \
+                                  color='grey', points=None):
+                                      
+        if not isinstance(name, str):
+            raise TypeError('name should be a valid str object.')
+        else:
+            self._name = name
+        
+        if not isinstance(color, str):
+            raise TypeError('''color should be a valid \
+                               colors string. for info on colors, see \
+                               pydy_viz.colors module''')       
+        else:
+            self._color = color
+            self._color_rgb = convert.to_rgb(color)                       
+        
+        if not isinstance(length, (int, float)):
+            raise TypeError('''Length should be a float or int''')
+        else:
+            self._length = length    
+        
+        if not isinstance(width, (int, float)):
+            raise TypeError('''Width should be a float or int''')
+        else:
+            self._width = width
+            
+    def __str__(self):
+        return 'Plane ' + self._name + ' color:' + self._color + \
+                                    ' length:' + str(self._length) + \
+                                        ' width:' + str(self._width)
+    def __repr__(self):
+        return 'Plane'    
+
+    @property
+    def length(self):
+        return self._length
+    
+    @length.setter
+    def length(self, new_length):
+        if not isinstance(new_length, (int, float)):
+            raise TypeError('''Length should be a float or int''')
+        else:
+            self._length = new_length            
+    
+    @property
+    def width(self):
+        return self._width
+    
+    @width.setter
+    def width(self, new_width):
+        if not isinstance(new_width, (int, float)):
+            raise TypeError('''Width should be a float or int''')
+        else:
+            self._width = new_width
+
+    def generate_dict(self):
+        """
+        Generates data dict along with the Shape info
+        for Plane, 
+        to be used by VisualizationFrame class.
+        """
+        self._data_dict = {}
+        self._data_dict['name'] = self._name
+        self._data_dict['color'] = self._color_rgb
+        self._data_dict['type'] = self.__repr__()
+        self._data_dict['length'] = self._length
+        self._data_dict['width'] = self._width
+        return self._data_dict
