@@ -23,6 +23,8 @@ class TestVisualizationFrameScene(object):
         self.point_list1 = [[2, 3, 1], [4, 6, 2], [5, 3, 1], [5, 3, 6]]
         self.point_list2 = [[3, 1, 4], [3, 8, 2], [2, 1, 6], [2, 1, 1]]
 
+        #any random simple shape .. 
+        #TODO replace by a mesh shape ideally, when its implemented
         self.mesh_shape1 = Cylinder()
         self.mesh_shape2 = Cylinder()
                                
