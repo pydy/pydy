@@ -4,13 +4,54 @@ import numpy as np
 from sympy.matrices.expressions import Identity
 from sympy import Dummy, lambdify
 
-#TODO Docstrings
 class VisualizationFrame(object):
     """
     A VisualizationFrame is an object used to draw a particular shape
     or set of shapes. 
-    It is an implementation of Scene-Graph. 
-   
+    It basically provides a ReferenceFrame, and an origin to the
+    particular shape attached to it, and is hence useful for the 
+    visualization and animation of the Shape.
+    It is a partial implementation of Scene-Graph. 
+    A VisualizationFrame can be attached to only one Shape Object.
+    It can be nested, i.e we can add visualization frames added to 
+    one visualization frames. Nesting can be used to make complex 
+    shape/objects. 
+    Alongwith Scene class, It can be used to form a complete 2-node
+    deep scene graph.
+    A VisualizationFrame needs to have a ReferenceFrame, and a Point 
+    for it to form transformation matrices for visualization and 
+    animations purposes. 
+    
+    Generally the ReferenceFrame and Point are provided during 
+    initialization, but it can also be initialized with a RigidBody
+    instance, or ReferenceFrame, Particle arguments as well.
+    
+    Since it has a very flexible initialization method, 
+    supplying of arguments is flexible as well, as illustrated in 
+    examples here.
+    
+    Parameters
+    ==========
+    name : str
+        Name assigned to VisualizationFrame, default is UnNamed
+    shape : Shape
+        Shape to be attached to the VisualizationFrame
+    reference_frame : ReferenceFrame
+        reference_frame with respect to which all orientations of the 
+        shape takes place, during visualizations/animations.
+    origin : Point
+        point with respect to which all the translations of the shape 
+        takes place, during visualizations/animations.
+       
+        Examples
+        ========
+        TODO: Not sure how to put huge examples here.
+        >>> from pydy_viz import Shape
+        >>>
+        >>> s = Shape()
+        >>> s.name
+        'UnNamed'
+    
     """
     def __init__(self, *args,**kwargs):
         #So, We use this approach for smart arguments..
@@ -139,6 +180,9 @@ class VisualizationFrame(object):
         
     @property
     def name(self):
+        """
+        name attribute of the Visualization Frame
+        """
         return self._name
     @name.setter
     def name(self,new_name):
@@ -149,6 +193,11 @@ class VisualizationFrame(object):
     
     @property
     def origin(self):
+        """
+        origin attribute of the VisualizationFrame, 
+        with respect to which all translational transformations
+        take place.
+        """
         return self._origin
     @origin.setter
     def origin(self, new_origin):
@@ -159,6 +208,11 @@ class VisualizationFrame(object):
             
     @property
     def reference_frame(self):
+        """
+        reference_frame attribute of the VisualizationFrame, 
+        with respect to which all rotational/orientational 
+        transformations take place.
+        """
         return self._reference_frame
     @reference_frame.setter
     def reference_frame(self, new_reference_frame):
@@ -170,6 +224,11 @@ class VisualizationFrame(object):
     
     @property
     def shape(self):
+        """
+        shape attribute of the VisualizationFrame.
+        A shape attached to the visualization frame.
+        NOTE: Only one shape can be attached to a visualization frame.
+        """
         return self._shape
     @shape.setter
     def shape(self,new_shape):
@@ -244,6 +303,15 @@ class VisualizationFrame(object):
         return self.simulation_matrix
         
     def add_child_frames(self, *args):
+        """
+        Used for nesting of visualization frames.
+        Helpful for implementing Scene graph.
+        
+        Parameters
+        ----------
+        visualization_frame: one or more VisualizationFrame objects.
+
+        """
         for _frame in args:
             if not isinstance(_frame, VisualizationFrame):
                 raise TypeError('''frame is not an instance 
@@ -252,6 +320,16 @@ class VisualizationFrame(object):
                 self.child_frames.append(_frame)      
                                  
     def remove_child_frames(self, *args):
+        """
+        Used for removing nested visualization frames.
+        Helpful for implementing Scene graph.
+        
+        Parameters
+        ----------
+        visualization_frame: one or more VisualizationFrame objects to 
+                             be removed.
+
+        """
         for _frame in args:
             if not isinstance(_frame, VisualizationFrame):
                     raise TypeError('''frame is not an instance 
@@ -260,6 +338,11 @@ class VisualizationFrame(object):
                 self.child_frames.remove(_frame)          
                     
     def generate_simulation_dict(self):
+        """
+        Returns a dictionary of all the info required
+        for the visualization of this frame, alongwith child.
+        
+        """
         self._data = {}
         self._data['name'] = self.name
         self._data['children'] = []
