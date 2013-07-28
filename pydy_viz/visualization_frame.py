@@ -1,5 +1,6 @@
 from sympy.physics.mechanics import *
 from shapes import *
+import numpy as np
 #TODO Docstrings
 
 class VisualizationFrame(object):
@@ -16,6 +17,7 @@ class VisualizationFrame(object):
         #incremented ..
         
         #With Great power comes great responsibility!!
+        #and this is being responsible for all type of args
         
         #If nothing is supplied ...
         if not args and not kwargs:
@@ -98,9 +100,8 @@ class VisualizationFrame(object):
         self.numeric_transform = lambdify(dummy_symbols + parameters,
                                           transform, modules="numpy")
    
-   def evaluate_numeric_transform(self, states, parameters):
-       #What if there is no such states.shape attrib?
-        """Returns the numerical transformation matrices for each time step.
+    def evaluate_numeric_transform(self, states, parameters):
+    """Returns the numerical transformation matrices for each time step.
 
         Parameters
         ----------
@@ -115,7 +116,10 @@ class VisualizationFrame(object):
             A 4 x 4 transformation matrix for each time step.
 
         """
-
+        #If states is instance of numpy array, well and good.
+        #else convert it to one:
+        if not isinstance(states,np.ndarray):
+            states = np.array(states)
         if len(states.shape) > 1:
             n = states.shape[0]
             new = zeros((n, 4, 4))
@@ -132,6 +136,11 @@ class VisualizationFrame(object):
         self._data = {}
         self._data['name'] = self._name
         self._data['shape'] = {}
-        self._data['shape'] = self._shape.generate_data()  # hidden method
-        self._data['simulation_matrix'] = self.simulation_matrix.tolist()
+        self._data['shape'] = self._shape.generate_data()  
+        if not self.simulation_matrix:
+            raise Error('''Please call the numerical 
+                            transformation methods,
+                           before generating simulation dict ''')
+        else:                   
+            self._data['simulation_matrix'] = self.simulation_matrix.tolist()
         return self._data 
