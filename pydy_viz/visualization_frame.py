@@ -1,8 +1,10 @@
 from sympy.physics.mechanics import *
 from shapes import *
 import numpy as np
-#TODO Docstrings
+from sympy.matrices.expressions import Identity
+from sympy import Dummy, lambdify
 
+#TODO Docstrings
 class VisualizationFrame(object):
     """
     A VisualizationFrame is an object used to draw a particular shape
@@ -15,10 +17,7 @@ class VisualizationFrame(object):
         i=0
         #If args[i] matches a condition, it is put up and i is 
         #incremented ..
-        
-        #With Great power comes great responsibility!!
-        #and this is being responsible for all type of args
-        
+
         #If nothing is supplied ...
         if not args and not kwargs:
             print '''WARNING:Initializing VisualizationFrame 
@@ -27,10 +26,11 @@ class VisualizationFrame(object):
                               You must supply a ReferenceFrame, and a
                               Point'''
             self._name = 'UnNamed'
+            
         
         #If name is supplied ...
         if i < len(args) and isinstance(args[i],str):
-            self._name = args[0]
+            self._name = args[i]
             i+=1
         #otherwise UnNamed ...    
         else:
@@ -42,21 +42,36 @@ class VisualizationFrame(object):
             self._origin = args[i].get_masscenter()
             i+=1
             
-        #Point,referenceFrame is supplied ...     
-        if i+1<len(args) and isinstance(args[i], Point) and \
+        #Point(or)Particle,referenceFrame is supplied ...     
+        if i+1<len(args):
+            if isinstance(args[i], Point) and \
                isinstance(args[i+1], ReferenceFrame):
                    
-            self._origin = args[i]
-            self._reference_frame = args[i+1]
-            i+=2    
-        
-        #ReferenceFrame/Point is supplied ...
-        if i+1<len(args) and isinstance(args[i], ReferenceFrame) and \
-               isinstance(args[i+1], Point):
+                self._origin = args[i]
+                self._reference_frame = args[i+1]
+                i+=2
+                
+            elif isinstance(args[i], Particle) and \
+               isinstance(args[i+1], ReferenceFrame):
                    
-            self._reference_frame = args[i]
-            self._origin = args[i+1]
-            i+=2    
+                self._origin = args[i].get_point()
+                self._reference_frame = args[i+1]
+                i+=2        
+        
+        #ReferenceFrame,Point(or Particle) is supplied ...
+        if i+1<len(args): 
+            if isinstance(args[i], ReferenceFrame) and \
+               isinstance(args[i+1], Point):
+                       
+                self._reference_frame = args[i]
+                self._origin = args[i+1]
+                i+=2    
+            elif isinstance(args[i], ReferenceFrame) and \
+                 isinstance(args[i+1], Particle):
+                   
+                self._reference_frame = args[i]
+                self._origin = args[i+1].get_point()
+                i+=2    
             
         if i<len(args) and isinstance(args[i], Shape):
             self._shape = args[i]
@@ -64,24 +79,117 @@ class VisualizationFrame(object):
         
         #User might want to use keyword args for assigning stuff ...
         if kwargs.has_key('name'):
-            self._name = kwargs['name']
+            if not isinstance(kwargs['name'], str):
+                raise TypeError('''Name should be a str object''')
+            else:
+                self._name = kwargs['name']
             
         if kwargs.has_key('reference_frame'):
-            self._reference_frame = kwargs['reference_frame']
+            if not isinstance(kwargs['reference_frame'], \
+                                             ReferenceFrame):
+                raise TypeError('''reference_frame should be a valid
+                                         ReferenceFrame object''')
+            else:
+                self._reference_frame = kwargs['reference_frame']
             
         if kwargs.has_key('origin'):
-            self._origin = args['origin']        
-            i+=1        
+            if not isinstance(kwargs['origin'], \
+                                             Point):
+                raise TypeError('''origin should be a valid
+                                         Point object''')
+            else:
+                self._origin = kwargs['origin']
             
         if kwargs.has_key('shape'):
-            self._shape = kwargs['shape']
-
+            if not isinstance(kwargs['shape'], \
+                                             Shape):
+                raise TypeError('''shape should be a valid
+                                         Shape object''')
+            else:
+                self._shape = kwargs['shape']
+                
+        if kwargs.has_key('particle'):
+            if not isinstance(kwargs['particle'], \
+                                             Particle):
+                raise TypeError('''particle should be a valid
+                                         Particle object''')
+            else:
+                self._origin = kwargs['particle'].get_point        
+                
+        if kwargs.has_key('rigidbody'):
+            if not isinstance(kwargs['rigidbody'], \
+                                             RigidBody):
+                raise TypeError('''rigidbody should be a valid RigidBody''')
+                
+            else:
+                self._reference_frame = kwargs['rigidbody'].get_frame()
+                self._origin = \
+                                   kwargs['rigidbody'].get_masscenter()
+                                   
+        #basic things required, transform matrix and child frames  
+        self._transform = Identity(4).as_mutable()
+        self.child_frames = []
+        
+    #setting attributes ..
+    def __str__(self):
+        return 'VisualizationFrame ' + self._name
+        
+    def __repr__(self):
+        return 'VisualizationFrame'    
+        
+    @property
+    def name(self):
+        return self._name
+    @name.setter
+    def name(self,new_name):
+        if not isinstance(new_name, str):
+            raise TypeError('''Name should be a str object''')
+        else:
+            self._name = new_name
+    
+    @property
+    def origin(self):
+        return self._origin
+    @origin.setter
+    def origin(self, new_origin):
+        if not isinstance(new_origin, Point):
+            raise TypeError('''origin should be a valid Point Object''')
+        else:
+            self._origin = new_origin        
+            
+    @property
+    def reference_frame(self):
+        return self._reference_frame
+    @reference_frame.setter
+    def reference_frame(self, new_reference_frame):
+        if not isinstance(new_reference_frame, ReferenceFrame):
+            raise TypeError('''reference_frame should be a valid
+                                ReferenceFrame object.''')
+        else:
+            self._reference_frame = new_reference_frame
+    
+    @property
+    def shape(self):
+        return self._shape
+    @shape.setter
+    def shape(self,new_shape):
+        if not isinstance(new_shape, Shape):
+            raise TypeError('''shape should be a valid Shape object.''')    
+        else:
+            self._shape = new_shape
+               
     def transform(self, reference_frame, point):
-        _rotation_matrix = self._reference_frame.dcm(reference_frame)
+        if not self.reference_frame:
+            raise Error('''Please supply a reference_frame to 
+                            the VisualizationFrame instance.''')
+        if not self.origin:
+            raise Error('''Please supply an origin to 
+                            the VisualizationFrame instance.''')                    
+        _rotation_matrix = self.reference_frame.dcm(reference_frame)
 
         self._transform[0:3, 0:3] = _rotation_matrix[0:3, 0:3]
 
-        _point_vector = self._origin.pos_from(point).express(reference_frame)
+        _point_vector = self.origin.pos_from(point).express(reference_frame)
 
         self._transform[3, 0] = _point_vector.dot(reference_frame.x)
         self._transform[3, 1] = _point_vector.dot(reference_frame.y)
@@ -91,7 +199,8 @@ class VisualizationFrame(object):
         
     def generate_numeric_transform(self, dynamic, parameters):
         """Returns a function which returns a transformation matrix given
-        the symbolic states and the symbolic system parameters."""
+        the symbolic states and the symbolic system parameters.
+        """
 
         dummy_symbols = [Dummy() for i in dynamic]
         dummy_dict = dict(zip(dynamic, dummy_symbols))
@@ -101,7 +210,7 @@ class VisualizationFrame(object):
                                           transform, modules="numpy")
    
     def evaluate_numeric_transform(self, states, parameters):
-    """Returns the numerical transformation matrices for each time step.
+        """Returns the numerical transformation matrices for each time step.
 
         Parameters
         ----------
@@ -124,23 +233,55 @@ class VisualizationFrame(object):
             n = states.shape[0]
             new = zeros((n, 4, 4))
             for i, time_instance in enumerate(states):
-                args = hstack((time_instance, parameters))
+                args = np.hstack((time_instance, parameters))
                 new[i, :, :] = self.numeric_transform(*args)
 
         else:
-            args = hstack((states, parameters))
+            args = np.hstack((states, parameters))
             new = self.numeric_transform(*args)
 
         self.simulation_matrix = new
-   def generate_simulation_dict(self):
+        return self.simulation_matrix
+        
+    def add_child_frames(self, *args):
+        for _frame in args:
+            if not isinstance(_frame, VisualizationFrame):
+                raise TypeError('''frame is not an instance 
+                                   of VisualizationFrame:''' + _frame)    
+            else:
+                self.child_frames.append(_frame)      
+                                 
+    def remove_child_frames(self, *args):
+        for _frame in args:
+            if not isinstance(_frame, VisualizationFrame):
+                    raise TypeError('''frame is not an instance 
+                                       of VisualizationFrame:''' + _frame)    
+            else:
+                self.child_frames.remove(_frame)          
+                    
+    def generate_simulation_dict(self):
         self._data = {}
-        self._data['name'] = self._name
-        self._data['shape'] = {}
-        self._data['shape'] = self._shape.generate_data()  
+        self._data['name'] = self.name
+        self._data['children'] = []
+        
+        #if child_frames list isnt empty
+        if len(self.child_frames > 0):
+            for _child in self.child_frames:
+                self._data['children'].append( \
+                                     _child.generate_simulation_dict())
+        if not self.shape:
+            raise Error('''Please assign a shape to the 
+                          VisualizationFrame before calling 
+                          generate_simulation_dict()''')
+        else:                  
+            self._data['shape'] = self.shape.generate_data()  
+            
         if not self.simulation_matrix:
             raise Error('''Please call the numerical 
                             transformation methods,
                            before generating simulation dict ''')
         else:                   
             self._data['simulation_matrix'] = self.simulation_matrix.tolist()
+            
         return self._data 
+
