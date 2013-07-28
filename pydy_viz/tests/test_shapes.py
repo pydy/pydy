@@ -456,7 +456,7 @@ def test_tube():
                                       0.7529411764705882, \
                                         0.796078431372549), \
                                           "type": "Tube", \
-                                   "name": "tube1", "radius" : 3, \
+                                   "name": "tube1", "radius" : 15, \
                                     "points" : new_point_list}
     
     assert isinstance(tube, Shape)

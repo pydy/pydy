@@ -19,7 +19,7 @@ __all__ = ['Shape', \
 
 from matplotlib.colors import ColorConverter
 from sympy.physics.mechanics import Point, ReferenceFrame
-
+import numpy as np
 
 convert = ColorConverter()
 
@@ -1399,137 +1399,11 @@ class TorusKnot(Shape):
         self._data_dict['tube_radius'] = self._tube_radius
         return self._data_dict
 
-class Torus(Shape):
-    """
-    A Torus. This class generates a Torus with given radius,
-    tube-radius, and color. Default color is grey.
-    
-    Parameters
-    ==========
-    name : str
-        Name assigned to Torus
-    color: str
-        A color string from list of colors in pydy_viz.colors module
-        This color is used in drawing visualizations for Torus
-    radius: int or float, radius of the Torus Shape
-    tube_radius: int or float, radius of the torus tube
-        
-    Examples
-    ========
-
-    >>> from pydy_viz.shapes import Torus
-    >>> 
-    >>> s = Torus(radius=10, tube_radius=5)
-    >>> s.name
-    'UnNamed'
-    >>> s.color
-    'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
-    >>> s.radius
-    10
-    >>> s.tube_radius
-    5
-    >>>#These can be changed later too ..
-    >>> s.name = 'my-shape1'
-    >>> s.name
-    'my-shape1'
-    >>> s.color = 'blue'
-    >>> s.color
-    'blue'
-    >>> s.radius = 12
-    >>> s.radius
-    12
-    >>> s.tube_radius = 6
-    >>> s.tube_radius
-    6
-    >>> a = Torus('my-shape2', 'red', radius=10, tube_radius=5)
-    >>> a.name
-    'my-shape2'
-    >>> a.color
-    'red'
-    >>> a.radius
-    10
-    >>> a.tube_radius
-    5
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
-    
-    """
-    
-    def __init__(self, name='UnNamed', \
-                                  color='grey', radius=10, tube_radius=5):
-                                      
-        if not isinstance(name, str):
-            raise TypeError('name should be a valid str object.')
-        else:
-            self._name = name
-        
-        if not isinstance(color, str):
-            raise TypeError('''color should be a valid \
-                               colors string. for info on colors, see \
-                               pydy_viz.colors module''')       
-        else:
-            self._color = color
-            self._color_rgb = convert.to_rgb(color)                       
-        
-        if not isinstance(radius, (int, float)):
-            raise TypeError('''Length should be a float or int''')
-        else:
-            self._radius = radius    
-        
-        if not isinstance(tube_radius, (int, float)):
-            raise TypeError('''Tube Radius should be a float or int''')
-        else:
-            self._tube_radius = tube_radius
-            
-    def __str__(self):
-        return 'Torus ' + self._name + ' color:' + self._color + \
-                                    ' radius:' + str(self._radius) + \
-                                ' tube radius:' + str(self._tube_radius)
-    def __repr__(self):
-        return 'Torus'    
-
-    @property
-    def radius(self):
-        return self._radius
-    
-    @radius.setter
-    def radius(self, new_radius):
-        if not isinstance(new_radius, (int, float)):
-            raise TypeError('''Length should be a float or int''')
-        else:
-            self._radius = new_radius            
-    
-    @property
-    def tube_radius(self):
-        return self._tube_radius
-    
-    @tube_radius.setter
-    def tube_radius(self, new_tube_radius):
-        if not isinstance(new_tube_radius, (int, float)):
-            raise TypeError('''Tube Radius should be a float or int''')
-        else:
-            self._tube_radius = new_tube_radius
-
-    def generate_dict(self):
-        """
-        Generates data dict along with the Shape info
-        for Torus, 
-        to be used by VisualizationFrame class.
-        """
-        self._data_dict = {}
-        self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
-        self._data_dict['type'] = self.__repr__()
-        self._data_dict['radius'] = self._radius
-        self._data_dict['tube_radius'] = self._tube_radius
-        return self._data_dict
-
 class Tube(Shape):
     """
-    A Tube. This class generates a Tube with given radius,
-    path, and color. Default color is grey.
+    A Tube. This class generates a Tube from given points,
+    by drawing a curve passing through given points,
+    with given radius and color. Default color is grey.
     
     Parameters
     ==========
@@ -1538,27 +1412,23 @@ class Tube(Shape):
     color: str
         A color string from list of colors in pydy_viz.colors module
         This color is used in drawing visualizations for Tube
-    radius: int or float, radius of the Tube Shape
-    points: list or list like objects, for the path of the Tube
-        
+    radius: radius of Tube    
+    points: list of points which are used for making Tube
+    
     Examples
     ========
 
     >>> from pydy_viz.shapes import Tube
-    >>> point_list =  [[3., 4., 5.], [1, 6., 8.], [2., 7., 3.]]
-    >>> s = Tube(radius=10, points=point_list)
+    >>> point_list = [[1, 2, 1], [2, 1, 1], [2, 3, 4]]
+    >>> s = Tube(points=point_list)
     >>> s.name
     'UnNamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
     (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
-    >>> s.radius
-    10
     >>> s.points
-    [3.0, 4.0, 5.0]
-    [  1, 6.0, 8.0]
-    [2.0, 7.0, 3.0]
+    [[1, 2, 1], [2, 1, 1], [2, 3, 4]]
     >>>#These can be changed later too ..
     >>> s.name = 'my-shape1'
     >>> s.name
@@ -1566,25 +1436,26 @@ class Tube(Shape):
     >>> s.color = 'blue'
     >>> s.color
     'blue'
-    >>> s.radius = 12
+    >>> s.radius = 14
     >>> s.radius
-    12
-    >>> a = TorusKnot('my-shape2', 'red', radius=10, points=point_list)
+    14
+    >>> s.points = [[2, 1, 4], [1, 2, 4], [2, 3, 1], [1, 1, 3]]
+    >>> s.points
+    [[2, 1, 4], [1, 2, 4], [2, 3, 1], [1, 1, 3]]
+    >>> a = Tube('my-shape2', 'red', radius=12, points=point_list)
     >>> a.name
     'my-shape2'
     >>> a.color
     'red'
     >>> a.radius
-    10
+    12
     >>> a.points
-    [3.0, 4.0, 5.0]
-    [  1, 6.0, 8.0]
-    [2.0, 7.0, 3.0]
+    [[1, 2, 1], [2, 1, 1], [2, 3, 4]]
     >>> a.color_in_rgb()
     (1.0, 0.0, 0.0)
     
     """
-    ##TODO
+    
     def __init__(self, name='UnNamed', \
                                   color='grey', radius=10, points=None):
                                       
@@ -1599,51 +1470,51 @@ class Tube(Shape):
                                pydy_viz.colors module''')       
         else:
             self._color = color
-            self._color_rgb = convert.to_rgb(color)                       
+            self._color_rgb = convert.to_rgb(color)        
         
         if not isinstance(radius, (int, float)):
-            raise TypeError('''Length should be a float or int''')
+            raise TypeError('''Radius should be either an 
+                                        int or a float.''')                   
         else:
-            self._radius = radius    
-        
-        if not isinstance(tube_radius, (int, float)):
-            raise TypeError('''Tube Radius should be a float or int''')
+            self._radius = radius
+              
+        if points is None:
+            raise TypeError('''Points should be defined for a mesh''')
         else:
-            self._tube_radius = tube_radius
+            _point_array = np.array(points)
+            self._points = _point_array
             
+        
     def __str__(self):
-        return 'TorusKnot ' + self._name + ' color:' + self._color + \
-                                    ' radius:' + str(self._radius) + \
-                                ' tube radius:' + str(self._tube_radius)
+        return 'Tube ' + self._name + ' color:' + self._color + \
+                                         ' radius:' + str(self._radius)
+                                    
     def __repr__(self):
-        return 'TorusKnot'    
+        return 'Tube'    
 
     @property
     def radius(self):
         return self._radius
-    
+        
     @radius.setter
-    def radius(self, new_radius):
+    def radius(self,new_radius):
         if not isinstance(new_radius, (int, float)):
-            raise TypeError('''Length should be a float or int''')
+            raise TypeError('''Radius should be either int or float''')    
         else:
-            self._radius = new_radius            
-    
+            self._radius = new_radius    
     @property
-    def tube_radius(self):
-        return self._tube_radius
+    def points(self):
+        return self._points
     
-    @tube_radius.setter
-    def tube_radius(self, new_tube_radius):
-        if not isinstance(new_tube_radius, (int, float)):
-            raise TypeError('''Tube Radius should be a float or int''')
-        else:
-            self._tube_radius = new_tube_radius
+    @points.setter
+    def points(self, new_point_list):
+        self._points = np.array(new_points_list)
+       
 
     def generate_dict(self):
         """
         Generates data dict along with the Shape info
-        for Torus, 
+        for Tube, 
         to be used by VisualizationFrame class.
         """
         self._data_dict = {}
@@ -1651,7 +1522,7 @@ class Tube(Shape):
         self._data_dict['color'] = self._color_rgb
         self._data_dict['type'] = self.__repr__()
         self._data_dict['radius'] = self._radius
-        self._data_dict['tube_radius'] = self._tube_radius
+        self._data_dict['points'] = self._points.tolist()
         return self._data_dict
 
 class Mesh(Shape):
@@ -1663,10 +1534,10 @@ class Mesh(Shape):
     Parameters
     ==========
     name : str
-        Name assigned to Plane
+        Name assigned to Mesh
     color: str
         A color string from list of colors in pydy_viz.colors module
-        This color is used in drawing visualizations for Plane
+        This color is used in drawing visualizations for Mesh
     points: list of points which are used for making mesh
     
     Examples
@@ -1721,55 +1592,38 @@ class Mesh(Shape):
             self._color = color
             self._color_rgb = convert.to_rgb(color)                       
         
-        if not isinstance(length, (int, float)):
-            raise TypeError('''Length should be a float or int''')
+        if points is None:
+            raise TypeError('''Points should be defined for a mesh''')
         else:
-            self._length = length    
-        
-        if not isinstance(width, (int, float)):
-            raise TypeError('''Width should be a float or int''')
-        else:
-            self._width = width
+            _point_array = np.array(points)
+            self._points = _point_array
             
+        
     def __str__(self):
-        return 'Plane ' + self._name + ' color:' + self._color + \
-                                    ' length:' + str(self._length) + \
-                                        ' width:' + str(self._width)
+        return 'Mesh ' + self._name + ' color:' + self._color
+                                    
     def __repr__(self):
-        return 'Plane'    
+        return 'Mesh'    
 
-    @property
-    def length(self):
-        return self._length
-    
-    @length.setter
-    def length(self, new_length):
-        if not isinstance(new_length, (int, float)):
-            raise TypeError('''Length should be a float or int''')
-        else:
-            self._length = new_length            
     
     @property
-    def width(self):
-        return self._width
+    def points(self):
+        return self._points
     
-    @width.setter
-    def width(self, new_width):
-        if not isinstance(new_width, (int, float)):
-            raise TypeError('''Width should be a float or int''')
-        else:
-            self._width = new_width
+    @points.setter
+    def points(self, new_point_list):
+        self._points = np.array(new_points_list)
+       
 
     def generate_dict(self):
         """
         Generates data dict along with the Shape info
-        for Plane, 
+        for Mesh, 
         to be used by VisualizationFrame class.
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
         self._data_dict['color'] = self._color_rgb
         self._data_dict['type'] = self.__repr__()
-        self._data_dict['length'] = self._length
-        self._data_dict['width'] = self._width
+        self._data_dict['points'] = self._points.tolist()
         return self._data_dict
