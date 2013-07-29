@@ -228,7 +228,7 @@ class TestVisualizationFrameScene(object):
         assert camera.name == 'camera1'
         
         camera.reference_frame = self.A
-        assert camera.reference_frame == sel.A
+        assert camera.reference_frame == self.A
         
         camera.origin = self.P1
         assert camera.origin == self.P1
