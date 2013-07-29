@@ -1,6 +1,4 @@
-from sympy.physics.mechanics import dynamicsymbols, ReferenceFrame, \
-                                  Point, RigidBody, Particle, inertia
-
+from sympy.physics.mechanics import Point, ReferenceFrame
 from shapes import Shape
 import numpy as np
 from sympy.matrices.expressions import Identity
@@ -68,7 +66,7 @@ class VisualizationFrame(object):
         >>> frame1 = VisualizationFrame('frame1', I, O, shape)
         >>> Ixx, Iyy, Izz, mass = symbols('Ixx Iyy Izz mass')
         >>> i = inertia(I, Ixx, Iyy, Izz)
-        >>> rbody = RigidBody('rbody', O, I, mass, (inertia, O)
+        >>> rbody = RigidBody('rbody', O, I, mass, (inertia, O))
         >>> # Initializing with a rigidbody ..
         >>> frame2 = VisualizationFrame('frame2', rbody, shape)
         >>> Pa = Particle('Pa', O, mass)
@@ -132,7 +130,7 @@ class VisualizationFrame(object):
         """
         return self._name
     @name.setter
-    def name(self,new_name):
+    def name(self, new_name):
         if not isinstance(new_name, str):
             raise TypeError('''Name should be a str object''')
         else:
@@ -178,7 +176,7 @@ class VisualizationFrame(object):
         """
         return self._shape
     @shape.setter
-    def shape(self,new_shape):
+    def shape(self, new_shape):
         if not isinstance(new_shape, Shape):
             raise TypeError('''shape should be a valid Shape object.''')    
         else:
@@ -235,11 +233,11 @@ class VisualizationFrame(object):
         """
         #If states is instance of numpy array, well and good.
         #else convert it to one:
-        if not isinstance(states,np.ndarray):
+        if not isinstance(states, np.ndarray):
             states = np.array(states)
         if len(states.shape) > 1:
             n = states.shape[0]
-            new = zeros((n, 4, 4))
+            new = np.zeros((n, 4, 4))
             for i, time_instance in enumerate(states):
                 args = np.hstack((time_instance, parameters))
                 new[i, :, :] = self.numeric_transform(*args)
@@ -311,11 +309,11 @@ class VisualizationFrame(object):
         self._data['shape'] = self.shape.generate_data()  
             
         if not self.simulation_matrix:
-            raise Error('''Please call the numerical 
+            #Not sure which error to call here.
+            raise RuntimeError('''Please call the numerical 
                             transformation methods,
                            before generating simulation dict ''')
         else:                   
             self._data['simulation_matrix'] = self.simulation_matrix.tolist()
             
         return self._data 
-
