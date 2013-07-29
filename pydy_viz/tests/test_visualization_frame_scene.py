@@ -1,5 +1,9 @@
-from sympy.physics.mechanics import *
+from sympy.physics.mechanics import dynamicsymbols, ReferenceFrame, \
+                                  Point, RigidBody, Particle, inertia
+                                    
 from sympy import sin, cos, symbols
+from shapes import Cylinder
+from visualization_frame import VisualizationFrame
 
 class TestVisualizationFrameScene(object):
     
@@ -23,10 +27,8 @@ class TestVisualizationFrameScene(object):
         self.point_list1 = [[2, 3, 1], [4, 6, 2], [5, 3, 1], [5, 3, 6]]
         self.point_list2 = [[3, 1, 4], [3, 8, 2], [2, 1, 6], [2, 1, 1]]
 
-        #any random simple shape .. 
-        #TODO replace by a mesh shape ideally, when its implemented
-        self.mesh_shape1 = Cylinder()
-        self.mesh_shape2 = Cylinder()
+        self.shape1 = Cylinder()
+        self.shape2 = Cylinder()
                                
                                
         self.Ixx, self.Iyy, self.Izz = symbols('Ixx Iyy Izz')
@@ -40,10 +42,10 @@ class TestVisualizationFrameScene(object):
                                  self.mass, (self.inertia, self.P1))
         
         self.global_frame1 = VisualizationFrame('global_frame1', \
-                                self.A, self.P1, shape=self.mesh_shape1)                  
+                                self.A, self.P1, shape=self.shape1)                  
                                  
         self.global_frame2 = VisualizationFrame('global_frame2', \
-                                self.B, self.P2, shape=self.mesh_shape2)                  
+                                self.B, self.P2, shape=self.shape2)                  
 
         self.particle = Particle('particle1', self.P1, self.mass)                            
         
@@ -64,12 +66,12 @@ class TestVisualizationFrameScene(object):
     
     def test_vframe_with_rframe(self):
         self.frame1 = VisualizationFrame('frame1', self.I, self.O, \
-                                                shape=self.mesh_shape1)
+                                                shape=self.shape1)
     
         assert self.frame1.name == 'frame1'
         assert self.frame1.reference_frame == self.I
         assert self.frame1.origin == self.O
-        assert self.frame1.shape is self.mesh_shape1
+        assert self.frame1.shape is self.shape1
         
         self.frame1.name = 'frame1_'
         assert self.frame1.name == 'frame1_'
@@ -80,8 +82,8 @@ class TestVisualizationFrameScene(object):
         self.frame1.origin = self.P1
         assert self.frame1.origin == self.P1
         
-        self.frame1.shape = self.mesh_shape2
-        assert self.frame1.shape is self.mesh_shape2    
+        self.frame1.shape = self.shape2
+        assert self.frame1.shape is self.shape2    
         
         assert self.frame1.transform(self.I, self.O).tolist() == \
                                              self.transformation_matrix
@@ -89,12 +91,12 @@ class TestVisualizationFrameScene(object):
 
     def test_vframe_with_rbody(self):
         self.frame2 = VisualizationFrame('frame2', self.rigid_body, \
-                                                shape=self.mesh_shape1)
+                                                shape=self.shape1)
         
         assert self.frame2.name == 'frame2'
         assert self.frame2.reference_frame == self.A
         assert self.frame2.origin == self.P1
-        assert self.frame2.shape == self.mesh_shape1
+        assert self.frame2.shape == self.shape1
         
         self.frame2.name = 'frame2_'
         assert self.frame2.name == 'frame2_'
@@ -105,8 +107,8 @@ class TestVisualizationFrameScene(object):
         self.frame2.origin = self.P2
         assert self.frame2.origin == self.P2
         
-        self.frame2.shape = self.mesh_shape2
-        assert self.frame2.shape is self.mesh_shape2    
+        self.frame2.shape = self.shape2
+        assert self.frame2.shape is self.shape2    
 
         self.frame2.reference_frame = self.A
         self.frame2.origin = self.P1
@@ -119,12 +121,12 @@ class TestVisualizationFrameScene(object):
         
         self.frame3 = VisualizationFrame('frame3', \
                                           self.particle, self.A, \
-                                                shape=self.mesh_shape1)
+                                                shape=self.shape1)
         
         assert self.frame3.name == 'frame3'
         assert self.frame3.reference_frame == self.A
         assert self.frame3.origin == self.P1
-        assert self.frame3.shape is self.mesh_shape1
+        assert self.frame3.shape is self.shape1
         
         self.frame3.name = 'frame3_'
         assert self.frame3.name == 'frame3_'
@@ -135,8 +137,8 @@ class TestVisualizationFrameScene(object):
         self.frame3.origin = self.P2
         assert self.frame3.origin == self.P2
         
-        self.frame3.shape = self.mesh_shape2
-        assert self.frame3.shape is self.mesh_shape2        
+        self.frame3.shape = self.shape2
+        assert self.frame3.shape is self.shape2        
 
         self.frame3.reference_frame = self.A
         self.frame3.origin = self.P1
@@ -145,21 +147,21 @@ class TestVisualizationFrameScene(object):
 
     def test_vframe_without_name(self):
         self.frame4 = VisualizationFrame(self.I, self.O, \
-                                               shape=self.mesh_shape1)
+                                               shape=self.shape1)
         
         assert self.frame4.name == 'UnNamed'
         #To check if referenceframe and origin are defined 
         #properly without name arg
         assert self.frame4.reference_frame == self.I 
         assert self.frame4.origin == self.O
-        assert self.frame4.shape is self.mesh_shape1
+        assert self.frame4.shape is self.shape1
         
         self.frame4.name = 'frame1_'
         assert self.frame4.name == 'frame1_'
     
     def test_vframe_nesting(self):
         self.frame5 = VisualizationFrame('parent-frame', self.I, \
-                                        self.O, shape=self.mesh_shape1)
+                                        self.O, shape=self.shape1)
         
         self.frame5.add_child_frames(self.global_frame1, \
                                           self.global_frame2)
