@@ -45,10 +45,10 @@ class TestVisualizationFrameScene(object):
                                  self.mass, (self.inertia, self.P1))
         
         self.global_frame1 = VisualizationFrame('global_frame1', \
-                                self.A, self.P1, shape=self.shape1)                  
+                                self.A, self.P1, self.shape1)                  
                                  
         self.global_frame2 = VisualizationFrame('global_frame2', \
-                                self.B, self.P2, shape=self.shape2)                  
+                                self.B, self.P2, self.shape2)                  
 
         self.particle = Particle('particle1', self.P1, self.mass)                            
         
@@ -69,7 +69,7 @@ class TestVisualizationFrameScene(object):
     
     def test_vframe_with_rframe(self):
         self.frame1 = VisualizationFrame('frame1', self.I, self.O, \
-                                                shape=self.shape1)
+                                                self.shape1)
     
         assert self.frame1.name == 'frame1'
         assert self.frame1.reference_frame == self.I
@@ -94,7 +94,7 @@ class TestVisualizationFrameScene(object):
 
     def test_vframe_with_rbody(self):
         self.frame2 = VisualizationFrame('frame2', self.rigid_body, \
-                                                shape=self.shape1)
+                                                self.shape1)
         
         assert self.frame2.name == 'frame2'
         assert self.frame2.reference_frame == self.A
@@ -123,8 +123,8 @@ class TestVisualizationFrameScene(object):
     def test_vframe_with_particle(self):
         
         self.frame3 = VisualizationFrame('frame3', \
-                                          self.particle, self.A, \
-                                                shape=self.shape1)
+                                          self.A, self.particle, \
+                                                self.shape1)
         
         assert self.frame3.name == 'frame3'
         assert self.frame3.reference_frame == self.A
@@ -150,7 +150,7 @@ class TestVisualizationFrameScene(object):
 
     def test_vframe_without_name(self):
         self.frame4 = VisualizationFrame(self.I, self.O, \
-                                               shape=self.shape1)
+                                               self.shape1)
         
         assert self.frame4.name == 'UnNamed'
         #To check if referenceframe and origin are defined 
@@ -164,7 +164,7 @@ class TestVisualizationFrameScene(object):
     
     def test_vframe_nesting(self):
         self.frame5 = VisualizationFrame('parent-frame', self.I, \
-                                        self.O, shape=self.shape1)
+                                        self.O, self.shape1)
         
         self.frame5.add_child_frames(self.global_frame1, \
                                           self.global_frame2)
@@ -268,5 +268,4 @@ class TestVisualizationFrameScene(object):
         assert self.scene.frames[0] is self.frame1
         assert self.scene.frames[1] is self.frame2
         assert self.scene.frames[2] is self.frame3
-        #TODO check for multiple frame insertion 
-        #add_visualization_frames
+        
