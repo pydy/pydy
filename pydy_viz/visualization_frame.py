@@ -1,5 +1,7 @@
-from sympy.physics.mechanics import *
-from shapes import *
+from sympy.physics.mechanics import dynamicsymbols, ReferenceFrame, \
+                                  Point, RigidBody, Particle, inertia
+
+from shapes import Shape
 import numpy as np
 from sympy.matrices.expressions import Identity
 from sympy import Dummy, lambdify
@@ -27,9 +29,9 @@ class VisualizationFrame(object):
     
     1)reference_frame, point argument.
     2)a RigidBody argument
-    3)Particle, reference frame argument.
+    3)reference_frame, particle argument.
     
-    
+    In addition to these arguments, A shape argument is also required.
     
     
     Parameters
@@ -46,7 +48,7 @@ class VisualizationFrame(object):
         takes place, during visualizations/animations.
        
     """
-    def __init__(self, *args,**kwargs):
+    def __init__(self, *args):
         """
         Initialises a VisualizationFrame object.
         To initialize a visualization frame, we need to supply
@@ -71,123 +73,47 @@ class VisualizationFrame(object):
         >>> frame2 = VisualizationFrame('frame2', rbody, shape)
         >>> Pa = Particle('Pa', O, mass)
         >>> #initializing with Particle, reference_frame ...
-        >>> frame3 = VisualizationFrame('frame3', Pa, I, shape)
-        
-
+        >>> frame3 = VisualizationFrame('frame3', I, Pa, shape)
+        >>> #These can be changed later too ..
+        >>> frame1.name = 'frame1_'
+        >>> frame1.name
+        'frame1_'
+        >>> frame1.reference_frame = I
+        >>> frame1.reference_frame
+        I
+        >>> frame1.shape = shape
+        >>> frame1.shape
+        shape
         """
-        #So, We use this approach for smart arguments..
-        i=0
-        #If args[i] matches a condition, it is put up and i is 
-        #incremented ..
-
-        #If nothing is supplied ...
-        if not args and not kwargs:
-            print '''WARNING:Initializing VisualizationFrame 
-                              without any ReferenceFrame, Point.
-                              For Visualizations to work, 
-                              You must supply a ReferenceFrame, and a
-                              Point'''
-            self._name = 'UnNamed'
-            
-        
-        #If name is supplied ...
-        if i < len(args) and isinstance(args[i],str):
-            self._name = args[i]
-            i+=1
-        #otherwise UnNamed ...    
+        #Last arg should be a Shape ..
+        if isinstance(args[-1], Shape):
+            self._shape = args[-1]
         else:
-            self._name = 'UnNamed'
-            
-        #RigidBody is supplied ...
-        if i < len(args) and isinstance(args[i], RigidBody):
+            raise TypeError('''Please provide a valid shape object''')    
+        i = 0
+        #If first arg is not str, name the visualization frame 'UnNamed'    
+        if isinstance(args[i], str):
+            self._name = args[i]
+            i += 1
+        else:
+            self._name = 'UnNamed'        
+        
+        try:
             self._reference_frame = args[i].get_frame()
             self._origin = args[i].get_masscenter()
-            i+=1
             
-        #Point(or)Particle,referenceFrame is supplied ...     
-        if i+1<len(args):
-            if isinstance(args[i], Point) and \
-               isinstance(args[i+1], ReferenceFrame):
-                   
-                self._origin = args[i]
-                self._reference_frame = args[i+1]
-                i+=2
-                
-            elif isinstance(args[i], Particle) and \
-               isinstance(args[i+1], ReferenceFrame):
-                   
+        except AttributeError:
+            #It is not a rigidbody, hence this arg should be a 
+            #reference frame
+            self._reference_frame = args[i]
+            i += 1
+            
+            #Now next arg can either be a Particle or point
+            try:
                 self._origin = args[i].get_point()
-                self._reference_frame = args[i+1]
-                i+=2        
-        
-        #ReferenceFrame,Point(or Particle) is supplied ...
-        if i+1<len(args): 
-            if isinstance(args[i], ReferenceFrame) and \
-               isinstance(args[i+1], Point):
-                       
-                self._reference_frame = args[i]
-                self._origin = args[i+1]
-                i+=2    
-            elif isinstance(args[i], ReferenceFrame) and \
-                 isinstance(args[i+1], Particle):
-                   
-                self._reference_frame = args[i]
-                self._origin = args[i+1].get_point()
-                i+=2    
-            
-        if i<len(args) and isinstance(args[i], Shape):
-            self._shape = args[i]
-            i+=1    
-        
-        #User might want to use keyword args for assigning stuff ...
-        if kwargs.has_key('name'):
-            if not isinstance(kwargs['name'], str):
-                raise TypeError('''Name should be a str object''')
-            else:
-                self._name = kwargs['name']
-            
-        if kwargs.has_key('reference_frame'):
-            if not isinstance(kwargs['reference_frame'], \
-                                             ReferenceFrame):
-                raise TypeError('''reference_frame should be a valid
-                                         ReferenceFrame object''')
-            else:
-                self._reference_frame = kwargs['reference_frame']
-            
-        if kwargs.has_key('origin'):
-            if not isinstance(kwargs['origin'], \
-                                             Point):
-                raise TypeError('''origin should be a valid
-                                         Point object''')
-            else:
-                self._origin = kwargs['origin']
-            
-        if kwargs.has_key('shape'):
-            if not isinstance(kwargs['shape'], \
-                                             Shape):
-                raise TypeError('''shape should be a valid
-                                         Shape object''')
-            else:
-                self._shape = kwargs['shape']
+            except AttributeError:
+                self._origin = args[i]
                 
-        if kwargs.has_key('particle'):
-            if not isinstance(kwargs['particle'], \
-                                             Particle):
-                raise TypeError('''particle should be a valid
-                                         Particle object''')
-            else:
-                self._origin = kwargs['particle'].get_point        
-                
-        if kwargs.has_key('rigidbody'):
-            if not isinstance(kwargs['rigidbody'], \
-                                             RigidBody):
-                raise TypeError('''rigidbody should be a valid RigidBody''')
-                
-            else:
-                self._reference_frame = kwargs['rigidbody'].get_frame()
-                self._origin = \
-                                   kwargs['rigidbody'].get_masscenter()
-                                   
         #basic things required, transform matrix and child frames  
         self._transform = Identity(4).as_mutable()
         self.child_frames = []
@@ -259,12 +185,6 @@ class VisualizationFrame(object):
             self._shape = new_shape
                
     def transform(self, reference_frame, point):
-        if not self.reference_frame:
-            raise Error('''Please supply a reference_frame to 
-                            the VisualizationFrame instance.''')
-        if not self.origin:
-            raise Error('''Please supply an origin to 
-                            the VisualizationFrame instance.''')                    
         _rotation_matrix = self.reference_frame.dcm(reference_frame)
 
         self._transform[0:3, 0:3] = _rotation_matrix[0:3, 0:3]
@@ -280,6 +200,14 @@ class VisualizationFrame(object):
     def generate_numeric_transform(self, dynamic, parameters):
         """Returns a function which returns a transformation matrix given
         the symbolic states and the symbolic system parameters.
+        
+        Parameters
+        ==========
+        dynamic : list of all the dynamic symbols used in defining the 
+                  mechanics objects.
+        parameters : list of all symbols used in defining the 
+                     mechanics objects
+    
         """
 
         dummy_symbols = [Dummy() for i in dynamic]
@@ -328,6 +256,12 @@ class VisualizationFrame(object):
         Used for nesting of visualization frames.
         Helpful for implementing Scene graph.
         
+        In this way we can create complex shapes.
+        We break complex shapes into simple shapes from the Shape
+        subclasses, then we supply a visualization frame for them,
+        and then we add them to a parent frame, whose reference frame
+        and origin are those in which the shape is created on.
+        
         Parameters
         ----------
         visualization_frame: one or more VisualizationFrame objects.
@@ -340,28 +274,28 @@ class VisualizationFrame(object):
             else:
                 self.child_frames.append(_frame)      
                                  
-    def remove_child_frames(self, *args):
-        """
-        Used for removing nested visualization frames.
-        Helpful for implementing Scene graph.
-        
-        Parameters
-        ----------
-        visualization_frame: one or more VisualizationFrame objects to 
-                             be removed.
-
-        """
-        for _frame in args:
-            if not isinstance(_frame, VisualizationFrame):
-                    raise TypeError('''frame is not an instance 
-                                       of VisualizationFrame:''' + _frame)    
-            else:
-                self.child_frames.remove(_frame)          
                     
     def generate_simulation_dict(self):
         """
         Returns a dictionary of all the info required
         for the visualization of this frame, alongwith child.
+        
+        Before calling this method, all the transformation matrix
+        generation methods should be called, or it will give an error.
+        
+        Returns
+        ======
+        
+        a dictionary containing following keys:
+        
+        name : name of the VisualizationFrame
+        children : simulation dictionary of child frames
+        shape : shape info of the attached shape, 
+        like dimensions, color etc.It is generated from generator method 
+        of Shape class.
+        simulation_matrix : a N*4*4 matrix, converted to list, for
+        passing to Javascript for animation purposes, where N is the 
+        number of timesteps for animations.
         
         """
         self._data = {}
@@ -373,12 +307,8 @@ class VisualizationFrame(object):
             for _child in self.child_frames:
                 self._data['children'].append( \
                                      _child.generate_simulation_dict())
-        if not self.shape:
-            raise Error('''Please assign a shape to the 
-                          VisualizationFrame before calling 
-                          generate_simulation_dict()''')
-        else:                  
-            self._data['shape'] = self.shape.generate_data()  
+             
+        self._data['shape'] = self.shape.generate_data()  
             
         if not self.simulation_matrix:
             raise Error('''Please call the numerical 
