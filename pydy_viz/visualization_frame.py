@@ -6,29 +6,31 @@ from sympy import Dummy, lambdify
 
 class VisualizationFrame(object):
     """
-    A VisualizationFrame is an object used to draw a particular shape
-    or set of shapes. 
-    It basically provides a ReferenceFrame, and an origin to the
+    A VisualizationFrame is an object used to draw a particular shape.
+    It provides a ReferenceFrame, and an origin to the
     particular shape attached to it, and is hence useful for the 
     visualization and animation of the Shape.
-    It is a partial implementation of Scene-Graph. 
+    
     A VisualizationFrame can be attached to only one Shape Object.
-    It can be nested, i.e we can add visualization frames added to 
-    one visualization frames. Nesting can be used to make complex 
-    shape/objects. 
-    Alongwith Scene class, It can be used to form a complete 2-node
-    deep scene graph.
+    It can be nested, i.e we can add/remove multiple visualization frames to 
+    one visualization frame. On adding the parent frame to the 
+    Scene object, all the children of the parent visualization frame
+    are also added, and hence can be visualized and animated.
+    
+    
     A VisualizationFrame needs to have a ReferenceFrame, and a Point 
     for it to form transformation matrices for visualization and 
-    animations purposes. 
+    animations. 
     
-    Generally the ReferenceFrame and Point are provided during 
-    initialization, but it can also be initialized with a RigidBody
-    instance, or ReferenceFrame, Particle arguments as well.
+    The ReferenceFrame and Point are required to be provided during 
+    initialization. They can be supplied in the form of any one of these:
     
-    Since it has a very flexible initialization method, 
-    supplying of arguments is flexible as well, as illustrated in 
-    examples here.
+    1)reference_frame, point argument.
+    2)a RigidBody argument
+    3)Particle, reference frame argument.
+    
+    
+    
     
     Parameters
     ==========
@@ -43,17 +45,36 @@ class VisualizationFrame(object):
         point with respect to which all the translations of the shape 
         takes place, during visualizations/animations.
        
-        Examples
-        ========
-        TODO: Not sure how to put huge examples here.
-        >>> from pydy_viz import Shape
-        >>>
-        >>> s = Shape()
-        >>> s.name
-        'UnNamed'
-    
     """
     def __init__(self, *args,**kwargs):
+        """
+        Initialises a VisualizationFrame object.
+        To initialize a visualization frame, we need to supply
+        a name(optional), a reference frame, a point, a shape. 
+        
+        Examples
+        ========
+        >>> from pydy_viz import VisualizationFrame, Shape
+        >>> from sympy.physics.mechanics import \
+                               ReferenceFrame, Point, RigidBody, \
+                                Particle, inertia
+        >>> from sympy import symbols                               
+        >>> I = ReferenceFrame('I')
+        >>> O = Point('O')
+        >>> shape = Shape()
+        >>> #initializing with reference frame, point
+        >>> frame1 = VisualizationFrame('frame1', I, O, shape)
+        >>> Ixx, Iyy, Izz, mass = symbols('Ixx Iyy Izz mass')
+        >>> i = inertia(I, Ixx, Iyy, Izz)
+        >>> rbody = RigidBody('rbody', O, I, mass, (inertia, O)
+        >>> # Initializing with a rigidbody ..
+        >>> frame2 = VisualizationFrame('frame2', rbody, shape)
+        >>> Pa = Particle('Pa', O, mass)
+        >>> #initializing with Particle, reference_frame ...
+        >>> frame3 = VisualizationFrame('frame3', Pa, I, shape)
+        
+
+        """
         #So, We use this approach for smart arguments..
         i=0
         #If args[i] matches a condition, it is put up and i is 
