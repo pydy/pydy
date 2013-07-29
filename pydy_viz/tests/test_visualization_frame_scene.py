@@ -4,6 +4,8 @@ from sympy.physics.mechanics import dynamicsymbols, ReferenceFrame, \
 from sympy import sin, cos, symbols
 from shapes import Cylinder
 from visualization_frame import VisualizationFrame
+from numpy import radians
+from numpy.testing import assert_allclose
 
 class TestVisualizationFrameScene(object):
     
@@ -12,7 +14,8 @@ class TestVisualizationFrameScene(object):
         self.p = dynamicsymbols('p:3')
         self.q = dynamicsymbols('q:3')
         self.dynamic = list(self.p) + list(self.q)
-        self.states = [0 for x in self.p] + [0 for x in self.q]
+        self.states = [radians(45) for x in self.p] + \
+                               [radians(30) for x in self.q]
         
         self.I = ReferenceFrame('I')
         self.A = self.I.orientnew('A', 'space', self.p, 'XYZ') 
@@ -175,32 +178,40 @@ class TestVisualizationFrameScene(object):
         assert len(self.frame5.child_frames) == 0                                           
 
     def test_numeric_transform(self):
-        self.list1 = [[1.0, 0.0, 0.0, 0.0], \
-                      [0.0, 1.0, 0.0, 0.0], \
-                      [0.0, 0.0, 1.0, 0.0], \
+        self.list1 = [[0.5000000000000001, 0.5, \
+                       -0.7071067811865475, 0.0], \
+                      [-0.14644660940672627, 0.8535533905932737, \
+                                       0.5, 0.0], \
+                      [0.8535533905932737, -0.14644660940672627, \
+                         0.5000000000000001, 0.0], \
                       [10.0, 10.0, 10.0, 1.0]]
+
         
-        self.list2 = [[1.0, 0.0, 0.0, 0.0], \
-                      [0.0, 1.0, 0.0, 0.0], \
-                      [0.0, 0.0, 1.0, 0.0], \
+        self.list2 = [[-0.11518993731879767, 0.8178227645734215, \
+                            -0.563823734943801, 0.0], \
+                      [0.1332055011661179, 0.5751927992738988, \
+                            0.8070994598700584, 0.0], \
+                      [0.984371663956036, 0.017865313009926137, \
+                          -0.17519491371464685, 0.0], \
                       [20.0, 20.0, 20.0, 1.0]]
+
                       
 
         self.global_frame1.transform(self.I, self.O)
         self.global_frame1.generate_numeric_transform(self.dynamic, \
                                                         self.parameters)
         
-        assert self.global_frame1.evaluate_numeric_transform(self.states, \
-                                       self.param_vals).tolist() == \
-                                       self.list1
+        assert_allclose(self.global_frame1.\
+                              evaluate_numeric_transform(self.states, \
+                                self.param_vals).tolist(), self.list1)
         
         self.global_frame2.transform(self.I, self.O)
         self.global_frame2.generate_numeric_transform(self.dynamic, \
                                                         self.parameters)
         
-        assert self.global_frame2.evaluate_numeric_transform(self.states, \
-                                       self.param_vals).tolist() == \
-                                       self.list2
+        assert_allclose(self.global_frame2.\
+                              evaluate_numeric_transform(self.states, \
+                                self.param_vals).tolist(), self.list2)
         
                    
     def test_camera(self):
