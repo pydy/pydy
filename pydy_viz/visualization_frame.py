@@ -397,7 +397,7 @@ class PerspectiveCamera(VisualizationFrame):
         try:
             self._far = kwargs['far']
         except KeyError:
-            self._fov = 1000    
+            self._far = 1000    
                 
         
         #Now we use same approach as in VisualizationFrame
@@ -453,7 +453,7 @@ class PerspectiveCamera(VisualizationFrame):
         return self._near
     @near.setter
     def near(self, new_near):
-        if not isinstance(new_fov, (int, str)):
+        if not isinstance(new_near, (int, str)):
             raise TypeError(''' near should be supplied in 
                                          int or float ''')    
         else:
