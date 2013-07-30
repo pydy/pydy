@@ -318,7 +318,7 @@ class VisualizationFrame(object):
             
         return self._data 
 
-def PerspectiveCamera(VisualizationFrame):
+class PerspectiveCamera(VisualizationFrame):
     """
     Creates a Perspective Camera for visualization. 
     The camera is inherited from VisualizationFrame,
@@ -355,7 +355,7 @@ def PerspectiveCamera(VisualizationFrame):
     
     """
     
-    def __init__(self, *args, fov=45, near=1, far=1000):
+    def __init__(self, *args, **kwargs):
         """
         Initialises a PerspectiveCamera object.
         To initialize a visualization frame, we need to supply
@@ -384,23 +384,22 @@ def PerspectiveCamera(VisualizationFrame):
         >>> #initializing with Particle, reference_frame ...
         >>> camera3 = PerspectiveCamera('frame3', I, Pa)
         """
-        if not isinstance(fov, (int, float)):
-            raise TypeError('Field Of View should be in int or float')
-        else:
-            self._fov = fov
+        try:
+            self._fov = kwargs['fov']
+        except KeyError:
+            self._fov = 45    
       
-        if not isinstance(near, (int, float)):
-            raise TypeError('''Near Plane distance should be in 
-                                     int or float''')
-        else:
-            self._near = near
-    
-        if not isinstance(far, (int, float)):
-            raise TypeError('''far Plane distance should be in 
-                                     int or float''')
-        else:
-            self._far = far
-
+        try:
+            self._near = kwargs['near']
+        except KeyError:
+            self._near = 1
+            
+        try:
+            self._far = kwargs['far']
+        except KeyError:
+            self._fov = 1000    
+                
+        
         #Now we use same approach as in VisualizationFrame
         #for setting reference_frame and origin 
         i = 0
@@ -469,7 +468,7 @@ def PerspectiveCamera(VisualizationFrame):
         return self._far
     @far.setter
     def far(self, new_far):
-        if not isinstance(new_fov, (int, str)):
+        if not isinstance(new_far, (int, str)):
             raise TypeError(''' far should be supplied in 
                                          int or float ''')    
         else:
