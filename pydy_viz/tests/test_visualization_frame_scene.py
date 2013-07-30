@@ -3,7 +3,9 @@ from sympy.physics.mechanics import dynamicsymbols, ReferenceFrame, \
                                     
 from sympy import sin, cos, symbols
 from shapes import Cylinder
-from visualization_frame import VisualizationFrame
+from visualization_frame import VisualizationFrame, PerspectiveCamera
+                                                 
+
 from numpy import radians
 from numpy.testing import assert_allclose
 
@@ -172,11 +174,6 @@ class TestVisualizationFrameScene(object):
         assert self.frame5.child_frames[0] is self.global_frame1
         assert self.frame5.child_frames[1] is self.global_frame2
         
-        self.frame5.remove_child_frames(self.global_frame1, \
-                                                  self.global_frame2)
-        
-        assert len(self.frame5.child_frames) == 0                                           
-
     def test_numeric_transform(self):
         self.list1 = [[0.5000000000000001, 0.5, \
                        -0.7071067811865475, 0.0], \
@@ -247,9 +244,10 @@ class TestVisualizationFrameScene(object):
         assert camera.near == 10
         
         camera.far = 500
-        assert camera.far = 500
+        assert camera.far == 500
         
-        camera1 = Camera(self.I, self.O)
+        #Test UnNamed
+        camera1 = PerspectiveCamera(self.I, self.O)
         assert camera1.name == 'UnNamed'
         assert camera1.reference_frame == self.I
         assert camera1.origin == self.O
@@ -285,9 +283,9 @@ class TestVisualizationFrameScene(object):
         assert camera.near == 10
         
         camera.far = 500
-        assert camera.far = 500
+        assert camera.far == 500
         
-        camera1 = Camera(self.I, self.O)
+        camera1 = OrthoGraphicCamera(self.I, self.O)
         assert camera1.name == 'UnNamed'
         assert camera1.reference_frame == self.I
         assert camera1.origin == self.O
