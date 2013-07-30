@@ -3,7 +3,8 @@ from sympy.physics.mechanics import dynamicsymbols, ReferenceFrame, \
                                     
 from sympy import sin, cos, symbols
 from shapes import Cylinder
-from visualization_frame import VisualizationFrame, PerspectiveCamera
+from visualization_frame import VisualizationFrame, PerspectiveCamera, \
+                                                    OrthoGraphicCamera
                                                  
 
 from numpy import radians
@@ -215,6 +216,8 @@ class TestVisualizationFrameScene(object):
         #Camera is a subclass of VisualizationFrame, but without any
         #specific shape attached. We supply only ReferenceFrame,Point
         #to camera. and it inherits methods from VisualizationFrame
+        #TODO Add tests for init with rbody, particle etc.
+        #TODO __str__ and __repr__ tests
         camera = PerspectiveCamera('camera', self.I, self.O, fov=45, \
                                                  near=1, far=1000)
         
