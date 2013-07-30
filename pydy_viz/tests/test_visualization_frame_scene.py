@@ -214,15 +214,22 @@ class TestVisualizationFrameScene(object):
                                 self.param_vals).tolist(), self.list2)
         
                    
-    def test_camera(self):
+    def test_perspective_camera(self):
         #Camera is a subclass of VisualizationFrame, but without any
         #specific shape attached. We supply only ReferenceFrame,Point
         #to camera. and it inherits methods from VisualizationFrame
-        camera = Camera('camera', self.I, self.O)
+        camera = PerspectiveCamera('camera', self.I, self.O, fov=45, \
+                                                 near=1, far=1000)
         
         assert camera.name == 'camera'
         assert camera.reference_frame == self.I
         assert camera.origin == self.O
+        #camera frustum vertical field of view
+        assert camera.fov == 45
+        
+        #camera frustum near and far plane
+        assert camera.near == 1
+        assert camera.far == 1000
         
         camera.name = 'camera1'
         assert camera.name == 'camera1'
@@ -233,14 +240,59 @@ class TestVisualizationFrameScene(object):
         camera.origin = self.P1
         assert camera.origin == self.P1
         
-        #We can check transformation matrix for camera, in the extended 
-        #example.
+        camera.fov = 30
+        assert camera.fov == 30
         
-        #UnNamed camera
+        camera.near = 10
+        assert camera.near == 10
+        
+        camera.far = 500
+        assert camera.far = 500
+        
         camera1 = Camera(self.I, self.O)
         assert camera1.name == 'UnNamed'
         assert camera1.reference_frame == self.I
         assert camera1.origin == self.O
+        assert camera1.fov == 45
+        assert camera1.near == 1
+        assert camera1.far == 1000
+
+    def test_orthographic_camera(self):
+        #As compared to Perspective Camera, Orthographic Camera doesnt
+        #have fov, instead the left,right,top and bottom faces are
+        #adjusted by the Scene width, and height
+        camera = OrthoGraphicCamera('camera', self.I, self.O, near=1, \
+                                                               far=1000)
+        
+        assert camera.name == 'camera'
+        assert camera.reference_frame == self.I
+        assert camera.origin == self.O
+        
+        #camera frustum near and far plane
+        assert camera.near == 1
+        assert camera.far == 1000
+        
+        camera.name = 'camera1'
+        assert camera.name == 'camera1'
+        
+        camera.reference_frame = self.A
+        assert camera.reference_frame == self.A
+        
+        camera.origin = self.P1
+        assert camera.origin == self.P1
+        
+        camera.near = 10
+        assert camera.near == 10
+        
+        camera.far = 500
+        assert camera.far = 500
+        
+        camera1 = Camera(self.I, self.O)
+        assert camera1.name == 'UnNamed'
+        assert camera1.reference_frame == self.I
+        assert camera1.origin == self.O
+        assert camera1.near == 1
+        assert camera1.far == 1000
 
     def test_scene(self):
         self.scene = Scene('scene', self.I, self.O)
