@@ -216,23 +216,45 @@ class TestVisualizationFrameScene(object):
         #Camera is a subclass of VisualizationFrame, but without any
         #specific shape attached. We supply only ReferenceFrame,Point
         #to camera. and it inherits methods from VisualizationFrame
-        #TODO Add tests for init with rbody, particle etc.
         #TODO __str__ and __repr__ tests
-        camera = PerspectiveCamera('camera', self.I, self.O, fov=45, \
+        
+        #Testing with rigid-body ..
+        camera = PerspectiveCamera('camera', self.rigid_body, fov=45, \
                                                  near=1, far=1000)
+        
+        assert camera.name == 'camera'
+        assert camera.reference_frame == self.A
+        assert camera.origin == self.P1
+        assert camera.fov == 45
+        assert camera.near == 1
+        assert camera.far == 1000
+        
+        #Testing with reference_frame, particle ..
+        camera = PerspectiveCamera('camera', self.I, self.particle, \
+                                          fov=45, near=1, far=1000)
+        
+        assert camera.name == 'camera'
+        assert camera.reference_frame == self.I
+        assert camera.origin == self.P1
+        assert camera.fov == 45
+        assert camera.near == 1
+        assert camera.far == 1000
+        
+        #Testing with reference_frame, point ..
+        camera = PerspectiveCamera('camera', self.I, self.O, \
+                                          fov=45, near=1, far=1000)
         
         assert camera.name == 'camera'
         assert camera.reference_frame == self.I
         assert camera.origin == self.O
-        #camera frustum vertical field of view
         assert camera.fov == 45
-        
-        #camera frustum near and far plane
         assert camera.near == 1
         assert camera.far == 1000
         
         camera.name = 'camera1'
         assert camera.name == 'camera1'
+        assert camera.__str__() == 'PerspectiveCamera: camera1'
+        assert camera.__repr__() == 'PerspectiveCamera'
         
         camera.reference_frame = self.A
         assert camera.reference_frame == self.A
@@ -262,19 +284,41 @@ class TestVisualizationFrameScene(object):
         #As compared to Perspective Camera, Orthographic Camera doesnt
         #have fov, instead the left,right,top and bottom faces are
         #adjusted by the Scene width, and height
+        
+        #Testing with rigid_body
+        camera = OrthoGraphicCamera('camera', self.rigid_body, \
+                                               near=1, far=1000)
+        
+        assert camera.name == 'camera'
+        assert camera.reference_frame == self.A
+        assert camera.origin == self.P1
+        assert camera.near == 1
+        assert camera.far == 1000
+        
+        #Testing with reference_frame, particle
+        camera = OrthoGraphicCamera('camera', self.I, self.particle, \
+                                                   near=1, far=1000)
+        
+        assert camera.name == 'camera'
+        assert camera.reference_frame == self.I
+        assert camera.origin == self.P1
+        assert camera.near == 1
+        assert camera.far == 1000
+        
+        #Testing with reference_frame, point ... 
         camera = OrthoGraphicCamera('camera', self.I, self.O, near=1, \
                                                                far=1000)
         
         assert camera.name == 'camera'
         assert camera.reference_frame == self.I
         assert camera.origin == self.O
-        
-        #camera frustum near and far plane
         assert camera.near == 1
         assert camera.far == 1000
         
         camera.name = 'camera1'
         assert camera.name == 'camera1'
+        assert camera.__str__() == 'OrthoGraphicCamera: camera1'
+        assert camera.__repr__() == 'OrthoGraphicCamera'
         
         camera.reference_frame = self.A
         assert camera.reference_frame == self.A
