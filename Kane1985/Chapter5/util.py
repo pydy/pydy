@@ -252,6 +252,8 @@ def generalized_active_forces_V(V, q, u, kde_map, vc_map=None):
     'u' is a list of the independent generalized speeds.
     'kde_map' is a dictionary with q dots as keys and the equivalent
         expressions in terms of q's and u's as values.
+    'vc_map' is a dictionay with the dependent u's as keys and the expression
+        in terms of independent u's as values.
     """
     n = len(q)
     p = len(u)
@@ -266,11 +268,22 @@ def generalized_active_forces_V(V, q, u, kde_map, vc_map=None):
     dV_dq = map(lambda x: diff(V, x), q)
     Fr = Matrix.zeros(1, p)
     for s in range(n):
-        Fr -= dV_dq[s] * (W_sr[s, :p] + W_sr[s, p:]*A_kr)
+        Fr -= dV_dq[s] * (W_sr[s, :p] + W_sr[s, p:]*A_kr[:, :p])
     return Fr[:]
 
 
 def potential_energy(Fr, q, u, kde_map, vc_map=None):
+    """Returns a potential energy function using the method from Section 5.1
+    from Kane 1985.
+
+    'Fr' is a list of the generalized active forces for the system.
+    'q' is a list of generalized coordinates.
+    'u' is a list of the independent generalized speeds.
+    'kde_map' is a dictionary with q dots as keys and the equivalent
+        expressions in terms of q's and u's as values.
+    'vc_map' is a dictionay with the dependent u's as keys and the expression
+        in terms of independent u's as values.
+    """
     n = len(q)
     p = len(u)
     m = n - p
@@ -288,7 +301,7 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
         A_kr = Matrix.zeros(m, p)
 
     for s in range(W_sr.shape[0]):
-        dV_eq += dV_dq[s] * (W_sr[s, :p] + W_sr[s, p:]*A_kr)
+        dV_eq += dV_dq[s] * (W_sr[s, :p] + W_sr[s, p:]*A_kr[:, :p])
 
     if vc_map is not None:
         f_arg, non_arg = _f_variables(Fr, q, dV_eq, dV_dq)
