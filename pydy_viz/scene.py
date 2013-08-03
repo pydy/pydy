@@ -178,6 +178,12 @@ class Scene():
         outfile.write(json.dumps(self._scene_data, indent=4, separators=(',', ': '))) 
         outfile.close()
 
+    def _display_from_ipython(json_data=None):
+        pass
+
+    def _display_from_interpreter(json_data=None):     
+        pass
+
     def display(self, json_data=None):
         """
         display method can be used in two ways.
