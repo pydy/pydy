@@ -202,6 +202,13 @@ class Scene():
 
         """        
      
+        try:
+        config = get_ipython().config
+            if config['KernelApp']['parent_appname'] == 'ipython-notebook':
+                #Launched from IPython browser
+                pass
+        else:
+            #Launched from interpreter        
 
 
         
