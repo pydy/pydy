@@ -49,29 +49,22 @@ class Scene():
             i+=1
         else:
             self._name = 'UnNamed'
-        #DO we need isintance checks here?
-        #To check valid rframe, point are supplied?
         
         self._reference_frame = args[i]
         self._origin = args[i+1]        
             
-            
-            
-        #Setting cameras first ...
-        #If not supplied ... 
         if not cameras:
             self.cameras = [PerspectiveCamera(self.reference_frame, \
                                                            self.point)]
         else:
             self.cameras = cameras
+
         if not lights:
             #self.lights = [] TODO Lights
             pass
+
         else:
             self.lights = lights    
-        
-        #Do we need additional methods for adding_vframes?
-        #Or just use lists append and remove methods?
         
         self.visualization_frames = visualization_frames
         self.width = width
@@ -94,7 +87,7 @@ class Scene():
            @property
     def origin(self):
         """
-        origin of the Scene.
+        Origin of the Scene.
         
         """
         return self._origin
@@ -125,9 +118,47 @@ class Scene():
     def generate_json(self, state_sym, par_sym, states, parameters, \
                                               save_to='data.json'):
         """
-        TODO: Docstring
+        generate_json() method generates a dictionary, which is dumped
+        as JSON in the file name given by save_to argument.
+        Default filename is data.json.
+        The JSON file contain following keys:
+        1) Width of the scene.
+        2) Height of the scene.
+        3) name of the scene.
+        4) frames in the scene, which contains sub-dictionaries 
+           of all the visualization frames information.
+        
+
+        Parameters
+        ==========
+        state_sym : Sympifyable list or tuple
+            This contains all the dynamic symbols or state variables
+            which are required for solving the transformation matrices
+            of all the frames of the scene.
+       
+        par_sym : Sympifyable list or tuple
+            This contains all the symbols for the parameters which are
+            used for defining various objects in the system.
+     
+        states : list or tuple
+            initial states of the system. The list or tuple 
+            should be respective to the state_sym.
+
+        parameters : list or tuple
+            values of the parameters. The list or tuple 
+            should be respective to the par_sym.
+
+        save_to : str
+            path to the file where to write the generated data JSON.
+            the path should be chosen such as to have the write 
+            permissions to the user.
+
+        Examples
+        ========
+        #TODO : Write complete example for initializing a vframe and stuff, 
+               or directly show this method?              
         """
-        out_file = save_to
+        self.saved_json_file = save_to
         self._scene_data = {}
         self._scene_data['name'] = self._name
         self._scene_data['height'] = self._height
@@ -141,10 +172,35 @@ class Scene():
             frame.evaluate_numeric_transform(states, parameters)
             self._scene_data['frames'].append(frame.generate_simulation_dict())
 
-        out_file = open()
-        #return self._scene_data
-        
+     
+        outfile = open(self.saved_json_file)
+        outfile.write(json.dumps(self._scene_data, indent=4, separators=(',', ': '))) 
+        outfile.close()
 
-    def display(self, json=None):
-        #TODO
+    def display(self, json_data=None):
+        """
+        display method can be used in two ways.
+        When called from IPython notebook, it shows the visualization
+        in the form of output cell in the IPython notebook.
+        If it is called from python interpreter or 
+        IPython interpreter(not notebook), It generates an html file,
+        in the current directory, which can be opened in the webgl 
+        compliant browser for viewing the visualizations.
+        
+        This method can also be used to load any json file, irrespective
+        of whether it was created in the same session,
+        
+        Parameters
+        ==========
+        json_data : str
+            path to the json file which is to be visualized.
+            (optional).
+        
+        Examples
+        =======
+
+        
+     
+
+
         
