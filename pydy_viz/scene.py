@@ -173,7 +173,7 @@ class Scene():
 
         for frame in self.visualization_frames:
 
-            frame.transform(self._reference_frame, self._origin)
+            frame.generate_transformation_matrix(self._reference_frame, self._origin)
             frame.generate_numeric_transform(state_sym, par_sym)
             frame.evaluate_numeric_transform(states, parameters)
             self._scene_data['frames'].append(frame.generate_simulation_dict())
