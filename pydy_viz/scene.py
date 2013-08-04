@@ -1,12 +1,16 @@
-from sympy.physics.mechanics import 
+from sympy.physics.mechanics import ReferenceFrame, Point  
+from visualization_frame import VisualizationFrame
+from camera import PerspectiveCamera
+from server import start_server
 import json
+import re
 
 try:
     import IPython
 except:
     pass
         
-class Scene():
+class Scene(object):
     """
     Scene class holds all the data required for the visualizations/
     animation of a system.
@@ -29,8 +33,7 @@ class Scene():
     
     """
     
-    def __init_(self, *args, width=800, height=800, \
-                        visualization_frames=[], cameras=[], lights=[]):
+    def __init_(self, *args, **kwargs):
         """
         Initializes a Scene instance.
         It requires a reference frame and a point to be initialized.
@@ -46,51 +49,69 @@ class Scene():
         to this reference frame. 
         
         origin : Point
+        All the transformations would be carried out with respect
+        to this point.
         
+        width : int or float
+        width of the canvas used for visualizations.
+        
+        height : int or float
+        height of the canvas used for visualizations.
         
         """
-        i=0
+        
+        i = 0
         if isinstance(args[0], str):
             self._name = args[0]
-            i+=1
+            i += 1
         else:
             self._name = 'UnNamed'
         
         self._reference_frame = args[i]
         self._origin = args[i+1]        
             
-        if not cameras:
-            self.cameras = [PerspectiveCamera(self.reference_frame, \
-                                                           self.point)]
-        else:
-            self.cameras = cameras
-
-        if not lights:
-            #self.lights = [] TODO Lights
+        try:
+            self.cameras = kwargs['cameras']
+        except KeyError:    
+            self.cameras = [PerspectiveCamera(self._reference_frame, \
+                                                        self._origin)]
+        
+        try:
+            self.lights = kwargs['lights']
+        except KeyError:    
+            #TODO add Light
             pass
 
-        else:
-            self.lights = lights    
+        try:
+            self.visualization_frames = kwargs['visualization_frames']
+        except KeyError:
+            self.visualization_frames = []
         
-        self.visualization_frames = visualization_frames
-        self.width = width
-        self.height = height
+        try:        
+            self._width = kwargs['width']
+        except KeyError:    
+            self._width = 800
         
-        @property
-        def name(self):
-            """
-            Name of Scene.
-            """
-            return self._name
+        try:        
+            self._height = kwargs['height']
+        except KeyError:    
+            self._height = 800
             
-        @name.setter
-        def name(self, new_name):
-            if not isinstance(new_name, str):
-                raise TypeError('Name should be a valid str.')
-            else:
-                self._name = new_name
-        
-           @property
+    @property
+    def name(self):
+        """
+        Name of Scene.
+        """
+        return self._name
+            
+    @name.setter
+    def name(self, new_name):
+        if not isinstance(new_name, str):
+            raise TypeError('Name should be a valid str.')
+        else:
+            self._name = new_name
+    
+    @property
     def origin(self):
         """
         Origin of the Scene.
@@ -159,10 +180,6 @@ class Scene():
             the path should be chosen such as to have the write 
             permissions to the user.
 
-        Examples
-        ========
-        #TODO : Write complete example for initializing a vframe and stuff, 
-               or directly show this method?              
         """
         self.saved_json_file = save_to
         self._scene_data = {}
@@ -183,23 +200,25 @@ class Scene():
         outfile.write(json.dumps(self._scene_data, indent=4, separators=(',', ': '))) 
         outfile.close()
 
-    def _display_from_ipython(json_data=None):
+    def _display_from_ipython(self, json_data=None):
         #Basic script requirements. ..
+        pass
             
 
-    def _display_from_interpreter(json_data=None):     
+    def _display_from_interpreter(self, json_data=None):     
         #Get html file ..
         _path_to_html = pydy_viz.__file__[:-12] + 'index.html'
+        _path_to_js = pydy_viz.__file__[:-12] + 'js/'
         content = open(_path_to_html)
  
         #If json_data is not provided, use self.saved_json_file
         #Replace json object name in content to self.saved_json_file 
         _json_replacement = json_data or self.saved_json_file
-        content = 
-        
-        out_file = open('index.html','w')
-        outfile.write(content)
-        
+        content = re.sub("#\(path_to_json\)", _json_replacement,  \
+                                                               content)
+        content = re.sub("#\(js_dir\)", _path_to_js, content)
+        out_file = open('index.html', 'w')
+        out_file.write(content)
         start_server()
  
 
@@ -223,18 +242,16 @@ class Scene():
             path to the json file which is to be visualized.
             (optional).
         
-        Examples
-        =======
-
         """        
      
         try:
-        config = get_ipython().config
-            if config['KernelApp']['parent_appname'] == 'ipython-notebook':
-                #Launched from IPython browser
-                pass
-        else:
-            #Launched from interpreter        
+            config = get_ipython().config
+            if config['KernelApp']['parent_appname'] == \
+                                                  'ipython-notebook':
+                self._display_from_ipython(json_data)
+                
+        except:
+            self._display_from_interpreter(json_data)
 
 
         
