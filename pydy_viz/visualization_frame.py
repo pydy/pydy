@@ -105,11 +105,7 @@ class VisualizationFrame(object):
                 self._origin = args[i].get_point()
             except AttributeError:
                 self._origin = args[i]
-                
-        #basic things required, transform matrix and child frames  
-        self._transform = Identity(4).as_mutable()
-        self.child_frames = []
-        
+
     #setting attributes ..
     def __str__(self):
         return 'VisualizationFrame ' + self._name
@@ -182,7 +178,7 @@ class VisualizationFrame(object):
                
     def generate_transformation_matrix(self, reference_frame, point):
         _rotation_matrix = self.reference_frame.dcm(reference_frame)
-
+        self._transform = Identity(4).as_mutable()
         self._transform[0:3, 0:3] = _rotation_matrix[0:3, 0:3]
 
         _point_vector = self.origin.pos_from(point).express(reference_frame)
@@ -213,7 +209,7 @@ class VisualizationFrame(object):
 
         self.numeric_transform = lambdify(dummy_symbols + parameters,
                                           transform, modules="numpy")
-   
+        
     def evaluate_numeric_transform(self, states, parameters):
         """Returns the numerical transformation matrices for each time step.
 
@@ -248,30 +244,6 @@ class VisualizationFrame(object):
         self.simulation_matrix = new
         return self.simulation_matrix
         
-    def add_child_frames(self, *args):
-        """
-        Used for nesting of visualization frames.
-        Helpful for implementing Scene graph.
-        
-        In this way we can create complex shapes.
-        We break complex shapes into simple shapes from the Shape
-        subclasses, then we supply a visualization frame for them,
-        and then we add them to a parent frame, whose reference frame
-        and origin are those in which the shape is created on.
-        
-        Parameters
-        ----------
-        visualization_frame: one or more VisualizationFrame objects.
-
-        """
-        for _frame in args:
-            if not isinstance(_frame, VisualizationFrame):
-                raise TypeError('''frame is not an instance 
-                                   of VisualizationFrame:''' + _frame)    
-            else:
-                self.child_frames.append(_frame)      
-                                 
-                    
     def generate_simulation_dict(self):
         """
         Returns a dictionary of all the info required
@@ -297,16 +269,7 @@ class VisualizationFrame(object):
         """
         self._data = {}
         self._data['name'] = self.name
-        self._data['children'] = []
-        
-        #if child_frames list isnt empty
-        if len(self.child_frames > 0):
-            for _child in self.child_frames:
-                self._data['children'].append( \
-                                     _child.generate_simulation_dict())
-             
         self._data['shape'] = self.shape.generate_data()  
-            
         if not self.simulation_matrix:
             #Not sure which error to call here.
             raise RuntimeError('''Please call the numerical 
@@ -314,5 +277,4 @@ class VisualizationFrame(object):
                            before generating simulation dict ''')
         else:                   
             self._data['simulation_matrix'] = self.simulation_matrix.tolist()
-            
         return self._data 
