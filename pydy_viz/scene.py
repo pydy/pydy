@@ -1,6 +1,11 @@
 from sympy.physics.mechanics import 
 import json
 
+try:
+    import IPython
+except:
+    pass
+        
 class Scene():
     """
     Scene class holds all the data required for the visualizations/
@@ -179,10 +184,25 @@ class Scene():
         outfile.close()
 
     def _display_from_ipython(json_data=None):
-        pass
+        #Basic script requirements. ..
+            
 
     def _display_from_interpreter(json_data=None):     
-        pass
+        #Get html file ..
+        _path_to_html = pydy_viz.__file__[:-12] + 'index.html'
+        content = open(_path_to_html)
+ 
+        #If json_data is not provided, use self.saved_json_file
+        #Replace json object name in content to self.saved_json_file 
+        _json_replacement = json_data or self.saved_json_file
+        content = 
+        
+        out_file = open('index.html','w')
+        outfile.write(content)
+        
+        start_server()
+ 
+
 
     def display(self, json_data=None):
         """
