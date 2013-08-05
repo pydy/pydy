@@ -4,6 +4,7 @@ import numpy as np
 from sympy.matrices.expressions import Identity
 from sympy import Dummy, lambdify
 
+#TODO change init method for args and kwargs.
 class VisualizationFrame(object):
     """
     A VisualizationFrame represents an object that you want to visualize. 
@@ -61,14 +62,14 @@ class VisualizationFrame(object):
 
         Examples
         ========
-        >>> from pydy_viz import VisualizationFrame, Shape
+        >>> from pydy_viz import VisualizationFrame, Sphere
         >>> from sympy.physics.mechanics import \
                                ReferenceFrame, Point, RigidBody, \
                                 Particle, inertia
         >>> from sympy import symbols                               
         >>> I = ReferenceFrame('I')
         >>> O = Point('O')
-        >>> shape = Shape()
+        >>> shape = Sphere(5)
         >>> #initializing with reference frame, point
         >>> frame1 = VisualizationFrame('frame1', I, O, shape)
         >>> Ixx, Iyy, Izz, mass = symbols('Ixx Iyy Izz mass')
@@ -118,13 +119,17 @@ class VisualizationFrame(object):
         
     @property
     def name(self):
-    """
-    Name of the VisualizationFrame.
-    """
+        """
+        Name of the VisualizationFrame.
+        """
         return self._name
         
     @name.setter
     def name(self, new_name):
+        """
+        Sets the name of the VisualizationFrame.
+        
+        """
         if not isinstance(new_name, str):
             raise TypeError('''Name should be a str object''')
         else:
@@ -141,6 +146,9 @@ class VisualizationFrame(object):
         
     @origin.setter
     def origin(self, new_origin):
+    """    
+    Sets the origin of the VisualizationFrame.    
+    """
         if not isinstance(new_origin, Point):
             raise TypeError('''origin should be a valid Point Object''')
         else:
@@ -174,12 +182,35 @@ class VisualizationFrame(object):
         
     @shape.setter
     def shape(self, new_shape):
+        """
+        Sets the shape for VisualizationFrame.
+        """
         if not isinstance(new_shape, Shape):
             raise TypeError('''shape should be a valid Shape object.''')    
         else:
             self._shape = new_shape
                
     def generate_transformation_matrix(self, reference_frame, point):
+        """
+        Generates the symbolic Transformation matrix, 
+        with respect to the reference_frame, point in the argument.
+        
+        Parameters
+        ==========
+        
+        reference_frame : ReferenceFrame
+        A reference_frame with respect to which transformation matrix
+        is generated.
+        point : Point
+        A point with respect to which transformation matrix
+        is generated.
+        
+        Returns
+        =======
+        A SymPy 4by4 matrix, containing symbolic variables for 
+        transformation.
+        
+        """
         _rotation_matrix = self.reference_frame.dcm(reference_frame)
         self._transform = Identity(4).as_mutable()
         self._transform[0:3, 0:3] = _rotation_matrix[0:3, 0:3]
@@ -217,9 +248,9 @@ class VisualizationFrame(object):
 
         self.numeric_transform = lambdify(dummy_symbols + parameters,
                                           transform, modules="numpy")
-        return self.numeric_transform
+        return self._numeric_transform
         
-    def evaluate_numeric_transform(self, states, parameters):
+    def evaluate_transformation_matrix(self, states, parameters):
         """Returns the numerical transformation matrices for each time step.
 
         Parameters
@@ -250,10 +281,10 @@ class VisualizationFrame(object):
             args = np.hstack((states, parameters))
             new = self.numeric_transform(*args)
 
-        self.simulation_matrix = new
-        return self.simulation_matrix
+        self._visualization_matrix = new
+        return self._visualization_matrix
         
-    def generate_simulation_dict(self):
+    def generate_visualization_dict(self):
         """
         Returns a dictionary of all the info required
         for the visualization of this frame, alongwith child.
@@ -274,16 +305,15 @@ class VisualizationFrame(object):
         simulation_matrix : a N*4*4 matrix, converted to list, for
         passing to Javascript for animation purposes, where N is the 
         number of timesteps for animations.
-        
         """
-        self._data = {}
-        self._data['name'] = self.name
-        self._data['shape'] = self.shape.generate_data()  
+        _data = {}
+        _data['name'] = self.name
+        _data['shape'] = self.shape.generate_data()  
         if not self.simulation_matrix:
             #Not sure which error to call here.
             raise RuntimeError('''Please call the numerical 
                             transformation methods,
                            before generating simulation dict ''')
         else:                   
-            self._data['simulation_matrix'] = self.simulation_matrix.tolist()
-        return self._data 
+            _data['simulation_matrix'] = self.simulation_matrix.tolist()
+        return _data 
