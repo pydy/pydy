@@ -16,7 +16,6 @@ class VisualizationFrame(object):
     Scene object, all the children of the parent visualization frame
     are also added, and hence can be visualized and animated.
     
-    
     A VisualizationFrame needs to have a ReferenceFrame, and a Point 
     for it to form transformation matrices for visualization and 
     animations. 
@@ -29,8 +28,6 @@ class VisualizationFrame(object):
     3)reference_frame, particle argument.
     
     In addition to these arguments, A shape argument is also required.
-    
-          
     """
     def __init__(self, *args):
         """
@@ -40,20 +37,27 @@ class VisualizationFrame(object):
 
         1) RigidBody: the RigidBody's frame and mass center are used.
         2) ReferenceFrame and a Particle: The Particle's Point is used.
-        3)  ReferenceFrame and a Point
+        3) ReferenceFrame and a Point
 
         Parameters
         ==========
-        name : str
+        name : str, optional
             Name assigned to VisualizationFrame, default is UnNamed
-        shape : Shape
-            Shape to be attached to the VisualizationFrame
         reference_frame : ReferenceFrame
-            reference_frame with respect to which all orientations of the 
+            A reference_frame with respect to which all orientations of the 
             shape takes place, during visualizations/animations.
         origin : Point
-            point with respect to which all the translations of the shape 
+            A point with respect to which all the translations of the shape 
             takes place, during visualizations/animations.
+        rigidbody : RigidBody
+            A rigidbody whose reference frame and mass center are to be
+            assigned as reference_frame and origin of the 
+            VisualizationFrame.
+        particle : Particle
+            A particle whose point is assigned as origin of the 
+            VisualizationFrame.    
+        shape : Shape
+            A shape to be attached to the VisualizationFrame    
 
         Examples
         ========
@@ -75,7 +79,6 @@ class VisualizationFrame(object):
         >>> Pa = Particle('Pa', O, mass)
         >>> #initializing with Particle, reference_frame ...
         >>> frame3 = VisualizationFrame('frame3', I, Pa, shape)
-
         """
         #Last arg should be a Shape ..
         if isinstance(args[-1], Shape):
@@ -189,9 +192,10 @@ class VisualizationFrame(object):
 
         return self._transform
         
-    def generate_numeric_transform(self, dynamic, parameters):
+    def generate_numeric_transform_function(self, dynamic, parameters):
         """Returns a function which returns a transformation matrix given
         the symbolic states and the symbolic system parameters.
+        
         
         Parameters
         ==========
@@ -200,6 +204,10 @@ class VisualizationFrame(object):
         parameters : list of all symbols used in defining the 
                      mechanics objects
     
+        Returns
+        =======
+        A Lambda function which returns a transformation matrix, 
+        given symbolic states, and symbolic system parameters
         
         """
 
@@ -209,6 +217,7 @@ class VisualizationFrame(object):
 
         self.numeric_transform = lambdify(dummy_symbols + parameters,
                                           transform, modules="numpy")
+        return self.numeric_transform
         
     def evaluate_numeric_transform(self, states, parameters):
         """Returns the numerical transformation matrices for each time step.
