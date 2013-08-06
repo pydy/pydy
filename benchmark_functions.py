@@ -138,6 +138,10 @@ def generate_numeric_eom_matrices(mass_matrix, forcing_vector, constants,
         forcing_vector_func = theano_function(arguments,
                                               [dummy_forcing_vector],
                                               on_unused_input='ignore')
+        # lower run time from 0.15s to 0.08s for n=1
+        mass_matrix_func.trust_input = True
+        forcing_vector_func.trust_input = True
+
     elif generator == 'autowrap':
         funcs = []
         for entry in dummy_mass_matrix:
@@ -203,12 +207,15 @@ def numeric_right_hand_side(kane, parameters, specified=None, generator='lambdif
 
     arguments = parameters + dynamic
     if specified is not None: arguments += specified
-
     start = time.time()
     numtimes = 1000
+
+    # Lower from 0.5s to 0.15s for the run time when n=1
+    #inp = np.random.random(len(arguments))
+    inp = [np.asarray(x) for x in np.random.random(len(arguments))]
     for i in range(numtimes):
-        mass_matrix_func(*np.random.random(len(arguments)))
-        forcing_vector_func(*np.random.random(len(arguments)))
+        mass_matrix_func(*inp)
+        forcing_vector_func(*inp)
     total = time.time() - start
     print("It took {} seconds to compute M and F with {} {} times at an \
 average of {} seconds per computation.".format(total, generator, numtimes,
