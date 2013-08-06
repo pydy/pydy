@@ -30,7 +30,7 @@ for n in range(1, 11):
         # We need to have a way to seperate that if the odes are pass in before the
         # matrix is solved.
         right_hand_side = numeric_right_hand_side(kane, parameters, generator=method)
-        #print('Starting odeint')
-        #start = time.time()
-        #y = odeint(right_hand_side, x0, t, args=(parameter_vals,))
-        #print('ODE integration took {} seconds.'.format(time.time() - start))
+        print('Starting odeint')
+        start = time.time()
+        y = odeint(right_hand_side, x0, t, args=(parameter_vals,))
+        print('ODE integration took {} seconds.'.format(time.time() - start))

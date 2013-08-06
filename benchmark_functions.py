@@ -241,7 +241,9 @@ average of {} seconds per computation.".format(total, generator, numtimes,
             The derivative of the state.
 
         """
-        arguments = np.hstack((x, args))
+        arguments = [np.asarray(x) for x in np.hstack((x, args))]
+        # TODO: figure out how to off load solve to Theano
+        # http://deeplearning.net/software/theano/library/sandbox/linalg.html#theano.sandbox.linalg.ops.Solve
         dx = np.array(np.linalg.solve(mass_matrix_func(*arguments),
                                       forcing_vector_func(*arguments))).T[0]
 
