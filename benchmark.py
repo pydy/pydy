@@ -21,7 +21,7 @@ for n in range(1, 11):
     x0 = hstack(( 0, pi / 2 * ones(len(kane._q) - 1), 1e-3 * ones(len(kane._u)) ))
     t = linspace(0, 10, 1000)
 
-    methods = ['lambdify', 'theano', 'autowrap']
+    methods = ['lambdify', 'theano'] #, 'autowrap']
     for method in methods:
         print("Running with {} method.".format(method))
         # TODO : time the code generation part

@@ -110,7 +110,7 @@ def generate_numeric_eom_matrices(mass_matrix, forcing_vector, constants,
     >>> type(forcing_vector)
     sympy.matrices.dense.MutableDenseMatrix
     >>> generate_numeric_matrices(mass_matrix, forcing_vector, c, q + u,
-        >>> specified=f, 
+        >>> specified=f,
 
 
     """
@@ -133,8 +133,11 @@ def generate_numeric_eom_matrices(mass_matrix, forcing_vector, constants,
         mass_matrix_func = lambdify(arguments, dummy_mass_matrix)
         forcing_vector_func = lambdify(arguments, dummy_forcing_vector)
     elif generator == 'theano':
-        mass_matrix_func = theano_function(arguments, [dummy_mass_matrix])
-        forcing_vector_func = theano_function(arguments, [dummy_forcing_vector])
+        mass_matrix_func = theano_function(arguments, [dummy_mass_matrix],
+                                           on_unused_input='ignore')
+        forcing_vector_func = theano_function(arguments,
+                                              [dummy_forcing_vector],
+                                              on_unused_input='ignore')
     elif generator == 'autowrap':
         funcs = []
         for entry in dummy_mass_matrix:
@@ -146,7 +149,7 @@ def generate_numeric_eom_matrices(mass_matrix, forcing_vector, constants,
                 result.append(func(*args))
             # TODO : this may not be correctly reshaped
             return np.matrix(result).reshape(np.sqrt(len(result)),
-                np.sqrt(len(result)))
+                                             np.sqrt(len(result)))
 
         funcs = []
         for row in dummy_forcing_vector:
@@ -161,6 +164,7 @@ def generate_numeric_eom_matrices(mass_matrix, forcing_vector, constants,
         raise NotImplementedError('{} is not implemented yet'.format(generator))
 
     return mass_matrix_func, forcing_vector_func
+
 
 def numeric_right_hand_side(kane, parameters, specified=None, generator='lambdify'):
     """Returns the right hand side of the first order ordinary differential
@@ -192,8 +196,10 @@ def numeric_right_hand_side(kane, parameters, specified=None, generator='lambdif
     forcing_vector = kane.forcing_full.subs(kindiff_dict)
 
     mass_matrix_func, forcing_vector_func = \
-        generate_numeric_eom_matrices(mass_matrix, forcing_vector, parameters,
-                dynamic, specified=specified, generator=generator)
+        generate_numeric_eom_matrices(mass_matrix, forcing_vector,
+                                      parameters, dynamic,
+                                      specified=specified,
+                                      generator=generator)
 
     arguments = parameters + dynamic
     if specified is not None: arguments += specified
@@ -230,7 +236,7 @@ average of {} seconds per computation.".format(total, generator, numtimes,
         """
         arguments = np.hstack((x, args))
         dx = np.array(np.linalg.solve(mass_matrix_func(*arguments),
-            forcing_vector_func(*arguments))).T[0]
+                                      forcing_vector_func(*arguments))).T[0]
 
         return dx
 
