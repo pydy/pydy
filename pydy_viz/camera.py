@@ -1,4 +1,4 @@
-
+from sympy.matrices.expressions import Identity
 from visualization_frame import VisualizationFrame
 
 class PerspectiveCamera(VisualizationFrame):
@@ -22,7 +22,7 @@ class PerspectiveCamera(VisualizationFrame):
     ===========
     
     name : str
-    a name for the PerspectiveCamera(optional). Default is 'UnNamed'
+    a name for the PerspectiveCamera(optional). Default is 'unnamed'
     
     fov : int or float
     Field Of View, It determines the angle between the top and bottom 
@@ -86,12 +86,12 @@ class PerspectiveCamera(VisualizationFrame):
         #Now we use same approach as in VisualizationFrame
         #for setting reference_frame and origin 
         i = 0
-        #If first arg is not str, name the visualization frame 'UnNamed'    
+        #If first arg is not str, name the visualization frame 'unnamed'    
         if isinstance(args[i], str):
             self._name = args[i]
             i += 1
         else:
-            self._name = 'UnNamed'        
+            self._name = 'unnamed'        
         
         try:
             self._reference_frame = args[i].get_frame()
@@ -222,7 +222,7 @@ class OrthoGraphicCamera(VisualizationFrame):
     ===========
     
     name : str
-    a name for the PerspectiveCamera(optional). Default is 'UnNamed'
+    a name for the PerspectiveCamera(optional). Default is 'unnamed'
     
     near : int or float
     The distance of near plane of the PerspectiveCamera.
@@ -277,12 +277,12 @@ class OrthoGraphicCamera(VisualizationFrame):
         #Now we use same approach as in VisualizationFrame
         #for setting reference_frame and origin 
         i = 0
-        #If first arg is not str, name the visualization frame 'UnNamed'    
+        #If first arg is not str, name the visualization frame 'unnamed'    
         if isinstance(args[i], str):
             self._name = args[i]
             i += 1
         else:
-            self._name = 'UnNamed'        
+            self._name = 'unnamed'        
         
         try:
             self._reference_frame = args[i].get_frame()

@@ -4,7 +4,7 @@ import numpy as np
 from sympy.matrices.expressions import Identity
 from sympy import Dummy, lambdify
 
-#TODO change init method for args and kwargs.
+
 class VisualizationFrame(object):
     """
     A VisualizationFrame represents an object that you want to visualize. 
@@ -43,7 +43,7 @@ class VisualizationFrame(object):
         Parameters
         ==========
         name : str, optional
-            Name assigned to VisualizationFrame, default is UnNamed
+            Name assigned to VisualizationFrame, default is unnamed
         reference_frame : ReferenceFrame
             A reference_frame with respect to which all orientations of the 
             shape takes place, during visualizations/animations.
@@ -87,12 +87,12 @@ class VisualizationFrame(object):
         else:
             raise TypeError('''Please provide a valid shape object''')    
         i = 0
-        #If first arg is not str, name the visualization frame 'UnNamed'    
+        #If first arg is not str, name the visualization frame 'unnamed'    
         if isinstance(args[i], str):
             self._name = args[i]
             i += 1
         else:
-            self._name = 'UnNamed'        
+            self._name = 'unnamed'        
         
         try:
             self._reference_frame = args[i].get_frame()
@@ -146,9 +146,9 @@ class VisualizationFrame(object):
         
     @origin.setter
     def origin(self, new_origin):
-    """    
-    Sets the origin of the VisualizationFrame.    
-    """
+        """    
+        Sets the origin of the VisualizationFrame.    
+        """
         if not isinstance(new_origin, Point):
             raise TypeError('''origin should be a valid Point Object''')
         else:
@@ -223,16 +223,16 @@ class VisualizationFrame(object):
 
         return self._transform
         
-    def generate_numeric_transform_function(self, dynamic, parameters):
+    def generate_numeric_transform_function(self, dynamic_variables, constant_variables):
         """Returns a function which returns a transformation matrix given
         the symbolic states and the symbolic system parameters.
         
         
         Parameters
         ==========
-        dynamic : list of all the dynamic symbols used in defining the 
+        dynamic_variables : list of all the dynamic symbols used in defining the 
                   mechanics objects.
-        parameters : list of all symbols used in defining the 
+        constant_variables : list of all symbols used in defining the 
                      mechanics objects
     
         Returns
@@ -242,23 +242,23 @@ class VisualizationFrame(object):
         
         """
 
-        dummy_symbols = [Dummy() for i in dynamic]
-        dummy_dict = dict(zip(dynamic, dummy_symbols))
+        dummy_symbols = [Dummy() for i in dynamic_variables]
+        dummy_dict = dict(zip(dynamic_variables, dummy_symbols))
         transform = self._transform.subs(dummy_dict)
 
-        self.numeric_transform = lambdify(dummy_symbols + parameters,
+        self._numeric_transform = lambdify(dummy_symbols + constant_variables,
                                           transform, modules="numpy")
         return self._numeric_transform
         
-    def evaluate_transformation_matrix(self, states, parameters):
+    def evaluate_transformation_matrix(self, dynamic_values, constant_values):
         """Returns the numerical transformation matrices for each time step.
 
         Parameters
         ----------
-        states : array_like, shape(m,) or shape(n, m)
-            The m states for each n time step.
-        parameters : array_like, shape(p,)
-            The p constant parameters of the system.
+        dynamic_values : array_like, shape(m,) or shape(n, m)
+            The m state values for each n time step.
+        constant_values : array_like, shape(p,)
+            The p constant parameter values of the system.
 
         Returns
         -------
@@ -269,17 +269,17 @@ class VisualizationFrame(object):
         #If states is instance of numpy array, well and good.
         #else convert it to one:
         
-        states = np.array(states)
+        states = np.array(dynamic_values)
         if len(states.shape) > 1:
             n = states.shape[0]
             new = np.zeros((n, 4, 4))
             for i, time_instance in enumerate(states):
                 args = np.hstack((time_instance, parameters))
-                new[i, :, :] = self.numeric_transform(*args)
+                new[i, :, :] = self._numeric_transform(*args)
 
         else:
-            args = np.hstack((states, parameters))
-            new = self.numeric_transform(*args)
+            args = np.hstack((states, constant_values))
+            new = self._numeric_transform(*args)
 
         self._visualization_matrix = new
         return self._visualization_matrix

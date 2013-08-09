@@ -52,7 +52,7 @@ class Shape(object):
     >>> 
     >>> s = Shape()
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -74,7 +74,7 @@ class Shape(object):
     
     """
     
-    def __init__(self, name='UnNamed', color='grey'):
+    def __init__(self, name='unnamed', color='grey'):
         if not isinstance(name, str):
             raise TypeError('name should be a valid str object.')
         else:
@@ -167,7 +167,7 @@ class Cube(Shape):
     >>> 
     >>> s = Cube(10)
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -196,7 +196,7 @@ class Cube(Shape):
     
     """
     
-    def __init__(self, name='UnNamed', color='grey', length=10):
+    def __init__(self, name='unnamed', color='grey', length=10):
         if not isinstance(name, str):
             raise TypeError('name should be a valid str object.')
         else:
@@ -270,7 +270,7 @@ class Cylinder(Shape):
     >>> 
     >>> s = Cylinder(length=10, radius=5)
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -306,7 +306,7 @@ class Cylinder(Shape):
     
     """
     
-    def __init__(self, name='UnNamed', \
+    def __init__(self, name='unnamed', \
                                   color='grey', length=10, radius=5):
                                       
         if not isinstance(name, str):
@@ -397,7 +397,7 @@ class Cone(Shape):
     >>> 
     >>> s = Cone(length=10, radius=5)
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -433,7 +433,7 @@ class Cone(Shape):
     
     """
     
-    def __init__(self, name='UnNamed', \
+    def __init__(self, name='unnamed', \
                                   color='grey', length=10, radius=5):
                                       
         if not isinstance(name, str):
@@ -524,7 +524,7 @@ class Sphere(Shape):
     >>> 
     >>> s = Sphere(10)
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -553,7 +553,7 @@ class Sphere(Shape):
     
     """
     
-    def __init__(self, name='UnNamed', color='grey', radius=10):
+    def __init__(self, name='unnamed', color='grey', radius=10):
         if not isinstance(name, str):
             raise TypeError('name should be a valid str object.')
         else:
@@ -626,7 +626,7 @@ class Circle(Shape):
     >>> 
     >>> s = Circle(10)
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -655,7 +655,7 @@ class Circle(Shape):
     
     """
     
-    def __init__(self, name='UnNamed', color='grey', radius=10):
+    def __init__(self, name='unnamed', color='grey', radius=10):
         if not isinstance(name, str):
             raise TypeError('name should be a valid str object.')
         else:
@@ -728,7 +728,7 @@ class Plane(Shape):
     >>> 
     >>> s = Plane(length=10, width=5)
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -764,7 +764,7 @@ class Plane(Shape):
     
     """
     
-    def __init__(self, name='UnNamed', \
+    def __init__(self, name='unnamed', \
                                   color='grey', length=10, width=5):
                                       
         if not isinstance(name, str):
@@ -857,7 +857,7 @@ class Tetrahedron(Shape):
     >>> 
     >>> s = Tetrahedron(10)
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -886,7 +886,7 @@ class Tetrahedron(Shape):
     
     """
     
-    def __init__(self, name='UnNamed', color='grey', radius=10):
+    def __init__(self, name='unnamed', color='grey', radius=10):
         if not isinstance(name, str):
             raise TypeError('name should be a valid str object.')
         else:
@@ -961,7 +961,7 @@ class Octahedron(Shape):
     >>> 
     >>> s = Octahedron(10)
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -990,7 +990,7 @@ class Octahedron(Shape):
     
     """
     
-    def __init__(self, name='UnNamed', color='grey', radius=10):
+    def __init__(self, name='unnamed', color='grey', radius=10):
         if not isinstance(name, str):
             raise TypeError('name should be a valid str object.')
         else:
@@ -1065,7 +1065,7 @@ class Icosahedron(Shape):
     >>> 
     >>> s = Icosahedron(10)
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -1094,7 +1094,7 @@ class Icosahedron(Shape):
     
     """
     
-    def __init__(self, name='UnNamed', color='grey', radius=10):
+    def __init__(self, name='unnamed', color='grey', radius=10):
         if not isinstance(name, str):
             raise TypeError('name should be a valid str object.')
         else:
@@ -1167,7 +1167,7 @@ class Torus(Shape):
     >>> 
     >>> s = Torus(radius=10, tube_radius=5)
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -1203,7 +1203,7 @@ class Torus(Shape):
     
     """
     
-    def __init__(self, name='UnNamed', \
+    def __init__(self, name='unnamed', \
                                   color='grey', radius=10, tube_radius=5):
                                       
         if not isinstance(name, str):
@@ -1294,7 +1294,7 @@ class TorusKnot(Shape):
     >>> 
     >>> s = TorusKnot(radius=10, tube_radius=5)
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -1330,7 +1330,7 @@ class TorusKnot(Shape):
     
     """
     
-    def __init__(self, name='UnNamed', \
+    def __init__(self, name='unnamed', \
                                   color='grey', radius=10, tube_radius=5):
                                       
         if not isinstance(name, str):
@@ -1422,7 +1422,7 @@ class Tube(Shape):
     >>> point_list = [[1, 2, 1], [2, 1, 1], [2, 3, 4]]
     >>> s = Tube(points=point_list)
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -1456,7 +1456,7 @@ class Tube(Shape):
     
     """
     
-    def __init__(self, name='UnNamed', \
+    def __init__(self, name='unnamed', \
                                   color='grey', radius=10, points=None):
                                       
         if not isinstance(name, str):
@@ -1508,7 +1508,7 @@ class Tube(Shape):
     
     @points.setter
     def points(self, new_point_list):
-        self._points = np.array(new_points_list)
+        self._points = np.array(new_point_list)
        
 
     def generate_dict(self):
@@ -1547,7 +1547,7 @@ class Mesh(Shape):
     >>> point_list = [[1, 2, 1], [2, 1, 1], [2, 3, 4]]
     >>> s = Mesh(points=point_list)
     >>> s.name
-    'UnNamed'
+    'unnamed'
     >>> s.color
     'grey'
     >>> s.color_in_rgb()
@@ -1576,7 +1576,7 @@ class Mesh(Shape):
     
     """
     
-    def __init__(self, name='UnNamed', \
+    def __init__(self, name='unnamed', \
                                   color='grey', points=None):
                                       
         if not isinstance(name, str):
@@ -1612,7 +1612,7 @@ class Mesh(Shape):
     
     @points.setter
     def points(self, new_point_list):
-        self._points = np.array(new_points_list)
+        self._points = np.array(new_point_list)
        
 
     def generate_dict(self):
