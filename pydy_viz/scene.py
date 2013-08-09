@@ -7,7 +7,7 @@ import re
 
 try:
     import IPython
-except:
+except ImportError:
     pass
         
 class Scene(object):
@@ -142,7 +142,8 @@ class Scene(object):
         else:
             self._reference_frame = new_reference_frame             
     
-    def generate_json(self, state_sym, par_sym, states, parameters, \
+    def generate_json(self, dynamic_variables, constant_variables, \
+                                      dynamic_values, constant_values, \
                                               save_to='data.json'):
         """
         generate_json() method generates a dictionary, which is dumped
@@ -158,20 +159,20 @@ class Scene(object):
 
         Parameters
         ==========
-        state_sym : Sympifyable list or tuple
+        dynamic_variables : Sympifyable list or tuple
             This contains all the dynamic symbols or state variables
             which are required for solving the transformation matrices
             of all the frames of the scene.
        
-        par_sym : Sympifyable list or tuple
+        constant_variables : Sympifyable list or tuple
             This contains all the symbols for the parameters which are
             used for defining various objects in the system.
      
-        states : list or tuple
+        dynamic_values : list or tuple
             initial states of the system. The list or tuple 
             should be respective to the state_sym.
 
-        parameters : list or tuple
+        constant_valuess : list or tuple
             values of the parameters. The list or tuple 
             should be respective to the par_sym.
 
@@ -191,9 +192,9 @@ class Scene(object):
         for frame in self.visualization_frames:
 
             frame.generate_transformation_matrix(self._reference_frame, self._origin)
-            frame.generate_numeric_transform(state_sym, par_sym)
-            frame.evaluate_numeric_transform(states, parameters)
-            self._scene_data['frames'].append(frame.generate_simulation_dict())
+            frame.generate_numeric_transform_function(dynamic_variables, constant_variables)
+            frame.evaluate_transformation_matrix(dynamic_values, constant_values)
+            self._scene_data['frames'].append(frame.generate_visualization_dict())
 
      
         outfile = open(self.saved_json_file)
