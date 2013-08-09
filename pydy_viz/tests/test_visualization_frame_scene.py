@@ -331,7 +331,7 @@ class TestVisualizationFrameScene(object):
         assert camera1.far == 1000
 
     def test_scene(self):
-        self.scene = Scene('scene', self.I, self.O)
+        self.scene = Scene(self.I, self.O)
         self.scene.add_visualization_frames(self.frame1, self.frame2, \
                                                       self.frame3)
         assert self.scene.name == 'scene'                                                      
@@ -347,13 +347,4 @@ class TestVisualizationFrameScene(object):
         
         self.scene.reference_frame = self.A
         assert self.scene.reference_frame == self.A
-        
-        self.scene.remove_frame(self.frame1)
-        assert self.scene.frames[0] is self.frame2
-        assert self.scene.frames[1] is self.frame3
-        
-        self.scene.add_visualization_frame(self.frame1)
-        assert self.scene.frames[0] is self.frame1
-        assert self.scene.frames[1] is self.frame2
-        assert self.scene.frames[2] is self.frame3
         
