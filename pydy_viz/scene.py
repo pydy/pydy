@@ -9,6 +9,8 @@ try:
     import IPython
 except ImportError:
     pass
+
+#TODOS: implement display() methods
         
 class Scene(object):
     """
@@ -33,16 +35,13 @@ class Scene(object):
     
     """
     
-    def __init_(self, *args, **kwargs):
+    def __init_(self, reference_frame, origin, *visualization_frames, **kwargs):
         """
         Initializes a Scene instance.
         It requires a reference frame and a point to be initialized.
         
         Parameters:
         ===========
-        
-        name : str
-        Name of Scene object.
         
         reference_frame : ReferenceFrame
         All the transformations would be carried out with respect
@@ -52,41 +51,32 @@ class Scene(object):
         All the transformations would be carried out with respect
         to this point.
         
-        width : int or float
-        width of the canvas used for visualizations.
+        visualization_frames : VisualizationFrame
+        a tuple of visualization frames which are to visualized in 
+        the scene.
+
+        name : str, optional
+        Name of Scene object.
+
+        width : int or float, optional
+        width of the canvas used for visualizations.Default is 800.
         
         height : int or float
-        height of the canvas used for visualizations.
+        height of the canvas used for visualizations.Default is 800.
+    
+        camera : Camera, optional 
         
+        camera with which to display the object. Default is 
+        PerspectiveCamera, with reference_frame and origin same 
+        as defined for this scene.
         """
         
-        i = 0
-        if isinstance(args[0], str):
-            self._name = args[0]
-            i += 1
-        else:
-            self._name = 'UnNamed'
-        
-        self._reference_frame = args[i]
-        self._origin = args[i+1]        
-            
         try:
-            self.cameras = kwargs['cameras']
-        except KeyError:    
-            self.cameras = [PerspectiveCamera(self._reference_frame, \
-                                                        self._origin)]
-        
-        try:
-            self.lights = kwargs['lights']
-        except KeyError:    
-            #TODO add Light
-            pass
-
-        try:
-            self.visualization_frames = kwargs['visualization_frames']
+            self._name = kwargs['name']
         except KeyError:
-            self.visualization_frames = []
-        
+            self._name = 'unnamed'
+ 
+
         try:        
             self._width = kwargs['width']
         except KeyError:    
@@ -96,6 +86,25 @@ class Scene(object):
             self._height = kwargs['height']
         except KeyError:    
             self._height = 800
+               
+        try:
+            self.cameras = kwargs['cameras']
+        except KeyError:    
+            self.cameras = [PerspectiveCamera(self._reference_frame, \
+                                                        self._origin)]
+
+        try:
+            self.lights = kwargs['lights']
+        except KeyError:    
+            #TODO add Light
+            pass
+
+        self._reference_frame = reference_frame
+        self._origin = origin
+            
+
+        self.visualization_frames = [vis_frame for visframes in visualization_frames]
+        
             
     @property
     def name(self):
@@ -142,47 +151,14 @@ class Scene(object):
         else:
             self._reference_frame = new_reference_frame             
     
-    def generate_json(self, dynamic_variables, constant_variables, \
-                                      dynamic_values, constant_values, \
-                                              save_to='data.json'):
+    def _generate_data(self, dynamic_variables, constant_variables, \
+                                      dynamic_values, constant_values):
         """
-        generate_json() method generates a dictionary, which is dumped
-        as JSON in the file name given by save_to argument.
-        Default filename is data.json.
-        The JSON file contain following keys:
-        1) Width of the scene.
-        2) Height of the scene.
-        3) name of the scene.
-        4) frames in the scene, which contains sub-dictionaries 
-           of all the visualization frames information.
-        
-
-        Parameters
-        ==========
-        dynamic_variables : Sympifyable list or tuple
-            This contains all the dynamic symbols or state variables
-            which are required for solving the transformation matrices
-            of all the frames of the scene.
-       
-        constant_variables : Sympifyable list or tuple
-            This contains all the symbols for the parameters which are
-            used for defining various objects in the system.
-     
-        dynamic_values : list or tuple
-            initial states of the system. The list or tuple 
-            should be respective to the state_sym.
-
-        constant_valuess : list or tuple
-            values of the parameters. The list or tuple 
-            should be respective to the par_sym.
-
-        save_to : str
-            path to the file where to write the generated data JSON.
-            the path should be chosen such as to have the write 
-            permissions to the user.
+        This method is called from the generate_visualization_dict()
+        method or generate_visualization_json() method
+        For more information view Docstrings for those methods.
 
         """
-        self.saved_json_file = save_to
         self._scene_data = {}
         self._scene_data['name'] = self._name
         self._scene_data['height'] = self._height
@@ -200,6 +176,55 @@ class Scene(object):
         outfile = open(self.saved_json_file)
         outfile.write(json.dumps(self._scene_data, indent=4, separators=(',', ': '))) 
         outfile.close()
+
+    def generate_visualization_dict(self, dynamic_variables, constant_variables, \
+                                      dynamic_values, constant_values):
+        """
+        generate_visualization_dict() method generates a dictionary, which is returned
+        
+        
+
+        Parameters
+        ==========
+        dynamic_variables : Sympifyable list or tuple
+            This contains all the dynamic symbols or state variables
+            which are required for solving the transformation matrices
+            of all the frames of the scene.
+       
+        constant_variables : Sympifyable list or tuple
+            This contains all the symbols for the parameters which are
+            used for defining various objects in the system.
+     
+        dynamic_values : list or tuple
+            initial states of the system. The list or tuple 
+            should be respective to the state_sym.
+
+        constant_values : list or tuple
+            values of the parameters. The list or tuple 
+            should be respective to the par_sym.
+
+        save_to : str
+            path to the file where to write the generated data JSON.
+            the path should be chosen such as to have the write 
+            permissions to the user.
+
+        Returns
+        =======
+
+        The dictionary contains following keys:
+        1) Width of the scene.
+        2) Height of the scene.
+        3) name of the scene.
+        4) frames in the scene, which contains sub-dictionaries 
+           of all the visualization frames information.
+
+
+        """
+        self._data_dict = self._generate_data(dynamic_variables, constant_variables, \
+                                                   dynamic_values, constant_values)
+
+        return self._data_dict
+        
 
     def _display_from_ipython(self, json_data=None):
         #Basic script requirements. ..
