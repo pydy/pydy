@@ -2,9 +2,10 @@ from sympy.physics.mechanics import dynamicsymbols, ReferenceFrame, \
                                   Point, RigidBody, Particle, inertia
                                     
 from sympy import sin, cos, symbols
-from shapes import Cylinder
-from visualization_frame import VisualizationFrame, PerspectiveCamera, \
-                                                    OrthoGraphicCamera
+from pydy_viz.shapes import Cylinder
+from pydy_viz.visualization_frame import VisualizationFrame
+from pydy_viz.camera import PerspectiveCamera, OrthoGraphicCamera
+from pydy_viz.scene import Scene                                      
                                                  
 
 from numpy import radians
@@ -96,7 +97,7 @@ class TestVisualizationFrameScene(object):
         self.frame1.shape = self.shape2
         assert self.frame1.shape is self.shape2    
         
-        assert self.frame1.transform(self.I, self.O).tolist() == \
+        assert self.frame1.generate_transformation_matrix(self.I, self.O).tolist() == \
                                              self.transformation_matrix
 
 
@@ -123,7 +124,7 @@ class TestVisualizationFrameScene(object):
 
         self.frame2.reference_frame = self.A
         self.frame2.origin = self.P1
-        assert self.frame2.transform(self.I, self.O).tolist() == \
+        assert self.frame2.generate_transformation_matrix(self.I, self.O).tolist() == \
                                             self.transformation_matrix
                                             
 
@@ -153,14 +154,14 @@ class TestVisualizationFrameScene(object):
 
         self.frame3.reference_frame = self.A
         self.frame3.origin = self.P1
-        assert self.frame3.transform(self.I, self.O).tolist() == \
+        assert self.frame3.generate_transformation_matrix(self.I, self.O).tolist() == \
                                              self.transformation_matrix
 
     def test_vframe_without_name(self):
         self.frame4 = VisualizationFrame(self.I, self.O, \
                                                self.shape1)
         
-        assert self.frame4.name == 'UnNamed'
+        assert self.frame4.name == 'unnamed'
         #To check if referenceframe and origin are defined 
         #properly without name arg
         assert self.frame4.reference_frame == self.I 
@@ -170,16 +171,6 @@ class TestVisualizationFrameScene(object):
         self.frame4.name = 'frame1_'
         assert self.frame4.name == 'frame1_'
     
-    def test_vframe_nesting(self):
-        self.frame5 = VisualizationFrame('parent-frame', self.I, \
-                                        self.O, self.shape1)
-        
-        self.frame5.add_child_frames(self.global_frame1, \
-                                          self.global_frame2)
-                                                                                                            
-        assert self.frame5.child_frames[0] is self.global_frame1
-        assert self.frame5.child_frames[1] is self.global_frame2
-        
     def test_numeric_transform(self):
         self.list1 = [[0.5000000000000001, 0.5, \
                        -0.7071067811865475, 0.0], \
@@ -200,20 +191,20 @@ class TestVisualizationFrameScene(object):
 
                       
 
-        self.global_frame1.transform(self.I, self.O)
-        self.global_frame1.generate_numeric_transform(self.dynamic, \
+        self.global_frame1.generate_transformation_matrix(self.I, self.O)
+        self.global_frame1.generate_numeric_transform_function(self.dynamic, \
                                                         self.parameters)
         
         assert_allclose(self.global_frame1.\
-                              evaluate_numeric_transform(self.states, \
+                              evaluate_transformation_matrix(self.states, \
                                 self.param_vals).tolist(), self.list1)
         
-        self.global_frame2.transform(self.I, self.O)
-        self.global_frame2.generate_numeric_transform(self.dynamic, \
+        self.global_frame2.generate_transformation_matrix(self.I, self.O)
+        self.global_frame2.generate_numeric_transform_function(self.dynamic, \
                                                         self.parameters)
         
         assert_allclose(self.global_frame2.\
-                              evaluate_numeric_transform(self.states, \
+                              evaluate_transformation_matrix(self.states, \
                                 self.param_vals).tolist(), self.list2)
         
                    
@@ -276,9 +267,9 @@ class TestVisualizationFrameScene(object):
         camera.far = 500
         assert camera.far == 500
         
-        #Test UnNamed
+        #Test unnamed
         camera1 = PerspectiveCamera(self.I, self.O)
-        assert camera1.name == 'UnNamed'
+        assert camera1.name == 'unnamed'
         assert camera1.reference_frame == self.I
         assert camera1.origin == self.O
         assert camera1.fov == 45
@@ -338,7 +329,7 @@ class TestVisualizationFrameScene(object):
         assert camera.far == 500
         
         camera1 = OrthoGraphicCamera(self.I, self.O)
-        assert camera1.name == 'UnNamed'
+        assert camera1.name == 'unnamed'
         assert camera1.reference_frame == self.I
         assert camera1.origin == self.O
         assert camera1.near == 1
@@ -354,9 +345,7 @@ class TestVisualizationFrameScene(object):
         assert self.scene2.origin == self.O
         assert self.scene2.visualization_frames[0] is self.global_frame1
         assert self.scene2.visualization_frames[1] is self.global_frame2
-        
 
-        
         self.scene2.name = 'scene1'
         assert self.scene2.name == 'scene1'
         
@@ -389,6 +378,3 @@ class TestVisualizationFrameScene(object):
         assert not os.path.exists(os.path.join(os.getcwd()), \
                                         '.pydy_viz', 'static', 'img'))
                                
-
-           
-
