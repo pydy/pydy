@@ -15,5 +15,5 @@ def create_server(port=8000):
 
     sa = httpd.socket.getsockname()
     print 'Your server is running on http://127.0.0.1:8000/ \n \
-           Visit in browser to see your visulization in all its glory'  
+           Visit in browser to see your visulization in all its glory'
     httpd.serve_forever()
