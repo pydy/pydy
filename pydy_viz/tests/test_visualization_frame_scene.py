@@ -367,27 +367,27 @@ class TestVisualizationFrameScene(object):
         self.scene1._copy_static_dir()
 
         assert os.path.exists(os.path.join(os.getcwd()), '.pydy_viz'))
-        assert os.path.exists(os.path.join(os.getcwd()), \
-                                                    '.pydy_viz/static'))
-        assert os.path.exists(os.path.join(os.getcwd()), \
-                                                 '.pydy_viz/static/js'))
-        assert os.path.exists(os.path.join(os.getcwd()), \
-                                                '.pydy_viz/static/css'))
-        assert os.path.exists(os.path.join(os.getcwd()), \
-                                                '.pydy_viz/static/img'))
+        assert os.path.exists(os.path.join(os.getcwd()), 
+                                              '.pydy_viz', 'static'))
+        assert os.path.exists(os.path.join(os.getcwd()), 
+                                        '.pydy_viz', 'static', 'js'))
+        assert os.path.exists(os.path.join(os.getcwd()), 
+                                        '.pydy_viz', 'static', 'css'))
+        assert os.path.exists(os.path.join(os.getcwd()),
+                                        '.pydy_viz', 'static', 'img'))
 
 
         self.scene1._clean_static()     
-        assert not os.path.exists(os.path.join(os.getcwd()), \
+        assert not os.path.exists(os.path.join(os.getcwd()), 
                                                            '.pydy_viz'))
+        assert not os.path.exists(os.path.join(os.getcwd()), 
+                                                '.pydy_viz', 'static'))
         assert not os.path.exists(os.path.join(os.getcwd()), \
-                                                    '.pydy_viz/static'))
+                                        '.pydy_viz', 'static', 'js'))
         assert not os.path.exists(os.path.join(os.getcwd()), \
-                                                 '.pydy_viz/static/js'))
+                                        '.pydy_viz', 'static', 'css'))
         assert not os.path.exists(os.path.join(os.getcwd()), \
-                                                '.pydy_viz/static/css'))
-        assert not os.path.exists(os.path.join(os.getcwd()), \
-                                                '.pydy_viz/static/img'))
+                                        '.pydy_viz', 'static', 'img'))
                                
 
            
