@@ -366,7 +366,7 @@ class TestVisualizationFrameScene(object):
                                         '.pydy_viz', 'static', 'img'))
 
 
-        self.scene1._clean_static()     
+        self.scene1._cleanup()     
         assert not os.path.exists(os.path.join(os.getcwd()), 
                                                            '.pydy_viz'))
         assert not os.path.exists(os.path.join(os.getcwd()), 
