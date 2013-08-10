@@ -5,6 +5,8 @@ from server import create_server
 import json
 import os
 import pydy_viz
+import distutils
+import distutils.dir_util
 
 try:
     from IPython.core.display import Javascript, HTML, display
@@ -36,7 +38,7 @@ class Scene(object):
 
     """
     
-    def __init_(self, reference_frame, origin, *visualization_frames, \
+    def __init__(self, reference_frame, origin, *visualization_frames, \
                                                             **kwargs):
         """
         Initializes a Scene instance.
@@ -73,6 +75,11 @@ class Scene(object):
         as defined for this scene.
         """
 
+        self._reference_frame = reference_frame
+        self._origin = origin
+
+        self.visualization_frames = list(visualization_frames)
+
         try:
             self._name = kwargs['name']
         except KeyError:
@@ -100,10 +107,6 @@ class Scene(object):
             #TODO add Light
             pass
 
-        self._reference_frame = reference_frame
-        self._origin = origin
-
-        self.visualization_frames = list(visualization_frames)
         
             
     @property
@@ -160,7 +163,7 @@ class Scene(object):
 
     def generate_visualization_dict(self, dynamic_variables, \
                                            constant_variables, \
-                                            dynamic_values, constant_values):
+                                       dynamic_values, constant_values):
         """
         generate_visualization_dict() method generates 
         a dictionary of visualization data
@@ -229,8 +232,8 @@ class Scene(object):
                                       dynamic_values, constant_values, \
                                                   save_to='data.json'):
         """
-        generate_visualization_json() method generates a json str, which is saved to
-        file.
+        generate_visualization_json() method generates 
+        a json str, which is saved to file.
         
         Parameters
         ==========
@@ -269,7 +272,8 @@ class Scene(object):
 
         """
         self.saved_json_file = save_to
-        self._data_dict = self.generate_visualization_dict(dynamic_variables, \
+        self._data_dict = \
+                 self.generate_visualization_dict(dynamic_variables, \
                                               constant_variables, \
                                                    dynamic_values, \
                                                       constant_values)
@@ -289,21 +293,19 @@ class Scene(object):
         method, which deletes the .pydy_viz directory.
 
         """
-        try:
+        
 
-            dst = os.path.join(os.getcwd(), '.pydy_viz')
-            os.mkdir(dst)
-            src = os.path.join(os.path.dirname(pydy_viz.__file__), 
+        dst = os.path.join(os.getcwd(), '.pydy_viz')
+        os.mkdir(dst)
+        src = os.path.join(os.path.dirname(pydy_viz.__file__), 
                                                                'static')
-            distutils.dir_util.copy_tree(src, dst)
+        distutils.dir_util.copy_tree(src, dst)
 
-        except OSError:
-            #If static exist, no need to overwrite anything
-            pass
 
 
     def _cleanup(self):
-        shutil.rmtree(os.path.join(os.get_cwd(), '.pydy_viz'))
+        distutils.dir_util.remove_tree(os.path.join(os.getcwd(), \
+                                                           '.pydy_viz'))
 
     def _display_from_ipython(self):
         pass

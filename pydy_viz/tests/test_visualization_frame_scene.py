@@ -11,7 +11,7 @@ from pydy_viz.scene import Scene
 from numpy import radians
 from numpy.testing import assert_allclose
 import os
-import shutil
+
 class TestVisualizationFrameScene(object):
     
     def __init__(self):
@@ -56,8 +56,8 @@ class TestVisualizationFrameScene(object):
                                 self.B, self.P2, self.shape2)                  
 
         self.scene1 = Scene(self.I, self.O, \
-                            (self.global_frame1, self.global_frame2, \
-                                            self.frame3), name='scene')
+                            (self.global_frame1, self.global_frame2), \
+                                             name='scene')
 
         self.particle = Particle('particle1', self.P1, self.mass)                            
         
@@ -337,8 +337,8 @@ class TestVisualizationFrameScene(object):
 
     def test_scene_init(self):
         self.scene2 = Scene(self.I, self.O, \
-                            (self.global_frame1, self.global_frame2, \
-                                            self.frame3), name='scene')
+                            self.global_frame1, self.global_frame2, \
+                                            name='scene')
 
         assert self.scene2.name == 'scene'                                                      
         assert self.scene2.reference_frame == self.I
@@ -355,26 +355,26 @@ class TestVisualizationFrameScene(object):
     def test_scene_copy_static(self):
         self.scene1._copy_static_dir()
 
-        assert os.path.exists(os.path.join(os.getcwd()), '.pydy_viz'))
-        assert os.path.exists(os.path.join(os.getcwd()), 
-                                              '.pydy_viz', 'static'))
-        assert os.path.exists(os.path.join(os.getcwd()), 
-                                        '.pydy_viz', 'static', 'js'))
-        assert os.path.exists(os.path.join(os.getcwd()), 
-                                        '.pydy_viz', 'static', 'css'))
-        assert os.path.exists(os.path.join(os.getcwd()),
-                                        '.pydy_viz', 'static', 'img'))
+        assert os.path.exists(os.path.join(os.getcwd(), '.pydy_viz'))
+        assert os.path.exists(os.path.join(os.getcwd(), 
+                                              '.pydy_viz'))
+        assert os.path.exists(os.path.join(os.getcwd(), 
+                                        '.pydy_viz', 'js'))
+        assert os.path.exists(os.path.join(os.getcwd(), 
+                                        '.pydy_viz', 'css'))
+        assert os.path.exists(os.path.join(os.getcwd(),
+                                        '.pydy_viz', 'img'))
 
 
         self.scene1._cleanup()     
-        assert not os.path.exists(os.path.join(os.getcwd()), 
+        assert not os.path.exists(os.path.join(os.getcwd(), 
                                                            '.pydy_viz'))
-        assert not os.path.exists(os.path.join(os.getcwd()), 
+        assert not os.path.exists(os.path.join(os.getcwd(), 
                                                 '.pydy_viz', 'static'))
-        assert not os.path.exists(os.path.join(os.getcwd()), \
-                                        '.pydy_viz', 'static', 'js'))
-        assert not os.path.exists(os.path.join(os.getcwd()), \
-                                        '.pydy_viz', 'static', 'css'))
-        assert not os.path.exists(os.path.join(os.getcwd()), \
-                                        '.pydy_viz', 'static', 'img'))
+        assert not os.path.exists(os.path.join(os.getcwd(), 
+                                        '.pydy_viz', 'js'))
+        assert not os.path.exists(os.path.join(os.getcwd(), 
+                                        '.pydy_viz', 'css'))
+        assert not os.path.exists(os.path.join(os.getcwd(), 
+                                        '.pydy_viz', 'img'))
                                
