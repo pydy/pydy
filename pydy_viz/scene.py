@@ -104,8 +104,7 @@ class Scene(object):
         self._origin = origin
             
 
-        self.visualization_frames = [vis_frame for vis_frame \
-                                              in visualization_frames]
+        self.visualization_frames = list(visualization_frames)
         
             
     @property
@@ -161,38 +160,6 @@ class Scene(object):
         else:
             self._reference_frame = new_reference_frame             
     
-    def _generate_data(self, dynamic_variables, constant_variables, \
-                                      dynamic_values, constant_values):
-        """
-        This method is called from the generate_visualization_dict()
-        method or generate_visualization_json() method
-        For more information view Docstrings for those methods.
-
-        """
-        self._scene_data = {}
-        self._scene_data['name'] = self._name
-        self._scene_data['height'] = self._height
-        self._scene_data['width'] = self._width
-        self._scene_data['frames'] = []
-        self._scene_data['cameras'] = []
-
-        for frame in self.visualization_frames+self.cameras:
-
-            frame.generate_transformation_matrix( \
-                                    self._reference_frame, self._origin)
-            frame.generate_numeric_transform_function( \
-                                  dynamic_variables, constant_variables)
-            frame.evaluate_transformation_matrix( \
-                                        dynamic_values, constant_values)
-                                        
-            if isinstance(frame, VisualizationFrame):                             
-                self._scene_data['frames'].append( \
-                                    frame.generate_visualization_dict())
-            else:
-                self._scene_data['cameras'].append( \
-                                    frame.generate_visualization_dict())
-        return self._scene_data
-                                        
     def generate_visualization_dict(self, dynamic_variables, \
                                         constant_variables, \
                                       dynamic_values, constant_values):
@@ -232,12 +199,31 @@ class Scene(object):
 
 
         """
-        self._data_dict = self._generate_data(dynamic_variables, \
-                                              constant_variables, \
-                                                dynamic_values, \
-                                                    constant_values)
 
-        return self._data_dict
+        self._scene_data = {}
+        self._scene_data['name'] = self._name
+        self._scene_data['height'] = self._height
+        self._scene_data['width'] = self._width
+        self._scene_data['frames'] = []
+        self._scene_data['cameras'] = []
+
+        for frame in self.visualization_frames+self.cameras:
+
+            frame.generate_transformation_matrix( \
+                                    self._reference_frame, self._origin)
+            frame.generate_numeric_transform_function( \
+                                  dynamic_variables, constant_variables)
+            frame.evaluate_transformation_matrix( \
+                                        dynamic_values, constant_values)
+                                        
+            if isinstance(frame, VisualizationFrame):                             
+                self._scene_data['frames'].append( \
+                                    frame.generate_visualization_dict())
+            else:
+                self._scene_data['cameras'].append( \
+                                    frame.generate_visualization_dict())
+
+        return self._scene_data
 
     def generate_visualization_json(self, dynamic_variables, \
                                           constant_variables, \
@@ -274,7 +260,7 @@ class Scene(object):
 
         """
         self.saved_json_file = save_to
-        self._data_dict = self._generate_data(dynamic_variables, \
+        self._data_dict = self.generate_visualization_dict(dynamic_variables, \
                                               constant_variables, \
                                                    dynamic_values, \
                                                       constant_values)
@@ -313,7 +299,7 @@ class Scene(object):
             os.mkdir(os.getcwd + '/.pydy_viz')
             dst = os.getcwd + '/.pydy_viz'
             src = os.path.dirname(pydy_viz.__file__)
-            src = src = '/static'
+            src = src + '/static'
             distutils.dir_util.copy_tree(src, dst)
 
         except OSError:
