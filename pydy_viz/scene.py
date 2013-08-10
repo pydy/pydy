@@ -4,6 +4,7 @@ from camera import PerspectiveCamera
 from server import create_server
 import json
 import re
+import pydy_viz
 
 try:
     from IPython.core.display import Javascript, HTML, display
@@ -283,14 +284,11 @@ class Scene(object):
         outfile.close()
 
     def _display_from_ipython(self):
-        #Copy static directory to cwd
-        #display(HTML('''<script src='files/js/canvas.js'
         pass
-            
 
     def _display_from_interpreter(self):     
-        #copy static dir to cwd.
-        start_server()
+        #start_server()
+        pass
  
 
 
@@ -308,6 +306,19 @@ class Scene(object):
         calling this method
                         
         """        
+        #First copy static files to current working directory
+                #Copy static files to directory
+        try:
+           
+            os.mkdir(os.getcwd + '/.pydy_viz')
+            dst = os.getcwd + '/.pydy_viz'
+            src = os.path.dirname(pydy_viz.__file__)
+            src = src = '/static'
+            distutils.dir_util.copy_tree(src, dst)
+
+        except OSError:
+            #If static exist, no need to overwrite anything
+            pass
      
         try:
             config = get_ipython().config
