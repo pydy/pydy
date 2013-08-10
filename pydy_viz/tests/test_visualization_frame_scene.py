@@ -9,7 +9,8 @@ from visualization_frame import VisualizationFrame, PerspectiveCamera, \
 
 from numpy import radians
 from numpy.testing import assert_allclose
-
+import os
+import shutil
 class TestVisualizationFrameScene(object):
     
     def __init__(self):
@@ -52,6 +53,10 @@ class TestVisualizationFrameScene(object):
                                  
         self.global_frame2 = VisualizationFrame('global_frame2', \
                                 self.B, self.P2, self.shape2)                  
+
+        self.scene1 = Scene(self.I, self.O, \
+                            (self.global_frame1, self.global_frame2, \
+                                            self.frame3), name='scene')
 
         self.particle = Particle('particle1', self.P1, self.mass)                            
         
@@ -339,30 +344,51 @@ class TestVisualizationFrameScene(object):
         assert camera1.near == 1
         assert camera1.far == 1000
 
-    def test_scene(self):
-        self.scene = Scene('scene', self.I, self.O)
-        self.scene.add_visualization_frames(self.frame1, self.frame2, \
-                                                      self.frame3)
-        assert self.scene.name == 'scene'                                                      
-        assert self.scene.reference_frame == self.I
-        assert self.scene.origin == self.O
-        assert self.scene.get_visualization_frames[0] is self.frame1
-        assert self.scene.get_visualization_frames[1] is self.frame2
-        assert self.scene.get_visualization_frames[2] is self.frame3
+    def test_scene_init(self):
+        self.scene2 = Scene(self.I, self.O, \
+                            (self.global_frame1, self.global_frame2, \
+                                            self.frame3), name='scene')
+
+        assert self.scene2.name == 'scene'                                                      
+        assert self.scene2.reference_frame == self.I
+        assert self.scene2.origin == self.O
+        assert self.scene2.visualization_frames[0] is self.global_frame1
+        assert self.scene2.visualization_frames[1] is self.global_frame2
         
+
         
-        self.scene.name = 'scene1'
-        assert self.scene.name == 'scene1'
+        self.scene2.name = 'scene1'
+        assert self.scene2.name == 'scene1'
         
-        self.scene.reference_frame = self.A
-        assert self.scene.reference_frame == self.A
+        self.scene2.reference_frame = self.A
+        assert self.scene2.reference_frame == self.A
         
-        self.scene.remove_frame(self.frame1)
-        assert self.scene.frames[0] is self.frame2
-        assert self.scene.frames[1] is self.frame3
-        
-        self.scene.add_visualization_frame(self.frame1)
-        assert self.scene.frames[0] is self.frame1
-        assert self.scene.frames[1] is self.frame2
-        assert self.scene.frames[2] is self.frame3
-        
+    def test_scene_copy_static(self):
+        self.scene1._copy_static_dir()
+
+        assert os.path.exists(os.path.join(os.getcwd()), '.pydy_viz'))
+        assert os.path.exists(os.path.join(os.getcwd()), \
+                                                    '.pydy_viz/static'))
+        assert os.path.exists(os.path.join(os.getcwd()), \
+                                                 '.pydy_viz/static/js'))
+        assert os.path.exists(os.path.join(os.getcwd()), \
+                                                '.pydy_viz/static/css'))
+        assert os.path.exists(os.path.join(os.getcwd()), \
+                                                '.pydy_viz/static/img'))
+
+
+        self.scene1._clean_static()     
+        assert not os.path.exists(os.path.join(os.getcwd()), \
+                                                           '.pydy_viz'))
+        assert not os.path.exists(os.path.join(os.getcwd()), \
+                                                    '.pydy_viz/static'))
+        assert not os.path.exists(os.path.join(os.getcwd()), \
+                                                 '.pydy_viz/static/js'))
+        assert not os.path.exists(os.path.join(os.getcwd()), \
+                                                '.pydy_viz/static/css'))
+        assert not os.path.exists(os.path.join(os.getcwd()), \
+                                                '.pydy_viz/static/img'))
+                               
+
+           
+
