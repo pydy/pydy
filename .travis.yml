@@ -1,7 +1,7 @@
-langauge: python
+language: python
 python:
-  - 2.7
-before_install:
+  - "2.7"
+install:
   - "pip install --use-mirrors sympy"
   - "pip install --use-mirrors matplotlib"
 script: nosetests
