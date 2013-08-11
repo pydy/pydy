@@ -10,10 +10,10 @@ class TestSocketServer(object):
         create_socket_server(8000)
 
     def test_req1(self):
-        
-        #We connect to a client socket, and 
+
+        #We connect to a client socket, and
         #send some GET request to our server socket
-        
+
         assert data == #Some index.html data
 
     def test_req2(self):
@@ -24,9 +24,9 @@ class TestSocketServer(object):
         s.close()
 
         assert  data == open('testfile.js'.read()
-    
+
     def test_req3(self):
         #Test for json file
-        pass    
+        pass
 
 
