@@ -11,7 +11,8 @@ from pydy_viz.scene import Scene
 from numpy import radians
 from numpy.testing import assert_allclose
 import os
-import shutil
+import socket
+
 class TestVisualizationFrameScene(object):
     
     def __init__(self):
@@ -378,3 +379,6 @@ class TestVisualizationFrameScene(object):
         assert not os.path.exists(os.path.join(os.getcwd()), \
                                         '.pydy_viz', 'static', 'img'))
                                
+    
+        
+        
