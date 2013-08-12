@@ -8,14 +8,13 @@ import os
 class TestSocketServer(object):
     def __init__(self):
         self.host = 'localhost'
-        self.port = 8000
-        self.server = Server(self.port)
+        self.server = Server()
 
     def test_req1(self):
         #We connect to a client socket, and
         #send some GET request to our server socket
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.connection.connect((self.host, self.port))
+        self.connection.connect((self.host, self.server.port))
         self.connection.send('GET /')   
 
         data = self.server.listen_once()
@@ -24,7 +23,7 @@ class TestSocketServer(object):
 
     def test_req2(self):
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.connection.connect((self.host, self.port))
+        self.connection.connect((self.host, self.server.port))
         self.connection.send('GET /static/js/src/canvas.js')
         
         data = self.server.listen_once()

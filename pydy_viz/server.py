@@ -1,18 +1,38 @@
 import socket, threading, os
 import pydy_viz
 class Server(threading.Thread):
-    def __init__(self, port):
+    def __init__(self, json='data.json'):
         threading.Thread.__init__(self)
-        self.port = port
+        self.saved_json_file = json
+        self.port = 8000
         host = ''
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind((host, self.port))
+        try:
+            self.socket.bind((host, self.port))
+        except:
+            self.port+=1
+            try:
+                self.socket.bind((host, self.port))
+            except:
+                self.port+=1
+                self.socket.bind((host, self.port))
         self.socket.listen(5)
 
     def parse_data(self,data):
         static_path = os.path.dirname(pydy_viz.__file__)
         request = data.split(' ')[1][1:]
-        file_path = os.path.join(static_path, request)
+        print 'requested :%sasda'%request
+        if request == '':
+        #If requested to http://localhost:port/
+        #Send index.html file
+            file_path = os.path.join(static_path, 'static', 'index.html')        
+        elif request == 'data.json':
+        #If data.json is requested, get it from scene method
+            file_path = os.path.join(os.getcwd(), self.saved_json_file)
+        else:    
+        #Else, try to use relative path from url for other files
+            file_path = os.path.join(static_path, request)           
+
         try:
             send_buffer = open(file_path).read()
         except IOError:
@@ -31,7 +51,15 @@ class Server(threading.Thread):
     def run(self):
         host = ''
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((host, self.port))
+        try:
+            self.socket.bind((host, self.port))
+        except:
+            self.port+=1
+            try:
+                self.socket.bind((host, self.port))
+            except:
+                self.port+=1
+                self.socket.bind((host, self.port))        
         print 'server started successfully, waiting...'
         s.listen(1)
         
@@ -52,5 +80,3 @@ class Server(threading.Thread):
             else:    
                 sent_data = self.parse_data(self.data)
                 conn.send(sent_data)
-
-

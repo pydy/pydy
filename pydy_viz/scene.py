@@ -37,7 +37,7 @@ class Scene(object):
 
 
     """
-    def __init_(self, reference_frame, origin, *visualization_frames,
+    def __init__(self, reference_frame, origin, *visualization_frames,
                 **kwargs):
         """
         Initializes a Scene instance.
