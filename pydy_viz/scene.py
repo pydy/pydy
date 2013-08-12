@@ -1,7 +1,7 @@
 from sympy.physics.mechanics import ReferenceFrame, Point
 from visualization_frame import VisualizationFrame
 from camera import PerspectiveCamera
-from server import create_server
+from server import Server
 import json
 import os
 import pydy_viz
@@ -347,7 +347,12 @@ class Scene(object):
                                                            '.pydy_viz'))
 
     def _display_from_interpreter(self):
-        raise NotImplemented
+        server = Server(8000)
+        print '''Your visualization is being rendered at 
+                 http://localhost:8000/
+                 Visit the url in your webgl compatible browser
+                 to see the animation in full glory'''
+        server.run()          
 
     def _display_from_interpreter(self):
         raise NotImplemented
