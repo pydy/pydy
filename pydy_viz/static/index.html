@@ -1,0 +1,31 @@
+<html>
+	<head>
+		<title>My first Three.js app</title>
+		<style>my-canvas { width: 400px; height: 400px }</style>
+                <script src="/static/js/src/jquery.js"></script>
+		<script src="/static/js/src/three.min.js"></script>
+		<script src="/static/js/src/TrackballControls.js"></script>
+        <script src="/output.json"></script>
+        <script src="/static/js/src/canvas.js"></script>
+        
+	</head>
+	<body>
+
+		
+        
+        <div id='my-canvas'><div id='canvas'></div>
+        </div>
+        
+        <script type="text/javascript">
+        alert('Welcome to pydy-viz simulator, \n You can use mouse controls on the visualization ');
+
+        var s = new Canvas(JSONObj);
+        s.initialize();
+        s.add_visualization_frames();
+        s.visualize();
+        s.run_animation();
+
+        
+        </script>
+	</body>
+</html>

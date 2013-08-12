@@ -347,11 +347,11 @@ class Scene(object):
                                                            '.pydy_viz'))
 
     def _display_from_interpreter(self):
-        server = Server(8000)
+        server = Server()
         print '''Your visualization is being rendered at 
-                 http://localhost:8000/
+                 http://localhost:%s/
                  Visit the url in your webgl compatible browser
-                 to see the animation in full glory'''
+                 to see the animation in full glory'''%(server.port)
         server.run()          
 
     def _display_from_interpreter(self):
