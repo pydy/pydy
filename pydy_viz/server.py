@@ -1,7 +1,27 @@
 import socket, threading, os
 import pydy_viz
 class Server(threading.Thread):
+    """
+    A basic Socket server.
+    This server is used for fetching 
+    static files from the pydy_viz 
+    source and rendering them to
+    the browser.
+    
+    """
     def __init__(self, json='data.json'):
+        """
+        Initiate a server instance.
+        
+        Parameters
+        ==========
+        json : str, optional
+        path to the saved json file
+        for visualization, relative to
+        current working directory.
+        
+        
+        """
         threading.Thread.__init__(self)
         self.saved_json_file = json
         self.port = 8000
@@ -18,10 +38,10 @@ class Server(threading.Thread):
                 self.socket.bind((host, self.port))
         self.socket.listen(5)
 
-    def parse_data(self,data):
+    def _parse_data(self, data):
+
         static_path = os.path.dirname(pydy_viz.__file__)
         request = data.split(' ')[1][1:]
-        print 'requested :%sasda'%request
         if request == '':
         #If requested to http://localhost:port/
         #Send index.html file
@@ -43,40 +63,23 @@ class Server(threading.Thread):
     def listen_once(self):
         conn, addr = self.socket.accept()
         data = conn.recv(1024)
-        sent_data = self.parse_data(data)
+        sent_data = self._parse_data(data)
         conn.send(sent_data)
         return sent_data
         
         
     def run(self):
-        host = ''
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            self.socket.bind((host, self.port))
-        except:
-            self.port+=1
-            try:
-                self.socket.bind((host, self.port))
-            except:
-                self.port+=1
-                self.socket.bind((host, self.port))        
-        print 'server started successfully, waiting...'
-        s.listen(1)
-        
-        while 1:
-            try:
-                self.data = conn.recv(1024)
-            except socket.error:
-                print 'lost', addr, 'waiting..'
-                s.listen(1)
-                conn, addr = s.accept()
-                print 'contact', addr, 'on', self.now()
-                continue
+        print 'server started successfully, on port:', self.port
 
-            if not data:
-                print 'lost', addr, 'waiting..'
-                s.listen(1)
-                conn, addr = s.accept()
-            else:    
-                sent_data = self.parse_data(self.data)
+        while 1:
+                self.socket.listen(1)
+                conn, addr = self.socket.accept()                        
+                self.data = conn.recv(1024)
+                sent_data = self._parse_data(self.data)
                 conn.send(sent_data)
+                print 'sent data'
+                conn.close()
+
+if __name__ == "__main__":
+    a = Server()
+    a.run()

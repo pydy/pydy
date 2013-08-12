@@ -215,13 +215,13 @@ class VisualizationFrame(object):
         self._transform = Identity(4).as_mutable()
         self._transform[0:3, 0:3] = _rotation_matrix[0:3, 0:3]
 
+        print self.origin.pos_from(point)
+        print type(self.origin.pos_from(point))
         _point_vector = self.origin.pos_from(point).express(reference_frame)
 
         self._transform[3, 0] = _point_vector.dot(reference_frame.x)
         self._transform[3, 1] = _point_vector.dot(reference_frame.y)
         self._transform[3, 2] = _point_vector.dot(reference_frame.z)
-
-        return self._transform
 
     def generate_numeric_transform_function(self, dynamic_variables, constant_variables):
         """Returns a function which returns a transformation matrix given
@@ -248,7 +248,6 @@ class VisualizationFrame(object):
 
         self._numeric_transform = lambdify(dummy_symbols + constant_variables,
                                           transform, modules="numpy")
-        return self._numeric_transform
 
     def evaluate_transformation_matrix(self, dynamic_values, constant_values):
         """Returns the numerical transformation matrices for each time step.
@@ -274,7 +273,7 @@ class VisualizationFrame(object):
             n = states.shape[0]
             new = np.zeros((n, 4, 4))
             for i, time_instance in enumerate(states):
-                args = np.hstack((time_instance, parameters))
+                args = np.hstack((time_instance, constant_values))
                 new[i, :, :] = self._numeric_transform(*args)
 
         else:
@@ -282,8 +281,7 @@ class VisualizationFrame(object):
             new = self._numeric_transform(*args)
 
         self._visualization_matrix = new
-        return self._visualization_matrix
-
+        
     def generate_visualization_dict(self):
         """
         Returns a dictionary of all the info required
@@ -308,12 +306,14 @@ class VisualizationFrame(object):
         """
         _data = {}
         _data['name'] = self.name
-        _data['shape'] = self.shape.generate_data()
-        if not self.simulation_matrix:
-            #Not sure which error to call here.
+        _data['shape'] = self.shape.generate_dict()
+        try:
+            _data['simulation_matrix'] = \
+                                     self._visualization_matrix.tolist()
+        except:
             raise RuntimeError('''Please call the numerical
                             transformation methods,
-                           before generating simulation dict ''')
-        else:
-            _data['simulation_matrix'] = self.simulation_matrix.tolist()
+                           before generating visualization dict ''')
+        
+            
         return _data

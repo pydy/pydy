@@ -107,8 +107,9 @@ class Scene(object):
         try:
             self.cameras = kwargs['cameras']
         except KeyError:
-            self.cameras = [PerspectiveCamera(self._reference_frame,
-                                              self._origin)]
+            self.cameras = [PerspectiveCamera(self._reference_frame, \
+                                    self._origin.locatenew('p_camera', \
+                                         10*self._reference_frame.z))]
 
         try:
             self.lights = kwargs['lights']
@@ -168,40 +169,6 @@ class Scene(object):
         else:
             self._reference_frame = new_reference_frame
 
-    def generate_visualization_dict(self, dynamic_variables, \
-                                           constant_variables, \
-                                       dynamic_values, constant_values):
-        """
-        This method is called from the generate_visualization_dict()
-        method or generate_visualization_json() method
-        For more information view Docstrings for those methods.
-
-        """
-        self._scene_data = {}
-        self._scene_data['name'] = self._name
-        self._scene_data['height'] = self._height
-        self._scene_data['width'] = self._width
-        self._scene_data['frames'] = []
-        self._scene_data['cameras'] = []
-
-        for frame in self.visualization_frames + self.cameras:
-
-            frame.generate_transformation_matrix(self._reference_frame,
-                                                 self._origin)
-            frame.generate_numeric_transform_function(dynamic_variables,
-                                                      constant_variables)
-            frame.evaluate_transformation_matrix(dynamic_values,
-                                                 constant_values)
-
-            if isinstance(frame, VisualizationFrame):
-                self._scene_data['frames'].append(
-                    frame.generate_visualization_dict())
-            else:
-                self._scene_data['cameras'].append(
-                    frame.generate_visualization_dict())
-
-        return self._scene_data
-
     def generate_visualization_dict(self, dynamic_variables,
                                     constant_variables, dynamic_values,
                                     constant_values):
@@ -249,7 +216,7 @@ class Scene(object):
         self._scene_data['frames'] = []
         self._scene_data['cameras'] = []
 
-        for frame in self.visualization_frames+self.cameras:
+        for frame in self.visualization_frames:
 
             frame.generate_transformation_matrix( \
                                     self._reference_frame, self._origin)
@@ -270,7 +237,7 @@ class Scene(object):
 
     def generate_visualization_json(self, dynamic_variables,
                                     constant_variables, dynamic_values,
-                                    constant_values, save_to='data.json'):
+                                constant_values, save_to='data.json'):
         """
         generate_visualization_json() method generates a json str, which is
         saved to file.
@@ -312,11 +279,12 @@ class Scene(object):
 
         """
         self.saved_json_file = save_to
-        self._data_dict = self._generate_data(dynamic_variables,
+        self._data_dict = \
+                  self.generate_visualization_dict(dynamic_variables,
                                               constant_variables,
                                               dynamic_values,
                                               constant_values)
-        outfile = open(self.saved_json_file)
+        outfile = open(self.saved_json_file, 'w')
         outfile.write(json.dumps(self._data_dict, indent=4,
                                  separators=(',', ': ')))
         outfile.close()
@@ -347,14 +315,14 @@ class Scene(object):
                                                            '.pydy_viz'))
 
     def _display_from_interpreter(self):
-        server = Server()
+        server = Server(json=self.saved_json_file)
         print '''Your visualization is being rendered at 
                  http://localhost:%s/
                  Visit the url in your webgl compatible browser
                  to see the animation in full glory'''%(server.port)
         server.run()          
 
-    def _display_from_interpreter(self):
+    def _display_from_ipython(self):
         raise NotImplemented
 
     def display(self):
@@ -383,4 +351,3 @@ class Scene(object):
 
         except:
             self._display_from_interpreter()
-
