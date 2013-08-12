@@ -352,29 +352,3 @@ class TestVisualizationFrameScene(object):
         self.scene2.reference_frame = self.A
         assert self.scene2.reference_frame == self.A
 
-    def test_scene_copy_static(self):
-        self.scene1._copy_static_dir()
-
-        assert os.path.exists(os.path.join(os.getcwd(), '.pydy_viz'))
-        assert os.path.exists(os.path.join(os.getcwd(),
-                                              '.pydy_viz'))
-        assert os.path.exists(os.path.join(os.getcwd(),
-                                        '.pydy_viz', 'js'))
-        assert os.path.exists(os.path.join(os.getcwd(),
-                                        '.pydy_viz', 'css'))
-        assert os.path.exists(os.path.join(os.getcwd(),
-                                        '.pydy_viz', 'img'))
-
-
-        self.scene1._cleanup()
-        assert not os.path.exists(os.path.join(os.getcwd(),
-                                                           '.pydy_viz'))
-        assert not os.path.exists(os.path.join(os.getcwd(),
-                                                '.pydy_viz', 'static'))
-        assert not os.path.exists(os.path.join(os.getcwd(),
-                                        '.pydy_viz', 'js'))
-        assert not os.path.exists(os.path.join(os.getcwd(),
-                                        '.pydy_viz', 'css'))
-        assert not os.path.exists(os.path.join(os.getcwd(),
-                                        '.pydy_viz', 'img'))
-
