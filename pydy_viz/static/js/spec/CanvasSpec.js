@@ -1,26 +1,33 @@
-describe("Canvas", function() {
-  var canvas;
-  
-
-  beforeEach(function() {
-    // basic functionality test is to describe some standard JSONObj
-    // here and then simply check the different methods for the values
-    // from it.
-    var JSONObj = // What to do ?
+describe("Canvas Initializer", function() {
     var canvas = new Canvas(JSONObj);
-    
-  });
 
-  it("should be able to initialize", function() {
+    it("should be an instance of Canvas", function() {
+    expect(canvas instanceof Canvas).toBeTruthy; }
+
+
+    it("should have width  as in JSON object passed.", function() {
+    expect(canvas.width).toEqual(JSONObj.width); }
+
+
+    it("should have height as in JSON object passed.", function() {
+    expect(canvas.height).toEqual(JSONObj.height); }
+
+    it("should have a predefined Object3D for adding axes", function() {
+    expect(canvas.axes instanceof THREE.Object3D).toBeTruthy; }
+
+    // Now we initialize the canvas ...
     canvas.initialize();
 
-    expect(canvas.scene.axes).toEqual(some_axes_stuff);
-    // Rest scene related attributes can be checked similarly..
+    it("should have a WebGL Renderer after initialize", function() {
+    expect(canvas.renderer instanceof THREE.WebGLRenderer).toBeTruthy; }
 
-    expect(canvas.scene.axes).toEqual(some_axes_stuff);
-    expect(canvas.scene.axes).toEqual(some_axes_stuff);
-    expect(canvas.scene.axes).toEqual(some_axes_stuff);
-    expect(canvas.scene.axes).toEqual(some_axes_stuff);
+    it("should have a scene after initialize", function() {
+    expect(canvas.scene instanceof THREE.Scene).toBeTruthy; }
+
+
+    it("should have x axis after initialize", function() {
+    expect(canvas.axes[0] instanceof THREE.PlaneGeometry).toBeTruthy;
+
 
   });
 
