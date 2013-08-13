@@ -320,15 +320,14 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
         if dV_eq != [0] * (n*(n - 1)//2):
             rs = [(r, s) for r in range(n) for s in range(r + 1, n)]
             for (r, s), x in zip(rs, dV_eq):
-                if x != 0:
+                if trigsimp(expand(x)) != 0:
                     print(('∂/∂q{0}(∂V/∂q{1}) != ∂/∂q{1}(∂V/∂q{0}). ' +
                            'V does NOT exist.').format(r + 1, s + 1))
                     print('∂/∂q{0}(∂V/∂q{1}) = {2}'.format(
                             r + 1, s + 1, dV_dq_list[r].diff(q[s])))
                     print('∂/∂q{1}(∂V/∂q{0}) = {2}'.format(
                             r + 1, s + 1, dV_dq_list[s].diff(q[r])))
-                    break
-            return None
+                    return None
     else:
         dV_dq_list += f
         # Unable to take diff of 'fm.diff(qs)', replace with dummy symbols.
