@@ -1,3 +1,5 @@
+__all__ = ['PerspectiveCamera', 'OrthoGraphicCamera']
+
 from sympy.matrices.expressions import Identity
 from visualization_frame import VisualizationFrame
 
@@ -163,7 +165,7 @@ class PerspectiveCamera(VisualizationFrame):
         else:
             self._far = new_far
 
-    def generate_simulation_dict(self):
+    def generate_visualization_dict(self):
         """
         Returns a dictionary of all the info required
         for the visualization of this Camera
@@ -191,13 +193,15 @@ class PerspectiveCamera(VisualizationFrame):
         self._data['near'] = self.near
         self._data['far'] = self.far
 
-        if not self.simulation_matrix:
+        try:
+            self._data['simulation_matrix'] = self._visualization_matrix.tolist()
+
+        except:
             #Not sure which error to call here.
             raise RuntimeError('''Please call the numerical
                             transformation methods,
                            before generating simulation dict ''')
-        else:
-            self._data['simulation_matrix'] = self.simulation_matrix.tolist()
+
 
         return self._data
 
@@ -339,7 +343,7 @@ class OrthoGraphicCamera(VisualizationFrame):
         else:
             self._far = new_far
 
-    def generate_simulation_dict(self):
+    def generate_visualization_dict(self):
         """
         Returns a dictionary of all the info required
         for the visualization of this Camera
@@ -365,12 +369,14 @@ class OrthoGraphicCamera(VisualizationFrame):
         self._data['near'] = self.near
         self._data['far'] = self.far
 
-        if not self.simulation_matrix:
+        try:
+            self._data['simulation_matrix'] = self.simulation_matrix.tolist()
+
+        except:
             #Not sure which error to call here.
             raise RuntimeError('''Please call the numerical
                             transformation methods,
                            before generating simulation dict ''')
-        else:
-            self._data['simulation_matrix'] = self.simulation_matrix.tolist()
+
 
         return self._data

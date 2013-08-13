@@ -15,23 +15,21 @@ class TestSocketServer(object):
         #send some GET request to our server socket
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connection.connect((self.host, self.server.port))
-        self.connection.send('GET /')   
+        self.connection.send('GET /')
 
         data = self.server.listen_once()
-        path = os.path.join(os.path.dirname(pydy_viz.__file__), 'static', 'index.html')    
+        path = os.path.join(os.path.dirname(pydy_viz.__file__), 'static', 'index.html')
+        print data
         assert data == open(path).read()
 
     def test_req2(self):
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connection.connect((self.host, self.server.port))
         self.connection.send('GET /static/js/src/canvas.js')
-        
-        data = self.server.listen_once()
-        path = os.path.join(os.path.dirname(pydy_viz.__file__), 'static', 'js', 'src', 'canvas.js')    
-        assert data == open(path).read()
 
-    def test_req3(self):
-        #Test for json file
-        pass
+        data = self.server.listen_once()
+        path = os.path.join(os.path.dirname(pydy_viz.__file__), 'static', 'js', 'src', 'canvas.js')
+        print data
+        assert data == open(path).read()
 
 

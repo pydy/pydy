@@ -1,26 +1,28 @@
+__all__ = ['Server']
+
 import socket, threading, os
 import pydy_viz
 class Server(threading.Thread):
     """
     A basic Socket server.
-    This server is used for fetching 
-    static files from the pydy_viz 
+    This server is used for fetching
+    static files from the pydy_viz
     source and rendering them to
     the browser.
-    
+
     """
     def __init__(self, json='data.json'):
         """
         Initiate a server instance.
-        
+
         Parameters
         ==========
         json : str, optional
         path to the saved json file
         for visualization, relative to
         current working directory.
-        
-        
+
+
         """
         threading.Thread.__init__(self)
         self.saved_json_file = json
@@ -41,39 +43,52 @@ class Server(threading.Thread):
     def _parse_data(self, data):
 
         static_path = os.path.dirname(pydy_viz.__file__)
-        request = data.split(' ')[1][1:]
-        if request == '':
+        request = data.split(' ')[1]
+        print 'request:%s'% request
+        if request == '/':
         #If requested to http://localhost:port/
         #Send index.html file
-            file_path = os.path.join(static_path, 'static', 'index.html')        
-        elif request == 'data.json':
+            file_path = os.path.join(static_path, 'static', 'index.html')
+            send_buffer = ''
+
+        elif request == '/data.json':
+            print 'data file requested'
         #If data.json is requested, get it from scene method
             file_path = os.path.join(os.getcwd(), self.saved_json_file)
-        else:    
+            send_buffer = 'var JSONObj = '
+
+        else:
         #Else, try to use relative path from url for other files
-            file_path = os.path.join(static_path, request)           
+            file_path_list = request.split('/')
+            for val in file_path_list:
+                static_path = os.path.join(static_path, val)
+            file_path = static_path
+            send_buffer = ''
 
         try:
-            send_buffer = open(file_path).read()
+            send_buffer += open(file_path).read()
+
         except IOError:
-            send_buffer = '404: file not found'
-        
-        return send_buffer        
-        
+            send_buffer = '''<html><body>
+                            <b>404: file not found</b></body>
+                            </html>'''
+
+        return send_buffer
+
     def listen_once(self):
         conn, addr = self.socket.accept()
         data = conn.recv(1024)
         sent_data = self._parse_data(data)
         conn.send(sent_data)
         return sent_data
-        
-        
+
+
     def run(self):
         print 'server started successfully, on port:', self.port
 
         while 1:
                 self.socket.listen(1)
-                conn, addr = self.socket.accept()                        
+                conn, addr = self.socket.accept()
                 self.data = conn.recv(1024)
                 sent_data = self._parse_data(self.data)
                 conn.send(sent_data)

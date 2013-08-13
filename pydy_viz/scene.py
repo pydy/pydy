@@ -1,3 +1,4 @@
+__all__ = ['Scene']
 from sympy.physics.mechanics import ReferenceFrame, Point
 from visualization_frame import VisualizationFrame
 from camera import PerspectiveCamera
@@ -216,7 +217,7 @@ class Scene(object):
         self._scene_data['frames'] = []
         self._scene_data['cameras'] = []
 
-        for frame in self.visualization_frames:
+        for frame in self.visualization_frames + self.cameras:
 
             frame.generate_transformation_matrix( \
                                     self._reference_frame, self._origin)
@@ -316,11 +317,11 @@ class Scene(object):
 
     def _display_from_interpreter(self):
         server = Server(json=self.saved_json_file)
-        print '''Your visualization is being rendered at 
+        print '''Your visualization is being rendered at
                  http://localhost:%s/
                  Visit the url in your webgl compatible browser
                  to see the animation in full glory'''%(server.port)
-        server.run()          
+        server.run()
 
     def _display_from_ipython(self):
         raise NotImplemented
@@ -340,7 +341,6 @@ class Scene(object):
         calling this method
 
         """
-        self._copy_static_dir()
         try:
             config = get_ipython().config
             if config['KernelApp']['parent_appname'] == \

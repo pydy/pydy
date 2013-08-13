@@ -36,3 +36,5 @@ nosetests.xml
 .project
 .pydevproject
 
+# editor saves
+*~

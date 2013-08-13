@@ -1,3 +1,5 @@
+__all__ = ['VisualizationFrame']
+
 from sympy.physics.mechanics import Point, ReferenceFrame
 from shapes import Shape
 import numpy as np
@@ -222,6 +224,7 @@ class VisualizationFrame(object):
         self._transform[3, 0] = _point_vector.dot(reference_frame.x)
         self._transform[3, 1] = _point_vector.dot(reference_frame.y)
         self._transform[3, 2] = _point_vector.dot(reference_frame.z)
+        return self._transform
 
     def generate_numeric_transform_function(self, dynamic_variables, constant_variables):
         """Returns a function which returns a transformation matrix given
@@ -281,7 +284,8 @@ class VisualizationFrame(object):
             new = self._numeric_transform(*args)
 
         self._visualization_matrix = new
-        
+        return self._visualization_matrix
+
     def generate_visualization_dict(self):
         """
         Returns a dictionary of all the info required
@@ -314,6 +318,6 @@ class VisualizationFrame(object):
             raise RuntimeError('''Please call the numerical
                             transformation methods,
                            before generating visualization dict ''')
-        
-            
+
+
         return _data
