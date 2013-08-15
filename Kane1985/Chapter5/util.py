@@ -272,6 +272,31 @@ def generalized_active_forces_V(V, q, u, kde_map, vc_map=None):
     return Fr[:]
 
 
+def function_from_partials(df_dq, q, zero_constants=False):
+    """Returns a function given a list of partial derivatives of the
+    function and a list of variables of which the partial derivative is
+    given. For a function f(q1, ..., qn):
+
+    'df_dq' is the list [∂ℱ/∂q1, ..., ∂ℱ/∂qn]
+    'q' is the list [q1, ..., qn]
+    'zero_constants' is True if zero should be used for integration constants.
+        Symbols C, α1, ..., αn are used for integration constants.
+    """
+    alpha = symbols('α1:{0}'.format(len(q) + 1))
+    f, zeta = symbols('C ζ')
+    q_alpha = zip(q, alpha)
+    for i, df_dqr in enumerate(df_dq):
+        if hasattr(df_dqr, 'subs'):
+            integrand = df_dqr.subs(dict(q_alpha[i + 1:])).subs(q[i], zeta)
+        else:
+            integrand = df_dqr
+        f += integrate(expand_trig(integrand), (zeta, alpha[i], q[i]))
+    if zero_constants:
+        f = f.subs(dict(zip([symbols('C')] + list(alpha),
+                            [0] * (len(q) + 1))))
+    return f
+
+
 def potential_energy(Fr, q, u, kde_map, vc_map=None):
     """Returns a potential energy function using the method from Section 5.1
     from Kane 1985.
@@ -364,10 +389,6 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
                     return None
         dV_dq_list = map(trigsimp, (subs(dV_dq_list, f_map)))
 
-    alpha = symbols('α1:{0}'.format(n + 1))
-    V, zeta = symbols('C ζ')
-    q_alpha = zip(q, alpha)
-    for i, dV_dqr in enumerate(dV_dq_list):
-        integrand = dV_dqr.subs(dict(q_alpha[i + 1:])).subs(q[i], zeta)
-        V += integrate(expand_trig(integrand), (zeta, alpha[i], q[i]))
-    return V
+    return function_from_partials(dV_dq_list, q)
+
+
