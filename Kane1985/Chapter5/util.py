@@ -222,7 +222,8 @@ def kde_matrix(u, kde_map):
     The arg 'u' is u_r. Each element of q_dot is a key in 'kde_map' where
     the corresponding value is sum(W_sr[s, r] * u_r[r], (r, 1, n)) + X_s[s].
     """
-    q_dot_values = Matrix(zip(*sorted(kde_map.items()))[1])
+    q_dot_values = Matrix(zip(*sorted(
+            kde_map.items(), cmp=lambda x, y: x[0].compare(y[0])))[1])
     W_sr = Matrix(map(lambda x: q_dot_values.T.diff(x), u)).T
     X_s = q_dot_values - W_sr*Matrix(u)
     return W_sr, X_s
@@ -237,7 +238,8 @@ def vc_matrix(u, vc_map):
     The arg 'u' is u_r. Each element of u_k is a key in 'vc_map' where
     the corresponding value is sum(A_kr[k, r] * u_r[r], (r, 1, n)) + B_k[k].
     """
-    vc_map_values = Matrix(zip(*sorted(vc_map.items()))[1])
+    vc_map_values = Matrix(zip(*sorted(
+            vc_map.items(), cmp=lambda x, y: x[0].compare(y[0])))[1])
     A_kr = Matrix(map(lambda x: vc_map_values.T.diff(x), u)).T
     B_k = vc_map_values - A_kr*Matrix(u)
     return A_kr, B_k
@@ -262,7 +264,7 @@ def generalized_active_forces_V(V, q, u, kde_map, vc_map=None):
         A_kr = Matrix.zeros(m, p)
     else:
         A_kr, _ = vc_matrix(u, vc_map)
-        u += sorted(vc_map.keys())
+        u += sorted(vc_map.keys(), cmp=lambda x, y: x.compare(y))
     W_sr, _ = kde_matrix(u, kde_map)
 
     dV_dq = map(lambda x: diff(V, x), q)
@@ -314,7 +316,7 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
     m = n - p
 
     if vc_map is not None:
-        u += sorted(vc_map.keys())
+        u += sorted(vc_map.keys(), cmp=lambda x, y: x.compare(y))
 
     dV_dq = symbols('∂V/∂q1:{0}'.format(n + 1))
     dV_eq = Matrix(Fr).T
@@ -379,7 +381,7 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
         E = ZI_rref[:, Z.shape[1]:]
         f_eq = (E * Y)[Z.rank():]
         f_map = solve(f_eq, f)
-        if sorted(f_map.keys()) != f:
+        if sorted(f_map.keys(), cmp=lambda x, y: x.compare(y)) != f:
             print('Unable to solve for all f uniquely.')
             return None
         for k, v in f_map.iteritems():

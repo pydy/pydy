@@ -82,7 +82,7 @@ p = len(u)
 m = n - p
 
 if vc_map is not None:
-    u += sorted(vc_map.keys())
+    u += sorted(vc_map.keys(), cmp=lambda x, y: x.compare(y))
 
 dV_dq = symbols('∂V/∂q1:{0}'.format(n + 1))
 dV_eq = Matrix(Fr).T
