@@ -26,9 +26,18 @@ describe("Canvas Initializer", function() {
 
 
     it("should have x axis after initialize", function() {
-    expect(canvas.axes[0] instanceof THREE.PlaneGeometry).toBeTruthy;
+    expect(canvas.axes[0] instanceof THREE.PlaneGeometry).toBeTruthy; }
+    
+    it("should have y axis after initialize", function() {
+    expect(canvas.axes[0] instanceof THREE.PlaneGeometry).toBeTruthy; }  
+    
+    it("should have z axis after initialize", function() {
+    expect(canvas.axes[0] instanceof THREE.PlaneGeometry).toBeTruthy; }
 
+    it("should have a Light after initialize", function() {
+    expect(canvas.light instanceof THREE.PointLight).toBeTruthy; }    
+    
+    // 
 
   });
-
 }
