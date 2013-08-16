@@ -1,5 +1,6 @@
-**Warning: This package is in development and not ready for use by users. We
-are migrating to a simpy one package installer for the PyDy software suite.***
+**Warning: This package is in development and not ready for use by end users.
+We are migrating to a simple one package installer for the PyDy software
+suite.**
 
 ====
 PyDy
