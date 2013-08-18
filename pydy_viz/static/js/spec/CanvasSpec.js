@@ -1,4 +1,4 @@
-describe("Canvas Initializer", function() {
+describe("Canvas Class for Animation", function() {
     var canvas = new Canvas(JSONObj);
 
     it("should be an instance of Canvas", function() {
@@ -48,10 +48,17 @@ describe("Canvas Initializer", function() {
 
 
     it("should have an start animation button defined." function() {
-    expect(canvas.start_animation__button).toBeDefined(); });        
+    expect(canvas.start_animation_button).toBeDefined(); });        
 
     it("should have a pause animation button defined." function() {
-    expect(canvas.pause_animation__button).toBeDefined(); });            
+    expect(canvas.pause_animation_button).toBeDefined(); });            
+
+    
+    // Add TrackBall controls should be defined ... 
+    it("should have a  method to initiate trackball controls" function() {
+    expect(canvas.add_track_ball_controls).toBeDefined(); });                
+    
+    
     
 
   });
