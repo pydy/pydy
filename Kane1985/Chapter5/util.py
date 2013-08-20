@@ -223,7 +223,9 @@ def kde_matrix(u, kde_map):
     the corresponding value is sum(W_sr[s, r] * u_r[r], (r, 1, n)) + X_s[s].
     """
     q_dot_values = Matrix(zip(*sorted(
-            kde_map.items(), cmp=lambda x, y: x[0].compare(y[0])))[1])
+            [(x, y) for x, y in kde_map.iteritems()
+             if x.variables == (symbols('t'),)],
+            cmp=lambda x, y: x[0].compare(y[0])))[1])
     W_sr = Matrix(map(lambda x: q_dot_values.T.diff(x), u)).T
     X_s = q_dot_values - W_sr*Matrix(u)
     return W_sr, X_s
@@ -239,7 +241,9 @@ def vc_matrix(u, vc_map):
     the corresponding value is sum(A_kr[k, r] * u_r[r], (r, 1, n)) + B_k[k].
     """
     vc_map_values = Matrix(zip(*sorted(
-            vc_map.items(), cmp=lambda x, y: x[0].compare(y[0])))[1])
+            [(x, y) for x, y in vc_map.iteritems()
+             if x.variables == (symbols('t'),)],
+            cmp=lambda x, y: x[0].compare(y[0])))[1])
     A_kr = Matrix(map(lambda x: vc_map_values.T.diff(x), u)).T
     B_k = vc_map_values - A_kr*Matrix(u)
     return A_kr, B_k
