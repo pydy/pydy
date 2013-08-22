@@ -5,12 +5,8 @@ virtualenv:
   system_site_packages: true
 before_install:
   - sudo apt-get install python-matplotlib
-  - sudo apt-get install python-software-properties
-  - sudo add-apt-repository -y ppa:chris-lea/node.js
-  - sudo apt-get -y update
-  - sudo apt-get install nodejs npm phantomjs
+  - sudo apt-get install phantomjs
   - sudo npm install -g phantom-jasmine
-  - sudo ln -s /usr/bin/nodejs /usr/bin/node
 install:
   - "pip install --use-mirrors sympy coverage"
 script: bin/tests
