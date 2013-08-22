@@ -6,7 +6,7 @@ virtualenv:
 before_install:
   - sudo apt-get install python-matplotlib
   - sudo apt-get install python-software-properties
-  - sudo add-apt-repository ppa:chris-lea/node.js
+  - sudo add-apt-repository -y ppa:chris-lea/node.js
   - sudo apt-get update
   - sudo apt-get install nodejs npm phantomjs
   - sudo npm install -g phantom-jasmine
