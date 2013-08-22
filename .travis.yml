@@ -7,8 +7,8 @@ before_install:
   - sudo apt-get install python-matplotlib
   - sudo apt-get install python-software-properties
   - sudo add-apt-repository -y ppa:chris-lea/node.js
-  - sudo apt-get update
-  - sudo apt-get -y install nodejs npm phantomjs
+  - sudo apt-get -y update
+  - sudo apt-get install nodejs npm phantomjs
   - sudo npm install -g phantom-jasmine
   - sudo ln -s /usr/bin/nodejs /usr/bin/node
 install:
