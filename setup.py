@@ -20,6 +20,7 @@ setup(
     extras_require={'doc': ['sphinx', 'numpydoc']},
     tests_require=['nose'],
     test_suite='nose.collector',
+    scripts=['bin/test'],
     include_package_data=True,
     classifiers=[
                  'Development Status :: 2 - Pre-Alpha',
