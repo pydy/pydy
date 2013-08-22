@@ -10,4 +10,4 @@ before_install:
   - sudo npm install -g phantom-jasmine
 install:
   - "pip install --use-mirrors sympy coverage"
-script: bin/tests
+script: bin/test
