@@ -6,6 +6,7 @@ virtualenv:
 before_install:
   - sudo apt-get install python-matplotlib
   - sudo apt-get install phantomjs
+  - sudo apt-get npm
   - sudo npm install -g phantom-jasmine
 install:
   - "pip install --use-mirrors sympy coverage"
