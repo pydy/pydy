@@ -83,11 +83,16 @@ describe("Canvas Class for Animation", function() {
     // Add TrackBall controls should be defined ... 
     it("should have a  method to initiate trackball controls" function() {
     expect(canvas.add_track_ball_controls).toBeDefined(); });                
+        
+    // This should run animation once.    
+    canvas.run_animation(loop=false);
     
-    //TODO Add Check for run animation once ..
+    it("should have a final orientation equal to JSON object's final matrix." function() {
+    ...... };
     
     
     
+
     
   });
 
