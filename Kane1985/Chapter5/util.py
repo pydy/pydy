@@ -241,8 +241,7 @@ def vc_matrix(u, vc_map):
     the corresponding value is sum(A_kr[k, r] * u_r[r], (r, 1, n)) + B_k[k].
     """
     vc_map_values = Matrix(zip(*sorted(
-            [(x, y) for x, y in vc_map.iteritems()
-             if x.variables == (symbols('t'),)],
+            [(x, y) for x, y in vc_map.iteritems()],
             cmp=lambda x, y: x[0].compare(y[0])))[1])
     A_kr = Matrix(map(lambda x: vc_map_values.T.diff(x), u)).T
     B_k = vc_map_values - A_kr*Matrix(u)

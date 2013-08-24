@@ -96,6 +96,5 @@ else:
 for s in range(W_sr.shape[0]):
     dV_eq += dV_dq[s] * (W_sr[s, :p] + W_sr[s, p:]*A_kr[:, :p])
 
-print('Eq 5.1.18:')
 for elem in dV_eq:
-    print(msprint(elem))
+    print('{0} = 0'.format(msprint(elem)))
