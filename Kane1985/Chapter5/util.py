@@ -150,7 +150,7 @@ def generalized_inertia_forces(partials, bodies,
             p = b.point
             m = b.mass
         else:
-            raise TypeError('{0} is not a RigidBody or Particle'.format(b))
+            raise TypeError('{0} is not a RigidBody or Particle.'.format(b))
 
         # get acceleration of point
         a = p.acc(frame)
@@ -397,3 +397,48 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
     return function_from_partials(dV_dq_list, q)
 
 
+def inertia_coefficient_contribution(body, partials, r, s):
+    """Returns the contribution of a rigid body (or particle) to the inertia
+    coefficient m_rs of a system.
+
+    'body' is an instance of a RigidBody or Particle.
+    'partials' is an instance of a PartialVelocity.
+    'r' is the first generalized speed.
+    's' is the second generlized speed.
+    """
+    if isinstance(body, Particle):
+        m_rs = body.mass * dot(partials[body.point][r],
+                               partials[body.point][s])
+    elif isinstance(body, RigidBody):
+        m_rs = body.mass * dot(partials[body.masscenter][r],
+                               partials[body.masscenter][s])
+        m_rs += dot(dot(partials[body.frame][r], body.central_inertia),
+                    partials[body.frame][s])
+    else:
+        raise TypeError(('{0} is not a RigidBody or Particle.').format(body))
+    return m_rs
+
+
+def inertia_coefficient_matrix(system, partials):
+    """Returns the inertia coefficient matrix for a system of RigidBody's
+    and Particle's. Each entry in the matrix, m_rs, is the inertia
+    coefficient for generalized speeds r, s.
+
+    'system' is a list where the elements are instances of RigidBody
+        or Particle.
+    'partials' is an instance of a PartialVelocity.
+
+    Note: The order of the inertia coefficients is dependent on the order
+    of the generalized speeds used when calculating partial velocities.
+    """
+    ulist = partials.ulist
+    M = Matrix.zeros(len(ulist))
+
+    for i, r in enumerate(ulist):
+        for j, s in enumerate(ulist[i:], i):
+            for p in system:
+                m_rs = inertia_coefficient_contribution(p, partials, r, s)
+                M[i, j] += m_rs
+            if i != j:
+                M[j, i] = M[i, j]
+    return M
