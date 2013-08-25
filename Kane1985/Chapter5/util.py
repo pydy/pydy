@@ -442,3 +442,34 @@ def inertia_coefficient_matrix(system, partials):
             if i != j:
                 M[j, i] = M[i, j]
     return M
+
+
+def generalized_inertia_forces_K(K, q, u, kde_map, vc_map=None):
+    """Returns a list of the generalized inertia forces using equation 5.6.6
+    from Kane 1985.
+
+    'K' is a potential energy function for the system.
+    'q' is a list of generalized coordinates.
+    'u' is a list of the independent generalized speeds.
+    'kde_map' is a dictionary with q dots as keys and the equivalent
+        expressions in terms of q's and u's as values.
+    'vc_map' is a dictionay with the dependent u's as keys and the expression
+        in terms of independent u's as values.
+    """
+    n = len(q)
+    p = len(u)
+    m = n - p
+    t = symbols('t')
+    if vc_map is None:
+        A_kr = Matrix.zeros(m, p)
+    else:
+        A_kr, _ = vc_matrix(u, vc_map)
+        u += sorted(vc_map.keys(), cmp=lambda x, y: x.compare(y))
+    W_sr, _ = kde_matrix(u, kde_map)
+
+    K_partial_term = [K.diff(q_s.diff(t)).diff(t) - K.diff(q_s) for q_s in q]
+    K_partial_term = subs(subs(K_partial_term, kde_map), vc_map)
+    Fr_star = Matrix.zeros(1, p)
+    for s in range(n):
+        Fr_star -= K_partial_term[s] * (W_sr[s, :p] + W_sr[s, p:]*A_kr[:, :p])
+    return Fr_star[:]
