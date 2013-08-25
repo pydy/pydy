@@ -468,7 +468,9 @@ def generalized_inertia_forces_K(K, q, u, kde_map, vc_map=None):
     W_sr, _ = kde_matrix(u, kde_map)
 
     K_partial_term = [K.diff(q_s.diff(t)).diff(t) - K.diff(q_s) for q_s in q]
-    K_partial_term = subs(subs(K_partial_term, kde_map), vc_map)
+    K_partial_term = subs(K_partial_term, kde_map)
+    if vc_map is not None:
+        K_partial_term = subs(K_partial_term, vc_map)
     Fr_star = Matrix.zeros(1, p)
     for s in range(n):
         Fr_star -= K_partial_term[s] * (W_sr[s, :p] + W_sr[s, p:]*A_kr[:, :p])
