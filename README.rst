@@ -19,16 +19,43 @@ including:
 - Publication
 
 Currently we've started by building the SymPy mechanics package which provides
-an API for building models and generating the equations of motion for complex
-multibody systems. The remaining tools used in the PyDy workflow are popular
-scientific Python packages such as NumPy, SciPy, IPython, and matplotlib which
-provide code for numerical analyses, simulation, and visualization.
+an API for building models and generating the symbolic equations of motion for
+complex multibody systems. The remaining tools currently used in the PyDy
+workflow are popular scientific Python packages such as NumPy, SciPy, IPython,
+and matplotlib which provide code for numerical analyses, simulation, and
+visualization.
 
 Installation
 ============
 
-Get the requirements:
+PyDy depends on:
 
 - SymPy >= 0.7.2 (best to use the dev version as the development is active)
+- pydy-viz >= 0.1.0
 - NumPy
 - SciPy
+- matplotlib
+- IPython
+
+If you have all of the dependencies or all the dependencies needed to build the
+packages above you can simply install with easy_install or pip::
+
+   $ easy_install PyDy
+
+or::
+
+   $ pip install PyDy
+
+Or download the source and run::
+
+   $ python setup.py install
+
+For system wide installs, prepend with `sudo`.
+
+Usage
+=====
+
+Simply import the modules and functions when in a Python interpreter::
+
+   >>> from sympy import symbols
+   >>> from pydy import mechanics, visualization
