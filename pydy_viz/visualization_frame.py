@@ -103,12 +103,18 @@ class VisualizationFrame(object):
         except AttributeError:
             #It is not a rigidbody, hence this arg should be a
             #reference frame
-            self._reference_frame = args[i]
-            i += 1
+            try:
+                dcm = args[i].dcm()
+                self._reference_frame = args[i]
+                i += 1
+            except AttributeError:
+                raise TypeError(''' A ReferenceFrame is to be supplied
+                                   before a Particle/Point. ''')    
 
             #Now next arg can either be a Particle or point
             try:
                 self._origin = args[i].get_point()
+                
             except AttributeError:
                 self._origin = args[i]
 
