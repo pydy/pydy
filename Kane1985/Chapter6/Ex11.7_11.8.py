@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 11.7 from Kane 1985."""
+"""Exercises 11.7, 11.8 from Kane 1985."""
 
 from __future__ import division
 from sympy import expand, solve, symbols, sin, cos, Matrix
@@ -10,6 +10,7 @@ from util import generalized_active_forces, generalized_inertia_forces
 from util import partial_velocities, subs
 
 
+# 11.7
 # Define generalized coordinates, speeds, and constants
 q0, q1, q2 = q = dynamicsymbols('q0:3')
 q0d, q1d, q2d = qd = dynamicsymbols('q0:3', level=1)
@@ -36,7 +37,7 @@ pA_star = pO.locatenew('A*', LA * A.z)
 pP = pO.locatenew('P', LP * A.z)
 pB_star = pP.locatenew('B*', LB * B.z)
 pC_star = pB_star.locatenew('C*', q2 * B.z)
-pD_star = pC_star.locatenew('D*', p1 * B.x + p2 * B.y + p3 * B.z)
+pD_star = pC_star.locatenew('D*', p1*B.x + p2*B.y + p3*B.z)
 
 pO.set_vel(E, 0) # Point O is fixed in Reference Frame E
 pA_star.v2pt_theory(pO, E, A) # Point A* is fixed in Reference Frame A
@@ -212,3 +213,22 @@ Y_s_expected = Matrix([Y1, Y2, Y3])
 
 assert expand(X_rs - X_rs_expected) == Matrix.zeros(3)
 assert expand(Y_s - Y_s_expected) == Matrix.zeros(3, 1)
+
+# 11.8
+# If D* lies on line B*C*, then p1 = 0, p2 = 0.
+# If each central principal axis of D is parallel to one of b1, b2, b3,
+# then D12, D23, D31 = 0.
+D_prop_map = {p1: 0, p2: 0, D12: 0, D23: 0, D31: 0}
+DE_2 = Matrix(dyn_eq).subs(D_prop_map)
+X_rs_2 = Matrix(map(lambda x: DE_2.T.diff(x), ud)).T
+Y_s_2 = -expand(DE_2 - X_rs_2*Matrix(ud))
+
+# Solution will have the form ud_r = Y_r/X_rr (r = 1, 2, 3)
+# if the X_rs matrix is diagonal.
+X_rs_expected_2 = Matrix([[X11, 0, 0],
+                          [0, X22, 0],
+                          [0, 0, X33]]).subs(D_prop_map)
+Y_s_expected_2 = Y_s_expected.subs(D_prop_map)
+
+assert expand(X_rs_2 - X_rs_expected_2) == Matrix.zeros(3)
+assert expand(Y_s_2 - Y_s_expected_2) == Matrix.zeros(3, 1)
