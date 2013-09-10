@@ -6,6 +6,7 @@ from pydy_viz.shapes import Cylinder
 from pydy_viz.visualization_frame import VisualizationFrame
 from pydy_viz.camera import PerspectiveCamera, OrthoGraphicCamera
 from pydy_viz.scene import Scene
+from pydy_viz.light import PointLight
 
 
 from numpy import radians
@@ -173,21 +174,21 @@ class TestVisualizationFrameScene(object):
 
     def test_numeric_transform(self):
         self.list1 = [[0.5000000000000001, 0.5, \
-                       -0.7071067811865475, 0.0], \
-                      [-0.14644660940672627, 0.8535533905932737, \
-                                       0.5, 0.0], \
-                      [0.8535533905932737, -0.14644660940672627, \
-                         0.5000000000000001, 0.0], \
-                      [10.0, 10.0, 10.0, 1.0]]
+                       -0.7071067811865475, 0.0, \
+                      -0.14644660940672627, 0.8535533905932737, \
+                                       0.5, 0.0, \
+                      0.8535533905932737, -0.14644660940672627, \
+                         0.5000000000000001, 0.0, \
+                      10.0, 10.0, 10.0, 1.0]]
 
 
         self.list2 = [[-0.11518993731879767, 0.8178227645734215, \
-                            -0.563823734943801, 0.0], \
-                      [0.1332055011661179, 0.5751927992738988, \
-                            0.8070994598700584, 0.0], \
-                      [0.984371663956036, 0.017865313009926137, \
-                          -0.17519491371464685, 0.0], \
-                      [20.0, 20.0, 20.0, 1.0]]
+                            -0.563823734943801, 0.0, \
+                      0.1332055011661179, 0.5751927992738988, \
+                            0.8070994598700584, 0.0, \
+                      0.984371663956036, 0.017865313009926137, \
+                          -0.17519491371464685, 0.0, \
+                      20.0, 20.0, 20.0, 1.0]]
 
 
 
@@ -212,8 +213,7 @@ class TestVisualizationFrameScene(object):
         #Camera is a subclass of VisualizationFrame, but without any
         #specific shape attached. We supply only ReferenceFrame,Point
         #to camera. and it inherits methods from VisualizationFrame
-        #TODO __str__ and __repr__ tests
-
+        
         #Testing with rigid-body ..
         camera = PerspectiveCamera('camera', self.rigid_body, fov=45, \
                                                  near=1, far=1000)
@@ -335,6 +335,55 @@ class TestVisualizationFrameScene(object):
         assert camera1.near == 1
         assert camera1.far == 1000
 
+    def test_point_light(self):
+        #Testing with rigid-body ..
+        light = PointLight('light', self.rigid_body, color='blue')
+                                                 
+
+        assert light.name == 'light'
+        assert light.reference_frame == self.A
+        assert light.origin == self.P1
+        assert light.color == 'blue'
+
+        #Testing with reference_frame, particle ..
+        light = PointLight('light', self.I, self.particle, color='blue')
+
+        assert light.name == 'light'
+        assert light.reference_frame == self.I
+        assert light.origin == self.P1
+        assert light.color == 'blue'
+
+        #Testing with reference_frame, point ..
+        light = PointLight('light', self.I, self.O, color='blue')
+
+        assert light.name == 'light'
+        assert light.reference_frame == self.I
+        assert light.origin == self.O
+        assert light.color == 'blue'
+        
+
+        light.name = 'light1'
+        assert light.name == 'light1'
+        assert light.__str__() == 'PointLight: light1'
+        assert light.__repr__() == 'PointLight'
+
+        light.reference_frame = self.A
+        assert light.reference_frame == self.A
+
+        light.origin = self.P1
+        assert light.origin == self.P1
+
+        light.color = 'red'
+        assert light.color == 'red'
+
+        
+        #Test unnamed
+        light1 = PointLight(self.I, self.O)
+        assert light1.name == 'unnamed'
+        assert light1.reference_frame == self.I
+        assert light1.origin == self.O
+        assert light1.color == 'white'
+    
     def test_scene_init(self):
         self.scene2 = Scene(self.I, self.O, \
                             self.global_frame1, self.global_frame2, \
