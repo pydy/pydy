@@ -217,8 +217,6 @@ class VisualizationFrame(object):
         self._transform = Identity(4).as_mutable()
         self._transform[0:3, 0:3] = _rotation_matrix[0:3, 0:3]
 
-        print self.origin.pos_from(point)
-        print type(self.origin.pos_from(point))
         _point_vector = self.origin.pos_from(point).express(reference_frame)
 
         self._transform[3, 0] = _point_vector.dot(reference_frame.x)
@@ -280,10 +278,14 @@ class VisualizationFrame(object):
                 new[i, :, :] = self._numeric_transform(*args)
 
         else:
+            n = 1
             args = np.hstack((states, constant_values))
             new = self._numeric_transform(*args)
 
-        self._visualization_matrix = new
+        print 'N:', n
+        print 'new:', new
+        self._visualization_matrix = new.reshape(n, 16)
+        print 'after reshape:', self._visualization_matrix
         return self._visualization_matrix
 
     def generate_visualization_dict(self):
