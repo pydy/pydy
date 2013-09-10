@@ -280,10 +280,14 @@ class VisualizationFrame(object):
                 new[i, :, :] = self._numeric_transform(*args)
 
         else:
+            n = 1
             args = np.hstack((states, constant_values))
             new = self._numeric_transform(*args)
 
-        self._visualization_matrix = new
+        print 'N:', n
+        print 'new:', new
+        self._visualization_matrix = new.reshape(n, 16)
+        print 'after reshape:', self._visualization_matrix
         return self._visualization_matrix
 
     def generate_visualization_dict(self):
