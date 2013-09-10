@@ -91,6 +91,7 @@ class Server(threading.Thread):
                 conn, addr = self.socket.accept()
                 self.data = conn.recv(1024)
                 sent_data = self._parse_data(self.data)
+                conn.send('HTTP/1.1 200 OK\r\n\r\n')
                 conn.send(sent_data)
                 print 'sent data'
                 conn.close()
