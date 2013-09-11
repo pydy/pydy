@@ -107,7 +107,7 @@ def generalized_active_forces(partials, forces, uaux=None):
     return Fr, ulist
 
 
-def _calculate_T_star(rb, frame, kde_map, constraint_map, uaux):
+def inertia_torque(rb, frame, kde_map=None, constraint_map=None, uaux=None):
     # get central inertia
     # I_S/O = I_S/S* + I_S*/O
     I = rb.inertia[0] - inertia_of_point_mass(rb.mass,
@@ -167,21 +167,18 @@ def generalized_inertia_forces(partials, bodies,
         if constraint_map is not None:
             a = subs(a, constraint_map)
 
-
-        # get T* for RigidBodys
-        if isinstance(b, RigidBody):
-            T_star = _calculate_T_star(b, frame, kde_map, constraint_map, uaux)
-
         for i, u in enumerate(ulist):
-            force_term = 0
-            torque_term = 0
-
             # inertia force term
-            force_term = dot(partials[p][u], -m*a)
+            inertia_force = -m*a
+            force_term = dot(partials[p][u], inertia_force)
 
             # add inertia torque term for RigidBodys
             if isinstance(b, RigidBody):
+                T_star = inertia_torque(b, frame, kde_map,
+                                        constraint_map, uaux)
                 torque_term = dot(partials[b.frame][u], T_star)
+            else:
+                torque_term = 0
 
             # auxilliary speeds have no effect on original inertia forces
             if uaux is not None and u not in uaux:
