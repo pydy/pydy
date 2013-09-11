@@ -478,3 +478,25 @@ def generalized_inertia_forces_K(K, q, u, kde_map, vc_map=None):
     for s in range(n):
         Fr_star -= K_partial_term[s] * (W_sr[s, :p] + W_sr[s, p:]*A_kr[:, :p])
     return Fr_star[:]
+
+
+def generalized_active_forces_K(K, q, u, kde_map, vc_map=None):
+    """Returns a list of the generalized forces using equation 5.6.6
+    from Kane 1985.
+
+    'K' is a potential energy function for the system.
+    'q' is a list of generalized coordinates.
+    'u' is a list of the independent generalized speeds.
+    'kde_map' is a dictionary with q dots as keys and the equivalent
+        expressions in terms of q's and u's as values.
+    'vc_map' is a dictionay with the dependent u's as keys and the expression
+        in terms of independent u's as values.
+
+    These equations are known as Lagrange's equations of the first kind
+    in the case of a holonimic system where u_r = qd_r. For a
+    nonholonomic system where u_r is a linear combination of qd_r's,
+    the equations are known as Passerello-Huston equations.
+    """
+    Fr_star = generalized_inertia_forces_K(K, q, u, kde_map, vc_map)
+    Fr = [-x for x in Fr_star]
+    return Fr
