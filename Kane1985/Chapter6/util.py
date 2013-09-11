@@ -500,3 +500,20 @@ def generalized_active_forces_K(K, q, u, kde_map, vc_map=None):
     Fr_star = generalized_inertia_forces_K(K, q, u, kde_map, vc_map)
     Fr = [-x for x in Fr_star]
     return Fr
+
+
+def lagrange_equations(L, q, u, kde_map):
+    """Returns Lagrange's equations of the second kind for a holonomic
+    system with generalized speeds defined as u_r = qd_r. Refer to
+    Problem 11.13 in Kane 1985.
+
+    'L' is the Lagrangian of the system where L = K - V.
+        K is the kinetic energy of the system,
+        V is the potential energy of the system.
+    'q' is a list of the generalized coordinates.
+    'u' is a list of the generalized speeds.
+    """
+    t = symbols('t')
+    L_u = L.subs(kde_map) # substitute any qd terms
+    return [L_u.diff(u_r).diff(t).subs(kde_map) - L_u.diff(q_r)
+            for u_r, q_r in zip(u, q)]
