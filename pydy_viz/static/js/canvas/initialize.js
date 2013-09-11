@@ -7,8 +7,10 @@ var Canvas = function(JSONObj) {
     $("#stopAnimation").click(this.stopAnimation);             
     $("#switchCamera").click(this.switchCamera);                 
     $("#goToFrame").click(this.goToFrame);                     
-    
+        
 };
+
+Canvas.prototype.timeSteps = JSONObj.frames[0].simulation_matrix.length;
 
 Canvas.prototype.frames = new THREE.Object3D();
 Canvas.prototype.frames.name = "frames";
@@ -100,6 +102,8 @@ Canvas.prototype.initialize = function(){
     primaryCamera = this.primaryCamera;
     renderer = this.renderer;
     scene = this.scene;
+    $("#frameCount").append("<h2>Total Frames: " + this.timeSteps + "</h2>")
+    $("#currentFrame").append("<h2>Current Frame: " + this.animationCounter + "</h2>")    
     
     };
 

@@ -5,9 +5,10 @@ Canvas.prototype.startAnimation = function(){
       Canvas.prototype._animate(key, Canvas.prototype.animationCounter);
       }
       Canvas.prototype.animationCounter++; 
+      $("#currentFrame").html("Current Frame: " + Canvas.prototype.animationCounter);
       
       Canvas.prototype.animationID = requestAnimationFrame(Canvas.prototype.startAnimation);
-      if(Canvas.prototype.animationCounter >= 6000)
+      if(Canvas.prototype.animationCounter >= Canvas.prototype.timeSteps)
           if($("#isLooped").is(':checked')) Canvas.prototype.animationCounter = 0; 
           else { 
           cancelAnimationFrame(Canvas.prototype.animationID);          

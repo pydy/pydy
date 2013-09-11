@@ -23,7 +23,7 @@ color: rgb(202, 197, 197);
 }                        
 
 
-button {  
+.fancyDisplay {  
     padding:5px;
   
     margin: 10px auto;  
@@ -74,6 +74,5 @@ border-radius: 10px;
 
 
 h2 {
-color: rgb(202, 197, 197);
 font-size:1.2em;
 }
