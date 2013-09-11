@@ -212,7 +212,9 @@ def _f_variables(Fr, q, dV_eq, dV_dq):
         # If Fr = -∂V/∂qi, then fs-p is independent of qi.
         if Fr[fr_idx] - dV_eq[fr_idx] == dV_dq[qi_idx]:
             non_arg.add(q[qi_idx])
-    return sorted(list(set(q) - non_arg)) + [symbols('t')], list(non_arg)
+    arg = sorted(list(set(q) - non_arg), cmp=lambda x, y: x.compare(y))
+    arg += [symbols('t')]
+    return arg, list(non_arg)
 
 
 def kde_matrix(u, kde_map):
