@@ -50,10 +50,21 @@ Canvas.prototype.addLights = function() {
             initMatrix.elements = _element;
             _Light.applyMatrix(initMatrix);
             
+            // For point of light ...
+            var _geom = new THREE.SphereGeometry(1,100,100);
+            var _material = new THREE.MeshBasicMaterial(color);
+            var _lightPoint = new THREE.Mesh(_geom, _material);
+            _lightPoint.position = _Light.position
+            
+
+            
         // case "MoreLights" ....
         
         }
+        
         this.lights.add(_Light);
+        this.lights.add(_lightPoint);
+        
        
     }
     this.scene.add(this.lights);
