@@ -19,8 +19,14 @@ Canvas.prototype.grid.name = "Grid";
 Canvas.prototype.cameras = new THREE.Object3D()
 Canvas.prototype.cameras.name = "Cameras";
 
+Canvas.prototype.cameraPoints = new THREE.Object3D()
+Canvas.prototype.cameraPoints.name = "Camera Points";
+
 Canvas.prototype.lights = new THREE.Object3D()
 Canvas.prototype.lights.name = "Lights";
+
+Canvas.prototype.lightPoints = new THREE.Object3D()
+Canvas.prototype.lightPoints.name = "Light Points";
 
 Canvas.prototype.scene = new THREE.Scene();
 

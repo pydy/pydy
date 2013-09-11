@@ -29,6 +29,13 @@ Canvas.prototype.addCameras = function() {
         
         }
         console.log(_Camera);
+        // add a small cube for a camera representation ...
+        var _material = new THREE.MeshLambertMaterial(0xffffff);
+        var _geom = new THREE.CubeGeometry(2,2);
+        var _pointCamera = new THREE.Mesh(_geom, _material);
+        _pointCamera.position = _Camera.position;
+        
+        this.cameraPoints.add(_pointCamera)
         this.cameras.add(_Camera);
        
     }
@@ -63,7 +70,8 @@ Canvas.prototype.addLights = function() {
         }
         
         this.lights.add(_Light);
-        this.lights.add(_lightPoint);
+        this.lightPoints.add(_lightPoint);
+
         
        
     }
