@@ -271,8 +271,8 @@ def generalized_active_forces_V(V, q, u, kde_map, vc_map=None):
         A_kr = Matrix.zeros(m, p)
     else:
         A_kr, _ = vc_matrix(u, vc_map)
-        u += sorted(vc_map.keys(), cmp=lambda x, y: x.compare(y))
-    W_sr, _ = kde_matrix(u, kde_map)
+        u_ = u + sorted(vc_map.keys(), cmp=lambda x, y: x.compare(y))
+    W_sr, _ = kde_matrix(u_, kde_map)
 
     dV_dq = map(lambda x: diff(V, x), q)
     Fr = Matrix.zeros(1, p)
@@ -321,20 +321,17 @@ def potential_energy(Fr, q, u, kde_map, vc_map=None):
     n = len(q)
     p = len(u)
     m = n - p
-
-    if vc_map is not None:
-        u += sorted(vc_map.keys(), cmp=lambda x, y: x.compare(y))
+    if vc_map is None:
+        A_kr = Matrix.zeros(m, p)
+    else:
+        A_kr, _ = vc_matrix(u, vc_map)
+        u_ = u + sorted(vc_map.keys(), cmp=lambda x, y: x.compare(y))
+    W_sr, _ = kde_matrix(u_, kde_map)
 
     dV_dq = symbols('∂V/∂q1:{0}'.format(n + 1))
     dV_eq = Matrix(Fr).T
 
-    W_sr, _ = kde_matrix(u, kde_map)
-    if vc_map is not None:
-        A_kr, _ = vc_matrix(u, vc_map)
-    else:
-        A_kr = Matrix.zeros(m, p)
-
-    for s in range(W_sr.shape[0]):
+    for s in range(n):
         dV_eq += dV_dq[s] * (W_sr[s, :p] + W_sr[s, p:]*A_kr[:, :p])
 
     if vc_map is not None:
@@ -468,10 +465,12 @@ def generalized_inertia_forces_K(K, q, u, kde_map, vc_map=None):
         A_kr = Matrix.zeros(m, p)
     else:
         A_kr, _ = vc_matrix(u, vc_map)
-        u += sorted(vc_map.keys(), cmp=lambda x, y: x.compare(y))
-    W_sr, _ = kde_matrix(u, kde_map)
+        u_ = u + sorted(vc_map.keys(), cmp=lambda x, y: x.compare(y))
+    W_sr, _ = kde_matrix(u_, kde_map)
 
-    K_partial_term = [K.diff(q_s.diff(t)).diff(t) - K.diff(q_s) for q_s in q]
+    qd = map(lambda x: x.diff(t), q)
+    K_partial_term = [K.diff(qd_s).diff(t) - K.diff(q_s)
+                      for qd_s, q_s in zip(qd, q)]
     K_partial_term = subs(K_partial_term, kde_map)
     if vc_map is not None:
         K_partial_term = subs(K_partial_term, vc_map)
