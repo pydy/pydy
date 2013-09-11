@@ -68,6 +68,7 @@ def partial_velocities(system, generalized_speeds, frame,
             v = p.ang_vel_in(frame)
         else:
             raise TypeError('A Point or ReferenceFrame must be supplied.')
+        v = v.express(express_frame)
         if kde_map is not None:
             v = subs(v, kde_map)
         if constraint_map is not None:
