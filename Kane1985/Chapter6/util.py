@@ -115,6 +115,10 @@ def _calculate_T_star(rb, frame, kde_map, constraint_map, uaux):
 
     alpha = rb.frame.ang_acc_in(frame)
     omega = rb.frame.ang_vel_in(frame)
+    if not isinstance(alpha, Vector) and alpha == 0:
+        alpha = Vector([])
+    if not isinstance(omega, Vector) and omega == 0:
+        omega = Vector([])
     if uaux is not None:
         # auxilliary speeds do not change alpha, omega
         # use doit() to evaluate terms such as
