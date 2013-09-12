@@ -38,7 +38,6 @@ pS2.v2pt_theory(pS_star, R, S)
 
 # Since S is rolling against R, v_S1_R = 0, v_S2_R = 0.
 vc = [dot(p.vel(R), basis) for p in [pS1, pS2] for basis in R]
-vc_map = solve(vc, [u1, u2, u3])
 
 pO.set_vel(C, 0)
 pS_star.v2pt_theory(pO, C, A)
@@ -46,9 +45,9 @@ pS_hat.v2pt_theory(pS_star, C, S)
 
 # Since S is rolling against C, v_S^_C = 0.
 # Cone has only angular velocity in R.z direction.
-vc2 = [dot(pS_hat.vel(C), basis).subs(vc_map) for basis in A]
-vc2 += [dot(C.ang_vel_in(R), basis) for basis in [R.x, R.y]]
-vc_map = dict(vc_map.items() + solve(vc2, [u4, u5, u6]).items())
+vc += [dot(pS_hat.vel(C), basis).subs(vc_map) for basis in A]
+vc += [dot(C.ang_vel_in(R), basis) for basis in [R.x, R.y]]
+vc_map = solve(vc, u)
 
 # Pure rolling between S and C, dot(ω_C_S, B.y) = 0.
 b_val = solve([dot(C.ang_vel_in(S), B.y).subs(vc_map).simplify()], b)[0][0]
