@@ -115,8 +115,8 @@ class Scene(object):
         try:
             self.lights = kwargs['lights']
         except KeyError:
-            #TODO add Light
-            pass
+            #TODO lights
+            self.lights = []
 
     @property
     def name(self):
@@ -216,22 +216,40 @@ class Scene(object):
         self._scene_data['width'] = self._width
         self._scene_data['frames'] = []
         self._scene_data['cameras'] = []
+        self._scene_data['lights'] = []
 
-        for frame in self.visualization_frames + self.cameras:
-
-            frame.generate_transformation_matrix( \
+        for frame in self.visualization_frames:
+            frame.generate_transformation_matrix( 
                                     self._reference_frame, self._origin)
-            frame.generate_numeric_transform_function( \
+            frame.generate_numeric_transform_function(
                                   dynamic_variables, constant_variables)
-            frame.evaluate_transformation_matrix( \
+            frame.evaluate_transformation_matrix(
                                         dynamic_values, constant_values)
 
-            if isinstance(frame, VisualizationFrame):
-                self._scene_data['frames'].append( \
+            self._scene_data['frames'].append(
                                     frame.generate_visualization_dict())
-            else:
-                self._scene_data['cameras'].append( \
-                                    frame.generate_visualization_dict())
+
+        for camera in self.cameras:
+            camera.generate_transformation_matrix(
+                                    self._reference_frame, self._origin)
+            camera.generate_numeric_transform_function(
+                                  dynamic_variables, constant_variables)
+            camera.evaluate_transformation_matrix(
+                                        dynamic_values, constant_values)
+
+            self._scene_data['cameras'].append(
+                                    camera.generate_visualization_dict())
+
+        for light in self.lights:
+            light.generate_transformation_matrix(
+                                    self._reference_frame, self._origin)
+            light.generate_numeric_transform_function(
+                                  dynamic_variables, constant_variables)
+            light.evaluate_transformation_matrix(
+                                        dynamic_values, constant_values)
+
+            self._scene_data['lights'].append(
+                                    light.generate_visualization_dict())
 
 
         return self._scene_data
@@ -312,7 +330,7 @@ class Scene(object):
 
 
     def _cleanup(self):
-        distutils.dir_util.remove_tree(os.path.join(os.getcwd(), \
+        distutils.dir_util.remove_tree(os.path.join(os.getcwd(), 
                                                            '.pydy_viz'))
 
     def _display_from_interpreter(self):
@@ -344,7 +362,7 @@ class Scene(object):
         try:
             config = get_ipython().config
             if config['KernelApp']['parent_appname'] == \
-               'ipython-notebook':
+                                           'ipython-notebook':
                 self._display_from_ipython()
             else:
                 self._display_from_interpreter()

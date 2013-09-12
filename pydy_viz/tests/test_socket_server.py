@@ -25,10 +25,10 @@ class TestSocketServer(object):
     def test_req2(self):
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connection.connect((self.host, self.server.port))
-        self.connection.send('GET /static/js/src/canvas.js')
+        self.connection.send('GET /js/canvas/initialize.js')
 
         data = self.server.listen_once()
-        path = os.path.join(os.path.dirname(pydy_viz.__file__), 'static', 'js', 'src', 'canvas.js')
+        path = os.path.join(os.path.dirname(pydy_viz.__file__), 'static', 'js', 'canvas', 'initialize.js')
         print data
         assert data == open(path).read()
 
