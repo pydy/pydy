@@ -3,13 +3,12 @@
 """Exercises 8.12, 8.17 from Kane 1985."""
 
 from __future__ import division
-from sympy import simplify, solve, symbols
+from sympy import expand, solve, symbols, trigsimp
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import inertia, RigidBody
 from sympy.physics.mechanics import cross, dot, dynamicsymbols
 from util import msprint, subs, partial_velocities
 from util import generalized_active_forces, generalized_inertia_forces
-
 
 print("\nEx8.12")
 ## --- Declare symbols ---
@@ -17,6 +16,7 @@ q1 = dynamicsymbols('q1')
 u1, u2, u3 = dynamicsymbols('u1:4')
 u_prime, R, M, g, e, f, theta = symbols('u\' R, M, g, e, f, theta')
 Q1, Q2, Q3 = symbols('Q1, Q2 Q3')
+F3 = symbols('F3')
 
 # --- Reference Frames ---
 F = ReferenceFrame('F')
@@ -46,6 +46,13 @@ Fr, _ = generalized_active_forces(partials, forces + torques, uaux=[u3])
 print("Generalized active forces:")
 for i, f in enumerate(Fr, 1):
     print("F{0} = {1}".format(i, msprint(f)))
+
+friction = -u_prime*Q1*(pQ.vel(F).normalize().express(A)).subs(u3, 0)
+Q_map = dict(zip([Q2, Q3], [dot(friction, x) for x in [A.y, A.z]]))
+Q_map[Q1] = trigsimp(solve(F3 - Fr[-1].subs(Q_map), Q1)[0])
+print('')
+for x in [Q1, Q2, Q3]:
+    print('{0} = {1}'.format(x, msprint(Q_map[x])))
 
 print("\nEx8.17")
 ### --- define new symbols ---
@@ -109,4 +116,4 @@ partials2 = partial_velocities(system, [u1, u2, u3], F,
 Fr_star, _ = generalized_inertia_forces(partials2, bodies, kde_map, uaux=[u3])
 print("Generalized inertia forces:")
 for i, f in enumerate(Fr_star, 1):
-    print("F{0} = {1}".format(i, msprint(simplify(f))))
+    print("F{0} = {1}".format(i, msprint(expand(trigsimp(f)))))
