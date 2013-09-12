@@ -43,12 +43,14 @@ class Server(threading.Thread):
     def _parse_data(self, data):
 
         static_path = os.path.dirname(pydy_viz.__file__)
+        static_path = os.path.join(static_path, 'static')
+        print "static path", static_path
         request = data.split(' ')[1]
         print 'request:%s'% request
         if request == '/':
         #If requested to http://localhost:port/
         #Send index.html file
-            file_path = os.path.join(static_path, 'static', 'index.html')
+            file_path = os.path.join(static_path, 'index.html')
             send_buffer = ''
 
         elif request == '/data.json':
@@ -63,15 +65,15 @@ class Server(threading.Thread):
             for val in file_path_list:
                 static_path = os.path.join(static_path, val)
             file_path = static_path
+            print "file path : " + file_path
             send_buffer = ''
 
         try:
             send_buffer += open(file_path).read()
 
         except IOError:
-            send_buffer = '''<html><body>
-                            <b>404: file not found</b></body>
-                            </html>'''
+            print '''404 File not found. Sent No Data'''
+
 
         return send_buffer
 

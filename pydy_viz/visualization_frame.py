@@ -217,8 +217,6 @@ class VisualizationFrame(object):
         self._transform = Identity(4).as_mutable()
         self._transform[0:3, 0:3] = _rotation_matrix[0:3, 0:3]
 
-        print self.origin.pos_from(point)
-        print type(self.origin.pos_from(point))
         _point_vector = self.origin.pos_from(point).express(reference_frame)
 
         self._transform[3, 0] = _point_vector.dot(reference_frame.x)

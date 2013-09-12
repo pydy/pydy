@@ -1,2 +1,2 @@
 nosetests --with-coverage --cover-package=pydy_viz
-phantom-jasmine pydy_viz/static/js/SpecRunner.html
+
