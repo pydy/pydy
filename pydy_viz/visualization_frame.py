@@ -104,7 +104,7 @@ class VisualizationFrame(object):
             #It is not a rigidbody, hence this arg should be a
             #reference frame
             try:
-                dcm = args[i].dcm()
+                dcm = args[i]._dcm_dict
                 self._reference_frame = args[i]
                 i += 1
             except AttributeError:
