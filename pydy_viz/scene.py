@@ -3,6 +3,7 @@ from sympy.physics.mechanics import ReferenceFrame, Point
 from visualization_frame import VisualizationFrame
 from camera import PerspectiveCamera
 from server import Server
+from light import PointLight
 import json
 import os
 import pydy_viz
