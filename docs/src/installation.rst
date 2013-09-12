@@ -24,11 +24,6 @@ Issue the following command from command line::
     $ python setup.py install
 
 It should get the PyDyViz up and running.
-You can check the installation by running the following command from Python Interpreter::
-
-    >>>import pydy_viz
-
-If it does not throws any error/traceback, it means that PyDyViz is installed.    
         
 
 Git
@@ -63,6 +58,27 @@ or for easy_install::
 
     $ easy_install pydy_viz   
 
+    
+Run PyDyViz
+===========
+
+You can check the installation by running the following command from Python Interpreter::
+
+    >>> import pydy_viz
+
+If it does not throws any error/traceback, it means that PyDyViz is installed.    
 
 
+You can check the version of the software by issuing following command from interpreter::
+
+    >>> import pydy_viz
+    >>> print pydy_viz.__version__
+
+Questions
+=========
+
+If you have any question about installation, or any general question, feel free to visit the IRC channel at irc.freenode.net, channel #pydy. 
+In addition, our mailing list is an excellent source of community support.
+
+If you think there’s a bug or you would like to request a feature, please open an issue ticket.
 
