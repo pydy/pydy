@@ -64,8 +64,5 @@ or for easy_install::
     $ easy_install pydy_viz   
 
 
-Pre-Compiled Binaries
-=====================
-
 
 
