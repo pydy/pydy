@@ -3,7 +3,7 @@
 """Exercises 11.7, 11.8 from Kane 1985."""
 
 from __future__ import division
-from sympy import expand, solve, symbols, sin, cos, Matrix
+from sympy import expand, solve, symbols, trigsimp, sin, cos, Matrix
 from sympy.physics.mechanics import ReferenceFrame, RigidBody, Point
 from sympy.physics.mechanics import dot, dynamicsymbols, inertia, msprint
 from util import generalized_active_forces, generalized_inertia_forces
@@ -211,8 +211,8 @@ Y3 = mC*Z28 + mD*Z34 - K3_B_C + g*(mC + mD)*sin(q1)
 X_rs_expected = Matrix([[X11, X12, X13], [X21, X22, X23], [X31, X32, X33]])
 Y_s_expected = Matrix([Y1, Y2, Y3])
 
-assert expand(X_rs - X_rs_expected) == Matrix.zeros(3)
-assert expand(Y_s - Y_s_expected) == Matrix.zeros(3, 1)
+assert trigsimp(expand(X_rs - X_rs_expected)) == Matrix.zeros(3)
+assert trigsimp(expand(Y_s - Y_s_expected)) == Matrix.zeros(3, 1)
 
 # 11.8
 # If D* lies on line B*C*, then p1 = 0, p2 = 0.
@@ -230,5 +230,5 @@ X_rs_expected_2 = Matrix([[X11, 0, 0],
                           [0, 0, X33]]).subs(D_prop_map)
 Y_s_expected_2 = Y_s_expected.subs(D_prop_map)
 
-assert expand(X_rs_2 - X_rs_expected_2) == Matrix.zeros(3)
-assert expand(Y_s_2 - Y_s_expected_2) == Matrix.zeros(3, 1)
+assert trigsimp(expand(X_rs_2 - X_rs_expected_2)) == Matrix.zeros(3)
+assert trigsimp(expand(Y_s_2 - Y_s_expected_2)) == Matrix.zeros(3, 1)
