@@ -25,10 +25,18 @@ Canvas.prototype.addCameras = function() {
             initMatrix.elements = _element;
             _Camera.applyMatrix(initMatrix);
         case "OrthoGraphicCamera":
-            //TODO
+            var _Camera = new THREE.OrthographicCamera(
+                                         JSONObj.width / - 2, JSONObj.width / 2, 
+                                         JSONObj.height / 2, JSONObj.height / - 2,
+                                         _camera.near, _camera.far );
+            var _element = new Float32Array(_camera.simulation_matrix[0]);
+            var initMatrix = new THREE.Matrix4();
+            initMatrix.elements = _element;
+            _Camera.applyMatrix(initMatrix);
         
         }
         console.log(_Camera);
+
         // add a small cube for a camera representation ...
         var _material = new THREE.MeshLambertMaterial(0xffffff);
         var _geom = new THREE.CubeGeometry(2,2);
