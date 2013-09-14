@@ -19,6 +19,11 @@ describe("Canvas should initially have ", function() {
     it("\"Go To Frame\" Div ", function() {
         expect($("#gotoFrame")).toBeDefined(); });
 
+    it("Frame Count Div ", function() {
+        expect($("#frameCount")).toBeDefined(); });    
+    
+    it("Current Frame Div ", function() {
+        expect($("#currentFrame")).toBeDefined(); });        
 });
 
 
@@ -82,7 +87,7 @@ describe("After initialization of class, with a test JSON Object, \
 });    
 
 
-describe("During call to canvas.initialize function \
+describe("After call to canvas.initialize function \
                       Canvas should have ", function() {
     
     var canvas;
@@ -105,4 +110,24 @@ describe("During call to canvas.initialize function \
     it("canvas.container to be a canvas div", function() {
         expect(canvas.container).toEqual($("#container")); });                        
     
+    it("canvas.axes to be an instance of THREE.Axishelper", function() {
+        expect(canvas.axes instanceof THREE.AxisHelper).toBeTruthy(); });                        
+    
+    it("   ...With dimensions as defined in JSON Object", function() {
+        expect(canvas.axes.geometry.boundingSphere.radius).toEqual(JSONObj.height); });                            
+    
+    it("canvas.primaryCamera defined", function() {
+        expect(canvas.primaryCamera).toBeDefined(); });                                
+    
+    it("...And should be an instance of THREE.Camera", function() {
+        expect(canvas.primaryCamera instanceof THREE.Camera).toBeTruthy(); });                                    
+                               
+    it("canvas.primaryControls defined", function() {
+        expect(canvas.primaryControls).toBeDefined(); });                                
+    
+    it("...And should be an instance of THREE.TrackballControls", function() {
+        expect(canvas.primaryControls instanceof THREE.TrackballControls).toBeTruthy(); });                                        
+     
+        
 });
+
