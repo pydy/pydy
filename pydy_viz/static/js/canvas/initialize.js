@@ -63,8 +63,12 @@ Canvas.prototype.initialize = function(){
             this.primaryCamera.position.x = 00 //_pcamera.position[0];
             this.primaryCamera.position.y = 00 //_pcamera.position[1];
             this.primaryCamera.position.z = 100 //_pcamera.position[2];
+            break;
+            
             
     }
+    
+    this.scene.add(this.primaryCamera);
 
     // setting up primary trackball controls ...
     this.primaryControls = new THREE.TrackballControls(
