@@ -36,6 +36,7 @@ describe("After initialization of class, with a test JSON Object, \
         canvas = new Canvas(JSONObj);
     });
     
+    
     it("Time steps equal to ten ", function() {
         expect(canvas.timeSteps).toEqual(10); });                                
 
@@ -131,3 +132,28 @@ describe("After call to canvas.initialize function \
         
 });
 
+
+describe("After call to canvas.addCameras function \
+                      Canvas should have ", function() {
+
+    var canvas;
+    
+    beforeEach(function() {
+        canvas = new Canvas(JSONObj);
+    });
+        
+    it("canvas.cameras should be populated with cameras", function() {
+        expect(canvas.cameras.children.length).toEqual(JSONObj.cameras.length); });                                        
+        
+    it("...Which are instances of THREE.Camera only", function() {
+    
+        for(var key in canvas.camera.children){
+            expect(canvas.cameras.children[key] instanceof THREE.Camera).toBeTruthy(); 
+        }
+        
+    }); 
+        
+
+
+
+});
