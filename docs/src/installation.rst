@@ -16,6 +16,17 @@ SciPy is used by the Code Generator module for numerical integration
 of Equations of Motions.So not exactly a dependency for PyDyViz, 
 but is required anyways for Code Generator to work.
 
+Source
+======
+
+PyDyViz can be installed from source via archive. Download the latest 
+release archive from here.Extract the archive and cd into the directory. 
+Issue the following command from command line::
+
+    $ python setup.py install
+
+It should get the PyDyViz up and running.
+
 Git
 ===
 
@@ -34,6 +45,19 @@ install::
     $ python setup.py install
     
 and you will have the latest development version on board.
+    
+Python Package Index
+====================
+
+You can also install PyDyViz from Python Package Index using pip or 
+easy_install.
+Its as easy as opening a terminal and typing in::
+
+    $ pip install pydy_viz
+    
+or for easy_install::
+
+    $ easy_install pydy_viz   
     
 Run PyDyViz
 ===========
