@@ -9,6 +9,11 @@
   <script type="text/javascript" src="jasmine/jasmine.js"></script>
   <script type="text/javascript" src="jasmine/jasmine-html.js"></script>
 
+  <!-- blanket.js for test coverage -->
+  
+  <script type="text/javascript" src="lib/blanket.min.js"></script> 
+  <script type="text/javascript" data-cover-only="canvas/" src="lib/jasmine-blanket.js"></script>  
+  
   <!-- include source files here... -->
   <script type="text/javascript" src="specs/specHelper.js"></script>    
   <script type="text/javascript" src="lib/jquery.js"></script>
@@ -16,10 +21,10 @@
   <script type="text/javascript" src="lib/three.min.js"></script>
   <script type="text/javascript" src="lib/TrackballControls.js"></script>
   
-  <script type="text/javascript" src="canvas/initialize.js"></script>
-  <script type="text/javascript" src="canvas/addObjects.js"></script>
-  <script type="text/javascript" src="canvas/animate.js"></script>
-  <script type="text/javascript" src="canvas/utilities.js"></script>
+  <script type="text/javascript" src="canvas/initialize.js" data-cover></script>
+  <script type="text/javascript" src="canvas/addObjects.js" data-cover></script>
+  <script type="text/javascript" src="canvas/animate.js" data-cover></script>
+  <script type="text/javascript" src="canvas/utilities.js" data-cover></script>
   
   
 

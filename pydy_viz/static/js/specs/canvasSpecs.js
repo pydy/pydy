@@ -37,8 +37,8 @@ describe("After initialization of class, with a test JSON Object, \
     });
     
     
-    it("Time steps equal to ten ", function() {
-        expect(canvas.timeSteps).toEqual(10); });                                
+    it("Time steps equal to number of simulation matrices in JSON Object ", function() {
+        expect(canvas.timeSteps).toEqual(JSONObj.frames[0].simulation_matrix.length); });                                
 
     it("canvas.frames to be a Object3D ", function() {
         expect(canvas.frames instanceof 
@@ -99,6 +99,7 @@ describe("After call to canvas.initialize function \
     });
 
     it("a THREE.WebGLRenderer defined  ", function() {
+        alert(canvas.renderer.domElement);
         expect(canvas.renderer instanceof 
                         THREE.WebGLRenderer).toBeTruthy(); });
                         
