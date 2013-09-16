@@ -19,7 +19,6 @@ Contents:
     
     introduction.rst
     installation.rst
-    tutorials.rst
     api.rst
 
 
