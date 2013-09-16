@@ -3,6 +3,7 @@ from sympy.physics.mechanics import ReferenceFrame, Point
 from visualization_frame import VisualizationFrame
 from camera import PerspectiveCamera
 from server import Server
+from light import PointLight
 import json
 import os
 import pydy_viz
@@ -14,7 +15,6 @@ try:
 except ImportError:
     pass
 
-#TODOS: implement display() methods
 
 class Scene(object):
     """
@@ -108,15 +108,19 @@ class Scene(object):
         try:
             self.cameras = kwargs['cameras']
         except KeyError:
-            self.cameras = [PerspectiveCamera(self._reference_frame, \
+            self.cameras = [PerspectiveCamera('DefaultCamera', \
+                                         self._reference_frame, \
                                     self._origin.locatenew('p_camera', \
                                          10*self._reference_frame.z))]
 
         try:
             self.lights = kwargs['lights']
         except KeyError:
-            #TODO lights
-            self.lights = []
+            self.lights = [PointLight('DefaultLight', \
+                                            self._reference_frame, \
+                                self._origin.locatenew('p_light', \
+                                           10*self._reference_frame.z))]
+
 
     @property
     def name(self):
