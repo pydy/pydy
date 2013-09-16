@@ -99,7 +99,6 @@ describe("After call to canvas.initialize function \
     });
 
     it("a THREE.WebGLRenderer defined  ", function() {
-        alert(canvas.renderer.domElement);
         expect(canvas.renderer instanceof 
                         THREE.WebGLRenderer).toBeTruthy(); });
                         
@@ -141,20 +140,106 @@ describe("After call to canvas.addCameras function \
     
     beforeEach(function() {
         canvas = new Canvas(JSONObj);
+        canvas.initialize();
+        canvas.addCameras();
     });
+    
         
     it("canvas.cameras should be populated with cameras", function() {
         expect(canvas.cameras.children.length).toEqual(JSONObj.cameras.length); });                                        
         
     it("...Which are instances of THREE.Camera only", function() {
-    
-        for(var key in canvas.camera.children){
+            
+        for(var key in canvas.cameras.children){
             expect(canvas.cameras.children[key] instanceof THREE.Camera).toBeTruthy(); 
         }
         
     }); 
         
-
-
-
 });
+
+
+describe("After call to canvas.addLights function \
+                      Canvas should have ", function() {
+
+    var canvas;
+    
+    beforeEach(function() {
+        canvas = new Canvas(JSONObj);
+        canvas.initialize();
+        canvas.addLights();
+    });
+    
+        
+    it("canvas.lights should be populated with lights", function() {
+        expect(canvas.lights.children.length).toEqual(JSONObj.lights.length); });                                        
+        
+    it("...Which are instances of THREE.Light only", function() {
+            
+        for(var key in canvas.lights.children){
+            expect(canvas.lights.children[key] instanceof THREE.Light).toBeTruthy(); 
+        }
+        
+    }); 
+        
+});
+
+
+describe("After call to canvas.addFrames function \
+                      Canvas should have ", function() {
+
+    var canvas;
+    
+    beforeEach(function() {
+        canvas = new Canvas(JSONObj);
+        canvas.initialize();
+        canvas.addFrames();
+    });
+    
+        
+    it("canvas.frames should be populated with frames", function() {
+        expect(canvas.frames.children.length).toEqual(JSONObj.frames.length); });                                        
+        
+    it("...Which are instances of THREE.Mesh only", function() {
+            
+        for(var key in canvas.frames.children){
+            expect(canvas.frames.children[key] instanceof THREE.Mesh).toBeTruthy(); 
+        }
+        
+    }); 
+        
+});
+
+
+
+describe("After call to canvas.addControls function \
+                      Canvas should have ", function() {
+
+    var canvas;
+    
+    beforeEach(function() {
+        canvas = new Canvas(JSONObj);
+        canvas.initialize();
+        canvas.addControls();
+    });
+       
+        afterEach(function() {
+        cancelAnimationFrame(canvas.controlsID);
+    });
+    
+        
+    it("canvas.controlsID should be defined, and non-zero ", function() {
+      
+        expect(canvas.controlsID).toBeDefined();
+        
+    }); 
+    
+    it("...And should be  non-zero ", function() {
+
+        expect(canvas.controlsID).not.toEqual(0);
+    });     
+        
+});
+
+
+
