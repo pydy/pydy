@@ -38,7 +38,6 @@ Canvas.prototype.pauseAnimation = function(){
 };
 Canvas.prototype.stopAnimation = function(){
     Canvas.prototype.animationCounter = 0;
-    // TODO Reset to initial orientation for each frame object ..
     cancelAnimationFrame(Canvas.prototype.animationID);
     for(var key in JSONObj.frames){
           Canvas.prototype._animate(key, 0);
