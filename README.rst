@@ -39,3 +39,23 @@ or run
 bin/test
 
 after all is installed for both of those commands.
+
+Documentation
+=============
+
+Requires:
+
+- Sphinx
+- numpydoc
+
+::
+
+   pip install sphinx numpydoc
+
+To build the HTML docs::
+
+   $ sphinx-build -b html docs/src docs/build
+
+View::
+
+   $ firefox docs/build/index.html
