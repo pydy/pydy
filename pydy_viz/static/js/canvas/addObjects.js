@@ -96,8 +96,6 @@ Canvas.prototype.addFrames = function(){
                                     
         var _material = new THREE.MeshLambertMaterial({
                                     color:        _frame.shape.color,
-                                    wireframe:          true,
-                                    wireframeLinewidth: 0.1,
                                     opacity: 0.5
                                                      });        
 
