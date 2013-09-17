@@ -52,3 +52,24 @@ cross browser issues with blanket.js)::
    $ python -m SimpleHTTPServer
 
 Now visit http://localhost:8000/SpecRunner.html in a webgl compliant browser.
+
+Documentation
+=============
+
+Requires:
+
+- Sphinx
+- numpydoc
+
+::
+
+   pip install sphinx numpydoc
+
+To build the HTML docs::
+
+   $ sphinx-build -b html docs/src docs/build
+
+View::
+
+   $ firefox docs/build/index.html
+
