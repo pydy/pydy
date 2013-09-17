@@ -10,7 +10,6 @@ Dependencies:
 1) Python 
 2) SymPy 
 3) NumPy 
-4) SciPy
 
 SciPy is used by the Code Generator module for numerical integration 
 of Equations of Motions.So not exactly a dependency for PyDyViz, 
