@@ -243,3 +243,98 @@ describe("After call to canvas.addControls function \
 
 
 
+describe("After call to canvas.startAnimation function \
+                      Canvas should have ", function() {
+
+    var canvas;
+    
+    beforeEach(function() {
+        canvas = new Canvas(JSONObj);
+        canvas.initialize();
+        canvas.addControls();
+        canvas.addFrames();
+        canvas.startAnimation();
+    });
+       
+        afterEach(function() {
+        cancelAnimationFrame(canvas.animationID);
+    });
+    
+        
+    it("canvas.animationID should be defined, and non-zero ", function() {
+      
+        expect(canvas.animationID).toBeDefined();
+        
+    }); 
+    
+    it("...And should be  non-zero ", function() {
+
+        expect(canvas.animationID).not.toEqual(0);
+    });     
+        
+});
+
+
+
+
+describe("After call to canvas.pauseAnimation function \
+                      Canvas should have ", function() {
+
+    var canvas;
+    
+    beforeEach(function() {
+        canvas = new Canvas(JSONObj);
+        canvas.initialize();
+        canvas.addControls();
+        canvas.addFrames();
+        canvas.startAnimation();
+        canvas.pauseAnimation();
+    });
+       
+    it("canvas.animationID should be undefined,", function() {
+      
+        expect(canvas.animationID).not.toBeDefined();
+        
+    }); 
+    
+    it("...And canvas.animationCounter should be somewhere between 0 and canvas.timeSteps", function() {
+
+        expect(canvas.animationCounter).not.toEqual(0);
+        expect(canvas.animationCounter).not.toEqual(canvas.timeSteps);        
+        expect(canvas.animationCounter).toBeLessThan(canvas.timeSteps);
+    });     
+        
+});
+
+
+
+describe("After call to canvas.stopAnimation function \
+                      Canvas should have ", function() {
+
+    var canvas;
+    
+    beforeEach(function() {
+        canvas = new Canvas(JSONObj);
+        canvas.initialize();
+        canvas.addControls();
+        canvas.addFrames();
+        canvas.startAnimation();
+        canvas.stopAnimation();
+    });
+       
+    it("canvas.animationID should be undefined,", function() {
+        expect(canvas.animationID).not.toBeDefined();
+        
+    }); 
+    
+    it("...And canvas.animationCounter should be axactly 0", function() {
+
+        expect(canvas.animationCounter).toEqual(0);
+
+    });     
+        
+});
+
+
+
+
