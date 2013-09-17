@@ -34,11 +34,14 @@ Canvas.prototype._animate = function(key, counter)
 
 Canvas.prototype.pauseAnimation = function(){
     cancelAnimationFrame(Canvas.prototype.animationID);
+    Canvas.prototype.animationID = undefined;
 
 };
 Canvas.prototype.stopAnimation = function(){
     Canvas.prototype.animationCounter = 0;
     cancelAnimationFrame(Canvas.prototype.animationID);
+    Canvas.prototype.animationID = undefined;
+    
     for(var key in JSONObj.frames){
           Canvas.prototype._animate(key, 0);
     }
