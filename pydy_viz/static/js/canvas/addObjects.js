@@ -102,7 +102,6 @@ Canvas.prototype.addFrames = function(){
         switch(_frame.shape.type){
 
         case "Cube":
-            alert("In Cube");
             var _geometry = new THREE.CubeGeometry(
                                       _frame.shape.length,
                                       _frame.shape.length,
@@ -114,14 +113,14 @@ Canvas.prototype.addFrames = function(){
             var _geometry = new THREE.CylinderGeometry(
                                       _frame.shape.radius,
                                             _frame.shape.radius,
-                                      _frame.shape.height,
+                                      _frame.shape.length,
                                       50,50);
             break;
                                       
         case "Cone":        
             var _geometry = new THREE.CylinderGeometry(
                                       _frame.shape.radius,
-                                      0.1,
+                                      _frame.shape.radius/100,
                                       _frame.shape.length,
                                       50,50);        
             break;
