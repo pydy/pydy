@@ -88,8 +88,6 @@ Canvas.prototype.initialize = function(){
     this.scene.add(this.axes);
     this.renderer.render(this.scene, this.primaryCamera);
     
-    // copying to vars for 
-    
     // Setting a basic Point Light for colors ...
     this.primaryLight = new THREE.PointLight(0xffffff);
     this.primaryLight.position.set(10,10,-10);
