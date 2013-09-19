@@ -113,14 +113,14 @@ Canvas.prototype.addFrames = function(){
             var _geometry = new THREE.CylinderGeometry(
                                       _frame.shape.radius,
                                             _frame.shape.radius,
-                                      _frame.shape.height,
+                                      _frame.shape.length,
                                       50,50);
             break;
                                       
         case "Cone":        
             var _geometry = new THREE.CylinderGeometry(
                                       _frame.shape.radius,
-                                      _frame.shape.radius/100,                                      ,
+                                      _frame.shape.radius/100,
                                       _frame.shape.length,
                                       50,50);        
             break;

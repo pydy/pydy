@@ -1,41 +1,75 @@
 pydy-viz
 ========
 
-Exploration of visualization for PyDy systems.
+Visualization of multibody systems generated with PyDy.
 
 Installation
 ============
 
 Probably easiest to install the main dependencies from your package manager,
-e.g.:
+e.g.::
 
-$ apt-get python-numpy python-matplotlib
+   $ apt-get python-numpy python-setuptools
 
-Download the source and then install with setuptools (this will pull in the
-latest version of SymPy).
+Then download the source and install with setuptools (this will automatically
+install the latest version of SymPy)::
 
-$ python setup.py install
+   $ python setup.py install
 
 Tests
 =====
 
-The Python tests require nose and the javascript tests require Jasmine and
-PhantomJS.
+The Python tests require nose so get them with your package manager::
 
-$ pip install nose coverage
+   $ apt-get python-nose python-coverage
 
-nosetests -v --with-coverage --cover-package=pydy_viz
+or pip::
 
-$ sudo add-apt-repository ppa:chris-lea/node.js
-$ sudo apt-get update
-$ sudo apt-get install nodejs npm phantomjs
-$ sudo npm install -g phantom-jasmine
-$ # may have to create this symlink
-$ sudo ln -s /usr/bin/nodejs /usr/bin/node
-$ phantom-jasmine pydy_viz/static/js/SpecRunner.html
+   $ pip install nose coverage
 
-or run
+The tests can be run from the root directory with::
 
-bin/test
+   $ nosetests
 
-after all is installed for both of those commands.
+And to see more detail with coverage, run::
+
+   $ nosetests -v --with-coverage --cover-package=pydy_viz
+
+These are alternative ways to run the Python tests::
+
+   $ bin/test
+   $ python setup.py nosetests
+
+For the Javascript tests the Jasmine and blanket.js libraries are used.  Both
+of these libraries are included in pydy-viz with the source. To run the
+Javascript tests, go to the javascript library directory::
+
+   $ cd pydy_viz/static/js
+
+Then run a simple HTTP Server with Python (the server is required due to some
+cross browser issues with blanket.js)::
+
+   $ python -m SimpleHTTPServer
+
+Now visit http://localhost:8000/SpecRunner.html in a webgl compliant browser.
+
+Documentation
+=============
+
+Requires:
+
+- Sphinx
+- numpydoc
+
+::
+
+   pip install sphinx numpydoc
+
+To build the HTML docs::
+
+   $ sphinx-build -b html docs/src docs/build
+
+View::
+
+   $ firefox docs/build/index.html
+

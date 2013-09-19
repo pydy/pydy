@@ -135,7 +135,7 @@ class Shape(object):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         return self._data_dict
 
@@ -241,7 +241,7 @@ class Cube(Shape):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         self._data_dict['length'] = self._length
 
@@ -369,7 +369,7 @@ class Cylinder(Shape):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         self._data_dict['length'] = self._length
         self._data_dict['radius'] = self._radius
@@ -496,7 +496,7 @@ class Cone(Shape):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         self._data_dict['length'] = self._length
         self._data_dict['radius'] = self._radius
@@ -598,7 +598,7 @@ class Sphere(Shape):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         self._data_dict['radius'] = self._radius
 
@@ -700,7 +700,7 @@ class Circle(Shape):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         self._data_dict['radius'] = self._radius
 
@@ -827,7 +827,7 @@ class Plane(Shape):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         self._data_dict['length'] = self._length
         self._data_dict['width'] = self._width
@@ -931,7 +931,7 @@ class Tetrahedron(Shape):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         self._data_dict['radius'] = self._radius
 
@@ -1035,7 +1035,7 @@ class Octahedron(Shape):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         self._data_dict['radius'] = self._radius
 
@@ -1139,7 +1139,7 @@ class Icosahedron(Shape):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         self._data_dict['radius'] = self._radius
 
@@ -1266,7 +1266,7 @@ class Torus(Shape):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         self._data_dict['radius'] = self._radius
         self._data_dict['tube_radius'] = self._tube_radius
@@ -1393,7 +1393,7 @@ class TorusKnot(Shape):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         self._data_dict['radius'] = self._radius
         self._data_dict['tube_radius'] = self._tube_radius
@@ -1519,7 +1519,7 @@ class Tube(Shape):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         self._data_dict['radius'] = self._radius
         self._data_dict['points'] = self._points.tolist()
@@ -1623,7 +1623,7 @@ class Mesh(Shape):
         """
         self._data_dict = {}
         self._data_dict['name'] = self._name
-        self._data_dict['color'] = self._color_rgb
+        self._data_dict['color'] = self._color
         self._data_dict['type'] = self.__repr__()
         self._data_dict['points'] = self._points.tolist()
         return self._data_dict
