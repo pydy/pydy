@@ -2,6 +2,7 @@ __all__ = ['Server']
 
 import socket, threading, os
 import pydy_viz
+import sys
 class Server(threading.Thread):
     """
     A basic Socket server.
@@ -89,14 +90,22 @@ class Server(threading.Thread):
         print 'server started successfully, on port:', self.port
 
         while 1:
+            try:
                 self.socket.listen(1)
                 conn, addr = self.socket.accept()
                 self.data = conn.recv(1024)
                 sent_data = self._parse_data(self.data)
-                conn.send('HTTP/1.1 200 OK\r\n\r\n')
                 conn.send(sent_data)
                 print 'sent data'
                 conn.close()
+            except KeyboardInterrupt:        
+                print "Are you sure you want to shutdown[Y/N]?"
+                a = raw_input()
+                if a == "Y" or a == "y":
+                    self.socket.shutdown(socket.SHUT_RDWR)
+                    sys.exit()
+                else:
+                    pass    
 
 if __name__ == "__main__":
     a = Server()
