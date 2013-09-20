@@ -1,3 +1,6 @@
+var canvas;
+canvas = new Canvas(JSONObj);    
+
 describe("Canvas should initially have ", function() {
     
   
@@ -29,12 +32,6 @@ describe("Canvas should initially have ", function() {
 
 describe("After initialization of class, with a test JSON Object, \
                       Canvas should have ", function() {
-    
-    var canvas;
-    
-    beforeEach(function() {
-        canvas = new Canvas(JSONObj);
-    });
     
     
     it("Time steps equal to number of simulation matrices in JSON Object ", function() {
@@ -91,12 +88,7 @@ describe("After initialization of class, with a test JSON Object, \
 describe("After call to canvas.initialize function \
                       Canvas should have ", function() {
     
-    var canvas;
-    
-    beforeEach(function() {
-        canvas = new Canvas(JSONObj);
-        canvas.initialize();
-    });
+    canvas.initialize();
 
     it("a THREE.WebGLRenderer defined  ", function() {
         expect(canvas.renderer instanceof 
@@ -136,14 +128,7 @@ describe("After call to canvas.initialize function \
 describe("After call to canvas.addCameras function \
                       Canvas should have ", function() {
 
-    var canvas;
-    
-    beforeEach(function() {
-        canvas = new Canvas(JSONObj);
-        canvas.initialize();
-        canvas.addCameras();
-    });
-    
+    canvas.addCameras();    
         
     it("canvas.cameras should be populated with cameras", function() {
         expect(canvas.cameras.children.length).toEqual(JSONObj.cameras.length); });                                        
@@ -162,14 +147,7 @@ describe("After call to canvas.addCameras function \
 describe("After call to canvas.addLights function \
                       Canvas should have ", function() {
 
-    var canvas;
-    
-    beforeEach(function() {
-        canvas = new Canvas(JSONObj);
-        canvas.initialize();
-        canvas.addLights();
-    });
-    
+    canvas.addLights();    
         
     it("canvas.lights should be populated with lights", function() {
         expect(canvas.lights.children.length).toEqual(JSONObj.lights.length); });                                        
@@ -188,16 +166,10 @@ describe("After call to canvas.addLights function \
 describe("After call to canvas.addFrames function \
                       Canvas should have ", function() {
 
-    var canvas;
-    
-    beforeEach(function() {
-        canvas = new Canvas(JSONObj);
-        canvas.initialize();
-        canvas.addFrames();
-    });
-    
+    canvas.addFrames();    
         
     it("canvas.frames should be populated with frames", function() {
+        console.log(canvas.frames.children);
         expect(canvas.frames.children.length).toEqual(JSONObj.frames.length); });                                        
         
     it("...Which are instances of THREE.Mesh only", function() {
@@ -215,15 +187,11 @@ describe("After call to canvas.addFrames function \
 describe("After call to canvas.addControls function \
                       Canvas should have ", function() {
 
-    var canvas;
-    
     beforeEach(function() {
-        canvas = new Canvas(JSONObj);
-        canvas.initialize();
-        canvas.addControls();
+    canvas.addControls();
     });
        
-        afterEach(function() {
+    afterEach(function() {
         cancelAnimationFrame(canvas.controlsID);
     });
     
@@ -246,29 +214,10 @@ describe("After call to canvas.addControls function \
 describe("After call to canvas.startAnimation function \
                       Canvas should have ", function() {
 
-    var canvas;
-    
-    beforeEach(function() {
-        canvas = new Canvas(JSONObj);
-        canvas.initialize();
-        canvas.addControls();
-        canvas.addFrames();
-        canvas.startAnimation();
-    });
-       
-        afterEach(function() {
-        cancelAnimationFrame(canvas.animationID);
-    });
-    
-        
-    it("canvas.animationID should be defined, and non-zero ", function() {
-      
-        expect(canvas.animationID).toBeDefined();
-        
-    }); 
-    
-    it("...And should be  non-zero ", function() {
 
+    canvas.startAnimation();
+    cancelAnimationFrame(canvas.animationID);
+    it("...And should be  non-zero ", function() {
         expect(canvas.animationID).not.toEqual(0);
     });     
         
@@ -280,30 +229,15 @@ describe("After call to canvas.startAnimation function \
 describe("After call to canvas.pauseAnimation function \
                       Canvas should have ", function() {
 
-    var canvas;
-    
-    beforeEach(function() {
-        canvas = new Canvas(JSONObj);
-        canvas.initialize();
-        canvas.addControls();
-        canvas.addFrames();
-        canvas.startAnimation();
-        canvas.pauseAnimation();
-    });
-       
+    canvas.startAnimation();
+    canvas.pauseAnimation();
+
     it("canvas.animationID should be undefined,", function() {
       
         expect(canvas.animationID).not.toBeDefined();
         
     }); 
-    
-    it("...And canvas.animationCounter should be somewhere between 0 and canvas.timeSteps", function() {
 
-        expect(canvas.animationCounter).not.toEqual(0);
-        expect(canvas.animationCounter).not.toEqual(canvas.timeSteps);        
-        expect(canvas.animationCounter).toBeLessThan(canvas.timeSteps);
-    });     
-        
 });
 
 
@@ -311,16 +245,8 @@ describe("After call to canvas.pauseAnimation function \
 describe("After call to canvas.stopAnimation function \
                       Canvas should have ", function() {
 
-    var canvas;
-    
-    beforeEach(function() {
-        canvas = new Canvas(JSONObj);
-        canvas.initialize();
-        canvas.addControls();
-        canvas.addFrames();
-        canvas.startAnimation();
-        canvas.stopAnimation();
-    });
+    canvas.startAnimation();
+    canvas.stopAnimation();
        
     it("canvas.animationID should be undefined,", function() {
         expect(canvas.animationID).not.toBeDefined();
@@ -335,6 +261,4 @@ describe("After call to canvas.stopAnimation function \
         
 });
 
-
-
-
+delete canvas;
