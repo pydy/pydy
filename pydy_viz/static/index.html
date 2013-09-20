@@ -3,7 +3,8 @@
 	    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 		<title>My first Three.js app</title>
 		<style>my-canvas { width: 400px; height: 400px }</style>
-        <script src="js/lib/jquery.js"></script>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">		
+        <script src="js/lib/jquery.min.js"></script>
         <script src="js/lib/jquery-ui.js"></script>        
 		<script src="js/lib/three.min.js"></script>
 		<script src="js/lib/TrackballControls.js"></script>
@@ -11,7 +12,6 @@
         <script src="js/canvas/initialize.js"></script>
         <script src="js/canvas/addObjects.js"></script>
         <script src="js/canvas/animate.js"></script>                
-        <script src="js/canvas/utilities.js"></script>                        
         <link rel="stylesheet" type="text/css" href="css/style.css">
 		<script type="text/javascript">
 		var alert1 = function () { alert("1"); }
@@ -26,16 +26,17 @@
 	
         <div id='control-panel'>
         <h1> Control Panel </h1>
-        <button id="resetControls">Reset Camera</button>
-        <button id="startAnimation">Play Animation</button>
-        <button id="pauseAnimation">Pause Animation</button>                
-        <button id="stopAnimation">Stop Animation</button>        
-        <button id="switchCamera">Switch Camera</button>                
+        <button id="resetControls" class="fancyDisplay">Reset Camera</button>
+        <button id="startAnimation" class="fancyDisplay">Play Animation</button>
+        <button id="pauseAnimation" class="fancyDisplay">Pause Animation</button>                
+        <button id="stopAnimation" class="fancyDisplay">Stop Animation</button>        
+<!---        <button id="switchCamera" class="fancyDisplay">Switch Camera</button>                --->
         <hr />
         
-        <div id="looped">  <input type="checkbox" id="isLooped"><h2>Play Looped</h2> </input></div>
-        <div id="speed">  <input type="text" id="animationSpeed"><h2>Set Animation Speed</h2> </input></div>
-
+        <h2 style="color: rgb(202, 197, 197);">Play Looped</h2><input type="checkbox" id="isLooped"></input>
+<!---        <div id="speed">  <input type="text" id="animationSpeed"><h2>Set Animation Speed</h2> </input></div> --->
+        <div id="frameCount" class="fancyDisplay" style="position:relative; width:6em; "></div>
+        <div id="currentFrame" class="fancyDisplay" style="position:relative; width:6em;"></div>        
         </div>
         </div>
         </div>
