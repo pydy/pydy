@@ -1,30 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercises 8.12, 8.17 from Kane 1985."""
+"""Exercise 11.14 from Kane 1985."""
 
 from __future__ import division
-from sympy import expand, solve, symbols, trigsimp
-from sympy.physics.mechanics import ReferenceFrame, Point
-from sympy.physics.mechanics import inertia, RigidBody
-from sympy.physics.mechanics import cross, dot, dynamicsymbols
-from util import msprint, subs, partial_velocities
+from sympy import cos, expand, radsimp, solve, sqrt, symbols, trigsimp
+from sympy.physics.mechanics import ReferenceFrame, RigidBody, Point
+from sympy.physics.mechanics import dot, dynamicsymbols, inertia, msprint
 from util import generalized_active_forces, generalized_inertia_forces
+from util import partial_velocities, subs
 
-print("\nEx8.12")
-## --- Declare symbols ---
-q1 = dynamicsymbols('q1')
+q1, q2, q3 = dynamicsymbols('q1:4')
+q2d, q3d = dynamicsymbols('q2 q3', level=1)
 u1, u2, u3 = dynamicsymbols('u1:4')
 u_prime, R, M, g, e, f, theta = symbols('u\' R, M, g, e, f, theta')
+a, b, mA, mB, IA, J, K, t = symbols('a b mA mB IA J K t')
+IA22, IA23, IA33 = symbols('IA22 IA23 IA33')
 Q1, Q2, Q3 = symbols('Q1, Q2 Q3')
 F3 = symbols('F3')
 
-# --- Reference Frames ---
+# reference frames
 F = ReferenceFrame('F')
 P = F.orientnew('P', 'axis', [-theta, F.y])
 A = P.orientnew('A', 'axis', [q1, P.x])
 A.set_ang_vel(F, u1*A.x + u3*A.z)
+B = A.orientnew('B', 'axis', [q2, A.z])
+C = A.orientnew('C', 'axis', [q3, A.z])
 
-## --- define points D, S*, Q on frame A and their velocities ---
+# points D, S*, Q on frame A and their velocities
 pD = Point('D')
 pD.set_vel(A, 0)
 # u3 will not change v_D_F since wheels are still assumed to roll without slip.
@@ -35,35 +37,6 @@ pQ = pD.locatenew('Q', f*A.y - R*A.x)
 for p in [pS_star, pQ]:
     p.set_vel(A, 0)
     p.v2pt_theory(pD, F, A)
-
-## --- define partial velocities ---
-partials = partial_velocities([pD, pS_star, pQ], [u1, u2, u3],
-                              F, express_frame=A)
-
-forces = [(pS_star, -M*g*F.x), (pQ, Q1*A.x + Q2*A.y + Q3*A.z)]
-torques = []
-Fr, _ = generalized_active_forces(partials, forces + torques, uaux=[u3])
-print("Generalized active forces:")
-for i, f in enumerate(Fr, 1):
-    print("F{0} = {1}".format(i, msprint(f)))
-
-friction = -u_prime*Q1*(pQ.vel(F).normalize().express(A)).subs(u3, 0)
-Q_map = dict(zip([Q2, Q3], [dot(friction, x) for x in [A.y, A.z]]))
-Q_map[Q1] = trigsimp(solve(F3 - Fr[-1].subs(Q_map), Q1)[0])
-print('')
-for x in [Q1, Q2, Q3]:
-    print('{0} = {1}'.format(x, msprint(Q_map[x])))
-
-print("\nEx8.17")
-### --- define new symbols ---
-a, b, mA, mB, IA, J, K, t = symbols('a b mA mB IA J K t')
-IA22, IA23, IA33 = symbols('IA22 IA23 IA33')
-q2, q3 = dynamicsymbols('q2 q3')
-q2d, q3d = dynamicsymbols('q2 q3', level=1)
-
-# define frames for wheels
-B = A.orientnew('B', 'axis', [q2, A.z])
-C = A.orientnew('C', 'axis', [q3, A.z])
 
 # masscenters of bodies A, B, C
 pA_star = pD.locatenew('A*', a*A.y)
@@ -105,15 +78,29 @@ rbB = RigidBody('rbB', pB_star, B, mB, (inertia_B, pB_star))
 rbC = RigidBody('rbC', pC_star, C, mB, (inertia_C, pC_star))
 bodies = [rbA, rbB, rbC]
 
-# create new partial velocities since we define new points A*, B*, C* and
-# new frames B, C
-system = []
-for b in bodies:
-    system += [b.masscenter, b.frame]
-partials2 = partial_velocities(system, [u1, u2, u3], F,
-                               kde_map, express_frame=A)
+# forces, torques
+forces = [(pS_star, -M*g*F.x), (pQ, Q1*A.x + Q2*A.y + Q3*A.z)]
+torques = []
 
-Fr_star, _ = generalized_inertia_forces(partials2, bodies, kde_map, uaux=[u3])
-print("Generalized inertia forces:")
-for i, f in enumerate(Fr_star, 1):
-    print("F{0} = {1}".format(i, msprint(expand(trigsimp(f)))))
+# collect all significant points/frames of the system
+system = [y for x in bodies for y in [x.masscenter, x.frame]]
+system +=  [x[0] for x in forces + torques]
+
+# partial velocities
+partials = partial_velocities(system, [u1, u2, u3], F,
+                              kde_map, express_frame=A)
+
+# Fr, Fr*
+Fr, _ = generalized_active_forces(partials, forces + torques, uaux=[u3])
+Fr_star, _ = generalized_inertia_forces(partials, bodies, kde_map, uaux=[u3])
+
+friction = -u_prime*Q1*(pQ.vel(F).normalize().express(A)).subs(u3, 0)
+Q_map = dict(zip([Q2, Q3], [dot(friction, x) for x in [A.y, A.z]]))
+Q_map[Q1] = trigsimp(solve(F3 - Fr[-1].subs(Q_map), Q1)[0])
+
+#F3 + F3* = 0
+Q_map[Q1] = Q_map[Q1].subs(F3, -Fr_star[2])
+print('Q1 = {0}'.format(msprint(Q_map[Q1])))
+
+Q1_expected = e*M*g*cos(theta)/(f - u_prime*R*u2/sqrt(u2**2 + f**2*u1**2))
+assert expand(radsimp(Q_map[Q1] - Q1_expected)) == 0

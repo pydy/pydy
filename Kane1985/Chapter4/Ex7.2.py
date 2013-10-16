@@ -22,8 +22,9 @@ B = alpha * pS.pos_from(pR).normalize()
 C_ = c1*N.x + c2*N.y + c3*N.z
 eqs = [dot(A + B + C_, b) for b in N]
 soln = solve(eqs, [c1, c2, c3])
-C = sum(soln[ci] * b for ci, b in zip(sorted(soln), N))
+C = sum(soln[ci] * b
+        for ci, b in zip(sorted(soln, cmp=lambda x, y: x.compare(y)), N))
 print("C = {0}\nA + B + C = {1}".format(C, A + B + C))
 
-M = cross(pP.pos_from(p), A) + cross(pR.pos_from(p), B)
+M = cross(pP.pos_from(pO), A) + cross(pR.pos_from(pO), B)
 print("|M| = {0} N-m".format(M.magnitude().n()))

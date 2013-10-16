@@ -61,5 +61,5 @@ Q1_val = solve(F3 - Fr[2].subs(Qvals), Q1)[0]
 Qvals[Q1] = Q1_val
 
 print("Contact force components:")
-for k in sorted(Qvals.keys()):
+for k in sorted(Qvals.keys(), cmp=lambda x, y: x.compare(y)):
     print("{0} = {1}".format(k, msprint(Qvals[k])))
