@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Exercise 10.5 from Kane 1985."""
+"""Exercise 10.5 from Kane 1985.
+Answer does not match text.
+"""
 
 from __future__ import division
 from sympy import expand, symbols, trigsimp, sin, cos, S
