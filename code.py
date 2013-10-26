@@ -14,6 +14,9 @@ def generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
                                       specified, constants,
                                       time_variable='t'):
 
+    # TODO : Maybe, allow expressions to be passed in for the specified
+    # quantities for computation inside the c file.
+
     c_filename = filename_prefix + '_c.c'
     header_filename = filename_prefix + '_c.h'
     pyx_filename = filename_prefix + '.pyx'
@@ -245,10 +248,11 @@ def numeric_right_hand_side(kane, parameters, output_equations):
     M_func = lambdify(dummy_symbols + parameters, M)
     F_func = lambdify(dummy_symbols + parameters, F)
 
-    #numerical_output_equations = []
-    #for equation in output_equations:
-        #dummified = equation.subs(kindiff_dict).subs(dummy_dict)
-        #numerical_output_equations = .append(lambdify(dummy_symbols + parameters, dummified))
+    numerical_output_equations = []
+    for equation in output_equations:
+        dummified = equation.subs(kindiff_dict).subs(dummy_dict)
+        numerical_output_equations.append(lambdify(dummy_symbols +
+                                                   parameters, dummified))
 
     def right_hand_side(x, t, args):
         """Returns the derivatives of the states.
