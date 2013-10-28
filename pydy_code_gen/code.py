@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 # standard library
-import time
 import re
+import os
+import importlib
 
 # external libraries
 import numpy as np
-from sympy import Dummy, lambdify, numbered_symbols, cse
+from sympy import lambdify, numbered_symbols, cse
 from sympy.printing import ccode
-from sympy.utilities.autowrap import autowrap
 from sympy.printing.theanocode import theano_function
 
 # debugging
@@ -18,107 +18,6 @@ except ImportError:
     pass
 else:
     set_trace = Tracer()
-
-
-def generate_numeric_eom_matrices(mass_matrix, forcing_vector, constants,
-                                  states, specified=None,
-                                  generator="lambdify", **options):
-    """Returns functions which compute the mass matrix and forcing vector
-    given numerical values of the states, constants, and optionally
-    specified variables.
-
-    Parameters
-    ----------
-    mass_matrix : SymPy Matrix, shape(n, n)
-        An n x n symbolic matrix where each entry is an expression made up of
-        the states, constants, and specified variables.
-    forcing_vector : SymPy Matrix, shape(n,)
-        An n x 1 symbolic matrix where each entry is an expression made up of
-        the states, constants, and specified variables.
-    constants : sequence of sympy.Symbol
-    states : sequence of sympy.Function
-    specified : sequence of sympy.Function
-    generator : string, optional, default='lambdify'
-
-    Returns
-    -------
-    mass_matrix_func : function
-    forcing_vector_func : function
-
-    constants + states [+ specified]
-
-    Examples
-    --------
-
-    >>> q = dynamicsymbols('q:2')
-    >>> u = dynamicsymbols('u:2')
-    >>> f = dynamicsymbols('f:2')
-    >>> c = symbols('c:2')
-    >>> mass_matrix = Matrix([[q[0] + u[0] + c[0], c[0] * (q[1] + u[1])],
-
-    >>> type(mass_matrix)
-    sympy.matrices.dense.MutableDenseMatrix
-    >>> type(forcing_vector)
-    sympy.matrices.dense.MutableDenseMatrix
-    >>> generate_numeric_matrices(mass_matrix, forcing_vector, c, q + u,
-        >>> specified=f,
-
-
-    """
-
-    dynamic = states
-    if specified is not None:
-        dynamic += specified
-
-    # TODO : the Dummy symbols may not be needed now that lambdify is updated.
-    # the theano option may not need them either.
-    dummy_symbols = [Dummy() for i in dynamic]
-    dummy_dict = dict(zip(dynamic, dummy_symbols))
-
-    dummy_mass_matrix = mass_matrix.subs(dummy_dict)
-    dummy_forcing_vector = forcing_vector.subs(dummy_dict)
-
-    arguments = constants + dummy_symbols
-
-    if generator == 'lambdify':
-        mass_matrix_func = lambdify(arguments, dummy_mass_matrix)
-        forcing_vector_func = lambdify(arguments, dummy_forcing_vector)
-    elif generator == 'theano':
-        mass_matrix_func = theano_function(arguments, [dummy_mass_matrix],
-                                           on_unused_input='ignore')
-        forcing_vector_func = theano_function(arguments,
-                                              [dummy_forcing_vector],
-                                              on_unused_input='ignore')
-        # lower run time from 0.15s to 0.08s for n=1
-        mass_matrix_func.trust_input = True
-        forcing_vector_func.trust_input = True
-
-    elif generator == 'autowrap':
-        funcs = []
-        for entry in dummy_mass_matrix:
-            funcs.append(autowrap(entry, args=arguments, **options))
-
-        def mass_matrix_func(*args):
-            result = []
-            for func in funcs:
-                result.append(func(*args))
-            # TODO : this may not be correctly reshaped
-            return np.matrix(result).reshape(np.sqrt(len(result)),
-                                             np.sqrt(len(result)))
-
-        funcs = []
-        for row in dummy_forcing_vector:
-            funcs.append(autowrap(row, args=arguments, **options))
-
-        def forcing_vector_func(*args):
-            result = []
-            for func in funcs:
-                result.append(func(*args))
-            return np.matrix(result)
-    else:
-        raise NotImplementedError('{} is not implemented yet'.format(generator))
-
-    return mass_matrix_func, forcing_vector_func
 
 
 def generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
@@ -192,7 +91,7 @@ def mass_forcing_matrices(np.ndarray[np.double_t, ndim=1, mode='c'] constants,
                           np.ndarray[np.double_t, ndim=1, mode='c'] speeds,
                           np.ndarray[np.double_t, ndim=1, mode='c'] specified):
 
-    assert len(constants) == {mass_matrix_len}
+    assert len(constants) == {constants_len}
     assert len(coordinates) == {coordinates_len}
     assert len(speeds) == {speeds_len}
     assert len(specified) == {specified_len}
@@ -251,8 +150,9 @@ setup(name="{prefix}",
     # make a dictionary that maps each symbol to the appropriate array index
     array_name_map = {'constants': constants,
                       'coordinates': coordinates,
-                      'speeds': speeds,
-                      'specified': specified}
+                      'speeds': speeds}
+    if specified is not None:
+        array_name_map['specified'] = specified
 
     array_index_map = {}
     for array_name, variables in array_name_map.items():
@@ -293,7 +193,7 @@ setup(name="{prefix}",
                                len(constants),
                                len(coordinates),
                                len(speeds),
-                               len(specified),
+                               len(specified) if specified is not None else 1,
                                rows * cols,
                                len(forcing_vector),
                                constant_list,
@@ -310,7 +210,7 @@ setup(name="{prefix}",
     header_code = h_template.format(len(constants), constant_list,
                                     len(coordinates), coordinate_list,
                                     len(speeds), speed_list,
-                                    len(specified), specified_list,
+                                    len(specified) if specified is not None else 1, specified_list,
                                     rows * cols,
                                     len(forcing_vector))
 
@@ -318,11 +218,12 @@ setup(name="{prefix}",
         f.write(header_code)
 
     pyx_code = pyx_template.format(header_filename=header_filename,
+                                   constants_len=len(constants),
                                    mass_matrix_len=rows * cols,
                                    forcing_vector_len=len(forcing_vector),
                                    coordinates_len=len(coordinates),
                                    speeds_len=len(speeds),
-                                   specified_len=len(specified))
+                                   specified_len=len(specified) if specified is not None else 1)
 
     with open(pyx_filename, 'w') as f:
         f.write(pyx_code)
@@ -334,82 +235,135 @@ setup(name="{prefix}",
     with open(setup_py_filename, 'w') as f:
         f.write(setup_code)
 
-def numeric_right_hand_side(kane, parameters, specified=None, generator='lambdify'):
-    """Returns the right hand side of the first order ordinary differential
-    equations from a KanesMethod system which can be evaluated numerically.
+    os.system('python {} build_ext --inplace'.format(setup_py_filename))
 
-    This function probably only works for simple cases (no dependent speeds,
-    specified functions, etc).
+    # TODO : Need some way to cleanup the files creates by this after use.
+
+
+def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
+                            coordinates, speeds, specified=None,
+                            generator='lambdify'):
+    """Returns a function for the right hand side of the first order
+    ordinary differential equations from a system described by:
+
+    M(constants, coordinates) x' = F(constants, coordinates, speeds, specified)
+
+    which can be evaluated numerically.
 
     Parameters
     ----------
-    kane : KanesMethod object
-    parameters : a sequence
-        A list of symbols for the system constants.
-    specified : a sequence
-        A sequence of symbols/functions for specifed variables.
-    generator : optional
-        lambdify theano numba cython fortran parakeet
+    mass_matrix : sympy.matrices.dense.MutableDenseMatrix, shape(n,n)
+        The symbolic mass matrix of the system.
+    forcing_vector : sympy.matrices.dense.MutableDenseMatrix, shape(n,1)
+        The symbolic forcing vector of the system.
+    constants : list of sympy.core.symbol.Symbol
+        The constants in the equations of motion.
+    coordinates : list of sympy.core.function.Function
+        The generalized coordinates of the system.
+    speeds : list of sympy.core.function.Function
+        The generalized speeds of the system.
+    specified : list of sympy.core.function.Function
+        The specifed quantities of the system.
+    generator : string, {'lambdify', 'theano', 'cython'}, optional
+        The method used for generating the numeric right hand side.
 
     Returns
     -------
+    right_hand_side : function
+        A function which evaluates the derivaties of the states.
 
     """
 
-    dynamic = kane._q + kane._u
+    if generator == 'lambdify' or generator == 'theano':
 
-    kindiff_dict = kane.kindiffdict()
+        arguments = constants + coordinates + speeds
+        if specified is not None:
+            arguments += specified
 
-    mass_matrix = kane.mass_matrix_full.subs(kindiff_dict)
-    forcing_vector = kane.forcing_full.subs(kindiff_dict)
+        if generator == 'lambdify':
 
-    mass_matrix_func, forcing_vector_func = \
-        generate_numeric_eom_matrices(mass_matrix, forcing_vector,
-                                      parameters, dynamic,
-                                      specified=specified,
-                                      generator=generator)
+            mass_matrix_func = lambdify(arguments, mass_matrix)
+            forcing_vector_func = lambdify(arguments, forcing_vector)
 
-    arguments = parameters + dynamic
-    if specified is not None: arguments += specified
-    start = time.time()
-    numtimes = 1000
+        elif generator == 'theano':
 
-    # Lower from 0.5s to 0.15s for the run time when n=1
-    #inp = np.random.random(len(arguments))
-    inp = [np.asarray(x) for x in np.random.random(len(arguments))]
-    for i in range(numtimes):
-        mass_matrix_func(*inp)
-        forcing_vector_func(*inp)
-    total = time.time() - start
-    print("It took {} seconds to compute M and F with {} {} times at an \
-average of {} seconds per computation.".format(total, generator, numtimes,
-    total / numtimes))
+            mass_matrix_func = theano_function(arguments, [mass_matrix],
+                                               on_unused_input='ignore')
+            forcing_vector_func = theano_function(arguments,
+                                                  [forcing_vector],
+                                                  on_unused_input='ignore')
+            # Theano will run faster if you trust the input. I'm not sure
+            # what the implications of this are. See:
+            # http://deeplearning.net/software/theano/tutorial/faq.html#faster-small-theano-function
+            mass_matrix_func.trust_input = True
+            forcing_vector_func.trust_input = True
 
-    #set_trace()
+        def mass_forcing_func(numerical_constants, numerical_coordinates,
+                              numerical_speeds, numerical_specified=None):
+            """Returns numerical evaluations of the mass matrix and forcing
+            vector."""
+
+            values = [numerical_constants, numerical_coordinates,
+                      numerical_speeds]
+            if specified is not None:
+                values.append(numerical_specified)
+
+            value_array = np.hstack(tuple(values))
+
+            return mass_matrix_func(*value_array), forcing_vector_func(*value_array)
+
+    elif generator == 'cython':
+
+        filename_prefix = 'multibody_system'
+        generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
+                                          forcing_vector, constants,
+                                          coordinates, speeds,
+                                          specified=specified,
+                                          time_variable='t')
+        cython_module = importlib.import_module(filename_prefix)
+        mass_forcing_func = cython_module.mass_forcing_matrices
+
+    else:
+        # TODO : add numba, fortan, parakeet, sympy.autowrap (needs matrix
+        # support)
+        raise NotImplementedError('The {} code generation is not implemented'.format(generator))
 
     def right_hand_side(x, t, args):
         """Returns the derivatives of the states.
 
         Parameters
         ----------
-        x : ndarray, shape(n)
+        x : ndarray, shape(n,)
             The current state vector.
         t : float
             The current time.
-        args : ndarray
-            The specified variables and constants.
+        args : dictionary
+            constants : ndarray
+            specified : ndarray
+            num_coordinates : integer
 
         Returns
         -------
-        dx : ndarray, shape(2 * (n + 1))
+        dx : ndarray, shape(n,)
             The derivative of the state.
 
         """
-        arguments = [np.asarray(x) for x in np.hstack((x, args))]
-        # TODO: figure out how to off load solve to Theano
+        # TODO : Add more useful info to this doc string. Generate it
+        # dynamically.
+        # http://stackoverflow.com/questions/10307696/how-to-put-a-variable-into-python-docstring
+
+        mass_matrix_values, forcing_vector_values = \
+            mass_forcing_func(args['constants'],
+                              x[:args['num_coordinates']],
+                              x[args['num_coordinates']:],
+                              args['specified'])
+
+        # TODO: figure out how to off load solve to the various generated
+        # code, for example for Theano:
         # http://deeplearning.net/software/theano/library/sandbox/linalg.html#theano.sandbox.linalg.ops.Solve
-        dx = np.array(np.linalg.solve(mass_matrix_func(*arguments),
-                                      forcing_vector_func(*arguments))).T[0]
+
+        dx = np.array(np.linalg.solve(mass_matrix_values,
+                                      forcing_vector_values)).T[0]
 
         return dx
 

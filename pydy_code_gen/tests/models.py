@@ -9,10 +9,10 @@ from sympy import symbols
 import sympy.physics.mechanics as me
 
 
-def generate_mass_spring_damper_equations_of_motion():
+def generate_mass_spring_damper_equations_of_motion(external_force=True):
     """Returns the symbolic equations of motion and associated variables for a
     simple one degree of freedom mass, spring, damper system with gravity
-    and an external specified force.
+    and an optional external specified force.
 
       / / / / / / / /
      ----------------
@@ -42,9 +42,12 @@ def generate_mass_spring_damper_equations_of_motion():
     speeds : tuple, len(1)
         A sequence of all the dynamic symbols, i.e. functions of time, which
         describe the generalized speeds of the system, i.e v.
-    specified : tuple, len(1)
+    specified : tuple, len(1) or None
         A sequence of all the dynamic symbols, i.e. functions of time, which
-        describe the specified variables of the system, i.e F.
+        describe the specified variables of the system, i.e F. If
+        `external_force` is False, then None is returned.
+    external_force : boolean, default=True
+        If true a specifed force will be added to the system.
 
     """
 
@@ -65,26 +68,33 @@ def generate_mass_spring_damper_equations_of_motion():
     block = me.Particle('block', center, mass)
 
     kinematic_equations = [speed - positiond]
-    forces = [(center, (force + mass * gravity - stiffness * position - damping
-                        * speed) * ceiling.x)]
-    bodies = [block]
+
+    total_force = mass * gravity - stiffness * position - damping * speed
+    if external_force is True:
+        total_force += force
+    forces = [(center, total_force * ceiling.x)]
+
+    particles = [block]
 
     kane = me.KanesMethod(ceiling, q_ind=[position], u_ind=[speed],
                           kd_eqs=kinematic_equations)
-    fr, frstar = kane.kanes_equations(forces, bodies)
+    kane.kanes_equations(forces, particles)
 
     mass_matrix = kane.mass_matrix_full
     forcing_vector = kane.forcing_full
     constants = (mass, stiffness, damping, gravity)
     coordinates = (position,)
     speeds = (speed,)
-    specified = (force,)
+    if external_force is True:
+        specified = (force,)
+    else:
+        specified = None
 
     return (mass_matrix, forcing_vector, constants, coordinates, speeds,
             specified)
 
 
-def generate_n_link_pendulum_on_cart_equations_of_motion(n):
+def generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=True):
     """Returns the implicit form of the symbolic equations of motion for a
     2D n-link pendulum on a sliding cart under the influence of gravity.
 
@@ -92,6 +102,8 @@ def generate_n_link_pendulum_on_cart_equations_of_motion(n):
     ----------
     n : integer
         The number of links in the pendulum.
+    cart_force : boolean, default=True
+        If true an external specified lateral force is applied to the cart.
 
     Returns
     -------
@@ -108,6 +120,8 @@ def generate_n_link_pendulum_on_cart_equations_of_motion(n):
     speeds : list
         A sequence of all the dynamic symbols, i.e. functions of time, which
         describe the generalized speeds of the system.
+    specfied : list
+
 
     Notes
     -----
@@ -117,9 +131,6 @@ def generate_n_link_pendulum_on_cart_equations_of_motion(n):
     M x' = F, where x = [u0, ..., un+1, q0, ..., qn+1]
 
     """
-
-    # TODO : Make the location of the cart specified or add a specified
-    # force to the cart.
 
     q = me.dynamicsymbols('q:' + str(n + 1))
     u = me.dynamicsymbols('u:' + str(n + 1))
@@ -159,6 +170,13 @@ def generate_n_link_pendulum_on_cart_equations_of_motion(n):
 
         kindiffs.append(q[i + 1].diff(t) - u[i + 1])
 
+    if cart_force is True:
+        F = me.dynamicsymbols('F')
+        forces.append((P0, F * I.x))
+        specified = [F]
+    else:
+        specified = None
+
     kane = me.KanesMethod(I, q_ind=q, u_ind=u, kd_eqs=kindiffs)
     kane.kanes_equations(forces, particles)
 
@@ -171,4 +189,5 @@ def generate_n_link_pendulum_on_cart_equations_of_motion(n):
     for i in range(n):
         constants += [l[i], m[i + 1]]
 
-    return mass_matrix, forcing_vector, constants, coordinates, speeds
+    return (mass_matrix, forcing_vector, constants, coordinates, speeds,
+            specified)
