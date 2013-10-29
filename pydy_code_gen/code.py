@@ -63,7 +63,7 @@ void mass_forcing(double constants[{constants_len}], // constants = [{constants_
                   double speeds[{speeds_len}], // speeds = [{speeds_list}]
                   {forward_slash}double specified[{specified_len}], // specified = [{specified_list}]
                   double mass_matrix[{mass_matrix_len}], // computed
-                  double forcing_vector[{forcing_vector_len}]) // computed"""
+                  double forcing_vector[{forcing_vector_len}]); // computed"""
 
     pyx_template = \
 """\
