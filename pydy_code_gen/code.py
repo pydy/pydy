@@ -42,8 +42,7 @@ def generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
 void mass_forcing(double constants[{constants_len}], // constants = [{constants_list}]
                   double coordinates[{coordinates_len}], // coordinates = [{coordinates_list}]
                   double speeds[{speeds_len}], // speeds = [{speeds_list}]
-                  {forward_slash}double specified[{specified_len}], // specified = [{specified_list}]
-                  double mass_matrix[{mass_matrix_len}], // computed
+{specified_double}                  double mass_matrix[{mass_matrix_len}], // computed
                   double forcing_vector[{forcing_vector_len}]) // computed
 {{
     // common subexpressions
@@ -61,8 +60,7 @@ void mass_forcing(double constants[{constants_len}], // constants = [{constants_
 void mass_forcing(double constants[{constants_len}], // constants = [{constants_list}]
                   double coordinates[{coordinates_len}], // coordinates = [{coordinates_list}]
                   double speeds[{speeds_len}], // speeds = [{speeds_list}]
-                  {forward_slash}double specified[{specified_len}], // specified = [{specified_list}]
-                  double mass_matrix[{mass_matrix_len}], // computed
+{specified_double}                  double mass_matrix[{mass_matrix_len}], // computed
                   double forcing_vector[{forcing_vector_len}]); // computed"""
 
     pyx_template = \
@@ -73,29 +71,25 @@ cimport numpy as np
 cdef extern from "{header_filename}":
     void mass_forcing(double* constants,
                       double* coordinates,
-                      double* speeds,
-                      {hash}double* specified,
+                      double* speeds,{cdef_specified_arg}
                       double* mass_matrix,
                       double* forcing_vector)
 
 
 def mass_forcing_matrices(np.ndarray[np.double_t, ndim=1, mode='c'] constants,
                           np.ndarray[np.double_t, ndim=1, mode='c'] coordinates,
-                          np.ndarray[np.double_t, ndim=1, mode='c'] speeds,
-                          {triple_quotes}np.ndarray[np.double_t, ndim=1, mode='c'] specified{triple_quotes}):
+                          np.ndarray[np.double_t, ndim=1, mode='c'] speeds{def_specified_arg}):
 
     assert len(constants) == {constants_len}
     assert len(coordinates) == {coordinates_len}
-    assert len(speeds) == {speeds_len}
-    {hash}assert len(specified) == {specified_len}
+    assert len(speeds) == {speeds_len}{specified_assert}
 
     cdef np.ndarray[np.double_t, ndim=1, mode='c'] mass_matrix = np.zeros({mass_matrix_len})
     cdef np.ndarray[np.double_t, ndim=1, mode='c'] forcing_vector = np.zeros({forcing_vector_len})
 
     mass_forcing(<double*> constants.data,
                  <double*> coordinates.data,
-                 <double*> speeds.data,
-                 {hash}<double*> specified.data,
+                 <double*> speeds.data,{call_specified_arg}
                  <double*> mass_matrix.data,
                  <double*> forcing_vector.data)
 
@@ -202,10 +196,26 @@ setup(name="{prefix}",
         'prefix': filename_prefix,
         'c_filename': c_filename,
         'pyx_filename': pyx_filename,
-        'hash': '#' if specified is None else '',
-        'triple_quotes': '"""' if specified is None else '',
-        'forward_slash': r'\\' if specified is None else '',
     }
+
+    if specified is not None:
+        specified_template = {
+            'specified_double': " " * 17 + "double specified[{specified_len}], // specified = [{specified_list}]".format(**template_values) + '\n',
+            'specified_assert': "\n    assert len(specified) == {specified_len}\n".format(**template_values),
+            'def_specified_arg': ",\n                          np.ndarray[np.double_t, ndim=1, mode='c'] specified",
+            'cdef_specified_arg': "\n" + ' ' * 22 + "double* specified,",
+            'call_specified_arg': "\n" + ' ' * 17 + "<double*> specified.data,"
+        }
+    else:
+        specified_template = {
+            'specified_double': "",
+            'specified_assert': "",
+            'def_specified_arg': "",
+            'cdef_specified_arg': "",
+            'call_specified_arg': ""
+        }
+
+    template_values.update(specified_template)
 
     files = {c_filename: c_template,
              header_filename: h_template,

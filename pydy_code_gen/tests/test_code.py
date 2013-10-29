@@ -2,6 +2,9 @@
 
 # standard libary
 import importlib
+import os
+import shutil
+import glob
 
 # external libraries
 import numpy as np
@@ -17,8 +20,6 @@ def test_numeric_right_hand_side():
 
     m, k, c, g, F, x, v = np.random.random(7)
 
-    expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x + F)])
-
     args = {'constants': np.array([m, k, c, g]),
             'specified': np.array([F]),
             'num_coordinates': 1}
@@ -27,6 +28,8 @@ def test_numeric_right_hand_side():
 
     mass_matrix, forcing_vector, constants, coordinates, speeds, specified = \
         generate_mass_spring_damper_equations_of_motion()
+
+    expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x + F)])
 
     backends = ['lambdify', 'cython'] #, 'theano']
     for backend in backends:
@@ -37,8 +40,20 @@ def test_numeric_right_hand_side():
 
         testing.assert_allclose(dx, expected_dx)
 
+        if backend == 'cython':
+            filelist = glob.glob('multibody_system*')
+            for f in filelist:
+                os.remove(f)
+            shutil.rmtree('build')
+
     mass_matrix, forcing_vector, constants, coordinates, speeds, specified = \
         generate_mass_spring_damper_equations_of_motion(external_force=False)
+
+    expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x)])
+
+    # TODO : There is an import issue here, where the previous cython code
+    # is loaded from the module and the import needs to be reloaded. Not
+    # sure how to fix that.
 
     for backend in backends:
         rhs = numeric_right_hand_side(mass_matrix, forcing_vector,
@@ -47,6 +62,12 @@ def test_numeric_right_hand_side():
         dx = rhs(states, 0.0, args)
 
         testing.assert_allclose(dx, expected_dx)
+
+        if backend == 'cython':
+            filelist = glob.glob('multibody_system*')
+            for f in filelist:
+                os.remove(f)
+            shutil.rmtree('build')
 
 
 def test_generate_mass_forcing_cython_code():
