@@ -2,7 +2,7 @@
 
 # standard library
 import re
-import os
+import subprocess
 import importlib
 import string
 import random
@@ -231,7 +231,11 @@ setup(name="{prefix}",
         with open(filename, 'w') as f:
             f.write(code)
 
-    os.system('python {} build_ext --inplace'.format(setup_py_filename))
+    # This prevents output to stdout and waits till it is done.
+    p = subprocess.Popen(['python', setup_py_filename, 'build_ext',
+                          '--inplace'], stderr=subprocess.STDOUT,
+                         stdout=subprocess.PIPE)
+    p.wait()
 
     # TODO : Need some way to cleanup the files creates by this after use.
 
