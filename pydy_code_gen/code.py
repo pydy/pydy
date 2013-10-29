@@ -4,6 +4,8 @@
 import re
 import os
 import importlib
+import string
+import random
 
 # external libraries
 import numpy as np
@@ -258,7 +260,7 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
         The generalized speeds of the system.
     specified : list of sympy.core.function.Function
         The specifed quantities of the system.
-    generator : string, {'lambdify', 'theano', 'cython'}, optional
+    generator : string, {'lambdify'|'theano'|'cython'}, optional
         The method used for generating the numeric right hand side.
 
     Returns
@@ -303,12 +305,27 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
                 values.append(numerical_specified)
 
             value_array = np.hstack(tuple(values))
+            if generator == 'theano':
+                value_array = [np.asarray(v) for v in value_array]
 
             return mass_matrix_func(*value_array), forcing_vector_func(*value_array)
 
     elif generator == 'cython':
 
         filename_prefix = 'multibody_system'
+
+        # TODO : This is a hack to allow you to regenerate cython modules
+        # without closing the Python session. It may be best to also force
+        # the user to provide a module name when generating the Cython code.
+        exists = True
+        while exists:
+            try:
+                open(filename_prefix + '.so', 'r')
+            except IOError:
+                exists = False
+            else:
+                filename_prefix += '_' + random.choice(string.letters)
+
         generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
                                           forcing_vector, constants,
                                           coordinates, speeds,
@@ -345,6 +362,9 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
         # TODO : Add more useful info to this doc string. Generate it
         # dynamically.
         # http://stackoverflow.com/questions/10307696/how-to-put-a-variable-into-python-docstring
+
+        # TODO : Allow arg['specified'] to be a function of the states and
+        # time, which gets evaluated at each time step.
 
         segmented = [args['constants'], x[:args['num_coordinates']],
                      x[args['num_coordinates']:]]
