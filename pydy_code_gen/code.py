@@ -26,8 +26,8 @@ def generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
                                       time_variable='t'):
 
     # TODO : Maybe, allow expressions to be passed in for the specified
-    # quantities for computation inside the c file. We would need the value
-    # of time in the mass_forcing function.
+    # quantities for computation inside the c file. Would need the value of
+    # time in the mass_forcing function.
 
     c_filename = filename_prefix + '_c.c'
     header_filename = filename_prefix + '_c.h'
@@ -37,40 +37,33 @@ def generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
     c_template = \
 """\
 #include <math.h>
-#include "{}"
+#include "{header_filename}"
 
-void mass_forcing(double constants[{}],
-                  double coordinates[{}],
-                  double speeds[{}],
-                  double specified[{}],
-                  double mass_matrix[{}], // computed
-                  double forcing_vector[{}]) // computed
+void mass_forcing(double constants[{constants_len}], // constants = [{constants_list}]
+                  double coordinates[{coordinates_len}], // coordinates = [{coordinates_list}]
+                  double speeds[{speeds_len}], // speeds = [{speeds_list}]
+                  {forward_slash}double specified[{specified_len}], // specified = [{specified_list}]
+                  double mass_matrix[{mass_matrix_len}], // computed
+                  double forcing_vector[{forcing_vector_len}]) // computed
 {{
-    // constants = [{}]
-    // coordinates = [{}]
-    // speeds = [{}]
-    // specified = [{}]
-
     // common subexpressions
-    {}
+    {sub_expression_block}
 
     // mass matrix
-    {}
+    {mass_matrix_block}
 
     // forcing vector
-    {}
-}}
-"""
+    {forcing_vector_block}
+}}"""
 
     h_template = \
 """\
-void mass_forcing(double constants[{}], // constants = [{}]
-                  double coordinates[{}], // coordinates = [{}]
-                  double speeds[{}], // speeds = [{}]
-                  double specified[{}], // specified = [{}]
-                  double mass_matrix[{}], // computed
-                  double forcing_vector[{}]); // computed
-"""
+void mass_forcing(double constants[{constants_len}], // constants = [{constants_list}]
+                  double coordinates[{coordinates_len}], // coordinates = [{coordinates_list}]
+                  double speeds[{speeds_len}], // speeds = [{speeds_list}]
+                  {forward_slash}double specified[{specified_len}], // specified = [{specified_list}]
+                  double mass_matrix[{mass_matrix_len}], // computed
+                  double forcing_vector[{forcing_vector_len}]) // computed"""
 
     pyx_template = \
 """\
@@ -81,7 +74,7 @@ cdef extern from "{header_filename}":
     void mass_forcing(double* constants,
                       double* coordinates,
                       double* speeds,
-                      double* specified,
+                      {hash}double* specified,
                       double* mass_matrix,
                       double* forcing_vector)
 
@@ -89,12 +82,12 @@ cdef extern from "{header_filename}":
 def mass_forcing_matrices(np.ndarray[np.double_t, ndim=1, mode='c'] constants,
                           np.ndarray[np.double_t, ndim=1, mode='c'] coordinates,
                           np.ndarray[np.double_t, ndim=1, mode='c'] speeds,
-                          np.ndarray[np.double_t, ndim=1, mode='c'] specified):
+                          {triple_quotes}np.ndarray[np.double_t, ndim=1, mode='c'] specified{triple_quotes}):
 
     assert len(constants) == {constants_len}
     assert len(coordinates) == {coordinates_len}
     assert len(speeds) == {speeds_len}
-    assert len(specified) == {specified_len}
+    {hash}assert len(specified) == {specified_len}
 
     cdef np.ndarray[np.double_t, ndim=1, mode='c'] mass_matrix = np.zeros({mass_matrix_len})
     cdef np.ndarray[np.double_t, ndim=1, mode='c'] forcing_vector = np.zeros({forcing_vector_len})
@@ -102,12 +95,14 @@ def mass_forcing_matrices(np.ndarray[np.double_t, ndim=1, mode='c'] constants,
     mass_forcing(<double*> constants.data,
                  <double*> coordinates.data,
                  <double*> speeds.data,
-                 <double*> specified.data,
+                 {hash}<double*> specified.data,
                  <double*> mass_matrix.data,
                  <double*> forcing_vector.data)
 
     return mass_matrix.reshape({forcing_vector_len}, {forcing_vector_len}), forcing_vector.reshape({forcing_vector_len}, 1)
 """
+    # TODO : Add a doc string to the cython function
+
     setup_template = \
 """\
 import numpy
@@ -189,51 +184,40 @@ setup(name="{prefix}",
         forcing_vector_code_strings.append('{} = {};'.format('forcing_vector[{}]'.format(i), code_str))
     forcing_vector_code_block = '\n    '.join(forcing_vector_code_strings)
 
-    c_code = c_template.format(header_filename,
-                               len(constants),
-                               len(coordinates),
-                               len(speeds),
-                               len(specified) if specified is not None else 1,
-                               rows * cols,
-                               len(forcing_vector),
-                               constant_list,
-                               coordinate_list,
-                               speed_list,
-                               specified_list,
-                               sub_expression_code_block,
-                               mass_matrix_code_block,
-                               forcing_vector_code_block)
+    template_values = {
+        'header_filename': header_filename,
+        'constants_len': len(constants),
+        'mass_matrix_len': rows * cols,
+        'forcing_vector_len': len(forcing_vector),
+        'coordinates_len': len(coordinates),
+        'speeds_len': len(speeds),
+        'specified_len': len(specified) if specified is not None else 0,
+        'constants_list': constant_list,
+        'coordinates_list': coordinate_list,
+        'speeds_list': speed_list,
+        'specified_list': specified_list,
+        'sub_expression_block': sub_expression_code_block,
+        'mass_matrix_block': mass_matrix_code_block,
+        'forcing_vector_block': forcing_vector_code_block,
+        'prefix': filename_prefix,
+        'c_filename': c_filename,
+        'pyx_filename': pyx_filename,
+        'hash': '#' if specified is None else '',
+        'triple_quotes': '"""' if specified is None else '',
+        'forward_slash': r'\\' if specified is None else '',
+    }
 
-    with open(c_filename, 'w') as f:
-        f.write(c_code)
+    files = {c_filename: c_template,
+             header_filename: h_template,
+             pyx_filename: pyx_template,
+             setup_py_filename: setup_template}
 
-    header_code = h_template.format(len(constants), constant_list,
-                                    len(coordinates), coordinate_list,
-                                    len(speeds), speed_list,
-                                    len(specified) if specified is not None else 1, specified_list,
-                                    rows * cols,
-                                    len(forcing_vector))
+    for filename, template in files.items():
 
-    with open(header_filename, 'w') as f:
-        f.write(header_code)
+        code = template.format(**template_values)
 
-    pyx_code = pyx_template.format(header_filename=header_filename,
-                                   constants_len=len(constants),
-                                   mass_matrix_len=rows * cols,
-                                   forcing_vector_len=len(forcing_vector),
-                                   coordinates_len=len(coordinates),
-                                   speeds_len=len(speeds),
-                                   specified_len=len(specified) if specified is not None else 1)
-
-    with open(pyx_filename, 'w') as f:
-        f.write(pyx_code)
-
-    setup_code = setup_template.format(prefix=filename_prefix,
-                                       c_filename=c_filename,
-                                       pyx_filename=pyx_filename)
-
-    with open(setup_py_filename, 'w') as f:
-        f.write(setup_code)
+        with open(filename, 'w') as f:
+            f.write(code)
 
     os.system('python {} build_ext --inplace'.format(setup_py_filename))
 
@@ -352,11 +336,13 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
         # dynamically.
         # http://stackoverflow.com/questions/10307696/how-to-put-a-variable-into-python-docstring
 
+        segmented = [args['constants'], x[:args['num_coordinates']],
+                     x[args['num_coordinates']:]]
+        if specified is not None:
+            segmented.append(args['specified'])
+
         mass_matrix_values, forcing_vector_values = \
-            mass_forcing_func(args['constants'],
-                              x[:args['num_coordinates']],
-                              x[args['num_coordinates']:],
-                              args['specified'])
+            mass_forcing_func(*segmented)
 
         # TODO: figure out how to off load solve to the various generated
         # code, for example for Theano:
