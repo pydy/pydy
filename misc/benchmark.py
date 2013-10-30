@@ -88,16 +88,16 @@ def run_benchmark(max_num_links, num_time_steps=1000):
 
     ax[1].plot(link_numbers, code_generation_times)
     ax[1].set_title('Code Generation Time')
-    ax[1].legend(methods)
+    ax[1].legend(methods, loc=2)
 
     ax[2].plot(link_numbers, integration_times)
     ax[2].set_title('Integration Time')
-    ax[2].legend(methods)
+    ax[2].legend(methods, loc=2)
 
     for a in ax.flatten():
         a.set_ylabel('Time [s]')
 
-    ax[-1].set_xlabel('Number of links.')
+    ax[-1].set_xlabel('Number of links')
 
     plt.tight_layout()
 
