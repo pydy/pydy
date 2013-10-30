@@ -78,7 +78,7 @@ def run_benchmark(max_num_links, num_time_steps=1000):
     files = glob.glob('multibody_system*')
     for f in files:
         os.remove(f)
-    shutil.rmtree('bulid')
+    shutil.rmtree('build')
 
     # plot the results
     fig, ax = plt.subplots(3, 1, sharex=True)
