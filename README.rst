@@ -144,6 +144,7 @@ Integrate the equations of motion::
 
    x0 = np.array([0.1, -1.0])
    args = {'constants': array([1.0, 1.0, 0.2, 9.8]),
+           'specified': array([1.0]),
            'num_coordinates': 1}
    t = linspace(0.0, 10.0, 1000)
 
