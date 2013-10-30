@@ -5,11 +5,10 @@ import time
 import os
 import shutil
 import glob
-import argparse
 
 # external libraries
 from scipy.integrate import odeint
-from numpy import hstack, ones, pi, linspace, array, zeros, zeros_like
+from numpy import hstack, ones, pi, linspace, array, zeros
 import matplotlib.pyplot as plt
 from pydy_code_gen.code import numeric_right_hand_side
 from pydy_code_gen.tests.models import \
@@ -18,13 +17,14 @@ from pydy_code_gen.tests.models import \
 
 def run_benchmark(max_num_links, num_time_steps=1000):
     """Runs the n link pendulum derivation, code generation, and integration
-    for each n up to the max number provided."""
+    for each n up to the max number provided and generates a plot of the
+    results."""
 
     methods = ['lambdify', 'theano', 'cython']
 
     link_numbers = range(1, max_num_links + 1)
 
-    derivation_times = zeros_like(link_numbers)
+    derivation_times = zeros(len(link_numbers))
     integration_times = zeros((max_num_links, len(methods)))
     code_generation_times = zeros_like(integration_times)
 
