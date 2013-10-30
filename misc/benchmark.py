@@ -118,4 +118,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    run_benchmark(args.max_num_links, args.num_time_steps):
+    run_benchmark(args.max_num_links, args.num_time_steps)
