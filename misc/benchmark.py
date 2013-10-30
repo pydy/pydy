@@ -38,7 +38,7 @@ def run_benchmark(max_num_links, num_time_steps=1000):
         results = \
             generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=False)
         derivation_times[j] = time.time() - start
-        print('The derivation took {} seconds.\n'.format(derivation_times[j]))
+        print('The derivation took {:1.5f} seconds.\n'.format(derivation_times[j]))
 
         # Define the numerical values: parameters, time, and initial conditions
         arm_length = 1. / n
@@ -63,13 +63,13 @@ def run_benchmark(max_num_links, num_time_steps=1000):
             right_hand_side = numeric_right_hand_side(*results,
                                                       generator=method)
             code_generation_times[j, k] = time.time() - start
-            print('The code generation took {} seconds.'.format(
+            print('The code generation took {:1.5f} seconds.'.format(
                 code_generation_times[j, k]))
 
             start = time.time()
             odeint(right_hand_side, x0, t, args=(args,))
             integration_times[j, k] = time.time() - start
-            print('ODE integration took {} seconds.\n'.format(
+            print('ODE integration took {:1.5f} seconds.\n'.format(
                 integration_times[j, k]))
 
         del results, right_hand_side
