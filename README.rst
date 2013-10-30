@@ -24,8 +24,8 @@ has all the dependencies met. Here one option::
    $ cd pydy-code-gen
    $ python setup.py install
 
-Developement Environment
-========================
+Development Environment
+=======================
 
 Development Dependencies
 ------------------------
@@ -111,10 +111,8 @@ Derive the system::
 
    kinematic_equations = [speed - positiond]
 
-   total_force = mass * gravity - stiffness * position - damping * speed
-   if external_force is True:
-      total_force += force
-   forces = [(center, total_force * ceiling.x)]
+   force_magnitude = mass * gravity - stiffness * position - damping * speed + force
+   forces = [(center, force_magnitude * ceiling.x)]
 
    particles = [block]
 
