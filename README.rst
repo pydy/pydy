@@ -47,11 +47,11 @@ dependencies needed to build the packages::
    $ mkvirtualenv pydy-dev
    (pydy-dev)$ pip install numpy scipy cython nose
    (pydy-dev)$ pip install matplotlib # make sure to do this after numpy
-   (pydy-dev)$ git clone gittheano
+   (pydy-dev)$ git clone git@github.com:Theano/Theano.git
    (pydy-dev)$ cd theano
    (pydy-dev)$ python setup.py install
    (pydy-dev)$ cd ..
-   (pydy-dev)$ git clone sympy
+   (pydy-dev)$ git clone git@github.com:sympy/sympy.git
    (pydy-dev)$ cd sympy
    (pydy-dev)$ python setup.py install
    (pydy-dev)$ cd ..
@@ -63,7 +63,8 @@ Run the tests::
 
    (pydy-dev)$ nosetests
 
-Run the benchmark::
+Run the benchmark fro 1 to 5 links in the pendulum and integrating 1000 time
+steps::
 
    (pydy-dev)$ cd misc
    (pydy-dev)$ python benchmark.py 5 1000
@@ -75,17 +76,17 @@ Here is an example of a simple 1 degree of freedom system, the mass, spring,
 damper system::
 
 
-   / / / / / / / /
-   ----------------
-   |    |     |   | g
-   \   | |    |   V
+   / / / / / / / / /
+   -----------------
+     |    |     |   | g
+     \   | |    |   V
    k /   --- c  |
-   |    |     | x, v
-   --------    V
-   |  m   | -----
-   --------
-      | F
-      V
+     |    |     | x, v
+    --------    V
+    |  m   | -----
+    --------
+       | F
+       V
 
 Derive the system::
 
