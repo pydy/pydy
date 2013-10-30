@@ -13,7 +13,7 @@ setup(
     keywords="dynamics multibody simulation code generation",
     license='LICENSE.txt',
     packages=find_packages(),
-    install_requires=['sympy>=0.7.2', 'numpy', 'scipy']
+    install_requires=['sympy>=0.7.2', 'numpy', 'scipy'],
     extras_require={'doc': ['sphinx', 'numpydoc']},
     tests_require=['nose'],
     test_suite='nose.collector',
