@@ -226,7 +226,7 @@ setup(name="{prefix}",
 
     if specified is not None:
         specified_template = {
-            'specified_double': " " * 17 + "double specified[{specified_len}], // specified = [{specified_list}]".format(**template_values) + '\n',
+            'specified_double': " " * 18 + "double specified[{specified_len}], // specified = [{specified_list}]".format(**template_values) + '\n',
             'specified_assert': "\n    assert len(specified) == {specified_len}\n".format(**template_values),
             'def_specified_arg': ",\n                          np.ndarray[np.double_t, ndim=1, mode='c'] specified",
             'cdef_specified_arg': "\n" + ' ' * 22 + "double* specified,",
@@ -362,6 +362,7 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
                                           coordinates, speeds,
                                           specified=specified,
                                           time_variable='t')
+
         cython_module = importlib.import_module(filename_prefix)
         mass_forcing_func = cython_module.mass_forcing_matrices
 
