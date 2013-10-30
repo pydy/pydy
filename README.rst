@@ -9,10 +9,10 @@ different backends: SymPy's lambdify, Theano, and Cython.
 Dependencies
 ============
 
-NumPy: 1.7.1
-Cython: 0.19.2
-SymPy: master
-Theano: master
+- NumPy: 1.7.1
+- Cython: 0.19.2
+- SymPy: master
+- Theano: master
 
 Installation
 ============
@@ -30,13 +30,13 @@ Developement Environment
 Development Dependencies
 ------------------------
 
-NumPy: 1.7.1
-SciPy: 0.13.0
-Cython: 0.19.2
-nose: 1.3.0
-matplotlib: 1.3.1
-SymPy: master (>0.7.3)
-Theano: master (>0.6.0rc3)
+- NumPy: 1.7.1
+- SciPy: 0.13.0
+- Cython: 0.19.2
+- nose: 1.3.0
+- matplotlib: 1.3.1
+- SymPy: master (>0.7.3)
+- Theano: master (>0.6.0rc3)
 
 Installation
 ------------
@@ -87,7 +87,7 @@ damper system::
       | F
       V
 
-Now dervive the system::
+Derive the system::
 
    from sympy import symbols
    import sympy.physics.mechanics as me
@@ -121,7 +121,7 @@ Now dervive the system::
                         kd_eqs=kinematic_equations)
    kane.kanes_equations(forces, particles)
 
-Now store the expressions and symbols in sequences for the code generation::
+Store the expressions and symbols in sequences for the code generation::
 
    mass_matrix = kane.mass_matrix_full
    forcing_vector = kane.forcing_full
@@ -131,14 +131,14 @@ Now store the expressions and symbols in sequences for the code generation::
    specified = (force,)
 
 Now generate the function needed for numerical evaluation of the ODEs. The
-generator can use various backends: 'lambdify', 'theano', or 'cython'::
+generator can use various back ends: ``lambdify``, ``theano``, or ``cython``::
 
    from pydy_code_gen.code import numeric_right_hand_side
 
    right_hand_side = numeric_right_hand_side(mass_matrix, forcing_vector,
        constants, coordinates, speeds, specified, generator='cython')
 
-Now integrate the equations of motion::
+Integrate the equations of motion::
 
    from numpy import array, linspace
    from scipy.integrate import odeint
