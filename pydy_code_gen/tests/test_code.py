@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
 # standard libary
+import os
+import shutil
+import glob
 
 # external libraries
 import numpy as np
 from numpy import testing
 
 # local libraries
-from pydy_code_gen.code import numeric_right_hand_side,
+from pydy_code_gen.code import numeric_right_hand_side
 from models import generate_mass_spring_damper_equations_of_motion
 
 
@@ -53,3 +56,9 @@ def test_numeric_right_hand_side():
         dx = rhs(states, 0.0, args)
 
         testing.assert_allclose(dx, expected_dx)
+
+    # clean up the cython crud
+    files = glob.glob('multibody_system*')
+    for f in files:
+        os.remove(f)
+    shutil.rmtree('build')
