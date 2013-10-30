@@ -26,6 +26,30 @@ def generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
                                       forcing_vector, constants,
                                       coordinates, speeds, specified=None,
                                       time_variable='t'):
+    """Generates a Cython shared object module with a function that
+    evaluates the mass_matrix and the forcing vector.
+
+    Parameters
+    ==========
+    filename_prefix : string
+        The desired name of the created module.
+    mass_matrix : sympy.matrices.dense.MutableDenseMatrix, shape(n,n)
+        The symbolic mass matrix of the system.
+    forcing_vector : sympy.matrices.dense.MutableDenseMatrix, shape(n,1)
+        The symbolic forcing vector of the system.
+    constants : list of sympy.core.symbol.Symbol
+        The constants in the equations of motion.
+    coordinates : list of sympy.core.function.Function
+        The generalized coordinates of the system.
+    speeds : list of sympy.core.function.Function
+        The generalized speeds of the system.
+    specified : list of sympy.core.function.Function, optional, default=None
+        The specifed quantities of the system.
+    time_variable : str, option, default='t'
+        If you use a varialbe name for time other than the default in
+        sympy.physics.mechanics, you will need to specifiy that here.
+
+    """
 
     # TODO : Maybe, allow expressions to be passed in for the specified
     # quantities for computation inside the c file. Would need the value of
