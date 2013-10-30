@@ -345,6 +345,9 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
         # TODO : This is a hack to allow you to regenerate cython modules
         # without closing the Python session. It may be best to also force
         # the user to provide a module name when generating the Cython code.
+        # Check out the Cython inline code to figure out how to do this
+        # better:
+        # https://github.com/cython/cython/blob/master/Cython/Build/Inline.py
         exists = True
         while exists:
             try:
