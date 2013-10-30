@@ -8,7 +8,7 @@ import glob
 
 # external libraries
 from scipy.integrate import odeint
-from numpy import hstack, ones, pi, linspace, array, zeros
+from numpy import hstack, ones, pi, linspace, array, zeros, zeros_like
 import matplotlib.pyplot as plt
 from pydy_code_gen.code import numeric_right_hand_side
 from pydy_code_gen.tests.models import \
