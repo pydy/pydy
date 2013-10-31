@@ -17,8 +17,8 @@ Dependencies
 Installation
 ============
 
-For now download the source and install manually. Make sure your environment
-has all the dependencies met. Here one option::
+For now, download the source and install manually. Make sure your environment
+has all the dependencies met. Here is one option::
 
    $ git clone git@github.com:PythonDynamics/pydy-code-gen.git
    $ cd pydy-code-gen
@@ -48,7 +48,7 @@ dependencies needed to build the packages::
    (pydy-dev)$ pip install numpy scipy cython nose
    (pydy-dev)$ pip install matplotlib # make sure to do this after numpy
    (pydy-dev)$ git clone git@github.com:Theano/Theano.git
-   (pydy-dev)$ cd theano
+   (pydy-dev)$ cd Theano
    (pydy-dev)$ python setup.py install
    (pydy-dev)$ cd ..
    (pydy-dev)$ git clone git@github.com:sympy/sympy.git
@@ -63,17 +63,16 @@ Run the tests::
 
    (pydy-dev)$ nosetests
 
-Run the benchmark fro 1 to 5 links in the pendulum and integrating 1000 time
-steps::
+Run the benchmark to test the n-link pendulum problem.::
 
    (pydy-dev)$ cd misc
-   (pydy-dev)$ python benchmark.py 5 1000
+   (pydy-dev)$ python benchmark.py <max # of links> <# of time steps>
 
-Use
-===
+Usage
+=====
 
-Here is an example of a simple 1 degree of freedom system, the mass, spring,
-damper system::
+This is an example of a simple 1 degree of freedom system: a mass, spring,
+damper system under the influence of gravity and a force::
 
 
    / / / / / / / / /
@@ -142,7 +141,7 @@ Integrate the equations of motion::
    from numpy import array, linspace
    from scipy.integrate import odeint
 
-   x0 = np.array([0.1, -1.0])
+   x0 = array([0.1, -1.0])
    args = {'constants': array([1.0, 1.0, 0.2, 9.8]),
            'specified': array([1.0]),
            'num_coordinates': 1}
@@ -155,5 +154,5 @@ Plot the results::
    import matplotlib.pyplot as plt
 
    plt.plot(t, y)
-   plt.legend((str(x), str(v))
+   plt.legend((str(position), str(speed)))
    plt.show()
