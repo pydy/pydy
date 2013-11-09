@@ -1,17 +1,21 @@
 #!/usr/bin/env python
 
 # standard library
-import re
 import subprocess
 import importlib
-import string
 import random
 
 # external libraries
 import numpy as np
 from sympy import lambdify, numbered_symbols, cse
-from sympy.printing import ccode
+from sympy.printing.ccode import CCodePrinter
 from sympy.printing.theanocode import theano_function
+
+# Python 2 vs 3 importing
+try:
+    from string import letters as all_letters
+except ImportError:
+    from string import ascii_letters as all_letters
 
 # debugging
 try:
@@ -174,33 +178,33 @@ setup(name="{prefix}",
         for i, var in enumerate(variables):
             array_index_map[str(var)] = r'{}[{}]'.format(array_name, i)
 
-    def replace_with_array_index(string, replacement_map):
-        unescaped_patterns = sorted(replacement_map.keys(), key=len,
-                                    reverse=True)
-        # escape parentheses of variable names that are functions, i.e. have (t) in them
-        escaped_patterns = [re.escape(k) for k in unescaped_patterns]
-        pattern = re.compile('|'.join(escaped_patterns))
-
-        def replacement(match):
-            return replacement_map[match.group()]
-
-        return pattern.sub(replacement, string)
+    class pydy_ccode(CCodePrinter):
+        def _print_Function(self, e):
+            if str(e) in array_index_map.keys():
+                return array_index_map[str(e)]
+            else:
+                return super()._print_Function(e)
+        def _print_Symbol(self, e):
+            if str(e) in array_index_map.keys():
+                return array_index_map[str(e)]
+            else:
+                return super()._print_Symbol(e)
 
     sub_expression_code_strings = []
     for var, exp in sub_expressions:
-        code_str = replace_with_array_index(ccode(exp), array_index_map)
+        code_str = pydy_ccode().doprint(exp)
         sub_expression_code_strings.append('double {} = {};'.format(str(var), code_str))
     sub_expression_code_block = '\n    '.join(sub_expression_code_strings)
 
     mass_matrix_code_strings = []
     for i, exp in enumerate(expressions[:rows * cols]):
-        code_str = replace_with_array_index(ccode(exp), array_index_map)
+        code_str = pydy_ccode().doprint(exp)
         mass_matrix_code_strings.append('{} = {};'.format('mass_matrix[{}]'.format(i), code_str))
     mass_matrix_code_block = '\n    '.join(mass_matrix_code_strings)
 
     forcing_vector_code_strings = []
     for i, exp in enumerate(expressions[rows * cols:]):
-        code_str = replace_with_array_index(ccode(exp), array_index_map)
+        code_str = pydy_ccode().doprint(exp)
         forcing_vector_code_strings.append('{} = {};'.format('forcing_vector[{}]'.format(i), code_str))
     forcing_vector_code_block = '\n    '.join(forcing_vector_code_strings)
 
@@ -355,7 +359,7 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
             except IOError:
                 exists = False
             else:
-                filename_prefix += '_' + random.choice(string.letters)
+                filename_prefix += '_' + random.choice(all_letters)
 
         generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
                                           forcing_vector, constants,
