@@ -65,8 +65,7 @@ Run the tests::
 
 Run the benchmark to test the n-link pendulum problem.::
 
-   (pydy-dev)$ cd misc
-   (pydy-dev)$ python benchmark.py <max # of links> <# of time steps>
+   (pydy-dev)$ python bin/benchmark.py <max # of links> <# of time steps>
 
 Usage
 =====
