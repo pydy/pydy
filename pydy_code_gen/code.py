@@ -11,6 +11,9 @@ from sympy import lambdify, numbered_symbols, cse
 from sympy.printing.ccode import CCodePrinter
 from sympy.printing.theanocode import theano_function
 
+# internal libraries
+from templates import c_template, h_template, pyx_template, setup_template
+
 # Python 2 vs 3 importing
 try:
     from string import letters as all_letters
@@ -64,97 +67,19 @@ def generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
     pyx_filename = filename_prefix + '.pyx'
     setup_py_filename = filename_prefix + '_setup.py'
 
-    c_template = \
-"""\
-#include <math.h>
-#include "{header_filename}"
-
-void mass_forcing(double constants[{constants_len}], // constants = [{constants_list}]
-                  double coordinates[{coordinates_len}], // coordinates = [{coordinates_list}]
-                  double speeds[{speeds_len}], // speeds = [{speeds_list}]
-{specified_double}                  double mass_matrix[{mass_matrix_len}], // computed
-                  double forcing_vector[{forcing_vector_len}]) // computed
-{{
-    // common subexpressions
-    {sub_expression_block}
-
-    // mass matrix
-    {mass_matrix_block}
-
-    // forcing vector
-    {forcing_vector_block}
-}}"""
-
-    h_template = \
-"""\
-void mass_forcing(double constants[{constants_len}], // constants = [{constants_list}]
-                  double coordinates[{coordinates_len}], // coordinates = [{coordinates_list}]
-                  double speeds[{speeds_len}], // speeds = [{speeds_list}]
-{specified_double}                  double mass_matrix[{mass_matrix_len}], // computed
-                  double forcing_vector[{forcing_vector_len}]); // computed"""
-
-    pyx_template = \
-"""\
-import numpy as np
-cimport numpy as np
-
-cdef extern from "{header_filename}":
-    void mass_forcing(double* constants,
-                      double* coordinates,
-                      double* speeds,{cdef_specified_arg}
-                      double* mass_matrix,
-                      double* forcing_vector)
-
-
-def mass_forcing_matrices(np.ndarray[np.double_t, ndim=1, mode='c'] constants,
-                          np.ndarray[np.double_t, ndim=1, mode='c'] coordinates,
-                          np.ndarray[np.double_t, ndim=1, mode='c'] speeds{def_specified_arg}):
-
-    assert len(constants) == {constants_len}
-    assert len(coordinates) == {coordinates_len}
-    assert len(speeds) == {speeds_len}{specified_assert}
-
-    cdef np.ndarray[np.double_t, ndim=1, mode='c'] mass_matrix = np.zeros({mass_matrix_len})
-    cdef np.ndarray[np.double_t, ndim=1, mode='c'] forcing_vector = np.zeros({forcing_vector_len})
-
-    mass_forcing(<double*> constants.data,
-                 <double*> coordinates.data,
-                 <double*> speeds.data,{call_specified_arg}
-                 <double*> mass_matrix.data,
-                 <double*> forcing_vector.data)
-
-    return mass_matrix.reshape({forcing_vector_len}, {forcing_vector_len}), forcing_vector.reshape({forcing_vector_len}, 1)
-"""
-    # TODO : Add a doc string to the cython function
-
-    setup_template = \
-"""\
-import numpy
-from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
-
-ext_module = Extension(name="{prefix}",
-                       sources=["{pyx_filename}",
-                                "{c_filename}"],
-                       include_dirs=[numpy.get_include()])
-
-setup(name="{prefix}",
-      cmdclass = {{'build_ext': build_ext}},
-      ext_modules = [ext_module])
-"""
-
     # Comma separated lists of the input variables to the arrays, so that
     # you know which order you should supply them. These are used in the
     # comments in the C and header file.
-    # TODO: Add this to the doc string of the imported cythonized function.
+    # TODO: Add these to the doc string of the imported cythonized function.
     constant_list = ', '.join([str(c) for c in constants])
     coordinate_list = ', '.join([str(c).split('(')[0] for c in coordinates])
     speed_list = ', '.join([str(s).split('(')[0] for s in speeds])
     if specified is not None:
         specified_list = ', '.join([str(e).split('(')[0] for e in specified])
     else:
-        specified_list = ['None Supplied'] # This will cause some issues if the person has variable named the same.
+        # This will cause some issues if the person has variable named the
+        # same.
+        specified_list = ['None Supplied']
 
     rows, cols = mass_matrix.shape
     mass_matrix_list = mass_matrix.reshape(rows * cols, 1).tolist()
@@ -178,33 +103,35 @@ setup(name="{prefix}",
         for i, var in enumerate(variables):
             array_index_map[str(var)] = r'{}[{}]'.format(array_name, i)
 
-    class pydy_ccode(CCodePrinter):
+    class PyDyCCodePrinter(CCodePrinter):
+
         def _print_Function(self, e):
             if str(e) in array_index_map.keys():
                 return array_index_map[str(e)]
             else:
-                return super()._print_Function(e)
+                return super(PyDyCCodePrinter, self)._print_Function(e)
+
         def _print_Symbol(self, e):
             if str(e) in array_index_map.keys():
                 return array_index_map[str(e)]
             else:
-                return super()._print_Symbol(e)
+                return super(PyDyCCodePrinter, self)._print_Symbol(e)
 
     sub_expression_code_strings = []
     for var, exp in sub_expressions:
-        code_str = pydy_ccode().doprint(exp)
+        code_str = PyDyCCodePrinter().doprint(exp)
         sub_expression_code_strings.append('double {} = {};'.format(str(var), code_str))
     sub_expression_code_block = '\n    '.join(sub_expression_code_strings)
 
     mass_matrix_code_strings = []
     for i, exp in enumerate(expressions[:rows * cols]):
-        code_str = pydy_ccode().doprint(exp)
+        code_str = PyDyCCodePrinter().doprint(exp)
         mass_matrix_code_strings.append('{} = {};'.format('mass_matrix[{}]'.format(i), code_str))
     mass_matrix_code_block = '\n    '.join(mass_matrix_code_strings)
 
     forcing_vector_code_strings = []
     for i, exp in enumerate(expressions[rows * cols:]):
-        code_str = pydy_ccode().doprint(exp)
+        code_str = PyDyCCodePrinter().doprint(exp)
         forcing_vector_code_strings.append('{} = {};'.format('forcing_vector[{}]'.format(i), code_str))
     forcing_vector_code_block = '\n    '.join(forcing_vector_code_strings)
 
