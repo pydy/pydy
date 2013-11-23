@@ -10,7 +10,7 @@ before_install:
   - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy python-nose cython
   - sudo apt-get install -y -qq python3-numpy python3-scipy python3-nose
   # Remove the Travis preinstalled NumPy
-  - pip -y uninstall numpy
+  - pip uninstall -y numpy
   # The Theano code generator requires the development version of Theano and
   # SymPy (for now).
   - pip install --no-deps git+git://github.com/Theano/Theano.git
