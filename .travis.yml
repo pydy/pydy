@@ -7,6 +7,9 @@ before_install:
   # On Ubuntu 12.04 numpy is at 1.6.1, SciPy is at 0.9.0 and Cython is at
   # 0.15.1.
   - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy cython python-coverage
+  # Remove the version of NumPy pre-installed into the Travis virtualenv so
+  # that we test with the system installed version.
+  - pip uninstall -y numpy
   # The Theano code generator requires the development version of Theano and
   # SymPy (for now).
   - pip install --no-deps git+git://github.com/Theano/Theano.git
