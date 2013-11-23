@@ -9,10 +9,10 @@ virtualenv:
 before_install:
   # On Ubuntu 12.04 numpy is at 1.6.1 and SciPy is at 0.9.0.
   - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy python-nose python-coverage
-  # The Theano code generator requires the development version of Theano (for
-  # now)
+  # The Theano code generator requires the development version of Theano and
+  # SymPy (for now).
   - pip install --no-deps git+git://github.com/Theano/Theano.git
-  - pip install sympy
+  - pip install git+git://github.com/sympy/sympy.git
   - pip freeze
 install:
   - python setup.py install
