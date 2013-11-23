@@ -7,8 +7,8 @@ virtualenv:
 before_install:
   # On Ubuntu 12.04 numpy is at 1.6.1, SciPy is at 0.9.0 and Cython is at
   # 0.15.1.
-  - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy python-nose cython
-  - sudo apt-get install -y -qq python3-numpy python3-scipy python3-nose
+  - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy cython
+  - sudo apt-get install -y -qq python3-numpy python3-scipy
   # Remove the Travis preinstalled NumPy
   - pip uninstall -y numpy
   # The Theano code generator requires the development version of Theano and
@@ -18,6 +18,8 @@ before_install:
   # Install coverage and cython with pip because there is no Python 3 version
   # in the precise repos.
   - pip install coverage cython==0.15.1
+  # Had trouble with nose installed from apt, so installing with pip.
+  - pip install nose
   - pip freeze
 install:
   - python setup.py install
