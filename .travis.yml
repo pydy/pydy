@@ -8,16 +8,16 @@ before_install:
   # On Ubuntu 12.04 numpy is at 1.6.1, SciPy is at 0.9.0 and Cython is at
   # 0.15.1.
   - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy python-nose cython
-  - sudo apt-get install -y -qq python3-numpy python3-scipy python3-nose cython3
+  - sudo apt-get install -y -qq python3-numpy python3-scipy python3-nose
   # Remove the Travis preinstalled NumPy
   - pip -y uninstall numpy
   # The Theano code generator requires the development version of Theano and
   # SymPy (for now).
   - pip install --no-deps git+git://github.com/Theano/Theano.git
   - pip install git+git://github.com/sympy/sympy.git
-  # Install coverage with pip because there is no Python 3 version in the
-  # precise repos.
-  - pip install coverage
+  # Install coverage and cython with pip because there is no Python 3 version
+  # in the precise repos.
+  - pip install coverage cython==0.15.1
   - pip freeze
 install:
   - python setup.py install
