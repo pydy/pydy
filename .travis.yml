@@ -9,8 +9,6 @@ before_install:
   # 0.15.1.
   - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy cython
   - sudo apt-get install -y -qq python3-numpy python3-scipy
-  # Remove the Travis preinstalled NumPy
-  - pip uninstall -y numpy
   # The Theano code generator requires the development version of Theano and
   # SymPy (for now).
   - pip install --no-deps git+git://github.com/Theano/Theano.git
@@ -18,8 +16,6 @@ before_install:
   # Install coverage and cython with pip because there is no Python 3 version
   # in the precise repos.
   - pip install coverage cython==0.15.1
-  # Had trouble with nose installed from apt, so installing with pip.
-  - pip install nose
   - pip freeze
 install:
   - python setup.py install
