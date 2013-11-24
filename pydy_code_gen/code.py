@@ -30,10 +30,11 @@ else:
 
 
 def pydy_c_printer(constants, coordinates, speeds, specified=None):
-    """Returns a subclass of sympy.printing.CCodPrinter to print appropriate
-    C array index calls for all of the symbols in the equations of motion.
+    """Returns a subclass of sympy.printing.CCodePrinter to print
+    appropriate C array index calls for all of the symbols in the equations
+    of motion.
 
-    For example:
+    For example, the following symbols could generate these strings:
 
     q(t) -> coordinates[1]
     m -> constants[2]
@@ -326,7 +327,7 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
         mass_forcing_func = cython_module.mass_forcing_matrices
 
     else:
-        # TODO : add numba, fortan, parakeet, sympy.autowrap (needs matrix
+        # TODO : add numba, fortran, parakeet, sympy.autowrap (needs matrix
         # support)
         raise NotImplementedError('The {} code generation is not implemented'.format(generator))
 
