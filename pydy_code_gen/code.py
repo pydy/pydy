@@ -29,15 +29,70 @@ else:
     set_trace = Tracer()
 
 
+def pydy_c_printer(constants, coordinates, speeds, specified=None):
+    """Returns a subclass of sympy.printing.CCodPrinter to print appropriate
+    C array index calls for all of the symbols in the equations of motion.
+
+    For example:
+
+    q(t) -> coordinates[1]
+    m -> constants[2]
+    F(t) -> specified[3]
+
+    Parameters
+    ----------
+    constants : list of sympy.core.symbol.Symbol
+        The constants in the equations of motion.
+    coordinates : list of sympy.core.function.Function
+        The generalized coordinates of the system.
+    speeds : list of sympy.core.function.Function
+        The generalized speeds of the system.
+    specified : list of sympy.core.function.Function, optional, default=None
+        The specifed quantities of the system.
+
+    Returns
+    -------
+    PyDyCCodePrinter : class
+        The modifed CCodePrinter class.
+
+    """
+
+    array_name_map = {'constants': constants,
+                      'coordinates': coordinates,
+                      'speeds': speeds}
+    if specified is not None:
+        array_name_map['specified'] = specified
+
+    array_index_map = {}
+    for array_name, variables in array_name_map.items():
+        for i, var in enumerate(variables):
+            array_index_map[var] = r'{}[{}]'.format(array_name, i)
+
+    class PyDyCCodePrinter(CCodePrinter):
+
+        def _print_Function(self, e):
+            if e in array_index_map.keys():
+                return array_index_map[e]
+            else:
+                return super(PyDyCCodePrinter, self)._print_Function(e)
+
+        def _print_Symbol(self, e):
+            if e in array_index_map.keys():
+                return array_index_map[e]
+            else:
+                return super(PyDyCCodePrinter, self)._print_Symbol(e)
+
+    return PyDyCCodePrinter
+
+
 def generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
                                       forcing_vector, constants,
-                                      coordinates, speeds, specified=None,
-                                      time_variable='t'):
+                                      coordinates, speeds, specified=None):
     """Generates a Cython shared object module with a function that
     evaluates the mass_matrix and the forcing vector.
 
     Parameters
-    ==========
+    ----------
     filename_prefix : string
         The desired name of the created module.
     mass_matrix : sympy.matrices.dense.MutableDenseMatrix, shape(n,n)
@@ -52,9 +107,6 @@ def generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
         The generalized speeds of the system.
     specified : list of sympy.core.function.Function, optional, default=None
         The specifed quantities of the system.
-    time_variable : str, option, default='t'
-        If you use a varialbe name for time other than the default in
-        sympy.physics.mechanics, you will need to specifiy that here.
 
     """
 
@@ -71,69 +123,48 @@ def generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
     # you know which order you should supply them. These are used in the
     # comments in the C and header file.
     # TODO: Add these to the doc string of the imported cythonized function.
-    constant_list = ', '.join([str(c) for c in constants])
-    coordinate_list = ', '.join([str(c).split('(')[0] for c in coordinates])
-    speed_list = ', '.join([str(s).split('(')[0] for s in speeds])
-    if specified is not None:
-        specified_list = ', '.join([str(e).split('(')[0] for e in specified])
-    else:
-        # This will cause some issues if the person has variable named the
-        # same.
-        specified_list = ['None Supplied']
+    comma_lists = {}
+    for list_name, sym_list in zip(['constants', 'coordinates', 'speeds',
+                                    'specified'],
+                                   [constants, coordinates, speeds,
+                                    specified]):
+        if sym_list is not None:
+            comma_lists[list_name] = ', '.join([str(s).split('(')[0] for s
+                                                in sym_list])
+        else:
+            comma_lists[list_name] = ['None Supplied']
 
     rows, cols = mass_matrix.shape
     mass_matrix_list = mass_matrix.reshape(rows * cols, 1).tolist()
     forcing_vector_list = forcing_vector.tolist()
 
-    # TODO: make this optional
+    # TODO: make common sub expressions optional
     sub_expressions, expressions = cse([entry[0] for entry in
                                         mass_matrix_list +
                                         forcing_vector_list],
                                        numbered_symbols('z_'))
 
-    # make a dictionary that maps each symbol to the appropriate array index
-    array_name_map = {'constants': constants,
-                      'coordinates': coordinates,
-                      'speeds': speeds}
-    if specified is not None:
-        array_name_map['specified'] = specified
+    expressions = {'common_sub': sub_expressions,
+                   'mass_matrix': expressions[:rows * cols],
+                   'forcing_vector': expressions[rows * cols:]}
 
-    array_index_map = {}
-    for array_name, variables in array_name_map.items():
-        for i, var in enumerate(variables):
-            array_index_map[str(var)] = r'{}[{}]'.format(array_name, i)
+    PyDyCCodePrinter = pydy_c_printer(constants, coordinates, speeds,
+                                      specified)
 
-    class PyDyCCodePrinter(CCodePrinter):
-
-        def _print_Function(self, e):
-            if str(e) in array_index_map.keys():
-                return array_index_map[str(e)]
+    code_blocks = {}
+    for exp_type, expression_list in expressions.items():
+        c_lines = []
+        for i, exp in enumerate(expression_list):
+            if exp_type == 'common_sub':
+                code_str = PyDyCCodePrinter().doprint(exp[1])
+                c_lines.append('double {} = {};'.format(str(exp[0]),
+                                                        code_str))
             else:
-                return super(PyDyCCodePrinter, self)._print_Function(e)
-
-        def _print_Symbol(self, e):
-            if str(e) in array_index_map.keys():
-                return array_index_map[str(e)]
-            else:
-                return super(PyDyCCodePrinter, self)._print_Symbol(e)
-
-    sub_expression_code_strings = []
-    for var, exp in sub_expressions:
-        code_str = PyDyCCodePrinter().doprint(exp)
-        sub_expression_code_strings.append('double {} = {};'.format(str(var), code_str))
-    sub_expression_code_block = '\n    '.join(sub_expression_code_strings)
-
-    mass_matrix_code_strings = []
-    for i, exp in enumerate(expressions[:rows * cols]):
-        code_str = PyDyCCodePrinter().doprint(exp)
-        mass_matrix_code_strings.append('{} = {};'.format('mass_matrix[{}]'.format(i), code_str))
-    mass_matrix_code_block = '\n    '.join(mass_matrix_code_strings)
-
-    forcing_vector_code_strings = []
-    for i, exp in enumerate(expressions[rows * cols:]):
-        code_str = PyDyCCodePrinter().doprint(exp)
-        forcing_vector_code_strings.append('{} = {};'.format('forcing_vector[{}]'.format(i), code_str))
-    forcing_vector_code_block = '\n    '.join(forcing_vector_code_strings)
+                code_str = PyDyCCodePrinter().doprint(exp)
+                c_lines.append('{} = {};'.format('{}[{}]'.format(exp_type,
+                                                                 i),
+                                                 code_str))
+        code_blocks[exp_type] = '\n    '.join(c_lines)
 
     template_values = {
         'header_filename': header_filename,
@@ -143,13 +174,13 @@ def generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
         'coordinates_len': len(coordinates),
         'speeds_len': len(speeds),
         'specified_len': len(specified) if specified is not None else 0,
-        'constants_list': constant_list,
-        'coordinates_list': coordinate_list,
-        'speeds_list': speed_list,
-        'specified_list': specified_list,
-        'sub_expression_block': sub_expression_code_block,
-        'mass_matrix_block': mass_matrix_code_block,
-        'forcing_vector_block': forcing_vector_code_block,
+        'constants_list': comma_lists['constants'],
+        'coordinates_list': comma_lists['coordinates'],
+        'speeds_list': comma_lists['speeds'],
+        'specified_list': comma_lists['specified'],
+        'sub_expression_block': code_blocks['common_sub'],
+        'mass_matrix_block': code_blocks['mass_matrix'],
+        'forcing_vector_block': code_blocks['forcing_vector'],
         'prefix': filename_prefix,
         'c_filename': c_filename,
         'pyx_filename': pyx_filename,
@@ -180,9 +211,7 @@ def generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
              setup_py_filename: setup_template}
 
     for filename, template in files.items():
-
         code = template.format(**template_values)
-
         with open(filename, 'w') as f:
             f.write(code)
 
@@ -291,8 +320,7 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
         generate_mass_forcing_cython_code(filename_prefix, mass_matrix,
                                           forcing_vector, constants,
                                           coordinates, speeds,
-                                          specified=specified,
-                                          time_variable='t')
+                                          specified=specified)
 
         cython_module = importlib.import_module(filename_prefix)
         mass_forcing_func = cython_module.mass_forcing_matrices
