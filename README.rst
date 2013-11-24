@@ -4,15 +4,22 @@ PyDy Code Generation
 This distribution provides some code generation facilities for PyDy. For now,
 it generates functions that can evaluate the right hand side of the ordinary
 differential equations generated with sympy.physics.mechanics with three
-different backends: SymPy's lambdify, Theano, and Cython.
+different backends: SymPy's lambdify_, Theano_, and Cython_.
+
+.. _lambdify: http://docs.sympy.org/latest/modules/utilities/lambdify.html#sympy.utilities.lambdify.lambdify
+.. _Theano: http://deeplearning.net/software/theano/
+.. _Cython: http://cython.org/
 
 Dependencies
 ============
 
-- NumPy: 1.7.1
-- Cython: 0.19.2
-- SymPy: master
-- Theano: master
+- Python: 2.7
+- setuptools
+- NumPy: >=1.6.1
+- SymPy: HEAD of master (>0.7.3)
+- SciPy: >=0.9
+- Cython: >=0.15.1
+- Theano: HEAD of master (>0.6.0rc3)
 
 Installation
 ============
@@ -23,49 +30,6 @@ has all the dependencies met. Here is one option::
    $ git clone git@github.com:PythonDynamics/pydy-code-gen.git
    $ cd pydy-code-gen
    $ python setup.py install
-
-Development Environment
-=======================
-
-Development Dependencies
-------------------------
-
-- NumPy: 1.7.1
-- SciPy: 0.13.0
-- Cython: 0.19.2
-- nose: 1.3.0
-- matplotlib: 1.3.1
-- SymPy: master (>0.7.3)
-- Theano: master (>0.6.0rc3)
-
-Installation
-------------
-
-The following installation assumes you have virtualenv wrapper and all the
-dependencies needed to build the packages::
-
-   $ mkvirtualenv pydy-dev
-   (pydy-dev)$ pip install numpy scipy cython nose
-   (pydy-dev)$ pip install matplotlib # make sure to do this after numpy
-   (pydy-dev)$ git clone git@github.com:Theano/Theano.git
-   (pydy-dev)$ cd Theano
-   (pydy-dev)$ python setup.py install
-   (pydy-dev)$ cd ..
-   (pydy-dev)$ git clone git@github.com:sympy/sympy.git
-   (pydy-dev)$ cd sympy
-   (pydy-dev)$ python setup.py install
-   (pydy-dev)$ cd ..
-   (pydy-dev)$ git clone git@github.com:PythonDynamics/pydy-code-gen.git
-   (pydy-dev)$ cd pydy-code-gen
-   (pydy-dev)$ python setup.py install
-
-Run the tests::
-
-   (pydy-dev)$ nosetests
-
-Run the benchmark to test the n-link pendulum problem.::
-
-   (pydy-dev)$ python bin/benchmark.py <max # of links> <# of time steps>
 
 Usage
 =====
@@ -155,3 +119,37 @@ Plot the results::
    plt.plot(t, y)
    plt.legend((str(position), str(speed)))
    plt.show()
+
+Development Environment
+=======================
+
+Additional Development Dependencies
+-----------------------------------
+
+- pip
+- nose: 1.3.0
+- matplotlib: >0.99 (only for benchmark script)
+
+Installation
+------------
+
+The following installation assumes you have virtualenv wrapper and all the
+dependencies needed to build the packages::
+
+   $ mkvirtualenv pydy-dev
+   (pydy-dev)$ pip install numpy scipy cython nose
+   (pydy-dev)$ pip install matplotlib # make sure to do this after numpy
+   (pydy-dev)$ pip install git+git://github.com/Theano/Theano.git
+   (pydy-dev)$ pip install git+git://github.com/sympy/sympy.git
+   (pydy-dev)$ git clone git@github.com:PythonDynamics/pydy-code-gen.git
+   (pydy-dev)$ cd pydy-code-gen
+   (pydy-dev)$ python setup.py develop
+
+Run the tests::
+
+   (pydy-dev)$ nosetests
+
+Run the benchmark to test the n-link pendulum problem.::
+
+   (pydy-dev)$ python bin/benchmark.py <max # of links> <# of time steps>
+
