@@ -30,7 +30,7 @@ else:
 
 
 def pydy_c_printer(constants, coordinates, speeds, specified=None):
-    """Returns a subclass of sympy.printing.CCodPrinter to print appropriate
+    """Returns a subclass of sympy.printing.CCodePrinter to print appropriate
     C array index calls for all of the symbols in the equations of motion.
 
     For example:
