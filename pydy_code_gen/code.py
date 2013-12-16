@@ -257,10 +257,9 @@ class CythonGenerator(object):
         # use.
 
         # This prevents output to stdout and waits till it is done.
-        p = subprocess.Popen(['python', self.setup_py_filename, 'build_ext',
+        p = subprocess.call(['python', self.setup_py_filename, 'build_ext',
                               '--inplace'], stderr=subprocess.STDOUT,
                              stdout=subprocess.PIPE)
-        p.wait()
 
     def generate_extension(self):
         """Generates a Cython extensions module with the given file name
