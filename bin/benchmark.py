@@ -50,8 +50,7 @@ def run_benchmark(max_num_links, num_time_steps=1000):
         # odeint arguments
         x0 = hstack((0, pi / 2 * ones(len(results[3]) - 1), 1e-3 *
                     ones(len(results[4]))))
-        args = {'constants': array(parameter_vals),
-                'num_coordinates': n + 1}
+        args = {'constants': array(parameter_vals)}
         t = linspace(0, 10, num_time_steps)
 
         for k, method in enumerate(methods):

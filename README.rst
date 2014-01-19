@@ -16,10 +16,10 @@ Dependencies
 - Python: 2.7
 - setuptools
 - NumPy: >=1.6.1
-- SymPy: HEAD of master (>0.7.3)
+- SymPy: >=0.7.4
 - SciPy: >=0.9
 - Cython: >=0.15.1
-- Theano: HEAD of master (>0.6.0rc3)
+- Theano: >=0.6.0
 
 Installation
 ============
@@ -106,8 +106,7 @@ Integrate the equations of motion::
 
    x0 = array([0.1, -1.0])
    args = {'constants': array([1.0, 1.0, 0.2, 9.8]),
-           'specified': array([1.0]),
-           'num_coordinates': 1}
+           'specified': lambda x, t: np.sin(t)}
    t = linspace(0.0, 10.0, 1000)
 
    y = odeint(right_hand_side, x0, t, args=(args,))

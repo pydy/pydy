@@ -381,32 +381,45 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
 
         Parameters
         ----------
-        x : ndarray, shape(n,)
-            The current state vector.
+        x : ndarray, shape({num_states},)
+            The current state vector:
+                {state_list}
         t : float
             The current time.
         args : dictionary
-            constants : ndarray
-            specified : ndarray
-            num_coordinates : integer
+            constants : ndarray, shape({num_constants},)
+                {constant_list}
+            specified : ndarray, shape({num_specified},) or a function
+                If this is a function it must be of the form f(x, t), where
+                x is the current state vector and t is the current time and
+                it must return an ndarray of the correct shape.
+                {specified_list}
 
         Returns
         -------
-        dx : ndarray, shape(n,)
-            The derivative of the state.
+        dx : ndarray, shape({num_states},)
+            The derivative of the state vector.
 
         """
-        # TODO : Add more useful info to this doc string. Generate it
-        # dynamically.
-        # http://stackoverflow.com/questions/10307696/how-to-put-a-variable-into-python-docstring
 
-        # TODO : Allow arg['specified'] to be a function of the states and
-        # time, which gets evaluated at each time step.
+        segmented = [args['constants'],
+                     x[:len(coordinates)],
+                     x[len(coordinates):]]
 
-        segmented = [args['constants'], x[:args['num_coordinates']],
-                     x[args['num_coordinates']:]]
         if specified is not None:
-            segmented.append(args['specified'])
+            try:
+                sp_val = args['specified'](x, t)
+            except TypeError:  # not callable
+                # If not callable, then it should be a float or ndarray.
+                sp_val = args['specified']
+
+            # If the value is just a float, then convert to a 1D array.
+            try:
+                len(sp_val)
+            except TypeError:
+                sp_val = np.asarray([sp_val])
+
+            segmented.append(sp_val)
 
         mass_matrix_values, forcing_vector_values = \
             mass_forcing_func(*segmented)
@@ -419,5 +432,21 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
                                       forcing_vector_values)).T[0]
 
         return dx
+
+    template_values = {'num_states': len(coordinates + speeds),
+                       'state_list': ', '.join([str(s) for s in coordinates
+                                                + speeds]),
+                       'num_constants': len(constants),
+                       'constant_list': ', '.join([str(c) for c in constants]),
+                       'num_specified': '0',
+                       'specified_list': '',
+                       }
+
+    if specified is not None:
+        template_values['num_specified'] = len(specified)
+        template_values['specified_list'] = ', '.join([str(s) for s in
+                                                       specified])
+
+    right_hand_side.__doc__ = right_hand_side.__doc__.format(**template_values)
 
     return right_hand_side

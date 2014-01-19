@@ -19,8 +19,7 @@ def test_numeric_right_hand_side():
     m, k, c, g, F, x, v = np.random.random(7)
 
     args = {'constants': np.array([m, k, c, g]),
-            'specified': np.array([F]),
-            'num_coordinates': 1}
+            'specified': np.array([F])}
 
     states = np.array([x, v])
 
@@ -36,6 +35,21 @@ def test_numeric_right_hand_side():
                                       constants, coordinates, speeds,
                                       specified, generator=backend)
         dx = rhs(states, 0.0, args)
+
+        testing.assert_allclose(dx, expected_dx)
+
+    # Now try it with a function defining the specified quantities.
+    args['specified'] = lambda x, t: np.sin(t)
+
+    t = 14.345
+
+    expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x + np.sin(t))])
+
+    for backend in backends:
+        rhs = numeric_right_hand_side(mass_matrix, forcing_vector,
+                                      constants, coordinates, speeds,
+                                      specified, generator=backend)
+        dx = rhs(states, t, args)
 
         testing.assert_allclose(dx, expected_dx)
 
@@ -57,6 +71,8 @@ def test_numeric_right_hand_side():
 
         testing.assert_allclose(dx, expected_dx)
 
+    # TODO : This should be in a teardown function to ensure crud is never
+    # left on the system.
     # clean up the cython crud
     files = glob.glob('multibody_system*')
     for f in files:
