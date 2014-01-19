@@ -10,10 +10,8 @@ before_install:
   # Remove the version of NumPy pre-installed into the Travis virtualenv so
   # that we test with the system installed version.
   - pip uninstall -y numpy
-  # The Theano code generator requires the development version of Theano and
-  # SymPy (for now).
-  - pip install --no-deps git+git://github.com/Theano/Theano.git
-  - pip install git+git://github.com/sympy/sympy.git
+  - pip install --no-deps Theano==0.6.0
+  - pip install sympy==0.7.4.1
   - pip freeze
 install:
   - python setup.py install
