@@ -14,7 +14,7 @@ from pydy_code_gen.code import numeric_right_hand_side
 from models import generate_mass_spring_damper_equations_of_motion
 
 
-def TestCode():
+class TestCode():
 
     def test_numeric_right_hand_side(self):
 
