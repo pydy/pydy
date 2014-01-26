@@ -3,3 +3,6 @@ prune docs/_build
 recursive-include pydy_viz/static *
 
 include README.rst
+
+# added by check_manifest.py
+include .travis.yml
