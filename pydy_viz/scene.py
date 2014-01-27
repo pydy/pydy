@@ -39,7 +39,7 @@ class Scene(object):
 
     """
     def __init__(self, reference_frame, origin, *visualization_frames,
-                **kwargs):
+                 **kwargs):
         """
         Initializes a Scene instance.
         It requires a reference frame and a point to be initialized.
@@ -108,19 +108,20 @@ class Scene(object):
         try:
             self.cameras = kwargs['cameras']
         except KeyError:
-            self.cameras = [PerspectiveCamera('DefaultCamera', \
-                                         self._reference_frame, \
-                                    self._origin.locatenew('p_camera', \
-                                         10*self._reference_frame.z))]
+            self.cameras = [PerspectiveCamera('DefaultCamera',
+                            self._reference_frame,
+                            self._origin.locatenew(
+                                'p_camera',
+                                10*self._reference_frame.z))]
 
         try:
             self.lights = kwargs['lights']
         except KeyError:
-            self.lights = [PointLight('DefaultLight', \
-                                            self._reference_frame, \
-                                self._origin.locatenew('p_light', \
-                                           10*self._reference_frame.z))]
-
+            self.lights = [PointLight('DefaultLight',
+                           self._reference_frame,
+                           self._origin.locatenew(
+                               'p_light',
+                               10*self._reference_frame.z))]
 
     @property
     def name(self):
@@ -223,44 +224,44 @@ class Scene(object):
         self._scene_data['lights'] = []
 
         for frame in self.visualization_frames:
-            frame.generate_transformation_matrix( 
-                                    self._reference_frame, self._origin)
-            frame.generate_numeric_transform_function(
-                                  dynamic_variables, constant_variables)
+            frame.generate_transformation_matrix(self._reference_frame,
+                                                 self._origin)
+            frame.generate_numeric_transform_function(dynamic_variables,
+                                                      constant_variables)
             frame.evaluate_transformation_matrix(
-                                        dynamic_values, constant_values)
+                dynamic_values, constant_values)
 
             self._scene_data['frames'].append(
-                                    frame.generate_visualization_dict())
+                frame.generate_visualization_dict())
 
         for camera in self.cameras:
-            camera.generate_transformation_matrix(
-                                    self._reference_frame, self._origin)
-            camera.generate_numeric_transform_function(
-                                  dynamic_variables, constant_variables)
-            camera.evaluate_transformation_matrix(
-                                        dynamic_values, constant_values)
+            camera.generate_transformation_matrix(self._reference_frame,
+                                                  self._origin)
+            camera.generate_numeric_transform_function(dynamic_variables,
+                                                       constant_variables)
+            camera.evaluate_transformation_matrix(dynamic_values,
+                                                  constant_values)
 
             self._scene_data['cameras'].append(
-                                    camera.generate_visualization_dict())
+                camera.generate_visualization_dict()
+            )
 
         for light in self.lights:
-            light.generate_transformation_matrix(
-                                    self._reference_frame, self._origin)
-            light.generate_numeric_transform_function(
-                                  dynamic_variables, constant_variables)
-            light.evaluate_transformation_matrix(
-                                        dynamic_values, constant_values)
+            light.generate_transformation_matrix(self._reference_frame,
+                                                 self._origin)
+            light.generate_numeric_transform_function(dynamic_variables,
+                                                      constant_variables)
+            light.evaluate_transformation_matrix(dynamic_values,
+                                                 constant_values)
 
             self._scene_data['lights'].append(
-                                    light.generate_visualization_dict())
-
+                light.generate_visualization_dict())
 
         return self._scene_data
 
     def generate_visualization_json(self, dynamic_variables,
                                     constant_variables, dynamic_values,
-                                constant_values, save_to='data.json'):
+                                    constant_values, save_to='data.json'):
         """
         generate_visualization_json() method generates a json str, which is
         saved to file.
@@ -302,11 +303,11 @@ class Scene(object):
 
         """
         self.saved_json_file = save_to
-        self._data_dict = \
-                  self.generate_visualization_dict(dynamic_variables,
-                                              constant_variables,
-                                              dynamic_values,
-                                              constant_values)
+        self._data_dict = self.generate_visualization_dict(dynamic_variables,
+                                                           constant_variables,
+                                                           dynamic_values,
+                                                           constant_values)
+
         outfile = open(self.saved_json_file, 'w')
         outfile.write(json.dumps(self._data_dict, indent=4,
                                  separators=(',', ': ')))
@@ -323,26 +324,20 @@ class Scene(object):
         method, which deletes the .pydy_viz directory.
 
         """
-
-
         dst = os.path.join(os.getcwd(), '.pydy_viz')
         os.mkdir(dst)
-        src = os.path.join(os.path.dirname(pydy_viz.__file__),
-                                                               'static')
+        src = os.path.join(os.path.dirname(pydy_viz.__file__), 'static')
         distutils.dir_util.copy_tree(src, dst)
 
-
-
     def _cleanup(self):
-        distutils.dir_util.remove_tree(os.path.join(os.getcwd(), 
-                                                           '.pydy_viz'))
+        distutils.dir_util.remove_tree(os.path.join(os.getcwd(), '.pydy_viz'))
 
     def _display_from_interpreter(self):
         server = Server(json=self.saved_json_file)
         print '''Your visualization is being rendered at
                  http://localhost:%s/
                  Visit the url in your webgl compatible browser
-                 to see the animation in full glory'''%(server.port)
+                 to see the animation in full glory''' % (server.port)
         server.run()
 
     def _display_from_ipython(self):
@@ -365,8 +360,7 @@ class Scene(object):
         """
         try:
             config = get_ipython().config
-            if config['KernelApp']['parent_appname'] == \
-                                           'ipython-notebook':
+            if config['KernelApp']['parent_appname'] == 'ipython-notebook':
                 self._display_from_ipython()
             else:
                 self._display_from_interpreter()
