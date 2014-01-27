@@ -1,8 +1,12 @@
 __all__ = ['Server']
 
-import socket, threading, os
+import os
 import pydy_viz
+import socket
 import sys
+import threading
+
+
 class Server(threading.Thread):
     """
     A basic Socket server.
@@ -33,11 +37,11 @@ class Server(threading.Thread):
         try:
             self.socket.bind((host, self.port))
         except:
-            self.port+=1
+            self.port += 1
             try:
                 self.socket.bind((host, self.port))
             except:
-                self.port+=1
+                self.port += 1
                 self.socket.bind((host, self.port))
         self.socket.listen(5)
 
@@ -47,7 +51,7 @@ class Server(threading.Thread):
         static_path = os.path.join(static_path, 'static')
         request = data.split(' ')[1]
         if request == '/':
-        #If requested to http://localhost:port/
+        #If requested for http://localhost:port/
         #Send index.html file
             file_path = os.path.join(static_path, 'index.html')
             send_buffer = ''
@@ -72,7 +76,6 @@ class Server(threading.Thread):
             pass
             #print '''404 File not found. Sent No Data'''
 
-
         return send_buffer
 
     def listen_once(self):
@@ -81,7 +84,6 @@ class Server(threading.Thread):
         sent_data = self._parse_data(data)
         conn.send(sent_data)
         return sent_data
-
 
     def run(self):
         print 'server started successfully, on port:', self.port
@@ -95,14 +97,14 @@ class Server(threading.Thread):
                 conn.send('HTTP/1.1 200 OK\r\n\r\n')
                 conn.send(sent_data)
                 conn.close()
-            except KeyboardInterrupt:        
+            except KeyboardInterrupt:
                 print "Are you sure you want to shutdown[Y/N]?"
                 a = raw_input()
                 if a == "Y" or a == "y":
                     self.socket.shutdown(socket.SHUT_RDWR)
                     sys.exit()
                 else:
-                    pass    
+                    pass
 
 if __name__ == "__main__":
     a = Server()

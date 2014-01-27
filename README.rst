@@ -9,7 +9,7 @@ Installation
 Probably easiest to install the main dependencies from your package manager,
 e.g.::
 
-   $ apt-get python-numpy python-setuptools
+   $ apt-get install python-numpy python-setuptools
 
 Then download the source and install with setuptools (this will automatically
 install the latest version of SymPy)::
