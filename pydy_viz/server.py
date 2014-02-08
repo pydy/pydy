@@ -60,6 +60,11 @@ class Server(threading.Thread):
             file_path = os.path.join(os.getcwd(), self.saved_json_file)
             send_buffer = 'var JSONObj = '
 
+        elif request == '/close-server':
+            print "Server closed successfully!"
+            self.close()
+            
+
         else:
         #Else, try to use relative path from url for other files
             file_path_list = request.split('/')
@@ -102,10 +107,13 @@ class Server(threading.Thread):
                 print "Are you sure you want to shutdown[Y/N]?"
                 a = raw_input()
                 if a == "Y" or a == "y":
-                    self.socket.shutdown(socket.SHUT_RDWR)
-                    sys.exit()
+                    self.close()
                 else:
                     pass    
+
+    def close(self):
+        self.socket.shutdown(socket.SHUT_RDWR)
+        sys.exit()
 
 if __name__ == "__main__":
     a = Server()
