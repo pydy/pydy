@@ -45,9 +45,7 @@ class Server(threading.Thread):
 
         static_path = os.path.dirname(pydy_viz.__file__)
         static_path = os.path.join(static_path, 'static')
-        print "static path", static_path
         request = data.split(' ')[1]
-        print 'request:%s'% request
         if request == '/':
         #If requested to http://localhost:port/
         #Send index.html file
@@ -71,7 +69,6 @@ class Server(threading.Thread):
             for val in file_path_list:
                 static_path = os.path.join(static_path, val)
             file_path = static_path
-            print "file path : " + file_path
             send_buffer = ''
 
         try:
