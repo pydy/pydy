@@ -98,7 +98,6 @@ class Server(threading.Thread):
                 self.data = conn.recv(1024)
                 sent_data = self._parse_data(self.data)
                 conn.send(sent_data)
-                print 'sent data'
                 conn.close()
             except KeyboardInterrupt:        
                 print "Are you sure you want to shutdown[Y/N]?"
