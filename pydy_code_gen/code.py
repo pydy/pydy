@@ -268,7 +268,7 @@ class CythonGenerator(object):
     def generate_extension(self):
         """Generates a Cython extensions module with the given file name
         prefix which contains a function `mass_forcing_matrices` that
-        evaulates the mass matrix and forcing function."""
+        evaluates the mass matrix and forcing function."""
         self._write_cython_code()
         self._compile_cython_code()
 
@@ -301,7 +301,7 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
 
     Returns
     -------
-    right_hand_side : function
+    evaluate_ode_function : function
         A function which evaluates the derivaties of the states.
 
     """
@@ -344,7 +344,8 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
             if generator == 'theano':
                 value_array = [np.asarray(v) for v in value_array]
 
-            return mass_matrix_func(*value_array), forcing_vector_func(*value_array)
+            return (mass_matrix_func(*value_array),
+                    forcing_vector_func(*value_array))
 
     elif generator == 'cython':
 
@@ -382,8 +383,11 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
         # support)
         raise NotImplementedError('The {} code generation is not implemented'.format(generator))
 
-    def right_hand_side(x, t, args):
-        """Returns the derivatives of the states.
+    def evaluate_ode(x, t, args):
+        """Returns the derivatives of the states, i.e. numerically evaluates
+        the right hand side of the first order differential equation(s).
+
+        x' = f(x, t)
 
         Parameters
         ----------
@@ -453,6 +457,6 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
         template_values['specified_list'] = ', '.join([str(s) for s in
                                                        specified])
 
-    right_hand_side.__doc__ = right_hand_side.__doc__.format(**template_values)
+    evaluate_ode.__doc__ = evaluate_ode.__doc__.format(**template_values)
 
-    return right_hand_side
+    return evaluate_ode

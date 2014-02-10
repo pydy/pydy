@@ -59,19 +59,19 @@ def run_benchmark(max_num_links, num_time_steps=1000):
             print(subtitle)
             print('-' * len(subtitle))
             start = time.time()
-            right_hand_side = generate_ode_function(*results,
+            evaluate_ode = generate_ode_function(*results,
                                                       generator=method)
             code_generation_times[j, k] = time.time() - start
             print('The code generation took {:1.5f} seconds.'.format(
                 code_generation_times[j, k]))
 
             start = time.time()
-            odeint(right_hand_side, x0, t, args=(args,))
+            odeint(evaluate_ode, x0, t, args=(args,))
             integration_times[j, k] = time.time() - start
             print('ODE integration took {:1.5f} seconds.\n'.format(
                 integration_times[j, k]))
 
-        del results, right_hand_side
+        del results, evaluate_ode
 
     # clean up the cython crud
     files = glob.glob('multibody_system*')
