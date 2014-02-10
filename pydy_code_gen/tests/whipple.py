@@ -389,7 +389,7 @@ for k, bv in basu_output.items():
 
 # Try with lambdify
 
-from benchmark_functions import generate_ode_function
+from pydy_code_gen.code import generate_ode_function
 parameters = constant_substitutions.keys()
 parameters.sort()
 print('Generating a numeric right hand side function.')
