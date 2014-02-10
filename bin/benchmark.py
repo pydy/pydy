@@ -10,7 +10,7 @@ import glob
 from scipy.integrate import odeint
 from numpy import hstack, ones, pi, linspace, array, zeros, zeros_like
 import matplotlib.pyplot as plt
-from pydy_code_gen.code import numeric_right_hand_side
+from pydy_code_gen.code import generate_ode_function
 from pydy_code_gen.tests.models import \
     generate_n_link_pendulum_on_cart_equations_of_motion
 
@@ -59,7 +59,7 @@ def run_benchmark(max_num_links, num_time_steps=1000):
             print(subtitle)
             print('-' * len(subtitle))
             start = time.time()
-            right_hand_side = numeric_right_hand_side(*results,
+            right_hand_side = generate_ode_function(*results,
                                                       generator=method)
             code_generation_times[j, k] = time.time() - start
             print('The code generation took {:1.5f} seconds.'.format(

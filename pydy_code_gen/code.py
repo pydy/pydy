@@ -257,10 +257,13 @@ class CythonGenerator(object):
         # TODO : Need some way to cleanup the files creates by this after
         # use.
 
+        # TODO : This may not be cross platform. Needs to be explored on
+        # Windows and Mac.
+
         # This prevents output to stdout and waits till it is done.
-        p = subprocess.call(['python', self.setup_py_filename, 'build_ext',
-                              '--inplace'], stderr=subprocess.STDOUT,
-                             stdout=subprocess.PIPE)
+        cmd = ['python', self.setup_py_filename, 'build_ext', '--inplace']
+        subprocess.call(cmd, stderr=subprocess.STDOUT,
+                        stdout=subprocess.PIPE)
 
     def generate_extension(self):
         """Generates a Cython extensions module with the given file name
@@ -270,29 +273,28 @@ class CythonGenerator(object):
         self._compile_cython_code()
 
 
-def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
-                            coordinates, speeds, specified=None,
-                            generator='lambdify'):
-    """Returns a function for the right hand side of the first order
-    ordinary differential equations from a system described by:
+def generate_ode_function(mass_matrix, forcing_vector, constants,
+                          coordinates, speeds, specified=None,
+                          generator='lambdify'):
+    """Returns a numerical function which can evaluate the right hand side
+    of the first order ordinary differential equations from a system
+    described by:
 
     M(constants, coordinates) x' = F(constants, coordinates, speeds, specified)
 
-    which can be evaluated numerically.
-
     Parameters
     ----------
-    mass_matrix : sympy.matrices.dense.MutableDenseMatrix, shape(n,n)
+    mass_matrix : sympy.Matrix, shape(n,n)
         The symbolic mass matrix of the system.
-    forcing_vector : sympy.matrices.dense.MutableDenseMatrix, shape(n,1)
+    forcing_vector : sympy.Matrix, shape(n,1)
         The symbolic forcing vector of the system.
-    constants : list of sympy.core.symbol.Symbol
+    constants : list of sympy.Symbol
         The constants in the equations of motion.
-    coordinates : list of sympy.core.function.Function
+    coordinates : list of sympy.Function
         The generalized coordinates of the system.
-    speeds : list of sympy.core.function.Function
+    speeds : list of sympy.Function
         The generalized speeds of the system.
-    specified : list of sympy.core.function.Function
+    specified : list of sympy.Function
         The specifed quantities of the system.
     generator : string, {'lambdify'|'theano'|'cython'}, optional
         The method used for generating the numeric right hand side.
