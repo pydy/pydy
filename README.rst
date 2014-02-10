@@ -1,11 +1,13 @@
 PyDy Code Generation
 ====================
 
-This distribution provides some code generation facilities for PyDy. For now,
-it generates functions that can evaluate the right hand side of the ordinary
-differential equations generated with sympy.physics.mechanics with three
+This distribution provides code generation facilities for PyDy_. For now, it
+generates functions that can evaluate the right hand side of the ordinary
+differential equations generated with sympy.physics.mechanics_ with three
 different backends: SymPy's lambdify_, Theano_, and Cython_.
 
+.. _PyDy: http://pydy.org
+.. _sympy.physics.mechanics: http://docs.sympy.org/latest/modules/physics/mechanics
 .. _lambdify: http://docs.sympy.org/latest/modules/utilities/lambdify.html#sympy.utilities.lambdify.lambdify
 .. _Theano: http://deeplearning.net/software/theano/
 .. _Cython: http://cython.org/
@@ -13,23 +15,55 @@ different backends: SymPy's lambdify_, Theano_, and Cython_.
 Dependencies
 ============
 
-- Python: 2.7
+Required
+--------
+
+- Python: 2.7 (Python 3+ may work)
 - setuptools
 - NumPy: >=1.6.1
-- SymPy: >=0.7.4
-- SciPy: >=0.9
+- SymPy: >=0.7.3
+
+Optional
+--------
+
 - Cython: >=0.15.1
 - Theano: >=0.6.0
+- SciPy: >=0.9 (only for full examples)
+- matplotlib: >=0.99 (only for full examples)
+
+There are a variety of methods to install these packages. Refer to the SciPy
+Stack installation instructions for details.
 
 Installation
 ============
 
-For now, download the source and install manually. Make sure your environment
-has all the dependencies met. Here is one option::
+Once the dependencies are installed, the package can be installed from PyPi
+using::
 
-   $ git clone git@github.com:PythonDynamics/pydy-code-gen.git
+   $ easy_install pydy-code-gen
+
+or::
+
+   $ pip install pydy-code-gen
+
+You can also grab the source and then install\ [#]_.
+
+Using the zip download::
+
+   $ wget https://github.com/PythonDynamics/pydy-code-gen/archive/master.zip
+   $ unzip pydy-code-gen-master.zip
+   $ cd pydy-code-gen-master
+   $ python setup.py install
+
+Using Git::
+
+   $ git clone https://github.com/PythonDynamics/pydy-code-gen.git
    $ cd pydy-code-gen
    $ python setup.py install
+
+.. [#] Note that this is the latest development version. Specific releases
+   can be found here: https://github.com/PythonDynamics/pydy-code-gen/releases
+   or by checking out a tag with Git.
 
 Usage
 =====
@@ -96,10 +130,12 @@ generator can use various back ends: ``lambdify``, ``theano``, or ``cython``::
 
    from pydy_code_gen.code import generate_ode_function
 
-   evaluate_ode = generate_ode_function(mass_matrix, forcing_vector,
-       constants, coordinates, speeds, specified, generator='cython')
+   evaluate_ode = generate_ode_function(mass_matrix, forcing_vector, constants,
+                                        coordinates, speeds, specified,
+                                        generator='lambdify')
 
-Integrate the equations of motion::
+Integrate the equations of motion under the influence of a specified sinusoidal
+force::
 
    from numpy import array, linspace, sin
    from scipy.integrate import odeint
@@ -122,27 +158,25 @@ Plot the results::
 Development Environment
 =======================
 
-Additional Development Dependencies
------------------------------------
+Development Dependencies
+------------------------
 
-- pip
 - nose: 1.3.0
-- matplotlib: >0.99 (only for benchmark script)
 
 Installation
 ------------
 
-The following installation assumes you have virtualenv wrapper and all the
+The following installation assumes you have virtualenvwrapper_ and all the
 dependencies needed to build the packages::
 
    $ mkvirtualenv pydy-dev
-   (pydy-dev)$ pip install numpy scipy cython nose
+   (pydy-dev)$ pip install numpy scipy cython nose theano sympy
    (pydy-dev)$ pip install matplotlib # make sure to do this after numpy
-   (pydy-dev)$ pip install git+git://github.com/Theano/Theano.git
-   (pydy-dev)$ pip install git+git://github.com/sympy/sympy.git
    (pydy-dev)$ git clone git@github.com:PythonDynamics/pydy-code-gen.git
    (pydy-dev)$ cd pydy-code-gen
    (pydy-dev)$ python setup.py develop
+
+.. _virtualenvwrapper: https://pypi.python.org/pypi/virtualenvwrappe://pypi.python.org/pypi/virtualenvwrapper
 
 Run the tests::
 

@@ -1,0 +1,3 @@
+include UNLICENSE
+include *.rst
+include bin/*
