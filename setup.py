@@ -23,6 +23,7 @@ setup(
                     },
     tests_require=['nose>=1.3.0'],
     test_suite='nose.collector',
+    scripts=['bin/benchmark_pydy_code_gen.py'],
     include_package_data=True,
     classifiers=[
                  'Development Status :: 3 - Alpha',
