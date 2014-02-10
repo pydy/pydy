@@ -2,9 +2,11 @@
 
 from setuptools import setup, find_packages
 
+from pydy_code_gen import __version__
+
 setup(
     name='pydy-code-gen',
-    version='0.1.0dev',
+    version=__version__,
     author='Jason K. Moore',
     author_email='moorepants@gmail.com',
     url="https://github.com/PythonDynamics/pydy-code-gen/",

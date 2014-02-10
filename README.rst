@@ -185,3 +185,11 @@ Run the tests::
 Run the benchmark to test the n-link pendulum problem.::
 
    (pydy-dev)$ python bin/benchmark_pydy_code_gen.py <max # of links> <# of time steps>
+
+Release Notes
+=============
+
+0.1.0
+-----
+
+- Initial version.
