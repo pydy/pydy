@@ -257,49 +257,51 @@ class CythonGenerator(object):
         # TODO : Need some way to cleanup the files creates by this after
         # use.
 
+        # TODO : This may not be cross platform. Needs to be explored on
+        # Windows and Mac.
+
         # This prevents output to stdout and waits till it is done.
-        p = subprocess.call(['python', self.setup_py_filename, 'build_ext',
-                              '--inplace'], stderr=subprocess.STDOUT,
-                             stdout=subprocess.PIPE)
+        cmd = ['python', self.setup_py_filename, 'build_ext', '--inplace']
+        subprocess.call(cmd, stderr=subprocess.STDOUT,
+                        stdout=subprocess.PIPE)
 
     def generate_extension(self):
         """Generates a Cython extensions module with the given file name
         prefix which contains a function `mass_forcing_matrices` that
-        evaulates the mass matrix and forcing function."""
+        evaluates the mass matrix and forcing function."""
         self._write_cython_code()
         self._compile_cython_code()
 
 
-def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
-                            coordinates, speeds, specified=None,
-                            generator='lambdify'):
-    """Returns a function for the right hand side of the first order
-    ordinary differential equations from a system described by:
+def generate_ode_function(mass_matrix, forcing_vector, constants,
+                          coordinates, speeds, specified=None,
+                          generator='lambdify'):
+    """Returns a numerical function which can evaluate the right hand side
+    of the first order ordinary differential equations from a system
+    described by:
 
     M(constants, coordinates) x' = F(constants, coordinates, speeds, specified)
 
-    which can be evaluated numerically.
-
     Parameters
     ----------
-    mass_matrix : sympy.matrices.dense.MutableDenseMatrix, shape(n,n)
+    mass_matrix : sympy.Matrix, shape(n,n)
         The symbolic mass matrix of the system.
-    forcing_vector : sympy.matrices.dense.MutableDenseMatrix, shape(n,1)
+    forcing_vector : sympy.Matrix, shape(n,1)
         The symbolic forcing vector of the system.
-    constants : list of sympy.core.symbol.Symbol
+    constants : list of sympy.Symbol
         The constants in the equations of motion.
-    coordinates : list of sympy.core.function.Function
+    coordinates : list of sympy.Function
         The generalized coordinates of the system.
-    speeds : list of sympy.core.function.Function
+    speeds : list of sympy.Function
         The generalized speeds of the system.
-    specified : list of sympy.core.function.Function
+    specified : list of sympy.Function
         The specifed quantities of the system.
     generator : string, {'lambdify'|'theano'|'cython'}, optional
         The method used for generating the numeric right hand side.
 
     Returns
     -------
-    right_hand_side : function
+    evaluate_ode_function : function
         A function which evaluates the derivaties of the states.
 
     """
@@ -342,7 +344,8 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
             if generator == 'theano':
                 value_array = [np.asarray(v) for v in value_array]
 
-            return mass_matrix_func(*value_array), forcing_vector_func(*value_array)
+            return (mass_matrix_func(*value_array),
+                    forcing_vector_func(*value_array))
 
     elif generator == 'cython':
 
@@ -380,8 +383,11 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
         # support)
         raise NotImplementedError('The {} code generation is not implemented'.format(generator))
 
-    def right_hand_side(x, t, args):
-        """Returns the derivatives of the states.
+    def evaluate_ode(x, t, args):
+        """Returns the derivatives of the states, i.e. numerically evaluates
+        the right hand side of the first order differential equation(s).
+
+        x' = f(x, t)
 
         Parameters
         ----------
@@ -451,6 +457,6 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
         template_values['specified_list'] = ', '.join([str(s) for s in
                                                        specified])
 
-    right_hand_side.__doc__ = right_hand_side.__doc__.format(**template_values)
+    evaluate_ode.__doc__ = evaluate_ode.__doc__.format(**template_values)
 
-    return right_hand_side
+    return evaluate_ode

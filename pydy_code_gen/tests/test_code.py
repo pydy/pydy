@@ -10,13 +10,13 @@ import numpy as np
 from numpy import testing
 
 # local libraries
-from pydy_code_gen.code import numeric_right_hand_side
+from pydy_code_gen.code import generate_ode_function
 from models import generate_mass_spring_damper_equations_of_motion
 
 
 class TestCode():
 
-    def test_numeric_right_hand_side(self):
+    def test_generate_ode_function(self):
 
         m, k, c, g, F, x, v = np.random.random(7)
 
@@ -33,9 +33,9 @@ class TestCode():
         backends = ['lambdify', 'theano', 'cython']
 
         for backend in backends:
-            rhs = numeric_right_hand_side(mass_matrix, forcing_vector,
-                                          constants, coordinates, speeds,
-                                          specified, generator=backend)
+            rhs = generate_ode_function(mass_matrix, forcing_vector,
+                                        constants, coordinates, speeds,
+                                        specified, generator=backend)
             dx = rhs(states, 0.0, args)
 
             testing.assert_allclose(dx, expected_dx)
@@ -49,9 +49,9 @@ class TestCode():
                                               np.sin(t))])
 
         for backend in backends:
-            rhs = numeric_right_hand_side(mass_matrix, forcing_vector,
-                                          constants, coordinates, speeds,
-                                          specified, generator=backend)
+            rhs = generate_ode_function(mass_matrix, forcing_vector,
+                                        constants, coordinates, speeds,
+                                        specified, generator=backend)
             dx = rhs(states, t, args)
 
             testing.assert_allclose(dx, expected_dx)
@@ -63,9 +63,9 @@ class TestCode():
         expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x)])
 
         for backend in backends:
-            rhs = numeric_right_hand_side(mass_matrix, forcing_vector,
-                                          constants, coordinates, speeds,
-                                          specified, generator=backend)
+            rhs = generate_ode_function(mass_matrix, forcing_vector,
+                                        constants, coordinates, speeds,
+                                        specified, generator=backend)
             dx = rhs(states, 0.0, args)
 
             testing.assert_allclose(dx, expected_dx)

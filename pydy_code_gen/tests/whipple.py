@@ -389,11 +389,11 @@ for k, bv in basu_output.items():
 
 # Try with lambdify
 
-from benchmark_functions import numeric_right_hand_side
+from benchmark_functions import generate_ode_function
 parameters = constant_substitutions.keys()
 parameters.sort()
 print('Generating a numeric right hand side function.')
-rhs = numeric_right_hand_side(kane, parameters, specified=[T4, T6, T7],
+rhs = generate_ode_function(kane, parameters, specified=[T4, T6, T7],
         generator="lambdify")
 state_values = []
 for state in kane._q + kane._u:

@@ -94,22 +94,22 @@ Store the expressions and symbols in sequences for the code generation::
 Now generate the function needed for numerical evaluation of the ODEs. The
 generator can use various back ends: ``lambdify``, ``theano``, or ``cython``::
 
-   from pydy_code_gen.code import numeric_right_hand_side
+   from pydy_code_gen.code import generate_ode_function
 
-   right_hand_side = numeric_right_hand_side(mass_matrix, forcing_vector,
+   evaluate_ode = generate_ode_function(mass_matrix, forcing_vector,
        constants, coordinates, speeds, specified, generator='cython')
 
 Integrate the equations of motion::
 
-   from numpy import array, linspace
+   from numpy import array, linspace, sin
    from scipy.integrate import odeint
 
    x0 = array([0.1, -1.0])
    args = {'constants': array([1.0, 1.0, 0.2, 9.8]),
-           'specified': lambda x, t: np.sin(t)}
+           'specified': lambda x, t: sin(t)}
    t = linspace(0.0, 10.0, 1000)
 
-   y = odeint(right_hand_side, x0, t, args=(args,))
+   y = odeint(evaluate_ode, x0, t, args=(args,))
 
 Plot the results::
 
@@ -151,4 +151,3 @@ Run the tests::
 Run the benchmark to test the n-link pendulum problem.::
 
    (pydy-dev)$ python bin/benchmark.py <max # of links> <# of time steps>
-
