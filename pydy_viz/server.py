@@ -1,8 +1,12 @@
 __all__ = ['Server']
 
-import socket, threading, os
+import os
 import pydy_viz
+import socket
 import sys
+import threading
+
+
 class Server(threading.Thread):
     """
     A basic Socket server.
@@ -33,11 +37,11 @@ class Server(threading.Thread):
         try:
             self.socket.bind((host, self.port))
         except:
-            self.port+=1
+            self.port += 1
             try:
                 self.socket.bind((host, self.port))
             except:
-                self.port+=1
+                self.port += 1
                 self.socket.bind((host, self.port))
         self.socket.listen(5)
 
@@ -47,13 +51,12 @@ class Server(threading.Thread):
         static_path = os.path.join(static_path, 'static')
         request = data.split(' ')[1]
         if request == '/':
-        #If requested to http://localhost:port/
+        #If requested for http://localhost:port/
         #Send index.html file
             file_path = os.path.join(static_path, 'index.html')
             send_buffer = ''
 
         elif request == '/data.json':
-            print 'data file requested'
         #If data.json is requested, get it from scene method
             file_path = os.path.join(os.getcwd(), self.saved_json_file)
             send_buffer = 'var JSONObj = '
@@ -75,8 +78,8 @@ class Server(threading.Thread):
             send_buffer += open(file_path).read()
 
         except IOError:
-            print '''404 File not found. Sent No Data'''
-
+            pass
+            #print '''404 File not found. Sent No Data'''
 
         return send_buffer
 
@@ -87,7 +90,6 @@ class Server(threading.Thread):
         conn.send(sent_data)
         return sent_data
 
-
     def run(self):
         print 'server started successfully, on port:', self.port
 
@@ -97,15 +99,16 @@ class Server(threading.Thread):
                 conn, addr = self.socket.accept()
                 self.data = conn.recv(1024)
                 sent_data = self._parse_data(self.data)
+                conn.send('HTTP/1.1 200 OK\r\n\r\n')
                 conn.send(sent_data)
                 conn.close()
-            except KeyboardInterrupt:        
+            except KeyboardInterrupt:
                 print "Are you sure you want to shutdown[Y/N]?"
                 a = raw_input()
                 if a == "Y" or a == "y":
                     self.close()
                 else:
-                    pass    
+                    pass
 
     def close(self):
         self.socket.shutdown(socket.SHUT_RDWR)
