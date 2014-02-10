@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # standard library
+import os
 import subprocess
 import importlib
 import random
@@ -353,14 +354,17 @@ def numeric_right_hand_side(mass_matrix, forcing_vector, constants,
         # Check out the Cython inline code to figure out how to do all this
         # better with disutils:
         # https://github.com/cython/cython/blob/master/Cython/Build/Inline.py
-        exists = True
-        while exists:
-            try:
-                open(filename_prefix + '.so', 'r')
-            except IOError:
-                exists = False
-            else:
+
+        # The .pyx file has the same prefix as the Cython generated [.dll,
+        # .so, .dylib] shared library file, so we should be able to check
+        # all files in the directory for matches except the .pyx file.
+        prefixes = [os.path.splitext(p)[0] for p in os.listdir('.') if not
+                    p.endswith('.pyx')]
+        while True:
+            if filename_prefix in prefixes:
                 filename_prefix += '_' + random.choice(all_letters)
+            else:
+                break
 
         cython_generator = CythonGenerator(filename_prefix, mass_matrix,
                                            forcing_vector, constants,

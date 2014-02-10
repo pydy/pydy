@@ -14,67 +14,66 @@ from pydy_code_gen.code import numeric_right_hand_side
 from models import generate_mass_spring_damper_equations_of_motion
 
 
-def test_numeric_right_hand_side():
+class TestCode():
 
-    m, k, c, g, F, x, v = np.random.random(7)
+    def test_numeric_right_hand_side(self):
 
-    args = {'constants': np.array([m, k, c, g]),
-            'specified': np.array([F])}
+        m, k, c, g, F, x, v = np.random.random(7)
 
-    states = np.array([x, v])
+        args = {'constants': np.array([m, k, c, g]),
+                'specified': np.array([F])}
 
-    mass_matrix, forcing_vector, constants, coordinates, speeds, specified = \
-        generate_mass_spring_damper_equations_of_motion()
+        states = np.array([x, v])
 
-    expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x + F)])
+        mass_matrix, forcing_vector, constants, coordinates, speeds, specified = \
+            generate_mass_spring_damper_equations_of_motion()
 
-    backends = ['lambdify', 'theano', 'cython']
+        expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x + F)])
 
-    for backend in backends:
-        rhs = numeric_right_hand_side(mass_matrix, forcing_vector,
-                                      constants, coordinates, speeds,
-                                      specified, generator=backend)
-        dx = rhs(states, 0.0, args)
+        backends = ['lambdify', 'theano', 'cython']
 
-        testing.assert_allclose(dx, expected_dx)
+        for backend in backends:
+            rhs = numeric_right_hand_side(mass_matrix, forcing_vector,
+                                          constants, coordinates, speeds,
+                                          specified, generator=backend)
+            dx = rhs(states, 0.0, args)
 
-    # Now try it with a function defining the specified quantities.
-    args['specified'] = lambda x, t: np.sin(t)
+            testing.assert_allclose(dx, expected_dx)
 
-    t = 14.345
+        # Now try it with a function defining the specified quantities.
+        args['specified'] = lambda x, t: np.sin(t)
 
-    expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x + np.sin(t))])
+        t = 14.345
 
-    for backend in backends:
-        rhs = numeric_right_hand_side(mass_matrix, forcing_vector,
-                                      constants, coordinates, speeds,
-                                      specified, generator=backend)
-        dx = rhs(states, t, args)
+        expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x +
+                                              np.sin(t))])
 
-        testing.assert_allclose(dx, expected_dx)
+        for backend in backends:
+            rhs = numeric_right_hand_side(mass_matrix, forcing_vector,
+                                          constants, coordinates, speeds,
+                                          specified, generator=backend)
+            dx = rhs(states, t, args)
 
-    # Now try it without specified values.
-    mass_matrix, forcing_vector, constants, coordinates, speeds, specified = \
-        generate_mass_spring_damper_equations_of_motion(external_force=False)
+            testing.assert_allclose(dx, expected_dx)
 
-    expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x)])
+        # Now try it without specified values.
+        mass_matrix, forcing_vector, constants, coordinates, speeds, specified = \
+            generate_mass_spring_damper_equations_of_motion(external_force=False)
 
-    # TODO : There is an import issue here, where the previous cython code
-    # is loaded from the module and the import needs to be reloaded. Not
-    # sure how to fix that.
+        expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x)])
 
-    for backend in backends:
-        rhs = numeric_right_hand_side(mass_matrix, forcing_vector,
-                                      constants, coordinates, speeds,
-                                      specified, generator=backend)
-        dx = rhs(states, 0.0, args)
+        for backend in backends:
+            rhs = numeric_right_hand_side(mass_matrix, forcing_vector,
+                                          constants, coordinates, speeds,
+                                          specified, generator=backend)
+            dx = rhs(states, 0.0, args)
 
-        testing.assert_allclose(dx, expected_dx)
+            testing.assert_allclose(dx, expected_dx)
 
-    # TODO : This should be in a teardown function to ensure crud is never
-    # left on the system.
-    # clean up the cython crud
-    files = glob.glob('multibody_system*')
-    for f in files:
-        os.remove(f)
-    shutil.rmtree('build')
+    def teardown(self):
+
+        # clean up the cython crud
+        files = glob.glob('multibody_system*')
+        for f in files:
+            os.remove(f)
+        shutil.rmtree('build')
