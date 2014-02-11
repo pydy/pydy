@@ -49,7 +49,13 @@ class Server(threading.Thread):
 
         static_path = os.path.dirname(pydy_viz.__file__)
         static_path = os.path.join(static_path, 'static')
-        request = data.split(' ')[1]
+        try:
+            request = data.split(' ')[1]
+        except KeyError:
+			#If error occurs in parsing a request,
+			#Better to reload the page, to avoid broken
+			#javascripts
+			request = '/'    
         if request == '/':
         #If requested for http://localhost:port/
         #Send index.html file
@@ -97,8 +103,8 @@ class Server(threading.Thread):
             try:
                 self.socket.listen(1)
                 conn, addr = self.socket.accept()
-                self.data = conn.recv(1024)
-                sent_data = self._parse_data(self.data)
+                data = conn.recv(1024)
+                sent_data = self._parse_data(data)
                 conn.send('HTTP/1.1 200 OK\r\n\r\n')
                 conn.send(sent_data)
                 conn.close()
