@@ -60,7 +60,7 @@ Canvas.prototype.initialize = function(){
 
 	this.renderer = new THREE.WebGLRenderer();
 	this.renderer.setSize(JSONObj.width, JSONObj.height);
-	
+        this.renderer.setClearColor(0xcccccc);	
 	this.container = $('#container');
 	this.container.append(this.renderer.domElement);	
 	
@@ -112,7 +112,7 @@ Canvas.prototype.initialize = function(){
     this.primaryLight.position.set(10,10,-10);
     this.scene.add(this.primaryLight);
     // A point object to show this light ..
-    var _geom = new THREE.SphereGeometry(2,100,100);
+    var _geom = new THREE.SphereGeometry(0.5,100,100);
     var _material = new THREE.MeshBasicMaterial(0xffffff);
     this.lightPoint = new THREE.Mesh(_geom, _material);
     this.lightPoint.position.set(10,10,-10);

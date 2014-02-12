@@ -38,7 +38,7 @@
 	
 	<body>
 	<div id="container">	
-	
+	    <div id="banner"><h1>PyDy Visualizer(logo here)</h1></div>
 		<div id="canvas">
 			<!--- WebGL renderer is called from canvas javascripts
 					on this element --->
@@ -57,18 +57,41 @@
 				<button id="start-animation" class="btn btn-primary"><i class="icon-white icon-pause"></i> Pause</button>
 				<button id="start-animation" class="btn btn-primary"><i class="icon-white icon-stop"></i> Stop</button>
 			</div>
-			<br />
-			<br />
-			<div id="animation-statistics" class="btn-group btn-gp">
+			<hr />
+			
+			<!--- Server Settings --->
+			<div id="server-settings" class="btn-group btn-gp">
+				<br /><span class="label label-default">Server Settings</span>
+				<br />
+				<button id="start-animation" class="btn btn-primary"><i class="icon-white icon-play"></i> Reset Camera</button>
+				<button id="start-animation" class="btn btn-primary"><i class="icon-white icon-pause"></i> Shutdown Server</button>
+			</div>
+			<hr />
+			<!---------------------->
+			
+			<!--- Move to a specific frame --->
+			<div id="frame-slider" class="btn-group btn-gp">
+				<br /><span class="label label-default">Frame Navigator</span>
+				<br />
+				<button id="start-animation" class="btn btn-primary"><i class="icon-white icon-play"></i> Reset Camera</button>
+				<button id="start-animation" class="btn btn-primary"><i class="icon-white icon-pause"></i> Shutdown Server</button>
+			</div>
+			<hr />
+
+			
+			<!--- Animation Statistics --->
+            <div id="animation-statistics" class="btn-group btn-gp">
 				<br /><span class="label label-default">Animation Statistics</span>
 				<br />
 				
-				<!---------------------->
+				
 				<label>Animation Progress</label>
 				<div class="progress progress-striped active">
 					<div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 60%; background-color:rgb(66, 139, 202);">
 						<span class="sr-only">40% Complete (success)</span>
 					</div>
+					<label>40%</label>
+
 				</div>
 				
 				<label>Frame Rate</label>
@@ -78,19 +101,21 @@
 					</div>
 				</div>
 
-				<!------------------------->
 			</div>
 			<br />
 			<br />
 			
-			<div id="server-settings" class="btn-group btn-gp">
-				<br /><span class="label label-default">Server Control</span>
-				<br />
-				<button id="start-animation" class="btn btn-primary"><i class="icon-white icon-play"></i> Reset Camera</button>
-				<button id="start-animation" class="btn btn-primary"><i class="icon-white icon-pause"></i> Shutdown Server</button>
-			</div>
 			
 			
+			<!--- Script for loading Canvas ----->
+			<script>
+				var s = new Canvas(JSONObj);
+				s.initialize();
+				s.addControls();
+				s.addLights();
+				s.addCameras();
+				s.addFrames();
+			</script>
       
 			      
 		</div>
@@ -106,7 +131,6 @@
 
 
         
-
 
 
 
