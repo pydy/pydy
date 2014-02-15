@@ -51,7 +51,7 @@ class Server(threading.Thread):
         static_path = os.path.join(static_path, 'static')
         try:
             request = data.split(' ')[1]
-        except KeyError:
+        except IndexError:
 			#If error occurs in parsing a request,
 			#Better to reload the page, to avoid broken
 			#javascripts
