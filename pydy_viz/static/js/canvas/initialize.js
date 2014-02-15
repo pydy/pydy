@@ -127,7 +127,7 @@ Canvas.prototype.initialize = function(){
     primaryCamera = this.primaryCamera;
     renderer = this.renderer;
     scene = this.scene;
-    $("#animationProgressBar").css("width", this.animationProgress);
-    $("#animationProgressText").html(this.animationProgress + "%");
+    $("#animationProgressBar").css("width", "0%");
+    $("#animationProgressText").html("0%");
     };
 
