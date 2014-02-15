@@ -130,4 +130,13 @@ Canvas.prototype.initialize = function(){
     $("#animationProgressBar").css("width", "0%");
     $("#animationProgressText").html("0%");
     };
+    
+    
+Canvas.prototype.shutdownServer = function(){
+	alert("Shutting Down Server, This window can be closed safely now!");
+	$.ajax({ url: "/close-server", context: document.body,crossDomain:true}).done(function() {
+	document.write("Server closed successfully. You can close this window now");	
+});
+	
+}    
 
