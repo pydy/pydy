@@ -49,7 +49,13 @@ class Server(threading.Thread):
 
         static_path = os.path.dirname(pydy_viz.__file__)
         static_path = os.path.join(static_path, 'static')
-        request = data.split(' ')[1]
+        try:
+            request = data.split(' ')[1]
+        except KeyError:
+			#If error occurs in parsing a request,
+			#Better to reload the page, to avoid broken
+			#javascripts
+			request = '/'    
         if request == '/':
         #If requested for http://localhost:port/
         #Send index.html file
@@ -60,6 +66,11 @@ class Server(threading.Thread):
         #If data.json is requested, get it from scene method
             file_path = os.path.join(os.getcwd(), self.saved_json_file)
             send_buffer = 'var JSONObj = '
+
+        elif request == '/close-server':
+            print "Server closed successfully!"
+            self.close()
+            
 
         else:
         #Else, try to use relative path from url for other files
@@ -92,8 +103,8 @@ class Server(threading.Thread):
             try:
                 self.socket.listen(1)
                 conn, addr = self.socket.accept()
-                self.data = conn.recv(1024)
-                sent_data = self._parse_data(self.data)
+                data = conn.recv(1024)
+                sent_data = self._parse_data(data)
                 conn.send('HTTP/1.1 200 OK\r\n\r\n')
                 conn.send(sent_data)
                 conn.close()
@@ -101,10 +112,13 @@ class Server(threading.Thread):
                 print "Are you sure you want to shutdown[Y/N]?"
                 a = raw_input()
                 if a == "Y" or a == "y":
-                    self.socket.shutdown(socket.SHUT_RDWR)
-                    sys.exit()
+                    self.close()
                 else:
                     pass
+
+    def close(self):
+        self.socket.shutdown(socket.SHUT_RDWR)
+        sys.exit()
 
 if __name__ == "__main__":
     a = Server()

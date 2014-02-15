@@ -11,9 +11,9 @@ import distutils
 import distutils.dir_util
 
 try:
-    from IPython.core.display import Javascript, HTML, display
+    from IPython.lib import backgroundjobs as bg
 except ImportError:
-    pass
+    IPython = None
 
 
 class Scene(object):
@@ -341,7 +341,18 @@ class Scene(object):
         server.run()
 
     def _display_from_ipython(self):
-        raise NotImplemented
+        # This is a hack using IPython BackgroundJobs
+        # module. Once we have an IPython2.0 release
+        # It can be modified to display visualizations
+        # in IPython output cell itself.
+        server = Server(json=self.saved_json_file)
+        jobs = bg.BackgroundJobManager()
+        jobs.new('server.run()')
+        print '''
+        Your visualization is being rendered at
+                 http://localhost:%s/
+                 Visit the url in your webgl compatible browser
+                 to see the animation in full glory'''%(server.port)
 
     def display(self):
         """
