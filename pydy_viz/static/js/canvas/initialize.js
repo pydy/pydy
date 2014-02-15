@@ -13,7 +13,8 @@ var Canvas = function(JSONObj) {
     $("#pauseAnimation").click(this.pauseAnimation);  
     $("#stopAnimation").click(this.stopAnimation);             
     $("#switchCamera").click(this.switchCamera);                 
-    $("#goToFrame").click(this.goToFrame);                     
+    $("#goToFrame").click(this.goToFrame);
+    $("#shutdownServer").click(this.shutdownServer);                 
         
 };
 
@@ -40,6 +41,9 @@ Canvas.prototype.lightPoints.name = "Light Points";
 Canvas.prototype.scene = new THREE.Scene();
 
 Canvas.prototype.animationCounter = 0;
+Canvas.prototype.animationProgress = 
+     (Canvas.prototype.animationCounter/Canvas.prototype.timeSteps)*100
+       || 0;
 Canvas.prototype.cameraCounter = 0;
 
 Canvas.prototype.animationSpeed = parseInt($("#animationSpeed").val())
@@ -123,7 +127,9 @@ Canvas.prototype.initialize = function(){
     primaryCamera = this.primaryCamera;
     renderer = this.renderer;
     scene = this.scene;
-    $("#frameCount").append("<h2>Total Frames: " + this.timeSteps + "</h2>")
+    //$("#animationProgressBar").
+    $("#animationProgressText").html(this.animationProgress + "%");
+    
     $("#currentFrame").append("<h2>Current Frame: " + this.animationCounter + "</h2>")    
     
     };
