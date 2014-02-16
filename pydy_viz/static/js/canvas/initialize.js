@@ -64,7 +64,8 @@ Canvas.prototype.initialize = function(){
 
 	this.renderer = new THREE.WebGLRenderer();
 	this.renderer.setSize(JSONObj.width, JSONObj.height);
-        this.renderer.setClearColor(0xcccccc);	
+	var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
+	this.renderer.setClearColor(backgroundColor);	
 	this.container = $('#container');
 	this.container.append(this.renderer.domElement);	
 	
@@ -99,7 +100,7 @@ Canvas.prototype.initialize = function(){
                                             this.renderer.domElement);
     
     var gridYZ = new THREE.GridHelper(100, 5);
-	gridYZ.position.set( 0,0,0 );
+	gridYZ.position.set(0, 0, 0);
     gridYZ.material.color = new THREE.Color(0xFFFFFF);
 	gridYZ.rotation.y = Math.PI/2;
 	
