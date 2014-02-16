@@ -63,10 +63,10 @@ Canvas.prototype.initialize = function(){
  */
 
 	this.renderer = new THREE.WebGLRenderer();
-	this.renderer.setSize(JSONObj.width, JSONObj.height);
+	this.renderer.setSize(800, 640);
 	var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
 	this.renderer.setClearColor(backgroundColor);	
-	this.container = $('#container');
+	this.container = $('#canvas');
 	this.container.append(this.renderer.domElement);	
 	
 	var axesMaterial = new THREE.MeshLambertMaterial(
