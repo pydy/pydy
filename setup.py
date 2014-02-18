@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from setuptools import setup, find_packages
 
 setup(
@@ -5,28 +7,24 @@ setup(
     version='0.1.0dev',
     author='Tarun Gaba',
     author_email='tarun.gaba7@gmail.com',
-    url="https://github.com/PythonDynamics/pydy-viz/",
+    url="https://github.com/pydy/pydy-viz/",
     description='Browser based 3D visualization of multibody simulations.',
     long_description=open('README.rst').read(),
     keywords="dynamics multibody simulation visualization",
     license='LICENSE.txt',
     packages=find_packages(),
-    install_requires=['sympy>=0.7.2', 'numpy>=1.6.1'], 'matplotlib>=1.2.1'],
-    # For some reason matplotlib doesn't install if numpy isn't already
-    # installed, even if pip is bringing in all the deps simultaneously. I
-    # think matplotlib must not be using the setuptools "install_requires"
-    # option and this balks. We will not actually depend on matplotlib, but
-    # we do for now.
+    install_requires=['sympy>=0.7.2',
+                      'numpy>=1.6.1',
+                      'matplotlib>=0.99.0'],
     extras_require={'doc': ['sphinx', 'numpydoc']},
     tests_require=['nose'],
     test_suite='nose.collector',
     scripts=['bin/test'],
     include_package_data=True,
-    classifiers=[
-                 'Development Status :: 2 - Pre-Alpha',
+    classifiers=['Development Status :: 3 - Alpha',
                  'Intended Audience :: Science/Research',
                  'Operating System :: OS Independent',
                  'Programming Language :: Python :: 2.7',
                  'Topic :: Scientific/Engineering :: Physics',
-                ],
+                 ],
 )
