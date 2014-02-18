@@ -116,14 +116,7 @@ Canvas.prototype.initialize = function(){
     this.primaryLight = new THREE.PointLight(0xffffff);
     this.primaryLight.position.set(10,10,-10);
     this.scene.add(this.primaryLight);
-    // A point object to show this light ..
-    var _geom = new THREE.SphereGeometry(0.5,100,100);
-    var _material = new THREE.MeshBasicMaterial(0xffffff);
-    this.lightPoint = new THREE.Mesh(_geom, _material);
-    this.lightPoint.position.set(10,10,-10);
-    this.scene.add(this.lightPoint);
-    
-        
+
     primaryControls = this.primaryControls; 
     primaryCamera = this.primaryCamera;
     renderer = this.renderer;
