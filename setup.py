@@ -11,7 +11,7 @@ setup(
     keywords="dynamics multibody simulation visualization",
     license='LICENSE.txt',
     packages=find_packages(),
-    install_requires=['sympy>=0.7.2', 'numpy'],#, 'matplotlib'],
+    install_requires=['sympy>=0.7.2', 'numpy>=1.6.1'], 'matplotlib>=1.2.1'],
     # For some reason matplotlib doesn't install if numpy isn't already
     # installed, even if pip is bringing in all the deps simultaneously. I
     # think matplotlib must not be using the setuptools "install_requires"
