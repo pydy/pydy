@@ -115,7 +115,13 @@ class Server(threading.Thread):
                     self.close()
                 else:
                     pass
-
+            except socket.error, e:
+                if isinstance(e.args, tuple):
+                    print "errno is %d" % e[0]
+                if e[0] == errno.EPIPE:
+                    # remote peer disconnected
+                    print "Detected remote disconnect"
+                    
     def close(self):
         self.socket.shutdown(socket.SHUT_RDWR)
         sys.exit()

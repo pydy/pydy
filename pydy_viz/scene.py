@@ -9,7 +9,7 @@ import os
 import pydy_viz
 import distutils
 import distutils.dir_util
-
+import webbrowser
 try:
     from IPython.lib import backgroundjobs as bg
 except ImportError:
@@ -348,11 +348,12 @@ class Scene(object):
         server = Server(json=self.saved_json_file)
         jobs = bg.BackgroundJobManager()
         jobs.new('server.run()')
+
         print '''
         Your visualization is being rendered at
-                 http://localhost:%s/
-                 Visit the url in your webgl compatible browser
-                 to see the animation in full glory'''%(server.port)
+        http://localhost:%s/
+        Opening the visualization in new tab...'''%(server.port)
+        webbrowser.open("http://localhost:%s/"%server.port)
 
     def display(self):
         """
