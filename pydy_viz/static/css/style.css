@@ -2,17 +2,25 @@ body {
 background-color:rgb(200,200,200); 
 }
 #container { 
-background-color:rgb(78,75,75); 
-width:60%; 
+width:36%;
+float:right;
+
+}
+
+#canvas {
+margin-left:1em;
+margin-top: 0.5em;
+padding:0.5em;
+background-color:rgb(153, 153, 150); 
+width:60%;
+float:left;
+border-radius:10px;
+
 }
 #control-panel { 
-position:absolute; 
+
 right:10px; 
 top:10px; 
-background-color:rgb(75,75,75); 
-width:35%; 
-height:70%; 
-float:right;
 border-radius:10px;
 
 }
@@ -73,7 +81,3 @@ border-radius: 10px;
 }
 
 
-h2 {
-font-size:1.2em;
-display: inline;
-}

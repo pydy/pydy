@@ -13,7 +13,8 @@ var Canvas = function(JSONObj) {
     $("#pauseAnimation").click(this.pauseAnimation);  
     $("#stopAnimation").click(this.stopAnimation);             
     $("#switchCamera").click(this.switchCamera);                 
-    $("#goToFrame").click(this.goToFrame);                     
+    $("#goToFrame").click(this.goToFrame);
+    $("#shutdownServer").click(this.shutdownServer);                 
         
 };
 
@@ -40,6 +41,9 @@ Canvas.prototype.lightPoints.name = "Light Points";
 Canvas.prototype.scene = new THREE.Scene();
 
 Canvas.prototype.animationCounter = 0;
+Canvas.prototype.animationProgress = 
+     (Canvas.prototype.animationCounter/Canvas.prototype.timeSteps)*100
+       || 0;
 Canvas.prototype.cameraCounter = 0;
 
 Canvas.prototype.animationSpeed = parseInt($("#animationSpeed").val())
@@ -59,9 +63,10 @@ Canvas.prototype.initialize = function(){
  */
 
 	this.renderer = new THREE.WebGLRenderer();
-	this.renderer.setSize(JSONObj.width, JSONObj.height);
-	
-	this.container = $('#container');
+	this.renderer.setSize(800, 640);
+	var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
+	this.renderer.setClearColor(backgroundColor);	
+	this.container = $('#canvas');
 	this.container.append(this.renderer.domElement);	
 	
 	var axesMaterial = new THREE.MeshLambertMaterial(
@@ -95,7 +100,7 @@ Canvas.prototype.initialize = function(){
                                             this.renderer.domElement);
     
     var gridYZ = new THREE.GridHelper(100, 5);
-	gridYZ.position.set( 0,0,0 );
+	gridYZ.position.set(0, 0, 0);
     gridYZ.material.color = new THREE.Color(0xFFFFFF);
 	gridYZ.rotation.y = Math.PI/2;
 	
@@ -111,20 +116,21 @@ Canvas.prototype.initialize = function(){
     this.primaryLight = new THREE.PointLight(0xffffff);
     this.primaryLight.position.set(10,10,-10);
     this.scene.add(this.primaryLight);
-    // A point object to show this light ..
-    var _geom = new THREE.SphereGeometry(2,100,100);
-    var _material = new THREE.MeshBasicMaterial(0xffffff);
-    this.lightPoint = new THREE.Mesh(_geom, _material);
-    this.lightPoint.position.set(10,10,-10);
-    this.scene.add(this.lightPoint);
-    
-        
+
     primaryControls = this.primaryControls; 
     primaryCamera = this.primaryCamera;
     renderer = this.renderer;
     scene = this.scene;
-    $("#frameCount").append("<h2>Total Frames: " + this.timeSteps + "</h2>")
-    $("#currentFrame").append("<h2>Current Frame: " + this.animationCounter + "</h2>")    
-    
+    $("#animationProgressBar").css("width", "0%");
+    $("#animationProgressText").html("0%");
     };
+    
+    
+Canvas.prototype.shutdownServer = function(){
+	alert("Shutting Down Server, This window can be closed safely now!");
+	$.ajax({ url: "/close-server", context: document.body,crossDomain:true}).done(function() {
+	document.write("Server closed successfully. You can close this window now");	
+});
+	
+}    
 
