@@ -6,15 +6,24 @@ Visualization of multibody systems generated with PyDy.
 Installation
 ============
 
-Probably easiest to install the main dependencies from your package manager,
-e.g.::
+This package relies on dependencies included in the SciPy stack (i.e. NumPy and
+matplotlib). These packages are not necessarily easy to install from source, so
+it is best to follow the instructions available on the `SciPy installation
+page`_.
 
-   $ apt-get install python-numpy python-setuptools
+.. _SciPy installation page: http://www.scipy.org/install.html
 
-Then download the source and install with setuptools (this will automatically
-install the latest version of SymPy)::
+One example of installing the setuptools, NumPy, and matplotlib dependencies
+for Debian based Linux systems is to install from the apt package manager::
+
+   $ apt-get install python-setuptools python-numpy python-matplotlib
+
+Once the dependencies are installed, then download the source and install with::
 
    $ python setup.py install
+
+This will automatically install the latest version of the final dependency
+SymPy if needed.
 
 Tests
 =====
