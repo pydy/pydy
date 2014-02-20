@@ -371,11 +371,10 @@ class Scene(object):
 
         """
         try:
+        	# If it detects any IPython frontend
+        	# (qtconsole, interpreter or notebook)
             config = get_ipython().config
-            if config['KernelApp']['parent_appname'] == 'ipython-notebook':
-                self._display_from_ipython()
-            else:
-                self._display_from_interpreter()
-
+            self._display_from_ipython()
+        
         except:
             self._display_from_interpreter()
