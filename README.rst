@@ -78,6 +78,11 @@ Related Packages
 
 - https://github.com/cdsousa/sympybotics
 - https://pypi.python.org/pypi/Hamilton
+- https://pypi.python.org/pypi/arboris
+- https://pypi.python.org/pypi/PyODE
+- https://pypi.python.org/pypi/odeViz
+- https://pypi.python.org/pypi/ARS
+- https://pypi.python.org/pypi/pymunk
 
 .. _PyDy: http://pydy.org
 .. _SymPy: http://sympy.org
