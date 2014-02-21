@@ -1,0 +1,20 @@
+language: python
+python:
+  - "2.7"
+virtualenv:
+  system_site_packages: true
+before_install:
+  - sudo apt-get install -qq python-setuptools python-matplotlib python-numpy python-scipy
+install:
+  # Use Ubuntu LTS NumPy release. Note that there seems to be some conflict
+  # with using the Ubuntu LTS nose package, coverage package. I would get
+  # import errors for SymPy when running nosetests, so I switched back to
+  # recent versions of nose and coverage. See git and Travis history for
+  # details.
+  - pip uninstall -y numpy
+  - pip install sympy==0.7.2
+  - pip freeze
+script:
+  - python setup.py install
+  - python -c "import pydy_viz"
+  - python -c "import pydy_code_gen"
