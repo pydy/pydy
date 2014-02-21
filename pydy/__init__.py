@@ -3,5 +3,12 @@
 
 __version__ = '0.1.0dev'
 
-#import pydy_viz as visualization
-#import pydy_code_gen.code as codegen
+try:
+    import pydy_code_gen.code as codegen
+except ImportError:
+    print('pydy-code-gen not installed.')
+
+try:
+    import pydy_viz as visualization
+except ImportError:
+    print('pydy-viz not installed.')
