@@ -1,7 +1,8 @@
-__all__ = ['PerspectiveCamera', 'OrthoGraphicCamera']
-
 from sympy.matrices.expressions import Identity
-from visualization_frame import VisualizationFrame
+
+from .visualization_frame import VisualizationFrame
+
+__all__ = ['PerspectiveCamera', 'OrthoGraphicCamera']
 
 class PerspectiveCamera(VisualizationFrame):
     """
@@ -20,8 +21,8 @@ class PerspectiveCamera(VisualizationFrame):
 
     Unlike VisualizationFrame, It doesnt require a Shape argument.
 
-    Parameters:
-    ===========
+    Parameters
+    ==========
 
     name : str
     a name for the PerspectiveCamera(optional). Default is 'unnamed'
@@ -108,7 +109,7 @@ class PerspectiveCamera(VisualizationFrame):
                 i += 1
             except AttributeError:
                 raise TypeError(''' A ReferenceFrame is to be supplied
-                                   before a Particle/Point. ''')    
+                                   before a Particle/Point. ''')
 
             #Now next arg can either be a Particle or point
             try:
@@ -179,7 +180,7 @@ class PerspectiveCamera(VisualizationFrame):
         generation methods should be called, or it will give an error.
 
         Returns
-        ======
+        =======
 
         a dictionary containing following keys:
 
@@ -227,8 +228,8 @@ class OrthoGraphicCamera(VisualizationFrame):
 
     Unlike VisualizationFrame, It doesnt require a Shape argument.
 
-    Parameters:
-    ===========
+    Parameters
+    ==========
 
     name : str
     a name for the PerspectiveCamera(optional). Default is 'unnamed'
@@ -357,7 +358,7 @@ class OrthoGraphicCamera(VisualizationFrame):
         generation methods should be called, or it will give an error.
 
         Returns
-        ======
+        =======
 
         a dictionary containing following keys:
 

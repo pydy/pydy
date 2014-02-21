@@ -1,15 +1,18 @@
-__all__ = ['Scene']
-from sympy.physics.mechanics import ReferenceFrame, Point
-from visualization_frame import VisualizationFrame
-from camera import PerspectiveCamera
-from server import Server
-from light import PointLight
-import json
 import os
-import pydy_viz
+import json
 import distutils
 import distutils.dir_util
 import webbrowser
+
+from sympy.physics.mechanics import ReferenceFrame, Point
+
+import pydy_viz
+from .camera import PerspectiveCamera
+from .server import Server
+from .light import PointLight
+
+__all__ = ['Scene']
+
 try:
     from IPython.lib import backgroundjobs as bg
 except ImportError:
@@ -44,8 +47,8 @@ class Scene(object):
         Initializes a Scene instance.
         It requires a reference frame and a point to be initialized.
 
-        Parameters:
-        ===========
+        Parameters
+        ==========
 
         reference_frame : ReferenceFrame
         All the transformations would be carried out with respect
@@ -375,6 +378,6 @@ class Scene(object):
         	# (qtconsole, interpreter or notebook)
             config = get_ipython().config
             self._display_from_ipython()
-        
+
         except:
             self._display_from_interpreter()

@@ -12,8 +12,11 @@ Canvas.prototype.startAnimation = function(){
     for(var key in JSONObj.frames){
       Canvas.prototype._animate(key, Canvas.prototype.animationCounter);
       }
-      Canvas.prototype.animationCounter++; 
-      $("#currentFrame").html("Current Frame: " + Canvas.prototype.animationCounter);
+      Canvas.prototype.animationCounter++;
+      Canvas.prototype.animationProgress = 
+          (Canvas.prototype.animationCounter/Canvas.prototype.timeSteps)*100;
+      $("#animationProgressBar").css("width", Canvas.prototype.animationProgress+"%");
+      $("#animationProgressText").html(Canvas.prototype.animationProgress + "%");
       
       Canvas.prototype.animationID = requestAnimationFrame(Canvas.prototype.startAnimation);
       if(Canvas.prototype.animationCounter >= Canvas.prototype.timeSteps)
@@ -22,7 +25,7 @@ Canvas.prototype.startAnimation = function(){
           cancelAnimationFrame(Canvas.prototype.animationID);          
           Canvas.prototype.animationCounter = 0;  
           }         
-
+    
 };
 
 Canvas.prototype._animate = function(key, counter)
@@ -64,6 +67,10 @@ Canvas.prototype.stopAnimation = function(){
     for(var key in JSONObj.frames){
           Canvas.prototype._animate(key, 0);
     }
+    // Reset animation bar..
+    $("#animationProgressBar").css("width", "0%");
+    $("#animationProgressText").html("0%");
+    // Activate start animation button
     $("#startAnimation").click(Canvas.prototype.startAnimation);  
                     
 };

@@ -1,11 +1,11 @@
-__all__ = ['Server']
-
 import os
-import pydy_viz
 import socket
 import sys
 import threading
 
+import pydy_viz
+
+__all__ = ['Server']
 
 class Server(threading.Thread):
     """
@@ -51,11 +51,11 @@ class Server(threading.Thread):
         static_path = os.path.join(static_path, 'static')
         try:
             request = data.split(' ')[1]
-        except KeyError:
+        except IndexError:
 			#If error occurs in parsing a request,
 			#Better to reload the page, to avoid broken
 			#javascripts
-			request = '/'    
+			request = '/'
         if request == '/':
         #If requested for http://localhost:port/
         #Send index.html file
@@ -70,7 +70,7 @@ class Server(threading.Thread):
         elif request == '/close-server':
             print "Server closed successfully!"
             self.close()
-            
+
 
         else:
         #Else, try to use relative path from url for other files
