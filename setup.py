@@ -3,9 +3,11 @@
 
 from setuptools import setup, find_packages
 
+import pydy
+
 setup(
     name='PyDy',
-    version='0.1.0dev',
+    version=pydy.__version__,
     author='PyDy Authors',
     author_email='pydy@googlegroups.com',
     url="http://pydy.org",
