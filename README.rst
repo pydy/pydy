@@ -2,6 +2,8 @@
 We are migrating to a simple one package installer for the PyDy software
 suite.**
 
+test
+
 ====
 PyDy
 ====
