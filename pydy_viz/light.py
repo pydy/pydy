@@ -48,7 +48,7 @@ class PointLight(VisualizationFrame):
         particle : Particle
             A particle whose point is assigned as origin of the
             VisualizationFrame.
-        
+
         Examples
         ========
         >>> from pydy_viz import PointLight
@@ -69,7 +69,7 @@ class PointLight(VisualizationFrame):
         >>> #initializing with Particle, reference_frame ...
         >>> light = PointLight('frame3', I, Pa)
         """
-        
+
         try:
             self._color = kwargs['color']
         except KeyError:
@@ -99,7 +99,7 @@ class PointLight(VisualizationFrame):
                 i += 1
             except AttributeError:
                 raise TypeError(''' A ReferenceFrame is to be supplied
-                                   before a Particle/Point. ''')    
+                                   before a Particle/Point. ''')
 
             #Now next arg can either be a Particle or point
             try:
@@ -150,7 +150,7 @@ class PointLight(VisualizationFrame):
         generation methods should be called, or it will give an error.
 
         Returns
-        ======
+        =======
 
         a dictionary containing following keys:
 
@@ -166,7 +166,7 @@ class PointLight(VisualizationFrame):
         self._data['name'] = self.name
         self._data['type'] = self.__repr__()
         self._data['color'] = self._color_rgb
-        
+
         try:
             self._data['simulation_matrix'] = \
                                      self._visualization_matrix.tolist()

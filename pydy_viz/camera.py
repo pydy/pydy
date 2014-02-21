@@ -108,7 +108,7 @@ class PerspectiveCamera(VisualizationFrame):
                 i += 1
             except AttributeError:
                 raise TypeError(''' A ReferenceFrame is to be supplied
-                                   before a Particle/Point. ''')    
+                                   before a Particle/Point. ''')
 
             #Now next arg can either be a Particle or point
             try:
@@ -179,7 +179,7 @@ class PerspectiveCamera(VisualizationFrame):
         generation methods should be called, or it will give an error.
 
         Returns
-        ======
+        =======
 
         a dictionary containing following keys:
 
@@ -357,7 +357,7 @@ class OrthoGraphicCamera(VisualizationFrame):
         generation methods should be called, or it will give an error.
 
         Returns
-        ======
+        =======
 
         a dictionary containing following keys:
 

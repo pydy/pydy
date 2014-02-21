@@ -55,7 +55,7 @@ class Server(threading.Thread):
 			#If error occurs in parsing a request,
 			#Better to reload the page, to avoid broken
 			#javascripts
-			request = '/'    
+			request = '/'
         if request == '/':
         #If requested for http://localhost:port/
         #Send index.html file
@@ -70,7 +70,7 @@ class Server(threading.Thread):
         elif request == '/close-server':
             print "Server closed successfully!"
             self.close()
-            
+
 
         else:
         #Else, try to use relative path from url for other files
