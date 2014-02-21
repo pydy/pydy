@@ -1,7 +1,8 @@
-__all__ = ['PerspectiveCamera', 'OrthoGraphicCamera']
-
 from sympy.matrices.expressions import Identity
-from visualization_frame import VisualizationFrame
+
+from .visualization_frame import VisualizationFrame
+
+__all__ = ['PerspectiveCamera', 'OrthoGraphicCamera']
 
 class PerspectiveCamera(VisualizationFrame):
     """
@@ -20,8 +21,8 @@ class PerspectiveCamera(VisualizationFrame):
 
     Unlike VisualizationFrame, It doesnt require a Shape argument.
 
-    Parameters:
-    ===========
+    Parameters
+    ==========
 
     name : str
     a name for the PerspectiveCamera(optional). Default is 'unnamed'
@@ -227,8 +228,8 @@ class OrthoGraphicCamera(VisualizationFrame):
 
     Unlike VisualizationFrame, It doesnt require a Shape argument.
 
-    Parameters:
-    ===========
+    Parameters
+    ==========
 
     name : str
     a name for the PerspectiveCamera(optional). Default is 'unnamed'

@@ -1,8 +1,9 @@
-__all__ = ['PointLight']
-
 from sympy.matrices.expressions import Identity
-from visualization_frame import VisualizationFrame
 from matplotlib.colors import ColorConverter
+
+from .visualization_frame import VisualizationFrame
+
+__all__ = ['PointLight']
 
 convert = ColorConverter()
 

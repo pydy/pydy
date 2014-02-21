@@ -1,10 +1,11 @@
 __all__ = ['VisualizationFrame']
 
-from sympy.physics.mechanics import Point, ReferenceFrame
-from shapes import Shape
 import numpy as np
-from sympy.matrices.expressions import Identity
 from sympy import Dummy, lambdify
+from sympy.matrices.expressions import Identity
+from sympy.physics.mechanics import Point, ReferenceFrame
+
+from .shapes import Shape
 
 
 class VisualizationFrame(object):

@@ -1,11 +1,11 @@
-__all__ = ['Server']
-
 import os
-import pydy_viz
 import socket
 import sys
 import threading
 
+import pydy_viz
+
+__all__ = ['Server']
 
 class Server(threading.Thread):
     """
