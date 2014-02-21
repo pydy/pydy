@@ -1,10 +1,11 @@
 __all__ = ['VisualizationFrame']
 
-from sympy.physics.mechanics import Point, ReferenceFrame
-from shapes import Shape
 import numpy as np
-from sympy.matrices.expressions import Identity
 from sympy import Dummy, lambdify
+from sympy.matrices.expressions import Identity
+from sympy.physics.mechanics import Point, ReferenceFrame
+
+from .shapes import Shape
 
 
 class VisualizationFrame(object):
@@ -109,12 +110,12 @@ class VisualizationFrame(object):
                 i += 1
             except AttributeError:
                 raise TypeError(''' A ReferenceFrame is to be supplied
-                                   before a Particle/Point. ''')    
+                                   before a Particle/Point. ''')
 
             #Now next arg can either be a Particle or point
             try:
                 self._origin = args[i].get_point()
-                
+
             except AttributeError:
                 self._origin = args[i]
 
@@ -288,7 +289,7 @@ class VisualizationFrame(object):
             args = np.hstack((states, constant_values))
             new = self._numeric_transform(*args)
 
-        
+
         self._visualization_matrix = new.reshape(n, 16)
         return self._visualization_matrix
 
@@ -301,7 +302,7 @@ class VisualizationFrame(object):
         generation methods should be called, or it will give an error.
 
         Returns
-        ======
+        =======
 
         a dictionary containing following keys:
 

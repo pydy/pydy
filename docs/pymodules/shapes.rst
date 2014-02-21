@@ -1,89 +1,86 @@
 Shapes
-=====
+======
 
 Shape
 ^^^^^
 
 .. autoclass:: pydy_viz.shapes.Shape
    :members:
-   
 
 Cube
 ^^^^
 
 .. autoclass:: pydy_viz.shapes.Cube
-   :members:   
-   
+   :members:
+
 Cylinder
 ^^^^^^^^
 
 .. autoclass:: pydy_viz.shapes.Cylinder
-   :members:   
+   :members:
 
 Cone
 ^^^^
 
 .. autoclass:: pydy_viz.shapes.Cone
-   :members:   
+   :members:
 
 Sphere
 ^^^^^^
 
 .. autoclass:: pydy_viz.shapes.Sphere
-   :members:   
-   
+   :members:
+
 Circle
 ^^^^^^
 
 .. autoclass:: pydy_viz.shapes.Circle
-   :members:      
-            
+   :members:
+
 Plane
 ^^^^^
 
 .. autoclass:: pydy_viz.shapes.Plane
-   :members:      
+   :members:
 
 Tetrahedron
 ^^^^^^^^^^^
 
 .. autoclass:: pydy_viz.shapes.Tetrahedron
-   :members:   
+   :members:
 
-   
 Octahedron
 ^^^^^^^^^^
 
 .. autoclass:: pydy_viz.shapes.Tetrahedron
-   :members:      
+   :members:
 
 Icosahedron
 ^^^^^^^^^^^
 
 .. autoclass:: pydy_viz.shapes.Icosahedron
-   :members:   
+   :members:
 
 Torus
 ^^^^^
 
 .. autoclass:: pydy_viz.shapes.Torus
-   :members:   
+   :members:
 
 TorusKnot
 ^^^^^^^^^
 
 .. autoclass:: pydy_viz.shapes.TorusKnot
-   :members:   
+   :members:
 
 Tube
 ^^^^
 
 .. autoclass:: pydy_viz.shapes.Tube
-   :members:   
-
+   :members:
 
 Mesh
 ^^^^
 
 .. autoclass:: pydy_viz.shapes.Mesh
-   :members:   
+   :members:
