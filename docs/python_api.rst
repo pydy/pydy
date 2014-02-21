@@ -9,4 +9,3 @@ Python Modules Reference
    pymodules/cameras.rst
    pymodules/lights.rst
    pymodules/scene.rst
-
