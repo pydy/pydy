@@ -2,9 +2,11 @@
 
 from setuptools import setup, find_packages
 
+import pydy_viz
+
 setup(
     name='pydy-viz',
-    version='0.1.0dev',
+    version=pydy_viz.__version__,
     author='Tarun Gaba',
     author_email='tarun.gaba7@gmail.com',
     url="https://github.com/pydy/pydy-viz/",

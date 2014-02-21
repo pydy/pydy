@@ -82,3 +82,10 @@ View::
 
    $ firefox docs/build/index.html
 
+Release Notes
+=============
+
+0.1.0
+-----
+
+- Initial release.
