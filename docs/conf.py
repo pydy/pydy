@@ -23,6 +23,7 @@ import pydy_viz
 
 # This allows readthedocs to use autodoc.
 if os.environ.get('READTHEDOCS', None) == 'True':
+    print('Made it in here')
 
     import mock
 
