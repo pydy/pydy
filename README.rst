@@ -65,6 +65,9 @@ Now visit http://localhost:8000/SpecRunner.html in a webgl compliant browser.
 Documentation
 =============
 
+The documentation is hosted at http://pydy-viz.readthedocs.org but you can also
+build them from source using the following instructions:
+
 Requires:
 
 - Sphinx
