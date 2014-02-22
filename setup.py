@@ -10,11 +10,11 @@ from setuptools import setup, find_packages
 # line is added.
 os.environ["MPLCONFIGDIR"] = "."
 
-# TODO : Figure out how to import the version from pydy/__init__.py even
+# TODO : Figure out how to import __version__ from pydy/__init__.py even
 # though pydy-code-gen and pydy-viz are not installed.
 
 setup(
-    name='PyDy',
+    name='pydy',
     version='0.1.0dev',
     author='PyDy Authors',
     author_email='pydy@googlegroups.com',
