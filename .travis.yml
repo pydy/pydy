@@ -16,5 +16,8 @@ install:
   - pip freeze
 script:
   - python setup.py install
-  - python -c "import pydy_viz"
   - python -c "import pydy_code_gen"
+  - python -c "import pydy_viz"
+  - python -c "from pydy import codegen"
+  - python -c "from pydy import visualization"
+  - pip freeze
