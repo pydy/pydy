@@ -3,11 +3,12 @@
 
 from setuptools import setup, find_packages
 
-import pydy
+# TODO : Figure out how to import the version from pydy/__init__.py even
+# though pydy-code-gen and pydy-viz are not installed.
 
 setup(
     name='PyDy',
-    version=pydy.__version__,
+    version='0.1.0dev',
     author='PyDy Authors',
     author_email='pydy@googlegroups.com',
     url="http://pydy.org",
