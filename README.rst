@@ -1,7 +1,3 @@
-**Warning: This package is in development and not ready for use by end users.
-We are migrating to a simple one package installer for the PyDy software
-suite.**
-
 ====
 PyDy
 ====
@@ -34,7 +30,7 @@ The PyDy workflow generally depends on these Python packages:
 
 SciPy Stack
 
-- SymPy_ >= 0.7.2 (best to use the dev version as the development is active)
+- SymPy_ >= 0.7.2
 - NumPy_ >= 1.6.1
 - SciPy_ >= 0.9.0
 - matplotlib_ >= 0.99.0
@@ -49,11 +45,7 @@ It's best to install the dependencies from the SciPy Stack using the
 instructions_ provided on the SciPy website.
 
 Once you have all of the SciPy Stack dependencies you can simply install the
-PyDy Stack with easy_install or pip::
-
-   $ easy_install pydy
-
-or::
+PyDy Stack with pip::
 
    $ pip install pydy
 
@@ -62,7 +54,11 @@ Or download the source and run::
    $ python setup.py install
 
 For system wide installs you will need root permissions (perhaps prepend
-commands with `sudo`).
+commands with ``sudo``).
+
+Note that the PyDy package is currently a simple wrapper to pydy-code-gen and
+pydy-viz that provides a common namespace ``pydy``. These packages will likely
+be merged into this package soon.
 
 Usage
 =====
