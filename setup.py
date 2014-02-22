@@ -15,7 +15,7 @@ os.environ["MPLCONFIGDIR"] = "."
 
 setup(
     name='pydy',
-    version='0.1.0dev',
+    version='0.1.0',
     author='PyDy Authors',
     author_email='pydy@googlegroups.com',
     url="http://pydy.org",
