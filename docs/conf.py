@@ -28,7 +28,8 @@ if os.environ.get('READTHEDOCS', None) == 'True':
     import mock
 
     MOCK_MODULES = ['numpy', 'numpy.testing', 'matplotlib',
-                    'matplotlib.colors']
+                    'matplotlib.colors', 'sympy', 'sympy.physics.mechanics',
+                    'sympy.matrices.expressions']
     for mod_name in MOCK_MODULES:
         sys.modules[mod_name] = mock.Mock()
 
