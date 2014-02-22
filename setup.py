@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+
 from setuptools import setup, find_packages
+
+# I was getting the same error as:
+# https://github.com/statsmodels/statsmodels/issues/1073, so the following
+# line is added.
+os.environ["MPLCONFIGDIR"] = "."
 
 # TODO : Figure out how to import the version from pydy/__init__.py even
 # though pydy-code-gen and pydy-viz are not installed.
