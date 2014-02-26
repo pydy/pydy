@@ -12,6 +12,12 @@ different backends: SymPy's lambdify_, Theano_, and Cython_.
 .. _Theano: http://deeplearning.net/software/theano/
 .. _Cython: http://cython.org/
 
+Master Branch Build Status
+--------------------------
+
+.. image:: https://travis-ci.org/pydy/pydy-code-gen.png?branch=master
+   :target: https://travis-ci.org/pydy/pydy-code-gen
+
 Dependencies
 ============
 
