@@ -4,15 +4,49 @@
 import os
 import shutil
 import glob
+import filecmp
 
 # external libraries
 import numpy as np
 from numpy import testing
 
 # local libraries
-from pydy_code_gen.code import generate_ode_function
+from pydy_code_gen.code import generate_ode_function, CythonGenerator
 from models import generate_mass_spring_damper_equations_of_motion
 
+
+class TestCythonGenerator():
+
+    prefix = 'desired_mass_forcing'
+
+    def test_write_cython_code(self):
+
+        results = generate_mass_spring_damper_equations_of_motion()
+
+        generator = CythonGenerator(self.prefix, *results)
+        generator._write_cython_code()
+
+        file_dir = os.path.split(__file__)[0]
+
+        expected_files = ['desired_mass_forcing_c.c',
+                          'desired_mass_forcing_c.h',
+                          'desired_mass_forcing.pyx',
+                          'desired_mass_forcing_setup.py']
+
+        endings = ['_c.c', '_c.h', '.pyx', '_setup.py']
+
+        for ending, expected_file in zip(endings, expected_files):
+            created = self.prefix + ending
+            expected = os.path.join(file_dir, 'expected_cython',
+                                    expected_file)
+            assert filecmp.cmp(created, expected)
+
+    def teardown(self):
+
+        # clean up the cython crud
+        files = glob.glob(self.prefix + '*')
+        for f in files:
+            os.remove(f)
 
 class TestCode():
 

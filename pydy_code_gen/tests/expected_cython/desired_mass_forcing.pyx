@@ -1,22 +1,28 @@
 import numpy as np
 cimport numpy as np
 
-cdef extern from "desired_mass_forcing.h":
-    void mass_forcing(double constants[4],
-                      double coordinates[1],
-                      double speeds[1],
-                      double specified[1],
-                      double mass_matrix[4],
-                      double forcing_vector[2])
+cdef extern from "desired_mass_forcing_c.h":
+    void mass_forcing(double* constants,
+                      double* coordinates,
+                      double* speeds,
+                      double* specified,
+                      double* mass_matrix,
+                      double* forcing_vector)
 
 
-def mass_forcing_matrices(np.ndarray[np.double_t, ndim=1] constants,
-                          np.ndarray[np.double_t, ndim=1] coordinates,
-                          np.ndarray[np.double_t, ndim=1] speeds,
-                          np.ndarray[np.double_t, ndim=1] specified):
+def mass_forcing_matrices(np.ndarray[np.double_t, ndim=1, mode='c'] constants,
+                          np.ndarray[np.double_t, ndim=1, mode='c'] coordinates,
+                          np.ndarray[np.double_t, ndim=1, mode='c'] speeds,
+                          np.ndarray[np.double_t, ndim=1, mode='c'] specified):
 
-    cdef np.ndarray[np.double_t, ndim=1] mass_matrix = np.zeros(4)
-    cdef np.ndarray[np.double_t, ndim=1] forcing_vector = np.zeros(2)
+    assert len(constants) == 4
+    assert len(coordinates) == 1
+    assert len(speeds) == 1
+    assert len(specified) == 1
+
+
+    cdef np.ndarray[np.double_t, ndim=1, mode='c'] mass_matrix = np.zeros(4)
+    cdef np.ndarray[np.double_t, ndim=1, mode='c'] forcing_vector = np.zeros(2)
 
     mass_forcing(<double*> constants.data,
                  <double*> coordinates.data,
@@ -25,4 +31,4 @@ def mass_forcing_matrices(np.ndarray[np.double_t, ndim=1] constants,
                  <double*> mass_matrix.data,
                  <double*> forcing_vector.data)
 
-    return mass_matrix.reshape(4, 1), forcing_vector.reshape(2, 1)
+    return mass_matrix.reshape(2, 2), forcing_vector.reshape(2, 1)

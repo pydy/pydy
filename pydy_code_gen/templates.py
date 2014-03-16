@@ -61,8 +61,7 @@ def mass_forcing_matrices(np.ndarray[np.double_t, ndim=1, mode='c'] constants,
                  <double*> mass_matrix.data,
                  <double*> forcing_vector.data)
 
-    return mass_matrix.reshape({forcing_vector_len}, {forcing_vector_len}), forcing_vector.reshape({forcing_vector_len}, 1)
-"""
+    return mass_matrix.reshape({forcing_vector_len}, {forcing_vector_len}), forcing_vector.reshape({forcing_vector_len}, 1)"""
 # TODO : Add a doc string to the cython function
 
 setup_template = \
@@ -79,5 +78,4 @@ ext_module = Extension(name="{prefix}",
 
 setup(name="{prefix}",
       cmdclass = {{'build_ext': build_ext}},
-      ext_modules = [ext_module])
-"""
+      ext_modules = [ext_module])"""
