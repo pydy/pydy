@@ -15,7 +15,7 @@ setup(
     keywords="dynamics multibody simulation code generation",
     license='UNLICENSE',
     packages=find_packages(),
-    install_requires=['sympy>=0.7.3',
+    install_requires=['sympy>=0.7.4.1',
                       'numpy>=1.6.1',
                       ],
     extras_require={'doc': ['sphinx', 'numpydoc'],
