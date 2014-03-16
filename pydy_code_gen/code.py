@@ -438,6 +438,8 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
         # code, for example for Theano:
         # http://deeplearning.net/software/theano/library/sandbox/linalg.html#theano.sandbox.linalg.ops.Solve
 
+        # Could use scipy.linalg.solve and enable a and b overwriting to
+        # avoid the array copying.
         dx = np.array(np.linalg.solve(mass_matrix_values,
                                       forcing_vector_values)).T[0]
 

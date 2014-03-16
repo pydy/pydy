@@ -1,3 +1,4 @@
 include UNLICENSE
 include *.rst
+include pydy_code_gen/tests/expected_cython/*
 include bin/*.py

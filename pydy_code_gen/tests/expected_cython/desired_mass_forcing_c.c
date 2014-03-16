@@ -1,18 +1,13 @@
 #include <math.h>
 #include "desired_mass_forcing_c.h"
 
-void mass_forcing(double constants[4],
-                  double coordinates[1],
-                  double speeds[1],
-                  double specified[1],
+void mass_forcing(double constants[4], // constants = [m, k, c, g]
+                  double coordinates[1], // coordinates = [x]
+                  double speeds[1], // speeds = [v]
+                  double specified[1], // specified = [F]
                   double mass_matrix[4], // computed
                   double forcing_vector[2]) // computed
 {
-    // constants = [m, k, c, g]
-    // generalized_coordinates = [x]
-    // generalized_speeds = [v]
-    // external = [F]
-
     // common subexpressions
     double z_0 = speeds[0];
 
