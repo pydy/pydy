@@ -25,6 +25,8 @@ Once the dependencies are installed, then download the source and install with::
 This will automatically install the latest version of the final dependency
 SymPy if needed.
 
+**Note that pydy-viz is currently only tested on Python 2.7.**
+
 Tests
 =====
 
