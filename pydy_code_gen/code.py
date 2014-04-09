@@ -11,7 +11,12 @@ from itertools import chain
 import numpy as np
 from sympy import lambdify, numbered_symbols, cse, symbols
 from sympy.printing.ccode import CCodePrinter
-from sympy.printing.theanocode import theano_function
+try:
+    from sympy.printing.theanocode import theano_function
+    theano_installed = True
+except ImportError:
+    theano_installed = False
+    pass
 
 # internal libraries
 from templates import c_template, h_template, pyx_template, setup_template
@@ -319,16 +324,20 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
 
         elif generator == 'theano':
 
-            mass_matrix_func = theano_function(arguments, [mass_matrix],
-                                               on_unused_input='ignore')
-            forcing_vector_func = theano_function(arguments,
-                                                  [forcing_vector],
-                                                  on_unused_input='ignore')
-            # Theano will run faster if you trust the input. I'm not sure
-            # what the implications of this are. See:
-            # http://deeplearning.net/software/theano/tutorial/faq.html#faster-small-theano-function
-            mass_matrix_func.trust_input = True
-            forcing_vector_func.trust_input = True
+            if theano_installed:
+
+                mass_matrix_func = theano_function(arguments, [mass_matrix],
+                                                on_unused_input='ignore')
+                forcing_vector_func = theano_function(arguments,
+                                                    [forcing_vector],
+                                                    on_unused_input='ignore')
+                # Theano will run faster if you trust the input. I'm not sure
+                # what the implications of this are. See:
+                # http://deeplearning.net/software/theano/tutorial/faq.html#faster-small-theano-function
+                mass_matrix_func.trust_input = True
+                forcing_vector_func.trust_input = True
+            else:
+                raise ImportError('Theano not installed')
 
         def mass_forcing_func(numerical_constants, numerical_coordinates,
                               numerical_speeds, numerical_specified=None):
