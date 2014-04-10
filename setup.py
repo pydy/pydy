@@ -12,9 +12,6 @@ from pydy import __version__
 # line is added.
 os.environ["MPLCONFIGDIR"] = "."
 
-# TODO : Figure out how to import __version__ from pydy/__init__.py even
-# though pydy-code-gen and pydy-viz are not installed.
-
 setup(
     name='pydy',
     version=__version__,
@@ -28,6 +25,7 @@ setup(
     packages=find_packages(),
     install_requires=['sympy>=0.7.4.1',
                       'numpy>=1.6.1',
+                      'matplotlib>=0.99.0',
                       ],
     extras_require={'doc': ['sphinx', 'numpydoc'],
                     'theano': ['Theano>=0.6.0'],
