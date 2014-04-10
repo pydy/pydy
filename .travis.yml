@@ -1,23 +1,25 @@
 language: python
 python:
-  - "2.7"
+  - 2.7
 virtualenv:
   system_site_packages: true
 before_install:
-  - sudo apt-get install -qq python-setuptools python-matplotlib python-numpy python-scipy
-install:
-  # Use Ubuntu LTS NumPy release. Note that there seems to be some conflict
-  # with using the Ubuntu LTS nose package, coverage package. I would get
-  # import errors for SymPy when running nosetests, so I switched back to
-  # recent versions of nose and coverage. See git and Travis history for
-  # details.
+  # On Ubuntu 12.04 numpy is at 1.6.1, SciPy is at 0.9.0 and Cython is at
+  # 0.15.1.
+  - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy python-matplotlib cython
+  - sudo apt-get install -y -qq python-coverage
+  # Remove the version of NumPy pre-installed into the Travis virtualenv so
+  # that we test with the system installed version.
   - pip uninstall -y numpy
-  - pip install sympy==0.7.2
+  - pip install --no-deps Theano==0.6.0
+  - pip install sympy==0.7.4.1
+  # Note that the `make html` command that runs 'build-sphinx' does not work if
+  # Sphinx is installed with 'apt-get install sphinx'. It can't find the
+  # numpydoc extension if it is. It must be bypassing virtualenv to the system
+  # Python.
+  - pip install sphinx numpydoc
   - pip freeze
 script:
+  - nosetests -v --with-coverage --cover-package=pydy
+  - cd docs && make html && cd ..
   - python setup.py install
-  - python -c "import pydy_code_gen"
-  - python -c "import pydy_viz"
-  - python -c "from pydy import codegen"
-  - python -c "from pydy import visualization"
-  - pip freeze
