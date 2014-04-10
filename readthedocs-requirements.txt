@@ -1,0 +1,4 @@
+#For viz
+numpydoc
+mock
+sympy
