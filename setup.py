@@ -24,9 +24,14 @@ setup(
     keywords="multibody dynamics",
     license='LICENSE.txt',
     packages=find_packages(),
-    install_requires=['pydy-viz==0.1.0',
+    install_requires=['sympy>=0.7.2', # for viz
+                      'numpy>=1.6.1', # for viz
+                      'matplotlib>=0.99.0', # for viz
                       'pydy-code-gen==0.1.0',
                       ],
+    extras_require={'doc': ['sphinx', 'numpydoc']},
+    tests_require=['nose'],
+    test_suite='nose.collector',                  
     include_package_data=True,
     classifiers=['Development Status :: 4 - Beta',
                  'Intended Audience :: Science/Research',
