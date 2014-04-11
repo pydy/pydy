@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		<title>PyDy Visualizer</title>
+
+		<!--- External Libs -->
+		<!-- Jquery and jquery-ui-->
+		<script type="text/javascript" src="js/lib/jquery.min.js"></script>
+		<script type="text/javascript" src="js/lib/jquery-ui.js"></script>
+		<script type="text/javascript" src="js/lib/three.min.js"></script>
+		<script type="text/javascript" src="js/lib/TrackballControls.js"></script>
+
+		<!--- Bootstrap -->
+
+		<script type="text/javascript" src="js/lib/bootstrap.min.js"></script>
+
+		<!--- Canvas Scripts -->
+
+		<script type="text/javascript" src="data.json"></script>
+
+		<script type="text/javascript" src="js/canvas/initialize.js"></script>
+		<script type="text/javascript" src="js/canvas/addObjects.js"></script>
+		<script type="text/javascript" src="js/canvas/animate.js"></script>
+
+		<!--- css -->
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+
+		<!--- Bootstrap -->
+		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" media="screen">
+	</head>
+
+	<body>
+		<div id="canvas">
+			<!--- WebGL renderer is called from canvas javascripts
+					on this element --->
+		</div>
+	<div id="container">
+	    <div id="banner"><h1>PyDy Visualizer</h1></div>
+		<div id="control-panel" class="well">
+			<h1>Control Panel</h1>
+			
+			<!--- Contains all the components for controlling 
+			      visualizations and animations --->
+             
+			<div id="animation-controls" class="btn-group btn-gp">
+				<br /><span class="label label-default">Animation Controls</span>
+				<br />
+				<button id="startAnimation" class="btn btn-primary"><i class="icon-white icon-play"></i> Play</button>
+				<button id="pauseAnimation" class="btn btn-primary"><i class="icon-white icon-pause"></i> Pause</button>
+				<button id="stopAnimation" class="btn btn-primary"><i class="icon-white icon-stop"></i> Stop</button>
+				<br /><br /><input type="checkbox" id="isLooped"></input><label>Play Looped</label>
+			</div>
+			<hr />
+			
+			<!--- Server Settings --->
+			<div id="server-settings" class="btn-group btn-gp">
+				<br /><span class="label label-default">Server Settings</span>
+				<br />
+				<button id="resetControls" class="btn btn-primary"><i class="icon-white icon-play"></i> Reset Camera</button>
+				<button id="shutdownServer" class="btn btn-primary"><i class="icon-white icon-pause"></i> Shutdown Server</button>
+			</div>
+			<hr />
+			<!---------------------->
+			
+			<!--- Move to a specific frame --->
+			<!------ TODO --------
+			<div id="frame-slider" class="btn-group btn-gp">
+				<br /><span class="label label-default">Frame Navigator</span>
+				<br />
+				<button id="resetControls" class="btn btn-primary"><i class="icon-white icon-play"></i> Reset Camera</button>
+				<button id="shutdownServer" class="btn btn-primary"><i class="icon-white icon-pause"></i> Shutdown Server</button>
+			</div>
+			<hr />
+
+			
+			<!--- Animation Statistics --->
+            <div id="animation-statistics" class="btn-group btn-gp">
+				<br /><span class="label label-default">Animation Statistics</span>
+				<br />
+				
+				
+				<label>Animation Progress</label>
+				<div class="progress progress-striped active">
+					<div id="animationProgressBar" class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="background-color:rgb(66, 139, 202);">
+						<span id="animationProgressText"class="sr-only">0%</span>
+					</div>
+					<label id="animationProgressText">0%</label>
+					<label>40%</label>
+
+				</div>
+				<!----------TODO--------
+				<label>Frame Rate</label>
+				<div class="progress progress-striped active">
+					<div id="framerateBar" class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 60%; background-color:rgb(66, 139, 202);">
+						<span id="framerateText"class="sr-only">0%</span>
+					</div>
+				</div>
+				-------->
+
+			</div></div>
+			<hr />
+			<!----- Footer------>
+			<div id="footer">
+			PyDyViz Version:0.1.0
+			</div>
+			
+			
+			<!--- Script for loading Canvas ----->
+			<script>
+				var s = new Canvas(JSONObj);
+				s.initialize();
+				s.addControls();
+				s.addLights();
+				s.addCameras();
+				s.addFrames();
+			</script>
+		</div>
+	</body>
+</html>	
+        
+
+
+        
+
+
+
