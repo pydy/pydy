@@ -1,0 +1,18 @@
+language: python
+python:
+  - 2.7
+virtualenv:
+  system_site_packages: true
+before_install:
+  # On Ubuntu 12.04 numpy is at 1.6.1, SciPy is at 0.9.0 and Cython is at
+  # 0.15.1.
+  - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy cython python-coverage
+  # Remove the version of NumPy pre-installed into the Travis virtualenv so
+  # that we test with the system installed version.
+  - pip uninstall -y numpy
+  - pip install --no-deps Theano==0.6.0
+  - pip install sympy==0.7.4.1
+  - pip freeze
+install:
+  - python setup.py install
+script: nosetests -v --with-coverage --cover-package=pydy_code_gen
