@@ -1,4 +1,0 @@
-recursive-include docs *
-prune docs/_build
-recursive-include pydy_viz/static *
-include README.rst
