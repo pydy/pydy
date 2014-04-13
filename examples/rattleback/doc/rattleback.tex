@@ -1,0 +1,148 @@
+\documentclass[letterpaper,11pt]{article}
+\usepackage[round]{natbib}
+\usepackage[margin=0.75in,centering]{geometry}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[pdftex]{hyperref}
+\hypersetup{
+    pdftitle={On the Rattleback},
+    pdfauthor={Dale Lukas Peterson},
+    pdfsubject={dynamics and stability of the rattleback},
+    pdfkeywords={rattleback, nonholonomic constraints, Kane's method}}
+
+\pagestyle{fancy}
+\fancyhead[L]{On the Rattleback, Dale L. Peterson}
+\fancyhead[R]{\thepage}  % page number on the right
+\fancyfoot[L,C,R]{}  %  No footer on left, center or right, on even or odd pages
+
+\begin{document}
+\abstract{This report briefly reviews previous studies of the solid body
+  commonly known as a rattleback, celt, or wobblestone.  These solids, whose
+  geometric and principal inertia axes are unaligned, exhibit two unexpected
+  behaviors: spin reversal, and ``spin bias''.  Spin reversal occurs when the
+  body is initially spun about a vertical axis in one direction and after some
+  time begins to spin in the opposite direction.  ``Spin bias'' is the behavior
+  observed in some rattlebacks which reverse when spun in one direction but not
+  the other.  The stability of the equilibrium configuration is examined as a
+  function of the spin rate.  For dissipation free models, linear stability
+  analysis can only show where spin reversal cannot occur.}
+
+  \section{Brief Literature Review}
+  The first published study of the rattleback was performed by G.T. Walker in
+  1896 \cite{Walker1896}.  Since that time, the rattleback has been examined by a number of
+  authors, both in books \cite{Routh1905a, Bloch2003} and in the flurry of
+  papers published in the 1980's by Caughey, Kane, Markeev, Pascal, Bondi,
+  Garcia and Hubbard.  With the exception of Garcia and Hubbard, all authors
+  assume no-slip of the contact point, and only a few (Kane, Garcia and
+  Hubbard) include any dissipation in their models.  Additionally, Garcia and
+  Hubbard are the only authors to question the validity of the no-slip model.
+  They propose a model which incorporates dry friction and aerodynamic effects,
+  compare this model with experimental measurements, and present an explanation
+  of the reversal phenomenon based upon the transfer of energy between spinning
+  motions and oscillatory motions.
+
+  \section{Model description}
+  The shape of the bottom surface of the rattleback is commonly modelled as an
+  ellipsoid
+  \[
+    \left(\frac{x}{a}\right)^2 + \left(\frac{y}{b}\right)^2 + \left(\frac{z}{c}\right)^2 - 1 = 0
+  \]
+  with semi-diameters of $a, b, c$, or as an elliptic paraboloid (opening in the $-z$ direction)
+  \[
+    \left(\frac{x}{a}\right)^2 + \left(\frac{y}{b}\right)^2 + z - c = 0
+  \]
+  with an elliptical cross section and semi-major and semi-minor axes of $a,
+  b$, respectively, when $z=c$.  Given the same parameters $a, b$, and $c$, the
+  curvatures of these two surfaces are distinct and direct comparisons between
+  ellipsoidal and elliptic parabololoid are somewhat difficult.
+
+  The body fixed x-axis is assumed to be the long axis of the rattleback, and
+  the body fixed z-axis is assumed to be aligned the vertical when the
+  rattleback is in its rest configuration.  All models presented in the
+  literature assumed the mass center of the rattleback lies on z axis, but not
+  necessarily at the origin of the body fixed coordinate in which the contact
+  surface is described (i.e., it can lie above or below the origin).
+
+  The property that gives rattlebacks their interesting behavior is that their
+  inertial principal axes are not aligned with the geometric axes; instead, the
+  principal axes differ from the geometric axes by a simple rotation about the
+  body fixed z-axis.
+
+  Five generalized coordinates completely configure the rattleback with respect
+  to an inertial frame.  Two distance coordinates locate the contact point and
+  three angle coordinates orient the body fixed axes with respect to the
+  inertial axes.  The Euler $ZXY$ (yaw-roll-pitch) angle convention is most
+  commonly used.  Of these five coordinates, three are ignorable (cyclic): the
+  two distance coordinates and the yaw (heading) coordinate.  Only roll and
+  pitch coordinates appear in the dynamic equations.
+
+  If no-slip of the contact point is assumed there are two nonholonomic
+  constraints which imply that the rattleback has only three degrees of
+  freedom.  If slip is possible (and hence a contact force model is
+  prescribed), there are instead five degrees of freedom.
+
+  \section{No-slip, dissipation free equations}
+  The equations of motion for ellipsoidal and elliptic paraboloid surfaces have
+  been derived with sympy.physics.mechanics and are available for download on
+  \href{http://github.com/gilbertgede/pydy_examples}{github.com}.  Without
+  dissipation, the model predicts an infinite number of reversals.  This
+  property is never observed in real rattlebacks (though some rattlebacks will
+  exhibit more than just one reversal).
+
+  The linear dynamics of the reference configuration can be parameterized by
+  the spin rate in much the same way the upright linear dynamics of a bicycle
+  are parameterized by the forward speed.  Additionally, in the same way that
+  the longitudinal dynamics of a bicycle are decoupled (to first order) from
+  the lateral dynamics, the spin (yaw) dynamics of a dissipation free
+  rattleback are decoupled (to first order) from the roll and pitch dynamics.
+  The implications of this, the set of five first order non-linear ODE's, when
+  linearized about the reference configuration result in a four dimensional
+  linear system, parameterized by the spin rate.
+
+  The stability of the reference configuration indicates that reversal is not
+  possible.  Small perturbations in roll and pitch decay exponentially, and
+  because the model is the energetically conservative, the spin rate must
+  increase a small amount (this behavior will not be captured by the linearized
+  model since there are no first order spin dynamics).
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{reversals_noslip_nodissipation}
+    \caption{No slip, dissipation free rattleback reversals.  Notice the
+    difference in period between clockwise reversals and counterclock
+  reversals.}
+  \end{figure}
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{evals_vs_spinrate}
+    \caption{No slip, dissipation free rattleback eigenvalues versus spin rate.}
+  \end{figure}
+
+  \section{Future work}
+  Dynamic equilibria for which roll and pitch are nonzero exist, and their
+  stability has yet to be explore in the same fashion as the stability of the
+  reference configuration.  In order to explore this, a visualization of the
+  equilibria in the (roll, pitch, spin rate) space needs to be generated.  For
+  each roll and pitch, there may exist a spin rate (two actually) which
+  corresponds to dynamic equilibrium, and the stability of this equilibrium can
+  be evaluated.  Plotting level curves of spin rate and regions of stability in
+  the (roll, pitch) plane is a good potential candidate for visualizing this.
+
+  Animations of rattleback motion would be a valuable tool in exploring the
+  motion of rattlebacks with different parameters, initial conditions, surface
+  shapes, and contact models (slip, no-slip).  Work has begun on making these
+  animations but is currently incomplete.
+% \subsection{No-slip, dissipative equations}
+% Adding a simple dissipative torque such as
+% \[
+%   T = -\sigma \mathbf{\omega}
+% \]
+% causes only a finite number of reversals to occur.
+
+% \subsection{Dissipative case}
+\bibliographystyle{plain}
+\bibliography{library}
+\end{document}
