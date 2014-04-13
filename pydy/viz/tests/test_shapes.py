@@ -1,6 +1,12 @@
-from sympy.physics.mechanics import *
+#!/usr/bin/env python
+
+# external
+#from sympy.physics.mechanics import *
 from numpy.testing import assert_allclose
-from pydy_viz.shapes import *
+
+# local
+from ..shapes import *
+
 
 def test_shape():
     shape = Shape('shape', color='BLUE')
@@ -29,6 +35,7 @@ def test_shape():
     assert shape_.__str__() == 'Shape unnamed color:BLUE'
     assert shape_.__repr__() == 'Shape'
 
+
 def test_cube():
     cube = Cube('cube', length=10, color='BLUE')
 
@@ -48,9 +55,10 @@ def test_cube():
     assert cube.color == 'RED'
 
     assert_allclose(cube.color_in_rgb(), (1.0, 0.0, 0.0))
-    assert cube.generate_dict() == {"color": "RED", \
-                                               "type": "Cube", \
-                                   "name": "cube1", "length": 16}
+    assert cube.generate_dict() == {"color": "RED",
+                                    "type": "Cube",
+                                    "name": "cube1",
+                                    "length": 16}
 
     assert isinstance(cube, Shape)
 
@@ -60,6 +68,7 @@ def test_cube():
     assert cube_.name == 'unnamed'
     assert cube_.__str__() == 'Cube unnamed color:BLUE length:10'
     assert cube_.__repr__() == 'Cube'
+
 
 def test_cylinder():
     cylinder = Cylinder('cylinder', length=10, radius=5, color='blue')
@@ -84,10 +93,11 @@ def test_cylinder():
     assert cylinder.color == 'cyan'
 
     assert_allclose(cylinder.color_in_rgb(), (0.0, 1.0, 1.0))
-    assert cylinder.generate_dict() == {"color": "cyan", \
-                                         "type": "Cylinder", \
-                                   "name": "cylinder1", "length": 14, \
-                                       "radius" : 7}
+    assert cylinder.generate_dict() == {"color": "cyan",
+                                        "type": "Cylinder",
+                                        "name": "cylinder1",
+                                        "length": 14,
+                                        "radius": 7}
 
     assert isinstance(cylinder, Shape)
 
@@ -377,10 +387,10 @@ def test_icosahedron():
 def test_torus():
     torus = Torus('torus', radius=10, tube_radius=2, color='#FFFF00')
 
-    assert torus.name == 'torus' 			
+    assert torus.name == 'torus'
     assert torus.__str__() == \
-                     'Torus torus color:#FFFF00 radius:10 tube radius:2' 			
-    assert torus.__repr__() == 'Torus' 			
+                     'Torus torus color:#FFFF00 radius:10 tube radius:2'
+    assert torus.__repr__() == 'Torus'
     assert torus.radius == 10
     assert torus.tube_radius == 2
     assert torus.color == '#FFFF00'
@@ -407,18 +417,18 @@ def test_torus():
     assert isinstance(torus, Shape)
 
     torus_ = Torus(radius=10, tube_radius=2, color='#FFFF00')
-    assert torus_.name == 'unnamed' 			
+    assert torus_.name == 'unnamed'
     assert torus_.__str__() == \
-                   'Torus unnamed color:#FFFF00 radius:10 tube radius:2' 			
-    assert torus_.__repr__() == 'Torus' 			
+                   'Torus unnamed color:#FFFF00 radius:10 tube radius:2'
+    assert torus_.__repr__() == 'Torus'
 
 def test_tube():
     point_list = [[2., 4., 5.], [2., 6., 4.], [1., 5., 8.]]
     tube = Tube('tube', radius=10, points=point_list, color='#4682B4')
 
-    assert tube.name == 'tube' 			
-    assert tube.__str__() == 'Tube tube color:#4682B4 radius:10' 			
-    assert tube.__repr__() == 'Tube' 			
+    assert tube.name == 'tube'
+    assert tube.__str__() == 'Tube tube color:#4682B4 radius:10'
+    assert tube.__repr__() == 'Tube'
     assert tube.radius == 10
     assert_allclose(tube.points, point_list)
     assert tube.color == '#4682B4'
@@ -426,7 +436,7 @@ def test_tube():
 
     tube.name = 'tube1'
     assert tube.name == 'tube1'
-    	
+
 
     tube.radius = 15
     assert tube.radius == 15
@@ -450,26 +460,26 @@ def test_tube():
     assert isinstance(tube, Shape)
 
     tube_ = Tube(radius=10, points=point_list, color='#4682B4')
-    assert tube_.name == 'unnamed' 			
-    assert tube_.__str__() == 'Tube unnamed color:#4682B4 radius:10' 			
-    assert tube_.__repr__() == 'Tube' 			
+    assert tube_.name == 'unnamed'
+    assert tube_.__str__() == 'Tube unnamed color:#4682B4 radius:10'
+    assert tube_.__repr__() == 'Tube'
 
 def test_torus_knot():
 
     torus_knot = TorusKnot('torus_knot', radius=10, tube_radius=2, \
                                                        color='#C0C0C0')
 
-    assert torus_knot.name == 'torus_knot' 			
+    assert torus_knot.name == 'torus_knot'
     assert torus_knot.__str__() == \
-            'TorusKnot torus_knot color:#C0C0C0 radius:10 tube radius:2' 			
-    assert torus_knot.__repr__() == 'TorusKnot' 			
+            'TorusKnot torus_knot color:#C0C0C0 radius:10 tube radius:2'
+    assert torus_knot.__repr__() == 'TorusKnot'
     assert torus_knot.radius == 10
     assert torus_knot.tube_radius == 2
     assert torus_knot.color == '#C0C0C0'
 
     torus_knot.name = 'torus_knot1'
     assert torus_knot.name == 'torus_knot1'
-    	
+
     torus_knot.radius = 12
     assert torus_knot.radius == 12
 
@@ -491,7 +501,7 @@ def test_torus_knot():
     assert isinstance(torus_knot, Shape)
 
     torus_knot_ = TorusKnot(radius=10, tube_radius=2, color='#C0C0C0')
-    assert torus_knot_.name == 'unnamed' 			
+    assert torus_knot_.name == 'unnamed'
     assert torus_knot_.__str__() == \
-               'TorusKnot unnamed color:#C0C0C0 radius:10 tube radius:2' 			
-    assert torus_knot_.__repr__() == 'TorusKnot' 			
+               'TorusKnot unnamed color:#C0C0C0 radius:10 tube radius:2'
+    assert torus_knot_.__repr__() == 'TorusKnot'

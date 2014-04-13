@@ -3,8 +3,6 @@ import socket
 import sys
 import threading
 
-import pydy_viz
-
 __all__ = ['Server']
 
 class Server(threading.Thread):
@@ -47,7 +45,7 @@ class Server(threading.Thread):
 
     def _parse_data(self, data):
 
-        static_path = os.path.dirname(pydy_viz.__file__)
+        static_path = os.path.dirname(__file__)
         static_path = os.path.join(static_path, 'static')
         try:
             request = data.split(' ')[1]
@@ -121,7 +119,7 @@ class Server(threading.Thread):
                 if e[0] == errno.EPIPE:
                     # remote peer disconnected
                     print "Detected remote disconnect"
-                    
+
     def close(self):
         self.socket.shutdown(socket.SHUT_RDWR)
         sys.exit()

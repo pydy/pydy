@@ -1,4 +1,7 @@
+recursive-include docs *
+prune docs/_build
 include UNLICENSE
 include *.rst
-include pydy_code_gen/tests/expected_cython/*
+include pydy/codegen/tests/expected_cython/*
 include bin/*.py
+recursive-include pydy/viz/static *

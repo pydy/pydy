@@ -144,7 +144,7 @@ class CythonGenerator(object):
 
         >>> from sympy import symbols
         >>> from sympy.physics.mechanics import dynamicsymbols
-        >>> from pydy_code_gen.code import CythonGenerator
+        >>> from pydy.codegen.code import CythonGenerator
         >>> cython_generator = CythonGenerator(...)
         >>> cython_generator._generate_pydy_c_printer()
         >>> m = symbols('m') # m is the first constant in the EoMs

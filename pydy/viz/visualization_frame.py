@@ -65,7 +65,7 @@ class VisualizationFrame(object):
 
         Examples
         ========
-        >>> from pydy_viz import VisualizationFrame, Sphere
+        >>> from pydy.viz import VisualizationFrame, Sphere
         >>> from sympy.physics.mechanics import \
                                ReferenceFrame, Point, RigidBody, \
                                 Particle, inertia

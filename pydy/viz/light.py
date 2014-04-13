@@ -52,7 +52,7 @@ class PointLight(VisualizationFrame):
 
         Examples
         ========
-        >>> from pydy_viz import PointLight
+        >>> from pydy.viz import PointLight
         >>> from sympy.physics.mechanics import \
                                ReferenceFrame, Point, RigidBody, \
                                 Particle, inertia

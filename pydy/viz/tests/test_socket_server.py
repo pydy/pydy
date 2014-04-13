@@ -1,9 +1,10 @@
 #This module is exclusively for testing Socket connections.
 
-import socket
-from pydy_viz.server import Server
-import pydy_viz
 import os
+import socket
+
+from ..server import Server
+
 
 class TestSocketServer(object):
     def __init__(self):
@@ -18,7 +19,7 @@ class TestSocketServer(object):
         self.connection.send('GET /')
 
         data = self.server.listen_once()
-        path = os.path.join(os.path.dirname(pydy_viz.__file__), 'static', 'index.html')
+        path = os.path.join(os.path.dirname(__file__), '..', 'static', 'index.html')
         print data
         assert data == open(path).read()
 
@@ -28,8 +29,7 @@ class TestSocketServer(object):
         self.connection.send('GET /js/canvas/initialize.js')
 
         data = self.server.listen_once()
-        path = os.path.join(os.path.dirname(pydy_viz.__file__), 'static', 'js', 'canvas', 'initialize.js')
+        path = os.path.join(os.path.dirname(__file__), '..', 'static', 'js',
+                            'canvas', 'initialize.js')
         print data
         assert data == open(path).read()
-
-

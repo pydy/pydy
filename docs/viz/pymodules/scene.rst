@@ -1,5 +1,5 @@
 Scene
 =======
 
-.. autoclass:: pydy_viz.scene.Scene
+.. autoclass:: pydy.viz.scene.Scene
    :members:

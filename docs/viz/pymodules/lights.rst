@@ -4,5 +4,5 @@ Lights
 PointLight
 ^^^^^^^^^^
 
-.. autoclass:: pydy_viz.light.PointLight
+.. autoclass:: pydy.viz.light.PointLight
    :members:

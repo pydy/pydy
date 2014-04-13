@@ -4,11 +4,11 @@ Cameras
 Perspective Camera
 ^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: pydy_viz.camera.PerspectiveCamera
+.. autoclass:: pydy.viz.camera.PerspectiveCamera
    :members:
 
 Orthographic Camera
 ^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: pydy_viz.camera.OrthoGraphicCamera
+.. autoclass:: pydy.viz.camera.OrthoGraphicCamera
    :members:

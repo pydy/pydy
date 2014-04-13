@@ -11,8 +11,8 @@ import numpy as np
 from numpy import testing
 
 # local libraries
-from pydy_code_gen.code import generate_ode_function, CythonGenerator
-from models import generate_mass_spring_damper_equations_of_motion
+from ..code import generate_ode_function, CythonGenerator
+from .models import generate_mass_spring_damper_equations_of_motion
 
 
 class TestCythonGenerator():

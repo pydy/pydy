@@ -51,7 +51,7 @@ class PerspectiveCamera(VisualizationFrame):
 
         Examples
         ========
-        >>> from pydy_viz import VisualizationFrame, Shape
+        >>> from pydy.viz import VisualizationFrame, Shape
         >>> from sympy.physics.mechanics import \
                                ReferenceFrame, Point, RigidBody, \
                                 Particle, inertia
@@ -254,7 +254,7 @@ class OrthoGraphicCamera(VisualizationFrame):
 
         Examples
         ========
-        >>> from pydy_viz import OrthoGraphicCamera
+        >>> from pydy.viz import OrthoGraphicCamera
         >>> from sympy.physics.mechanics import \
                                ReferenceFrame, Point, RigidBody, \
                                 Particle, inertia

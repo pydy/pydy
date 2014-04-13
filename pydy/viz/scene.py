@@ -1,12 +1,16 @@
+#!/usr/bin/env python
+
+# standard library
 import os
 import json
 import distutils
 import distutils.dir_util
 import webbrowser
 
+# external
 from sympy.physics.mechanics import ReferenceFrame, Point
 
-import pydy_viz
+# local
 from .camera import PerspectiveCamera
 from .server import Server
 from .light import PointLight
@@ -329,7 +333,7 @@ class Scene(object):
         """
         dst = os.path.join(os.getcwd(), '.pydy_viz')
         os.mkdir(dst)
-        src = os.path.join(os.path.dirname(pydy_viz.__file__), 'static')
+        src = os.path.join(os.path.dirname(__file__), 'static')
         distutils.dir_util.copy_tree(src, dst)
 
     def _cleanup(self):

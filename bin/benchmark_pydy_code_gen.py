@@ -10,8 +10,8 @@ import glob
 from scipy.integrate import odeint
 from numpy import hstack, ones, pi, linspace, array, zeros, zeros_like
 import matplotlib.pyplot as plt
-from pydy_code_gen.code import generate_ode_function
-from pydy_code_gen.tests.models import \
+from pydy.codegen.code import generate_ode_function
+from pydy.codgen.tests.models import \
     generate_n_link_pendulum_on_cart_equations_of_motion
 
 

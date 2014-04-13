@@ -1,5 +1,5 @@
 VisualizationFrame
 ==================
 
-.. autoclass:: pydy_viz.VisualizationFrame
+.. autoclass:: pydy.viz.VisualizationFrame
    :members:

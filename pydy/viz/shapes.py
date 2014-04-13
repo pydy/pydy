@@ -42,13 +42,13 @@ class Shape(object):
     name : str
         Name assigned to shape
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for this shape
 
     Examples
     ========
 
-    >>> from pydy_viz.shapes import Shape
+    >>> from pydy.viz.shapes import Shape
     >>>
     >>> s = Shape()
     >>> s.name
@@ -83,7 +83,7 @@ class Shape(object):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)
@@ -117,7 +117,7 @@ class Shape(object):
         if not isinstance(new_color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = new_color
             self._color_rgb = convert.to_rgb(new_color)
@@ -155,7 +155,7 @@ class Cube(Shape):
     name : str
         Name assigned to shape
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for Cube
     length: int or float.
         Length of side of Cube
@@ -163,7 +163,7 @@ class Cube(Shape):
     Examples
     ========
 
-    >>> from pydy_viz.shapes import Cube
+    >>> from pydy.viz.shapes import Cube
     >>>
     >>> s = Cube(10)
     >>> s.name
@@ -205,7 +205,7 @@ class Cube(Shape):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)
@@ -258,7 +258,7 @@ class Cylinder(Shape):
     name : str
         Name assigned to Cylinder
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for Cylinder
     length: int or float, length of the Cylinder
     radius: int or float, radius of the Cylinder
@@ -266,7 +266,7 @@ class Cylinder(Shape):
     Examples
     ========
 
-    >>> from pydy_viz.shapes import Cylinder
+    >>> from pydy.viz.shapes import Cylinder
     >>>
     >>> s = Cylinder(length=10, radius=5)
     >>> s.name
@@ -317,7 +317,7 @@ class Cylinder(Shape):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)
@@ -385,7 +385,7 @@ class Cone(Shape):
     name : str
         Name assigned to Cone
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for Cone
     length: int or float, length of the Cone
     radius: int or float, base radius of the Cone
@@ -393,7 +393,7 @@ class Cone(Shape):
     Examples
     ========
 
-    >>> from pydy_viz.shapes import Cone
+    >>> from pydy.viz.shapes import Cone
     >>>
     >>> s = Cone(length=10, radius=5)
     >>> s.name
@@ -444,7 +444,7 @@ class Cone(Shape):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)
@@ -512,7 +512,7 @@ class Sphere(Shape):
     name : str
         Name assigned to shape
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for Sphere
     radius: int or float.
         Radius of Sphere
@@ -520,7 +520,7 @@ class Sphere(Shape):
     Examples
     ========
 
-    >>> from pydy_viz.shapes import Sphere
+    >>> from pydy.viz.shapes import Sphere
     >>>
     >>> s = Sphere(10)
     >>> s.name
@@ -562,7 +562,7 @@ class Sphere(Shape):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)
@@ -614,7 +614,7 @@ class Circle(Shape):
     name : str
         Name assigned to shape
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for Circle
     radius: int or float.
         Radius of Circle
@@ -622,7 +622,7 @@ class Circle(Shape):
     Examples
     ========
 
-    >>> from pydy_viz.shapes import Circle
+    >>> from pydy.viz.shapes import Circle
     >>>
     >>> s = Circle(10)
     >>> s.name
@@ -664,7 +664,7 @@ class Circle(Shape):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)
@@ -716,7 +716,7 @@ class Plane(Shape):
     name : str
         Name assigned to Plane
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for Plane
     length: int or float, length of the Plane
     width: int or float, radius of the Plane
@@ -724,7 +724,7 @@ class Plane(Shape):
     Examples
     ========
 
-    >>> from pydy_viz.shapes import Plane
+    >>> from pydy.viz.shapes import Plane
     >>>
     >>> s = Plane(length=10, width=5)
     >>> s.name
@@ -775,7 +775,7 @@ class Plane(Shape):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)
@@ -845,7 +845,7 @@ class Tetrahedron(Shape):
     name : str
         Name assigned to shape
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for Tetrahedron
     radius: int or float.
         Radius of circum-scribing sphere of Tetrahedron
@@ -853,7 +853,7 @@ class Tetrahedron(Shape):
     Examples
     ========
 
-    >>> from pydy_viz.shapes import Tetrahedron
+    >>> from pydy.viz.shapes import Tetrahedron
     >>>
     >>> s = Tetrahedron(10)
     >>> s.name
@@ -895,7 +895,7 @@ class Tetrahedron(Shape):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)
@@ -949,7 +949,7 @@ class Octahedron(Shape):
     name : str
         Name assigned to shape
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for Octahedron
     radius: int or float.
         Radius of the circum-scribing sphere for Octahedron
@@ -957,7 +957,7 @@ class Octahedron(Shape):
     Examples
     ========
 
-    >>> from pydy_viz.shapes import Octahedron
+    >>> from pydy.viz.shapes import Octahedron
     >>>
     >>> s = Octahedron(10)
     >>> s.name
@@ -999,7 +999,7 @@ class Octahedron(Shape):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)
@@ -1053,7 +1053,7 @@ class Icosahedron(Shape):
     name : str
         Name assigned to shape
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for Icosahedron
     radius: int or float.
         Radius of the circum-scribing sphere for Icosahedron
@@ -1061,7 +1061,7 @@ class Icosahedron(Shape):
     Examples
     ========
 
-    >>> from pydy_viz.shapes import Icosahedron
+    >>> from pydy.viz.shapes import Icosahedron
     >>>
     >>> s = Icosahedron(10)
     >>> s.name
@@ -1103,7 +1103,7 @@ class Icosahedron(Shape):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)
@@ -1155,7 +1155,7 @@ class Torus(Shape):
     name : str
         Name assigned to Torus
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for Torus
     radius: int or float, radius of the Torus Shape
     tube_radius: int or float, radius of the torus tube
@@ -1163,7 +1163,7 @@ class Torus(Shape):
     Examples
     ========
 
-    >>> from pydy_viz.shapes import Torus
+    >>> from pydy.viz.shapes import Torus
     >>>
     >>> s = Torus(radius=10, tube_radius=5)
     >>> s.name
@@ -1214,7 +1214,7 @@ class Torus(Shape):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)
@@ -1282,7 +1282,7 @@ class TorusKnot(Shape):
     name : str
         Name assigned to TorusKnot
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for TorusKnot
     radius: int or float, radius of the TorusKnot Shape
     tube_radius: int or float, radius of the torus-knot tube
@@ -1290,7 +1290,7 @@ class TorusKnot(Shape):
     Examples
     ========
 
-    >>> from pydy_viz.shapes import TorusKnot
+    >>> from pydy.viz.shapes import TorusKnot
     >>>
     >>> s = TorusKnot(radius=10, tube_radius=5)
     >>> s.name
@@ -1341,7 +1341,7 @@ class TorusKnot(Shape):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)
@@ -1410,7 +1410,7 @@ class Tube(Shape):
     name : str
         Name assigned to Tube
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for Tube
     radius: radius of Tube
     points: list of points which are used for making Tube
@@ -1418,7 +1418,7 @@ class Tube(Shape):
     Examples
     ========
 
-    >>> from pydy_viz.shapes import Tube
+    >>> from pydy.viz.shapes import Tube
     >>> point_list = [[1, 2, 1], [2, 1, 1], [2, 3, 4]]
     >>> s = Tube(points=point_list)
     >>> s.name
@@ -1467,7 +1467,7 @@ class Tube(Shape):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)
@@ -1536,14 +1536,14 @@ class Mesh(Shape):
     name : str
         Name assigned to Mesh
     color: str
-        A color string from list of colors in pydy_viz.colors module
+        A color string from list of colors in pydy.viz.colors module
         This color is used in drawing visualizations for Mesh
     points: list of points which are used for making mesh
 
     Examples
     ========
 
-    >>> from pydy_viz.shapes import Mesh
+    >>> from pydy.viz.shapes import Mesh
     >>> point_list = [[1, 2, 1], [2, 1, 1], [2, 3, 4]]
     >>> s = Mesh(points=point_list)
     >>> s.name
@@ -1587,7 +1587,7 @@ class Mesh(Shape):
         if not isinstance(color, str):
             raise TypeError('''color should be a valid \
                                colors string. for info on colors, see \
-                               pydy_viz.colors module''')
+                               pydy.viz.colors module''')
         else:
             self._color = color
             self._color_rgb = convert.to_rgb(color)

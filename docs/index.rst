@@ -1,24 +1,41 @@
-.. PyDy Visualization Package documentation master file, created by
-   sphinx-quickstart on Fri Jul  5 12:03:22 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+=============================
+PyDy Package's documentation!
+=============================
 
-PyDy Visualization Package's documentation!
-===========================================
+This is the central page for all PyDy's Documentation.
 
-This is the central page for all PyDyViz's Documentation. If you are already
-familiar with PyDy mechanics package(sympy.physics.mechanics), you can start
-with the Tutorial.
+.. include:: ../README.rst
 
-
-Contents:
+codegen package
+---------------
 
 .. toctree::
     :maxdepth: 2
 
-    introduction.rst
-    installation.rst
-    api.rst
+    codegen/api.rst
+
+viz package
+-----------
+
+.. toctree::
+    :maxdepth: 2
+
+    viz/introduction.rst
+    viz/api.rst
+
+Questions
+=========
+
+If you have any question about installation, or any general question, feel free
+to visit the IRC channel at irc.freenode.net, channel `#pydy`_.  In addition,
+our `mailing list`_ is an excellent source of community support.
+
+If you think there’s a bug or you would like to request a feature, please open
+an `issue`_.
+
+.. _issue: https://github.com/PythonDynamics/pydy-viz/issues
+.. _mailing list: http://groups.google.com/group/pydy
+.. _#pydy: irc://irc.freenode.net/pydy
 
 Indices and tables
 ==================
@@ -26,4 +43,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
