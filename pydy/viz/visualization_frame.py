@@ -200,29 +200,27 @@ class VisualizationFrame(object):
             self._shape = new_shape
 
     def generate_transformation_matrix(self, reference_frame, point):
-        """
-        Generates the symbolic Transformation matrix,
-        with respect to the reference_frame, point in the argument.
+        """Generates a symbolic transformation matrix, with respect to the
+        provided reference frame and point.
 
         Parameters
         ==========
-
         reference_frame : ReferenceFrame
-        A reference_frame with respect to which transformation matrix
-        is generated.
+            A reference_frame with respect to which transformation matrix is
+            generated.
         point : Point
-        A point with respect to which transformation matrix
-        is generated.
+            A point with respect to which transformation matrix is
+            generated.
 
         Returns
         =======
-        A SymPy 4by4 matrix, containing symbolic variables for
-        transformation.
+        A 4 x 4 SymPy matrix, containing symbolic expressions describing the
+        transformation as a function of time.
 
         """
-        _rotation_matrix = self.reference_frame.dcm(reference_frame)
+        rotation_matrix = self.reference_frame.dcm(reference_frame)
         self._transform = Identity(4).as_mutable()
-        self._transform[0:3, 0:3] = _rotation_matrix[0:3, 0:3]
+        self._transform[0:3, 0:3] = rotation_matrix[0:3, 0:3]
 
         _point_vector = self.origin.pos_from(point).express(reference_frame)
 
@@ -231,22 +229,26 @@ class VisualizationFrame(object):
         self._transform[3, 2] = _point_vector.dot(reference_frame.z)
         return self._transform
 
-    def generate_numeric_transform_function(self, dynamic_variables, constant_variables):
-        """Returns a function which returns a transformation matrix given
-        the symbolic states and the symbolic system parameters.
+    def generate_numeric_transform_function(self, dynamic_variables,
+                                            constant_variables):
+        """Returns a function which can compute the numerical values of the
+        transformation matrix given the numerical dynamic variables (i.e.
+        functions of time or states) and the numerical system constants.
 
 
         Parameters
         ==========
-        dynamic_variables : list of all the dynamic symbols used in defining the
-                  mechanics objects.
-        constant_variables : list of all symbols used in defining the
-                     mechanics objects
+        dynamic_variables : list of sympy.Functions(time)
+            All of the dynamic symbols used in defining the orientation and
+            position of this visualization frame.
+        constant_variables : list of sympy.Symbols
+            All of the constants used in defining the orientation and
+            position of this visualization frame.
 
         Returns
         =======
-        A Lambda function which returns a transformation matrix,
-        given symbolic states, and symbolic system parameters
+        numeric_transform : function
+            A function which returns the numerical transformation matrix.
 
         """
 
@@ -254,8 +256,11 @@ class VisualizationFrame(object):
         dummy_dict = dict(zip(dynamic_variables, dummy_symbols))
         transform = self._transform.subs(dummy_dict)
 
-        self._numeric_transform = lambdify(dummy_symbols + constant_variables,
-                                          transform, modules="numpy")
+        self._numeric_transform = lambdify(dummy_symbols +
+                                           constant_variables, transform,
+                                           modules="numpy")
+
+        return self._numeric_transform
 
     def evaluate_transformation_matrix(self, dynamic_values, constant_values):
         """Returns the numerical transformation matrices for each time step.
@@ -283,48 +288,52 @@ class VisualizationFrame(object):
             for i, time_instance in enumerate(states):
                 args = np.hstack((time_instance, constant_values))
                 new[i, :, :] = self._numeric_transform(*args)
-
         else:
             n = 1
             args = np.hstack((states, constant_values))
             new = self._numeric_transform(*args)
 
-
         self._visualization_matrix = new.reshape(n, 16)
         return self._visualization_matrix
 
-    def generate_visualization_dict(self):
-        """
-        Returns a dictionary of all the info required
-        for the visualization of this frame, alongwith child.
+    def generate_visualization_dict(self, constant_map={}):
+        """Returns a dictionary of all the info required for the
+        visualization of this frame.
 
-        Before calling this method, all the transformation matrix
-        generation methods should be called, or it will give an error.
+        Before calling this method, all the transformation matrix generation
+        methods should be called, or it will give an error.
+
+        Parameters
+        ==========
+        constant_map : dictionary
+            If the shape associated with this visualization frame has
+            symbolic values for its geometric parameters, then you must
+            supply a dictionary mapping the necessary SymPy symbols to
+            Python floats.
 
         Returns
         =======
+        data : dictionary
+            The dictionary contains the following keys:
+            name : string
+                The name of the VisualizationFrame.
+            shape : dictionary
+                A dictionary generated from the associated Shape.
+            simulation_matrix : list
+                The N x 4 x 4 array provided as a list of lists of lists. N
+                is the number of time steps and the 4 x 4 matrix at each
+                time step represents the transformation matrix for animation
+                purposes.
 
-        a dictionary containing following keys:
-
-        name : name of the VisualizationFrame
-        children : simulation dictionary of child frames
-        shape : shape info of the attached shape,
-        like dimensions, color etc.It is generated from generator method
-        of Shape class.
-        simulation_matrix : a N*4*4 matrix, converted to list, for
-        passing to Javascript for animation purposes, where N is the
-        number of timesteps for animations.
         """
-        _data = {}
-        _data['name'] = self.name
-        _data['shape'] = self.shape.generate_dict()
+        data = {}
+        data['name'] = self.name
+        data['shape'] = self.shape.generate_dict(constant_map=constant_map)
         try:
-            _data['simulation_matrix'] = \
-                                     self._visualization_matrix.tolist()
+            data['simulation_matrix'] = self._visualization_matrix.tolist()
         except:
-            raise RuntimeError('''Please call the numerical
-                            transformation methods,
-                           before generating visualization dict ''')
+            raise RuntimeError("Please call the numerical ",
+                               "transformation methods, ",
+                               "before generating visualization dict")
 
-
-        return _data
+        return data
