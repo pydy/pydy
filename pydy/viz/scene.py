@@ -47,49 +47,30 @@ class Scene(object):
     """
     def __init__(self, reference_frame, origin, *visualization_frames,
                  **kwargs):
-        """
-        Initializes a Scene instance.
-        It requires a reference frame and a point to be initialized.
+        """Initializes a Scene instance.
 
         Parameters
         ==========
-
         reference_frame : ReferenceFrame
-        All the transformations would be carried out with respect
-        to this reference frame.
-
-        origin : Point
-        All the transformations would be carried out with respect
-        to this point.
-
-        visualization_frames : VisualizationFrame
-        a tuple of visualization frames which are to visualized in
-        the scene.
             All the transformations would be carried out with respect to
             this reference frame.
-
         origin : Point
             All the transformations would be carried out with respect to
             this point.
-
         visualization_frames : VisualizationFrame
-            A tuple of visualization frames which are to visualized in the
-            scene.
-
+            One or more visualization frames which are to be visualized in
+            the scene.
         name : str, optional
             Name of Scene object.
-
         width : int or float, optional
-        width of the canvas used for visualizations.Default is 800.
-
-        height : int or float
-        height of the canvas used for visualizations.Default is 800.
-
+            The width of the canvas used for visualizations. Default is
+            800px.
+        height : int or float, optional
+            Height of the canvas used for visualizations. Default is 800px.
         camera : Camera, optional
-
-        camera with which to display the object. Default is
-        PerspectiveCamera, with reference_frame and origin same
-        as defined for this scene.
+            The camera with which to display the object. Default is
+            PerspectiveCamera, with reference_frame and origin same as
+            defined for this scene.
         """
 
         self._reference_frame = reference_frame
@@ -192,19 +173,16 @@ class Scene(object):
 
         Parameters
         ==========
-        dynamic_variables : Sympifyable list or tuple
-            This contains all the dynamic symbols or state variables
-            which are required for solving the transformation matrices
-            of all the frames of the scene.
-
+        dynamic_variables : sequence of sympy.Functions
+            This sequence contains all the functions of time which are
+            required for generating the transformation matrices of all the
+            visualization frames in the scene.
         constant_variables : Sympifyable list or tuple
             This contains all the symbols for the parameters which are
             used for defining various objects in the system.
-
         dynamic_values : list or tuple
             initial states of the system. The list or tuple
             should be respective to the state_sym.
-
         constant_values : list or tuple
             values of the parameters. The list or tuple
             should be respective to the par_sym.
@@ -230,6 +208,8 @@ class Scene(object):
         self._scene_data['cameras'] = []
         self._scene_data['lights'] = []
 
+        constant_map = dict(zip(constant_variables, constant_values))
+
         for frame in self.visualization_frames:
             frame.generate_transformation_matrix(self._reference_frame,
                                                  self._origin)
@@ -239,7 +219,7 @@ class Scene(object):
                 dynamic_values, constant_values)
 
             self._scene_data['frames'].append(
-                frame.generate_visualization_dict())
+                frame.generate_visualization_dict(constant_map=constant_map))
 
         for camera in self.cameras:
             camera.generate_transformation_matrix(self._reference_frame,
@@ -265,6 +245,7 @@ class Scene(object):
                 light.generate_visualization_dict())
 
         return self._scene_data
+
 
     def generate_visualization_json(self, dynamic_variables,
                                     constant_variables, dynamic_values,
@@ -378,8 +359,8 @@ class Scene(object):
 
         """
         try:
-        	# If it detects any IPython frontend
-        	# (qtconsole, interpreter or notebook)
+            # If it detects any IPython frontend
+            # (qtconsole, interpreter or notebook)
             config = get_ipython().config
             self._display_from_ipython()
 

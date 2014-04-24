@@ -38,8 +38,8 @@ class TestVisualizationFrameScene(object):
         self.point_list1 = [[2, 3, 1], [4, 6, 2], [5, 3, 1], [5, 3, 6]]
         self.point_list2 = [[3, 1, 4], [3, 8, 2], [2, 1, 6], [2, 1, 1]]
 
-        self.shape1 = Cylinder()
-        self.shape2 = Cylinder()
+        self.shape1 = Cylinder(1.0, 1.0)
+        self.shape2 = Cylinder(1.0, 1.0)
 
 
         self.Ixx, self.Iyy, self.Izz = symbols('Ixx Iyy Izz')
