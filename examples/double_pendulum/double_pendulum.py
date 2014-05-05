@@ -35,9 +35,9 @@ KM = KanesMethod(N, q_ind=[q1, q2], u_ind=[u1, u2], kd_eqs=kd)
 
 (fr, frstar) = KM.kanes_equations(FL, BL)
 kdd = KM.kindiffdict()
-mm = KM.mass_matrix_full
-fo = KM.forcing_full
-qudots = mm.inv() * fo
+mass_matrix = KM.mass_matrix_full
+forcing_vector = KM.forcing_full
+qudots = mass_matrix.inv() * forcing_vector
 qudots = qudots.subs(kdd)
 qudots.simplify()
 
