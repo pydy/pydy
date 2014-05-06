@@ -31,7 +31,7 @@ specified = []
 # ================================================
 
 xdot_function = generate_ode_function(mass_matrix, forcing_vector,
-        constants.keys(), coordinates, speeds, specified, generator='lambdify')
+        constants.keys(), coordinates, speeds, specified)
 
 
 # Specify numerical quantities
