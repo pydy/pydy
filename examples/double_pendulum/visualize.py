@@ -3,15 +3,6 @@ This file will use pydy.viz to visualize the double pendulum.  Run this script
 via a command line:
 
     $ python visualization.py
-    
-Note that you must add the pydy/viz directory to your PYTHONPATH for the
-visualization to work:
-
-    $ export PYTHONPATH=$PYTHONPATH:/path/to/pydy/viz
-
-On my machine, I use:
-
-    $ export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/dist-packages/pydy-0.1.0-py2.7.egg/pydy/viz
 
 """
 
@@ -59,7 +50,7 @@ sphereR_viz_frame = VisualizationFrame('sphereR', N, R, sphere)
 # want gravity to point in the -y direction in the visualization. To achieve
 # this, we create a world frame that is rotated +90 degrees about the N frame's
 # z direction.
-acene = Scene(N.orientnew('world', 'Axis', [0.5 * pi, N.z]), O,
+scene = Scene(N.orientnew('world', 'Axis', [0.5 * pi, N.z]), O,
         linkP_viz_frame, linkR_viz_frame, sphereP_viz_frame, sphereR_viz_frame)
 
 
