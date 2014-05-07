@@ -30,7 +30,7 @@ class Shape(object):
     name : str, optional
         A name assigned to the shape.
     color: str, optional
-        A color string from list of colors in matplotlib.colors module.
+        A color string from list of colors in Three.Color.
 
     Examples
     ========
