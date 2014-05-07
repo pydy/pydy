@@ -25,7 +25,6 @@ setup(
     packages=find_packages(),
     install_requires=['sympy>=0.7.4.1',
                       'numpy>=1.6.1',
-                      'matplotlib>=0.99.0',
                       ],
     extras_require={'doc': ['sphinx', 'numpydoc'],
                     'theano': ['Theano>=0.6.0'],
