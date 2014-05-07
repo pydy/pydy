@@ -27,15 +27,15 @@ sphere = Sphere(name='sphere', radius=1.0)
 # VisualizationFrame, and their axis is the y axis of the VisualizationFrame.
 # We want the end of the Cylinder to be at the origin of the
 # VisualizationFrame, and we want the Cylinder's axis to be aligned with the x
-# axis of the VisualizationFrame. For these reasons, we must use the 'orientnew' and 'locatenew' methods to create new frames/points.
-linkP_viz_frame = VisualizationFrame('linkP',
-        A.orientnew('frameP', 'Axis', [0.5 * pi, N.z]),
-        O.locatenew('originP', 0.5 * l * A.x),
-        link)
-linkR_viz_frame = VisualizationFrame('linkR',
-        B.orientnew('frameR', 'Axis', [0.5 * pi, N.z]),
-        P.locatenew('originP', 0.5 * l * B.x),
-        link)
+# axis of the VisualizationFrame. For these reasons, we must use the
+# 'orientnew' and 'locatenew' methods to create new frames/points.
+linkP_frame = A.orientnew('frameP', 'Axis', [0.5 * pi, N.z])
+linkP_origin = O.locatenew('originP', 0.5 * l * A.x)
+linkP_viz_frame = VisualizationFrame('linkP', linkP_frame, linkP_origin, link)
+
+linkR_frame = B.orientnew('frameR', 'Axis', [0.5 * pi, N.z])
+linkR_origin = P.locatenew('originP', 0.5 * l * B.x)
+linkR_viz_frame = VisualizationFrame('linkR', linkR_frame, linkR_origin, link)
 
 sphereP_viz_frame = VisualizationFrame('sphereP', N, P, sphere)
 sphereR_viz_frame = VisualizationFrame('sphereR', N, R, sphere)
@@ -50,7 +50,8 @@ sphereR_viz_frame = VisualizationFrame('sphereR', N, R, sphere)
 # want gravity to point in the -y direction in the visualization. To achieve
 # this, we create a world frame that is rotated +90 degrees about the N frame's
 # z direction.
-scene = Scene(N.orientnew('world', 'Axis', [0.5 * pi, N.z]), O,
+world_frame = N.orientnew('world', 'Axis', [0.5 * pi, N.z])
+scene = Scene(world_frame, O,
         linkP_viz_frame, linkR_viz_frame, sphereP_viz_frame, sphereR_viz_frame)
 
 
