@@ -17,10 +17,6 @@ __all__ = ['Shape',
 
 
 import numpy as np
-from matplotlib.colors import ColorConverter
-
-convert = ColorConverter()
-
 
 class Shape(object):
     """Instantiates a shape. This is primarily used as a superclass for more
@@ -34,7 +30,7 @@ class Shape(object):
     name : str, optional
         A name assigned to the shape.
     color: str, optional
-        A color string from list of colors in matplotlib.colors module.
+        A color string from list of colors in Three.ColorKeywords
 
     Examples
     ========
@@ -45,8 +41,6 @@ class Shape(object):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>> s.name = 'my-shape1'
     >>> s.name
     'my-shape1'
@@ -58,8 +52,6 @@ class Shape(object):
     'my-shape2'
     >>> a.color
     'red'
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
 
@@ -102,13 +94,9 @@ class Shape(object):
         matplotlib color string."""
         if not isinstance(new_color, str):
             raise TypeError("'color' should be a valid ",
-                            "matplotlib colors string.")
+                            "Three.js colors string.")
         else:
             self._color = new_color
-
-    def color_in_rgb(self):
-        """Returns the rgb value of the defined shape color."""
-        return convert.to_rgb(self.color)
 
     def generate_dict(self, constant_map={}):
         """Returns a dictionary containing all the data associated with the
@@ -156,8 +144,6 @@ class Cube(Shape):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>>s.length
     10.0
     >>> s.name = 'my-shape1'
@@ -176,8 +162,6 @@ class Cube(Shape):
     'red'
     >>> a.length
     10.0
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
 
@@ -206,8 +190,6 @@ class Cylinder(Shape):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>> s.length
     10.0
     >>> s.radius
@@ -233,8 +215,6 @@ class Cylinder(Shape):
     10.0
     >>> a.radius
     5.0
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
     def __init__(self, length, radius, **kwargs):
@@ -263,8 +243,6 @@ class Cone(Shape):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>> s.length
     10.0
     >>> s.radius
@@ -290,8 +268,6 @@ class Cone(Shape):
     10.0
     >>> a.radius
     5.0
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
     def __init__(self, length, radius, **kwargs):
@@ -318,8 +294,6 @@ class Sphere(Shape):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>>s.radius
     10.0
     >>> s.name = 'my-shape1'
@@ -338,8 +312,6 @@ class Sphere(Shape):
     'red'
     >>> a.radius
     10.0
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
 
@@ -366,8 +338,6 @@ class Circle(Sphere):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>>s.radius
     10.0
     >>> s.name = 'my-shape1'
@@ -386,8 +356,6 @@ class Circle(Sphere):
     'red'
     >>> a.radius
     10.0
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
 
@@ -411,8 +379,6 @@ class Plane(Shape):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>> s.length
     10.0
     >>> s.width
@@ -438,8 +404,6 @@ class Plane(Shape):
     10.0
     >>> a.width
     5.0
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
     def __init__(self, length=10.0, width=5.0, **kwargs):
@@ -466,8 +430,6 @@ class Tetrahedron(Sphere):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>>s.radius
     10.0
     >>> s.name = 'my-shape1'
@@ -486,8 +448,6 @@ class Tetrahedron(Sphere):
     'red'
     >>> a.radius
     10.0
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
 
@@ -510,8 +470,6 @@ class Octahedron(Sphere):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>>s.radius
     10.0
     >>> s.name = 'my-shape1'
@@ -530,8 +488,6 @@ class Octahedron(Sphere):
     'red'
     >>> a.radius
     10.0
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
 
@@ -554,8 +510,6 @@ class Icosahedron(Sphere):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>>s.radius
     10.0
     >>>#These can be changed later too ..
@@ -575,8 +529,6 @@ class Icosahedron(Sphere):
     'red'
     >>> a.radius
     10.0
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
 
@@ -600,8 +552,6 @@ class Torus(Shape):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>> s.radius
     10.0
     >>> s.tube_radius
@@ -627,8 +577,6 @@ class Torus(Shape):
     10.0
     >>> a.tube_radius
     5.0
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
 
@@ -674,8 +622,6 @@ class TorusKnot(Torus):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>> s.radius
     10.0
     >>> s.tube_radius
@@ -701,8 +647,6 @@ class TorusKnot(Torus):
     10.0
     >>> a.tube_radius
     5.0
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
 
@@ -728,8 +672,6 @@ class Tube(Shape):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>> s.points
     [[1.0, 2.0, 1.0], [2.0, 1.0, 1.0], [2.0, 3.0, 4.0]]
     >>> s.name = 'my-shape1'
@@ -753,8 +695,6 @@ class Tube(Shape):
     12.0
     >>> a.points
     [[1.0, 2.0, 1.0], [2.0, 1.0, 1.0], [2.0, 3.0, 4.0]]
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
 
@@ -791,8 +731,6 @@ class Mesh(Shape):
     'unnamed'
     >>> s.color
     'grey'
-    >>> s.color_in_rgb()
-    (0.5019607843137255, 0.5019607843137255, 0.5019607843137255)
     >>> s.points
     [[1.0, 2.0, 1.0], [2.0, 1.0, 1.0], [2.0, 3.0, 4.0]]
     >>> s.name = 'my-shape1'
@@ -811,8 +749,6 @@ class Mesh(Shape):
     'red'
     >>> a.points
     [[1.0, 2.0, 1.0], [2.0, 1.0, 1.0], [2.0, 3.0, 4.0]]
-    >>> a.color_in_rgb()
-    (1.0, 0.0, 0.0)
 
     """
 
