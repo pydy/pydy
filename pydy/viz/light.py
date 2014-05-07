@@ -1,11 +1,8 @@
 from sympy.matrices.expressions import Identity
-from matplotlib.colors import ColorConverter
 
 from .visualization_frame import VisualizationFrame
 
 __all__ = ['PointLight']
-
-convert = ColorConverter()
 
 class PointLight(VisualizationFrame):
     """
@@ -76,7 +73,6 @@ class PointLight(VisualizationFrame):
         except KeyError:
             self._color = 'white'
 
-        self._color_rgb = convert.to_rgb(self._color)
         #Now we use same approach as in VisualizationFrame
         #for setting reference_frame and origin
         i = 0
@@ -135,13 +131,6 @@ class PointLight(VisualizationFrame):
         else:
             self._color = new_color
 
-    def color_in_rgb(self):
-        """
-        Returns the rgb value of the
-        defined light color.
-        """
-        return self._color_rgb
-
     def generate_visualization_dict(self):
         """
         Returns a dictionary of all the info required
@@ -166,7 +155,7 @@ class PointLight(VisualizationFrame):
         self._data = {}
         self._data['name'] = self.name
         self._data['type'] = self.__repr__()
-        self._data['color'] = self._color_rgb
+        self._data['color'] = self._color
 
         try:
             self._data['simulation_matrix'] = \
