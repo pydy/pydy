@@ -18,6 +18,52 @@ __all__ = ['Shape',
 
 import numpy as np
 
+#This is a list of ColorKeywords from THREE.js
+Three_ColorKeywords = ['aliceblue', 'antiquewhite', 'aqua',
+                       'aquamarine', 'azure', 'beige', 'bisque',
+                       'black', 'blanchedalmond', 'blue', 'blueviolet',
+                       'brown', 'burlywood', 'cadetblue', 'chartreuse',
+                       'chocolate', 'coral', 'cornflowerblue',
+                       'cornsilk', 'crimson', 'cyan', 'darkblue',
+                       'darkcyan', 'darkgoldenrod', 'darkgray',
+                       'darkgreen', 'darkgrey', 'darkkhaki',
+                       'darkmagenta', 'darkolivegreen', 'darkorange',
+                       'darkorchid', 'darkred', 'darksalmon',
+                       'darkseagreen', 'darkslateblue', 'darkslategray',
+                       'darkslategrey', 'darkturquoise', 'darkviolet',
+                       'deeppink', 'deepskyblue', 'dimgray', 'dimgrey',
+                       'dodgerblue', 'firebrick', 'floralwhite',
+                       'forestgreen', 'fuchsia', 'gainsboro',
+                       'ghostwhite', 'gold', 'goldenrod', 'gray',
+                       'green', 'greenyellow', 'grey', 'honeydew',
+                       'hotpink', 'indianred', 'indigo', 'ivory',
+                       'khaki', 'lavender', 'lavenderblush',
+                       'lawngreen', 'lemonchiffon', 'lightblue',
+                       'lightcoral', 'lightcyan',
+                       'lightgoldenrodyellow', 'lightgray',
+                       'lightgreen', 'lightgrey', 'lightpink',
+                       'lightsalmon', 'lightseagreen', 'lightskyblue',
+                       'lightslategray', 'lightslategrey',
+                       'lightsteelblue', 'lightyellow', 'lime',
+                       'limegreen', 'linen', 'magenta', 'maroon',
+                       'mediumaquamarine', 'mediumblue',
+                       'mediumorchid', 'mediumpurple', 'mediumseagreen',
+                       'mediumslateblue', 'mediumspringgreen',
+                       'mediumturquoise', 'mediumvioletred',
+                       'midnightblue', 'mintcream', 'mistyrose',
+                       'moccasin', 'navajowhite', 'navy', 'oldlace',
+                       'olive', 'olivedrab', 'orange', 'orangered',
+                       'orchid', 'palegoldenrod', 'palegreen',
+                       'paleturquoise', 'palevioletred', 'papayawhip',
+                       'peachpuff', 'peru', 'pink', 'plum',
+                       'powderblue', 'purple', 'red', 'rosybrown',
+                       'royalblue', 'saddlebrown', 'salmon',
+                       'sandybrown', 'seagreen', 'seashell', 'sienna',
+                       'silver', 'skyblue', 'slateblue', 'slategray',
+                       'slategrey', 'snow', 'springgreen', 'steelblue',
+                       'tan', 'teal', 'thistle', 'tomato', 'turquoise',
+                       'violet', 'wheat', 'white', 'whitesmoke',
+                       'yellow', 'yellowgreen']
 class Shape(object):
     """Instantiates a shape. This is primarily used as a superclass for more
     specific shapes like Mesh, Cylinder, Sphere etc.
@@ -30,7 +76,7 @@ class Shape(object):
     name : str, optional
         A name assigned to the shape.
     color: str, optional
-        A color string from list of colors in Three.ColorKeywords
+        A color string from list of colors in Three_ColorKeywords
 
     Examples
     ========
@@ -57,7 +103,11 @@ class Shape(object):
 
     def __init__(self, name='unnamed', color='grey'):
         self.name = name
-        self.color = color
+        if color not in Three_ColorKeywords:
+            raise TypeError("'color' should be a valid ",
+                            "Three.js colors string.")
+        else:
+            self.color = color
         self.geometry_attrs = []
 
     def __str__(self):
@@ -92,7 +142,8 @@ class Shape(object):
     def color(self, new_color):
         """Sets the color attributes of the shape. This should be a valid
         matplotlib color string."""
-        if not isinstance(new_color, str):
+        if not isinstance(new_color, str) \
+        and new_color in Three_ColorKeywords:
             raise TypeError("'color' should be a valid ",
                             "Three.js colors string.")
         else:
