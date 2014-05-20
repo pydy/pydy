@@ -141,7 +141,7 @@ class Shape(object):
     @color.setter
     def color(self, new_color):
         """Sets the color attributes of the shape. This should be a valid
-        matplotlib color string."""
+        Three_ColorKeywords color string."""
         if not isinstance(new_color, str) \
         and new_color in Three_ColorKeywords:
             raise TypeError("'color' should be a valid ",
