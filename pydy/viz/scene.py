@@ -316,16 +316,29 @@ class Scene(object):
         self._scene_info["newtonian_frame"] = scene._reference_frame
         self._scene_info["workspace_size"] = 0.2#This should be accomodated in scene
                                                 #instead of width/height of scene
-        self._scene_info["objects"] = {}
+        self._scene_info["objects"] = []
         
         for frame in self._visualization_frames:
             #add objects in the scene..
             #For every visualization frame, a set of axes, and 
             #Actual object with its initial orientation matrix will be
             #supplied.
-            _object = {}
-            _object["name"] = _frame._name
-            _object["type"] = 'frame'
+            _object_axes = {}
+            _object_axes["name"] = _frame._name
+            _object_axes["type"] = 'frame'
+            _object_axes["material"] = "AxesMaterial"
+            _object_axes["init_orientation"] = \
+                    self.reference_frame.dcm(frame.reference_frame)
+            self._scene_info["objects"].append(_object_axes)
+            
+            _object_shape = frame.shape.generate_dict()
+            _object_shape["init_orientation"] = \
+                    self.reference_frame.dcm(frame.reference_frame)
+            self._scene_info["objects"].append(_object_shape)        
+        
+        print self._scene_info    
+          
+                    
             
     def create_simulation_json(self):
         """
