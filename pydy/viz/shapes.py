@@ -18,6 +18,7 @@ __all__ = ['Shape',
 
 import numpy as np
 
+
 #This is a list of ColorKeywords from THREE.js
 Three_ColorKeywords = ['aliceblue', 'antiquewhite', 'aqua',
                        'aquamarine', 'azure', 'beige', 'bisque',
@@ -64,6 +65,9 @@ Three_ColorKeywords = ['aliceblue', 'antiquewhite', 'aqua',
                        'tan', 'teal', 'thistle', 'tomato', 'turquoise',
                        'violet', 'wheat', 'white', 'whitesmoke',
                        'yellow', 'yellowgreen']
+                       
+Materials = ["None", "CHECKERBOARD", "METAL", "DIRT", "FOIL", "WATER", "GRASS"]                       
+
 class Shape(object):
     """Instantiates a shape. This is primarily used as a superclass for more
     specific shapes like Mesh, Cylinder, Sphere etc.
@@ -100,19 +104,28 @@ class Shape(object):
     'red'
 
     """
-
-    def __init__(self, name='unnamed', color='grey'):
+    #TODO Need to modify the default material
+    def __init__(self, name='unnamed', color='grey', material="None"):
         self.name = name
-        if color not in Three_ColorKeywords:
-            raise TypeError("'color' should be a valid ",
+        if not isinstance(color, str) \
+        and color not in Three_ColorKeywords:
+            raise ValueError("'color' should be a valid ",
                             "Three.js colors string.")
         else:
             self.color = color
+        if not isinstance(material, str) \
+        and material not in Materials:
+            raise ValueError(" 'material' is not valid. ", 
+                               "Please check the list of \
+                               available materials")    
+        else:
+            self.material = material                       
+            
         self.geometry_attrs = []
 
     def __str__(self):
         attributes = ([self.__class__.__name__, self.name, 'color:' +
-                       self.color] +
+                       self.color,'material:' + self.material] +
                       sorted([attr + ':{}'.format(getattr(self, attr)) for
                               attr in self.geometry_attrs]))
         return ' '.join(['{}'] * len(attributes)).format(*attributes)
@@ -149,6 +162,23 @@ class Shape(object):
         else:
             self._color = new_color
 
+    @property
+    def material(self):
+        """Returns the material attribute of the shape. """
+        return self._material
+        
+    @material.setter
+    def material(self, new_material):
+        """Sets the material attribute of the shape. The material should
+        be a valid material from the listed Materials.""" 
+        if not isinstance(new_material, str) \
+        and new_material not in Materials:
+            raise ValueError(" 'material' is not valid. ", 
+                               "Please check the list of \
+                               available materials")    
+        else:
+            self._material = new_material      
+        
     def generate_dict(self, constant_map={}):
         """Returns a dictionary containing all the data associated with the
         Shape.
@@ -163,6 +193,7 @@ class Shape(object):
         data_dict = {}
         data_dict['name'] = self.name
         data_dict['color'] = self.color
+        data_dict['material'] = self.material
         data_dict['type'] = self.__repr__()
         for geom in self.geometry_attrs:
             atr = getattr(self, geom)
