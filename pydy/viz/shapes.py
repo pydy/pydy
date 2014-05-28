@@ -164,13 +164,21 @@ class Shape(object):
 
     @property
     def material(self):
-        """Returns the material attribute of the shape. """
+        """Returns the material attribute of the shape. 
+        Materials are an attribute to shapes, which correspond to 
+        texture of the object used(its shine, brightness, opacity etc.). 
+        If a shape is attributed as "red" color, and "WATER" material, 
+        ideally it should have opacity and brightness properties 
+        like that of a red fluid.
+        """
         return self._material
         
     @material.setter
     def material(self, new_material):
         """Sets the material attribute of the shape. The material should
-        be a valid material from the listed Materials.""" 
+        be a valid material from the listed Materials.
+        
+        """ 
         if not isinstance(new_material, str) \
         and new_material not in Materials:
             raise ValueError(" 'material' is not valid. ", 
