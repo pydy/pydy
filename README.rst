@@ -39,7 +39,6 @@ SciPy Stack
 - SymPy_ >= 0.7.4.1
 - NumPy_ >= 1.6.1
 - SciPy_ >= 0.9.0
-- matplotlib_ >= 0.99.0
 - IPython_ >= 0.13.0
 
 It's best to install the SciPy Stack dependencies using the instructions_

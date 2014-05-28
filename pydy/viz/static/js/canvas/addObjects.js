@@ -80,8 +80,8 @@ Canvas.prototype.addLights = function() {
         switch(_light.type){
         
         case "PointLight":
-            var color = new THREE.Color().setRGB(_light.color[0],
-                                    _light.color[1], _light.color[2])
+            var color = new THREE.Color(_light.color);
+                                    
             var _Light = new THREE.PointLight(color);
             var _element = new Float32Array(_light.simulation_matrix[0]);
             var initMatrix = new THREE.Matrix4();
@@ -120,8 +120,7 @@ Canvas.prototype.addFrames = function(){
         var _frame = JSONObj.frames[key];
         console.log(_frame);
         console.log(_frame.shape);
-        var _color = new THREE.Color().setRGB(_frame.shape.color[0],
-                           _frame.shape.color[1], _frame.shape.color[2]);
+        var _color = new THREE.Color(_frame.shape.color);
                                     
         var _material = new THREE.MeshLambertMaterial({
                                     color:        _frame.shape.color,
