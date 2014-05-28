@@ -300,7 +300,44 @@ class Scene(object):
         outfile.write(json.dumps(self._data_dict, indent=4,
                                  separators=(',', ': ')))
         outfile.close()
-
+    #methods to generate JSON for MotionView..
+    #Earlier methods can be marked deprecated ..
+    
+    def create_scene_json(self):
+        """
+        This method is used to create the JSON file compatible with 
+        MotionView. This JSON file contains all the relevant information
+        required by MotionView to draw the scene on the canvas.
+        
+        
+        """
+        self._scene_info = {}
+        self._scene_info["name"] = scene._name
+        self._scene_info["newtonian_frame"] = scene._reference_frame
+        self._scene_info["workspace_size"] = 0.2#This should be accomodated in scene
+                                                #instead of width/height of scene
+        self._scene_info["objects"] = {}
+        
+        for frame in self._visualization_frames:
+            #add objects in the scene..
+            #For every visualization frame, a set of axes, and 
+            #Actual object with its initial orientation matrix will be
+            #supplied.
+            _object = {}
+            _object["name"] = _frame._name
+            _object["type"] = 'frame'
+            
+    def create_simulation_json(self):
+        """
+        This method is used to create the JSON file compatible with
+        MotionView. This JSON file consists of all the simulation data
+        alongwith references to the objects, for allowing motion to the
+        objects in the MotionView visualizer.
+        
+        """
+        pass    
+        
+        
     def _copy_static_dir(self):
         """
         Copies all the static files required in the
