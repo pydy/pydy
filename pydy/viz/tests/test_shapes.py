@@ -11,7 +11,7 @@ from ..shapes import *
 
 def test_shape():
     shape = Shape(name='shape', color='blue', material="DIRT")
-    print shape.__str__()
+    
     assert shape.name == 'shape'
     assert shape.__str__() == 'Shape shape color:blue material:DIRT'
     assert shape.__repr__() == 'Shape'
@@ -61,7 +61,7 @@ def test_shape_geometry_with_expressions():
                 "type": "Shape",
                 "name": "unnamed",
                 "length": 20.0, 
-                "material":"None"}
+                "material": "None"}
     actual = shape.generate_dict(constant_map={symbols('l1'): 4.0,
                                                symbols('l2'): 4.0})
     assert actual == expected
@@ -89,7 +89,7 @@ def test_cube():
                                     "type": "Cube",
                                     "name": "cube1",
                                     "length": 16.0, 
-                                    "material":"WATER"}
+                                    "material": "WATER"}
 
     assert isinstance(cube, Shape)
 
@@ -106,7 +106,7 @@ def test_cube():
                       "type": "Cube",
                       "name": "unnamed",
                       "length": 3.0, 
-                      "material":"None"}
+                      "material": "None"}
 
 
 def test_cylinder():
@@ -138,7 +138,7 @@ def test_cylinder():
                                         "name": "cylinder1",
                                         "length": 14.0,
                                         "radius": 7.0, 
-                                        "material":"FOIL"}
+                                        "material": "FOIL"}
 
     assert isinstance(cylinder, Shape)
 
@@ -177,7 +177,7 @@ def test_cone():
                                     "name": "cone1",
                                     "length": 16.0,
                                     "radius": 3.0, 
-                                    "material":"CHECKERBOARD"}
+                                    "material": "CHECKERBOARD"}
     assert isinstance(cone, Shape)
 
     cone_ = Cone(10.0, 5.0, color='darkblue')
@@ -209,7 +209,7 @@ def test_sphere():
                                       "type": "Sphere",
                                       "name": "sphere1",
                                       "radius": 14.0, 
-                                      "material":"None"}
+                                      "material": "None"}
     assert isinstance(sphere, Shape)
 
     sphere_ = Sphere(10.0, color='azure')
@@ -242,7 +242,7 @@ def test_circle():
                                       "type": "Circle",
                                       "name": "circle1",
                                       "radius": 12.0,
-                                      "material":"None"
+                                      "material": "None"
                                           }
 
     assert isinstance(circle, Shape)
@@ -288,7 +288,7 @@ def test_mesh():
                 "type": "Mesh",
                 "name": "mesh1",
                 "points": np.asarray(new_point_list),
-                "material": "None"}
+                "material":  "None"}
 
     for key in ['color', 'type', 'name']:
         actual[key] == expected[key]
