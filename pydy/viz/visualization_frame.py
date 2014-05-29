@@ -294,40 +294,42 @@ class VisualizationFrame(object):
             new = self._numeric_transform(*args)
 
         self._visualization_matrix = new.reshape(n, 16)
+        self._visualization_matrix = self._visualization_matrix.tolist()
         return self._visualization_matrix
 
     
     def generate_scene_dict(self, constant_map={}):
-    """
-    This method generates information for a static 
-    visualization in the initial conditions, in the form
-    of dictionary. This contains shape information
-    from `Shape.generate_dict()` followed by an
-    init_orientation Key.
+        """
+        This method generates information for a static 
+        visualization in the initial conditions, in the form
+        of dictionary. This contains shape information
+        from `Shape.generate_dict()` followed by an
+        init_orientation Key.
 
-    Parameters
-    ==========
-    constant_map : dictionary
-    Constant map is required when Shape contains sympy expressions.This
-    dictionary maps sympy expressions/symbols to numerical values(floats)
+        Parameters
+        ==========
+        constant_map : dictionary
+        Constant map is required when Shape contains sympy expressions.This
+        dictionary maps sympy expressions/symbols to numerical values(floats)
 
-    """
+        """
         _scene_dict = self.shape.generate_dict(constant_map=constant_map)
-        _scene_dict["init_orientation"] = self._visualization_matrix.tolist()[0]
-        _scene_dict["reference_frame_name"] = self._reference_frame
+        _scene_dict["init_orientation"] = self._visualization_matrix[0]
+        _scene_dict["reference_frame_name"] = str(self._reference_frame)
         _scene_dict["simulation_id"] = id(self)
 
         return _scene_dict
 
     def generate_simulation_dict(self):
-    """
-    Generates the simulation information for this visualization
-    frame. It maps the simulation data information to the
-    scene information via a unique id.
-    
-    """
+        """
+        Generates the simulation information for this visualization
+        frame. It maps the simulation data information to the
+        scene information via a unique id.
+        
+        """
+        _simulation_dict = {}
         try:
-            _simulation_dict[id(self)] = self._visualization_matrix.tolist()
+            _simulation_dict[id(self)] = self._visualization_matrix
 
         except:
             raise RuntimeError("Please call the numerical ",
