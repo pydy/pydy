@@ -66,7 +66,9 @@ Three_ColorKeywords = ['aliceblue', 'antiquewhite', 'aqua',
                        'violet', 'wheat', 'white', 'whitesmoke',
                        'yellow', 'yellowgreen']
                        
-Materials = ["None", "CHECKERBOARD", "METAL", "DIRT", "FOIL", "WATER", "GRASS"]                       
+Materials = ["None", "CHECKERBOARD", "METAL", "DIRT", "FOIL", "WATER", "GRASS",
+             "checkerboard", "metal", "dirt", "foil", "water", "grass"]
+                                    
 
 class Shape(object):
     """Instantiates a shape. This is primarily used as a superclass for more
@@ -166,7 +168,7 @@ class Shape(object):
     def material(self):
         """Returns the material attribute of the shape. 
         Materials are an attribute to shapes, which correspond to 
-        texture of the object used(its shine, brightness, opacity etc.). 
+        visual attributes of the object used(its shine, brightness, opacity etc.). 
         If a shape is attributed as "red" color, and "WATER" material, 
         ideally it should have opacity and brightness properties 
         like that of a red fluid.
