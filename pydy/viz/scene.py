@@ -232,6 +232,7 @@ class Scene(object):
         """
 
         self._scene_info = {}
+        self._scene_info["source"] = "PyDy"
         self._scene_info["name"] = self._name
         self._scene_info["newtonian_frame"] = str(self._reference_frame)
         self._scene_info["workspace_size"] = 0.2#This should be accomodated in scene
