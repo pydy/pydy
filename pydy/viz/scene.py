@@ -203,18 +203,15 @@ class Scene(object):
         """
 
         constant_map = dict(zip(constant_variables, constant_values))
-        self.scene_json_file = "scene_data.json"
+        self.scene_json_file = "scene_desc.json"
         self.simulation_json_file = "simulation_data.json"
 
         self._simulation_data_dict = self.generate_simulation_dict(dynamic_variables,
                                                            constant_variables,
                                                            dynamic_values,
                                                            constant_values)
- 
         self._scene_data_dict = self.generate_scene_dict(constant_map=constant_map)
         
-        print "Scene Data:\n" + str(self._scene_data_dict)
-        print "Simulation Data:\n" + str(self._simulation_data_dict)
         scene_data_outfile = open(self.scene_json_file, 'w')
         scene_data_outfile.write(json.dumps(self._scene_data_dict, indent=4,
                                  separators=(',', ': ')))
@@ -253,7 +250,7 @@ class Scene(object):
         """
         This method is used to create the JSON file compatible with
         MotionView. This JSON file consists of all the simulation data
-        alongwith references to the objects, for allowing motion to the
+        along with references to the objects, for allowing motion to the
         objects in the MotionView visualizer.
         
         """
