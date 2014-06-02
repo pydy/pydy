@@ -6,7 +6,7 @@ import json
 import distutils
 import distutils.dir_util
 import webbrowser
-
+import datetime
 # external
 from sympy.physics.mechanics import ReferenceFrame, Point
 
@@ -165,7 +165,7 @@ class Scene(object):
 
     def generate_visualization_json(self, dynamic_variables,
                                     constant_variables, dynamic_values,
-                                    constant_values):
+                                    constant_values, outfile_prefix=None):
         """
         generate_visualization_json() method generates a json str, which is
         saved to file.
@@ -189,6 +189,13 @@ class Scene(object):
             values of the parameters. The list or tuple
             should be respective to the par_sym.
 
+        outfile_prefix : str
+            A prefix to be put while saving the scene_desc
+            and simulation_data files. Files will be named
+            as `outfile_prefix_scene_desc.json` and 
+            `outfile_prefix_simulation_data.json`. If not specified
+            a timestamp shall be used as the prefix.
+            
         Returns
         =======
 
@@ -201,10 +208,13 @@ class Scene(object):
 
 
         """
-
+        if outfile_prefix is None:
+            outfile_prefix = "_".join(str(datetime.datetime.now()).\
+                                  split(".")[0].split(" "))
+            
         constant_map = dict(zip(constant_variables, constant_values))
-        self.scene_json_file = "scene_desc.json"
-        self.simulation_json_file = "simulation_data.json"
+        self.scene_json_file = outfile_prefix + "_scene_desc.json"
+        self.simulation_json_file = outfile_prefix + "_simulation_data.json"
 
         self._simulation_data_dict = self.generate_simulation_dict(dynamic_variables,
                                                            constant_variables,
@@ -235,7 +245,7 @@ class Scene(object):
         self._scene_info["source"] = "PyDy"
         self._scene_info["name"] = self._name
         self._scene_info["newtonian_frame"] = str(self._reference_frame)
-        self._scene_info["workspace_size"] = 0.2#This should be accomodated in scene
+        self._scene_info["workspaceSize"] = 0.2#This should be accomodated in scene
                                                 #instead of width/height of scene
         self._scene_info["objects"] = []
         
