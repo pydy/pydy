@@ -267,22 +267,19 @@ class Scene(object):
         """
         #TODO: Add code to include lights and Cameras as well
 
-        self._simulation_info = []
+        self._simulation_info = {}
 
         for frame in self.visualization_frames:
             frame.generate_transformation_matrix(self._reference_frame,
                                                  self._origin)
             frame.generate_numeric_transform_function(dynamic_variables,
                                                       constant_variables)
-            frame.evaluate_transformation_matrix(
-                dynamic_values, constant_values)
+            frame.evaluate_transformation_matrix(dynamic_values, 
+                                                         constant_values)
 
-            self._simulation_info.append(frame.generate_simulation_dict())
-        
+            self._simulation_info.update(frame.generate_simulation_dict())
+
         return self._simulation_info    
-
-
-                
         
     def _copy_static_dir(self):
         """
