@@ -221,6 +221,7 @@ class Scene(object):
                                                            dynamic_values,
                                                            constant_values)
         self._scene_data_dict = self.generate_scene_dict(constant_map=constant_map)
+        self._scene_data_dict["simulationData"] = self.simulation_json_file
         
         scene_data_outfile = open(self.scene_json_file, 'w')
         scene_data_outfile.write(json.dumps(self._scene_data_dict, indent=4,
