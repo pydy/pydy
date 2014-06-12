@@ -22,12 +22,28 @@ input[type=text]:focus{
 
 #json-inp{
 
-	float:right;
+	
 }
 
 
 #container {
 
 	margin: 2em;
+
+}
+
+#sidebar-right {
+
+	float:right;
+	display:block;
+	margin:2em;
+
+}
+#log-container {
+
+	margin:1.5em;
+	max-height: 10em;
+	overflow: overlay;
+	
 
 }

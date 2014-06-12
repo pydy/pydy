@@ -24,6 +24,7 @@
     <!-- DyViz Javascripts -->
     <script type="text/javascript" src="js/dyviz/dv.js"></script>
     <script type="text/javascript" src="js/dyviz/parser.js"></script>
+    <script type="text/javascript" src="js/dyviz/logUtil.js"></script>
 
 
 </head>
@@ -32,11 +33,16 @@
 
 
 <div id="container">
-  <div id="json-inp">
-    <input type="text" class="form-control" id="json-input">
-    <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load">
-    <input type="button" class="btn btn-success" value="Save/Edit" id="save-json">
-  </div>
+    <div id="sidebar-right" >
+      <div id="json-inp">
+        <input type="text" class="form-control" id="json-input">
+        <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load">
+        <input type="button" class="btn btn-success" value="Save/Edit" id="save-json">
+      </div>
+      
+    </div>  
+
+
 </div>  
 
 

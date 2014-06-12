@@ -67,7 +67,7 @@ DynamicsVisualizer = Class.create({
 			// load it into the canvas
 
             self.sceneFilePath = $("#json-input").val();
-            console.log("INFO: found scene JSON file:" + self._sceneFilePath);
+            console.log("INFO: found scene JSON file:" + self.sceneFilePath);
 			self.Parser.loadScene();
 
 
@@ -83,7 +83,17 @@ DynamicsVisualizer = Class.create({
 
 	},
 
-  
+    getBasePath: function(){
+    	var self = this;
+    	var slashes_fixed = self.sceneFilePath.replace(/\\/g, "/");
+        return slashes_fixed.split("/").slice(0,-1).join("/") + "/";
+    },
+
+    getFileExtenstion: function(){
+    	var self = this;
+    	return self.sceneFilePath.split(".").slice(-1)[0].toLowerCase();
+
+    }
 
     });
 
