@@ -1,45 +1,41 @@
-
-var DynamicsVisualizer = new DynamicsVisualizer();
-
 (function($) {
 
-DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
+DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 	
-	loadScene: function(){
+	create: function(){
 
 		/** 
-		  * This method calls an ajax request on the 
-		  * JSON file and reads the scene info from 
-		  * the JSON file. 
-		  * 
+		  * This method creates the scene from the self.model
+		  * and renders it onto the canvas.
 		  * 
 		**/ 
 		var self = this;
-		var filePath = self.sceneFilePath;
-		self._model = {};
+        self._createRenderer();
+        /*
+        self._addAxes();
+        self._addDefaultLightsandCameras();
+        self._addObjects();
+        self._render();
+        */
 
+	},
 
-		if(self.getFileExtenstion() !== "json"){
-			console.log("ALERT: File should be a valid JSON file!");
-			alert("File should be a valid JSON file!");
-			return;
-		}
+	_createRenderer: function(){
+		/**
+		  * Creates a webGL Renderer
+		  * with a default background color.
+		  *
+		**/ 
+		var self = this;
+		self.renderer = new THREE.WebGLRenderer();
+	    self.renderer.setSize(800, 800);
+	    var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
+	    self.renderer.setClearColor(backgroundColor);	
+	    var container = $('#renderer');
+	    container.append(this.renderer.domElement);	
 
-		new Ajax.Request(filePath, {
-            method:'get',
-            onSuccess: function(transport) {
-            	// Got file here.. load this on Canvas!
-            	self.model = $.parseJSON(transport.responseText);
+	    // new Scene..
 
-            },
-            onFailure: function() { alert('Scene File not loaded!'); },
-            on404: function(){ alert("Scene File Not Found! Error:404"); }
-
-        });
-		
-		// loads scene onto canvas!
-		self.Scene.create();
-		
 
 	},
 

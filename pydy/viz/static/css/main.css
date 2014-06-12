@@ -70,9 +70,11 @@ input[type=text]:focus{
     
 }
 
+#slider-wrapper{
+	float:right;
+	padding-left:2em;
+}
+
 .slider{
-
-	width:50em;
-	margin-left:3em;
-
+	width:100px;
 }

@@ -7,8 +7,9 @@
     <!--CSS -->
 
     <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css">
-    <link type="text/css" rel="stylesheet" href="css/main.css">
     <link type="text/css" rel="stylesheet" href="css/slider.css">
+    <link type="text/css" rel="stylesheet" href="css/main.css">
+    
     
 
     <!-- External Javascripts -->
@@ -26,6 +27,7 @@
     <!-- DyViz Javascripts -->
     <script type="text/javascript" src="js/dyviz/dv.js"></script>
     <script type="text/javascript" src="js/dyviz/parser.js"></script>
+    <script type="text/javascript" src="js/dyviz/scene.js"></script>
     <script type="text/javascript" src="js/dyviz/logUtil.js"></script>
 
 
@@ -50,7 +52,8 @@
             <a href="#" class="btn btn-danger btn-small" id="playAnimation"><i class="icon-white icon-play"></i>Play Animation</a>
             <a href="#" class="btn btn-danger btn-small" id="resetControls"><i class="icon-white icon-play"></i>Reset Controls</a>
         </div>
-        <div id="timeSlider" class="slider"></div>
+
+        <div id="slider-wrapper"><div id="timeSlider" class="slider" style="float:right; width:28em;padding-left: 2em;"></div> </div>    
         
 
         <div id="renderer"><!-- THREE Scene rendered here --></div>
@@ -62,6 +65,7 @@
     <script type="text/javascript">
         DynamicsVisualizer.init();
         DynamicsVisualizer.activateUIControls();
+        DynamicsVisualizer.Scene.create();
     </script>
 
 </div>  
@@ -73,6 +77,7 @@
 </body>
 
 </html>
+
 
 
 
