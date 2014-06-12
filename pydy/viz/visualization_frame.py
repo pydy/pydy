@@ -293,47 +293,69 @@ class VisualizationFrame(object):
             args = np.hstack((states, constant_values))
             new = self._numeric_transform(*args)
 
-        self._visualization_matrix = new.reshape(n, 16)
+        self._visualization_matrix = new.reshape(n, 16).tolist()
         return self._visualization_matrix
 
-    def generate_visualization_dict(self, constant_map={}):
-        """Returns a dictionary of all the info required for the
-        visualization of this frame.
-
-        Before calling this method, all the transformation matrix generation
-        methods should be called, or it will give an error.
+    
+    def generate_scene_dict(self, constant_map={}):
+        """
+        This method generates information for a static 
+        visualization in the initial conditions, in the form
+        of dictionary. This contains shape information
+        from `Shape.generate_dict()` followed by an
+        init_orientation Key.
 
         Parameters
         ==========
         constant_map : dictionary
-            If the shape associated with this visualization frame has
-            symbolic values for its geometric parameters, then you must
-            supply a dictionary mapping the necessary SymPy symbols to
-            Python floats.
-
+            Constant map is required when Shape contains sympy expressions.This
+            dictionary maps sympy expressions/symbols to numerical values(floats)
+        
         Returns
         =======
-        data : dictionary
-            The dictionary contains the following keys:
-            name : string
-                The name of the VisualizationFrame.
-            shape : dictionary
-                A dictionary generated from the associated Shape.
-            simulation_matrix : list
-                The N x 4 x 4 array provided as a list of lists of lists. N
-                is the number of time steps and the 4 x 4 matrix at each
-                time step represents the transformation matrix for animation
-                purposes.
+        A dictionary built with a call to `Shape.generate_dict`. 
+        Additional keys included in the dict are following:
+        
+        1. init_orientation: Specifies the initial orientation 
+           of the `VisualizationFrame`.
+        2. reference_frame_name: Name(str) of the reference_frame
+           attached to this VisualizationFrame.
+        3. simulation_id: an arbitrary integer to map scene description
+           with the simulation data.
 
+        
         """
-        data = {}
-        data['name'] = self.name
-        data['shape'] = self.shape.generate_dict(constant_map=constant_map)
+        scene_dict = self.shape.generate_dict(constant_map=constant_map)
+        scene_dict["init_orientation"] = self._visualization_matrix[0]
+        scene_dict["reference_frame_name"] = str(self._reference_frame)
+        scene_dict["simulation_id"] = id(self)
+
+        return scene_dict
+
+    def generate_simulation_dict(self):
+        """
+        Generates the simulation information for this visualization
+        frame. It maps the simulation data information to the
+        scene information via a unique id.
+        
+        Returns
+        =======
+
+        A dictionary containing list of 4x4 matrices mapped to 
+        the unique id as the key.
+        
+        """
+        simulation_dict = {}
         try:
-            data['simulation_matrix'] = self._visualization_matrix.tolist()
+            simulation_dict[id(self)] = self._visualization_matrix
+
         except:
             raise RuntimeError("Please call the numerical ",
                                "transformation methods, ",
                                "before generating visualization dict")
 
-        return data
+
+        return simulation_dict
+        
+
+

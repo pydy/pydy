@@ -6,7 +6,7 @@ import json
 import distutils
 import distutils.dir_util
 import webbrowser
-
+import datetime
 # external
 from sympy.physics.mechanics import ReferenceFrame, Point
 
@@ -163,93 +163,9 @@ class Scene(object):
         else:
             self._reference_frame = new_reference_frame
 
-    def generate_visualization_dict(self, dynamic_variables,
-                                    constant_variables, dynamic_values,
-                                    constant_values):
-        """
-        generate_visualization_dict() method generates
-        a dictionary of visualization data
-
-
-        Parameters
-        ==========
-        dynamic_variables : sequence of sympy.Functions
-            This sequence contains all the functions of time which are
-            required for generating the transformation matrices of all the
-            visualization frames in the scene.
-        constant_variables : Sympifyable list or tuple
-            This contains all the symbols for the parameters which are
-            used for defining various objects in the system.
-        dynamic_values : list or tuple
-            initial states of the system. The list or tuple
-            should be respective to the state_sym.
-        constant_values : list or tuple
-            values of the parameters. The list or tuple
-            should be respective to the par_sym.
-
-        Returns
-        =======
-
-        The dictionary contains following keys:
-        1) Width of the scene.
-        2) Height of the scene.
-        3) name of the scene.
-        4) frames in the scene, which contains sub-dictionaries
-           of all the visualization frames information.
-
-
-        """
-
-        self._scene_data = {}
-        self._scene_data['name'] = self._name
-        self._scene_data['height'] = self._height
-        self._scene_data['width'] = self._width
-        self._scene_data['frames'] = []
-        self._scene_data['cameras'] = []
-        self._scene_data['lights'] = []
-
-        constant_map = dict(zip(constant_variables, constant_values))
-
-        for frame in self.visualization_frames:
-            frame.generate_transformation_matrix(self._reference_frame,
-                                                 self._origin)
-            frame.generate_numeric_transform_function(dynamic_variables,
-                                                      constant_variables)
-            frame.evaluate_transformation_matrix(
-                dynamic_values, constant_values)
-
-            self._scene_data['frames'].append(
-                frame.generate_visualization_dict(constant_map=constant_map))
-
-        for camera in self.cameras:
-            camera.generate_transformation_matrix(self._reference_frame,
-                                                  self._origin)
-            camera.generate_numeric_transform_function(dynamic_variables,
-                                                       constant_variables)
-            camera.evaluate_transformation_matrix(dynamic_values,
-                                                  constant_values)
-
-            self._scene_data['cameras'].append(
-                camera.generate_visualization_dict()
-            )
-
-        for light in self.lights:
-            light.generate_transformation_matrix(self._reference_frame,
-                                                 self._origin)
-            light.generate_numeric_transform_function(dynamic_variables,
-                                                      constant_variables)
-            light.evaluate_transformation_matrix(dynamic_values,
-                                                 constant_values)
-
-            self._scene_data['lights'].append(
-                light.generate_visualization_dict())
-
-        return self._scene_data
-
-
     def generate_visualization_json(self, dynamic_variables,
                                     constant_variables, dynamic_values,
-                                    constant_values, save_to='data.json'):
+                                    constant_values, outfile_prefix=None):
         """
         generate_visualization_json() method generates a json str, which is
         saved to file.
@@ -273,11 +189,13 @@ class Scene(object):
             values of the parameters. The list or tuple
             should be respective to the par_sym.
 
-        save_to : str
-            path to the file where to write the generated data JSON.
-            the path should be chosen such as to have the write
-            permissions to the user.
-
+        outfile_prefix : str
+            A prefix to be put while saving the scene_desc
+            and simulation_data files. Files will be named
+            as `outfile_prefix_scene_desc.json` and 
+            `outfile_prefix_simulation_data.json`. If not specified
+            a timestamp shall be used as the prefix.
+            
         Returns
         =======
 
@@ -290,17 +208,80 @@ class Scene(object):
 
 
         """
-        self.saved_json_file = save_to
-        self._data_dict = self.generate_visualization_dict(dynamic_variables,
+        if outfile_prefix is None:
+            outfile_prefix = "_".join(str(datetime.datetime.now()).\
+                                  split(".")[0].split(" "))
+            
+        constant_map = dict(zip(constant_variables, constant_values))
+        self.scene_json_file = outfile_prefix + "_scene_desc.json"
+        self.simulation_json_file = outfile_prefix + "_simulation_data.json"
+
+        self._simulation_data_dict = self.generate_simulation_dict(dynamic_variables,
                                                            constant_variables,
                                                            dynamic_values,
                                                            constant_values)
-
-        outfile = open(self.saved_json_file, 'w')
-        outfile.write(json.dumps(self._data_dict, indent=4,
+        self._scene_data_dict = self.generate_scene_dict(constant_map=constant_map)
+        self._scene_data_dict["simulationData"] = self.simulation_json_file
+        
+        scene_data_outfile = open(self.scene_json_file, 'w')
+        scene_data_outfile.write(json.dumps(self._scene_data_dict, indent=4,
                                  separators=(',', ': ')))
-        outfile.close()
+        scene_data_outfile.close()
 
+        simulation_data_outfile = open(self.simulation_json_file, 'w')
+        simulation_data_outfile.write(json.dumps(self._simulation_data_dict, indent=4,
+                                 separators=(',', ': ')))
+        simulation_data_outfile.close()
+
+    def generate_scene_dict(self, constant_map={}):
+        """
+        This method is used to create the dictionary compatible with 
+        MotionView. This JSON file contains all the relevant information
+        required by MotionView to draw the scene on the canvas.
+        
+        
+        """
+
+        self._scene_info = {}
+        self._scene_info["source"] = "PyDy"
+        self._scene_info["name"] = self._name
+        self._scene_info["newtonian_frame"] = str(self._reference_frame)
+        self._scene_info["workspaceSize"] = 0.2#This should be accomodated in scene
+                                                #instead of width/height of scene
+        self._scene_info["objects"] = []
+        
+        for frame in self.visualization_frames:
+            _object_info = frame.generate_scene_dict(constant_map=constant_map)
+            self._scene_info["objects"].append(_object_info)        
+        
+        return self._scene_info
+            
+    def generate_simulation_dict(self, dynamic_variables,
+                                    constant_variables, dynamic_values,
+                                    constant_values):
+        """
+        This method is used to create the JSON file compatible with
+        MotionView. This JSON file consists of all the simulation data
+        along with references to the objects, for allowing motion to the
+        objects in the MotionView visualizer.
+        
+        """
+        #TODO: Add code to include lights and Cameras as well
+
+        self._simulation_info = {}
+
+        for frame in self.visualization_frames:
+            frame.generate_transformation_matrix(self._reference_frame,
+                                                 self._origin)
+            frame.generate_numeric_transform_function(dynamic_variables,
+                                                      constant_variables)
+            frame.evaluate_transformation_matrix(dynamic_values, 
+                                                         constant_values)
+
+            self._simulation_info.update(frame.generate_simulation_dict())
+
+        return self._simulation_info    
+        
     def _copy_static_dir(self):
         """
         Copies all the static files required in the
