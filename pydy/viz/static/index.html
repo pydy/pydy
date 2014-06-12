@@ -8,6 +8,7 @@
 
     <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css">
     <link type="text/css" rel="stylesheet" href="css/main.css">
+    <link type="text/css" rel="stylesheet" href="css/slider.css">
     
 
     <!-- External Javascripts -->
@@ -20,6 +21,7 @@
 
     <script type="text/javascript" src="js/external/utils/prototype.js"></script>
     <script type="text/javascript" src="js/external/utils/modernizr-2.0.6.js"></script>
+    <script type="text/javascript" src="js/external/utils/bootstrap-slider.js"></script>
     
     <!-- DyViz Javascripts -->
     <script type="text/javascript" src="js/dyviz/dv.js"></script>
@@ -30,8 +32,9 @@
 </head>
 
 <body>
-
-
+<div id="wrapper">
+<div id="banner" class="well">
+</div>
 <div id="container">
     <div id="sidebar-right" >
       <div id="json-inp">
@@ -42,18 +45,35 @@
       
     </div>  
 
+    <div id="canvas" class="well">
+        <div id="control-button-group" class="btn-group">
+            <a href="#" class="btn btn-danger btn-small" id="playAnimation"><i class="icon-white icon-play"></i>Play Animation</a>
+            <a href="#" class="btn btn-danger btn-small" id="resetControls"><i class="icon-white icon-play"></i>Reset Controls</a>
+        </div>
+        <div id="timeSlider" class="slider"></div>
+        
+
+        <div id="renderer"><!-- THREE Scene rendered here --></div>
+        
+     
+
+    </div>
+
+    <script type="text/javascript">
+        DynamicsVisualizer.init();
+        DynamicsVisualizer.activateUIControls();
+    </script>
 
 </div>  
+</div>
 
 
 
-<script>
-    DynamicsVisualizer.init();
-    DynamicsVisualizer.activateUIControls();
-</script>
 
 </body>
 
 </html>
+
+
 
 

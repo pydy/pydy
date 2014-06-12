@@ -78,6 +78,8 @@ DynamicsVisualizer = Class.create({
 			//
 		});
 
+		$("#timeSlider").slider({min:0,max:100,step:1, handle:"square", value:0});
+
 		console.log("INFO: Activated UI controls");
 
 
