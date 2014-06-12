@@ -252,8 +252,18 @@ class Scene(object):
         
         for frame in self.visualization_frames:
             _object_info = frame.generate_scene_dict(constant_map=constant_map)
-            self._scene_info["objects"].append(_object_info)        
+            self._scene_info["objects"].append(_object_info)
         
+        
+        for camera in self.cameras:
+            _object_info = camera.generate_scene_dict()
+            self._scene_info["objects"].append(_object_info)          
+            
+        for light in self.lights:
+            _object_info = light.generate_scene_dict()
+            self._scene_info["objects"].append(_object_info)          
+            
+
         return self._scene_info
             
     def generate_simulation_dict(self, dynamic_variables,
@@ -279,6 +289,26 @@ class Scene(object):
                                                          constant_values)
 
             self._simulation_info.update(frame.generate_simulation_dict())
+
+        for camera in self.cameras:
+            camera.generate_transformation_matrix(self._reference_frame,
+                                                 self._origin)
+            camera.generate_numeric_transform_function(dynamic_variables,
+                                                      constant_variables)
+            camera.evaluate_transformation_matrix(dynamic_values, 
+                                                         constant_values)
+
+            self._simulation_info.update(camera.generate_simulation_dict())
+    
+        for light in self.lights:
+            light.generate_transformation_matrix(self._reference_frame,
+                                                 self._origin)
+            light.generate_numeric_transform_function(dynamic_variables,
+                                                      constant_variables)
+            light.evaluate_transformation_matrix(dynamic_values, 
+                                                         constant_values)
+
+            self._simulation_info.update(light.generate_simulation_dict())
 
         return self._simulation_info    
         

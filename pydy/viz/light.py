@@ -142,41 +142,53 @@ class PointLight(VisualizationFrame):
         """
         return self._color_rgb
 
-    def generate_visualization_dict(self):
+    def generate_scene_dict(self):
         """
-        Returns a dictionary of all the info required
-        for the visualization of this PointLight.
-
-        Before calling this method, all the transformation matrix
-        generation methods should be called, or it will give an error.
+        This method generates information for a static 
+        visualization in the initial conditions, in the form
+        of dictionary. This contains light parameters followed 
+        by an init_orientation Key.
 
         Returns
         =======
-
-        a dictionary containing following keys:
-
-        name : name of the PointLight
-        color : color of the light used.
-        simulation_matrix : a N*4*4 matrix, converted to list, for
-        passing to Javascript for animation purposes, where N is the
-        number of timesteps for animations.
-
+        A dict with following Keys:
+        
+        1. name: name for the camera
+        2. color: Color of the light
+        3. init_orientation: Initial orientation
+           of the light object
 
         """
-        self._data = {}
-        self._data['name'] = self.name
-        self._data['type'] = self.__repr__()
-        self._data['color'] = self._color_rgb
+        scene_dict = {}
+        scene_dict['name'] = self.name
+        scene_dict['type'] = self.__repr__()
+        scene_dict['color'] = self.color
+        scene_dict["simulation_id"] = id(self)
+        scene_dict["init_orientation"] = self._visualization_matrix[0]
 
+        return scene_dict
+
+    def generate_simulation_dict(self):
+        """
+        Generates the simulation information for this Light object. 
+        It maps the simulation data information to the
+        scene information via a unique id.
+        
+        Returns
+        =======
+
+        A dictionary containing list of 4x4 matrices mapped to 
+        the unique id as the key.
+        
+        """
+        simulation_dict = {}
         try:
-            self._data['simulation_matrix'] = \
-                                     self._visualization_matrix.tolist()
+            simulation_dict[id(self)] = self._visualization_matrix
 
         except:
-            #Not sure which error to call here.
-            raise RuntimeError('''Please call the numerical
-                                  transformation methods,
-                               before generating simulation dict ''')
+            raise RuntimeError("Please call the numerical ",
+                               "transformation methods, ",
+                               "before generating visualization dict")
 
 
-        return self._data
+        return simulation_dict
