@@ -106,7 +106,10 @@ DynamicsVisualizer = Class.create({
 
     });
 
+    
 })(jQuery);
 
+
+var DynamicsVisualizer = new DynamicsVisualizer();
 
 

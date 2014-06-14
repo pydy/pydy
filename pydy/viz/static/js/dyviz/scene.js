@@ -1,3 +1,4 @@
+
 (function($) {
 
     DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
@@ -42,6 +43,10 @@
         },    
             
     	_addDefaultLightsandCameras: function(){
+            // This is an auxillary function 
+            // for development purposes..
+            // should be removed after everything 
+            // is in place and working.
     		var self = this;
             self._cameras = {};
 
@@ -63,10 +68,12 @@
     	},
 
     	_addAxes: function(){
+            var self = this;
+            self._meshes = {};
     		var self = this;
     		var axes = new THREE.AxisHelper(100);
-            axes.name = "Axes";
-            self._scene.add(axes);
+            self._meshes["axes"] = axes;
+            self._scene.add(self._meshes["axes"]);
             
     	},
 
@@ -81,26 +88,71 @@
         	this.primaryControls.reset();
         },
 
-        /* Doesnt work.. not sure why!! 
-        _render_with_trackball: function(){
-        	console.log("In this function");
-        	var self = this;
-        	var renderer = self.webgl_renderer;
-        	requestAnimationFrame(this._render_with_trackball);
-        	
-        	var self = this;
-        	this.webgl_renderer.render(self._scene, self._camera);
-        	self.primaryControls.update();
-        },
-        */
-
-        _addObjects: function(){
+        addObjects: function(){
             var self = this;
-            var objects = self.model.objects;
+            var objects = this.model.objects;
             self._frames = {};
-            self._cameras = {};
-            self._lights = {};
-            for(var i=0;i<objects.length; i++) self._scene.add(objects[i]);
+            for(var i=0;i<objects.length; i++)  self._addIndividualObject(objects[i]);
+
+            // Now add all the objects contained in self._meshes,_cameras, and
+            // _lights onto scene.
+        },
+
+        _addIndividualObject: function(object){
+            var self = this;
+            var type = object.type;
+            
+            // This is for shapes,
+            // Need to do something else
+            // for camera, lights
+            //var material = self.Materials[object.material];
+            // meanwhile..
+            var material = new THREE.MeshLambertMaterial();
+            switch(type) {
+
+                case "Mesh":
+                    //TODO
+                    break;
+
+                case "Cube":
+                    var geometry = new THREE.CubeGeometry(
+                                      object.length,
+                                      object.length,
+                                      object.length, 
+                                      50, 50, 50);
+                    break;
+
+                case "Sphere":
+                    var geometry = new THREE.SphereGeometry(
+                                                   object.radius, 8);
+                    break;
+
+                case "Cylinder":
+                    var geometry = new THREE.CylinderGeometry(object.radius,
+                                                              object.radius,
+                                                              object.length);
+
+                    break;
+
+                // Add rest of objects too.    
+            }
+
+            var mesh = new THREE.Mesh(geometry, material);
+            var element = new Float32Array(object.init_orientation);
+            var initMatrix = new THREE.Matrix4();
+            initMatrix.elements = element;
+            mesh.matrix.identity();
+            mesh.applyMatrix(initMatrix);
+
+            self._meshes[object.simulation_id] = mesh;
+        },
+
+        addCameras: function(){
+
+        },
+
+        addLights: function(){
+
         },
 
 

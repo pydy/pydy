@@ -1,6 +1,4 @@
 
-var DynamicsVisualizer = new DynamicsVisualizer();
-
 (function($) {
 
 DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
@@ -29,16 +27,19 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
             method:'get',
             onSuccess: function(transport) {
             	// Got file here.. load this on Canvas!
+            	// This call is not complete, before the Scene.
             	self.model = $.parseJSON(transport.responseText);
 
+            },
+            onComplete: function(){
+            	console.log("request completed");
+                self.Scene.addObjects();
+ 
             },
             onFailure: function() { alert('Scene File not loaded!'); },
             on404: function(){ alert("Scene File Not Found! Error:404"); }
 
         });
-		
-		// loads scene onto canvas!
-		self.Scene.create();
 		
 
 	},
@@ -60,6 +61,7 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
             method:'get',
             onSuccess: function(transport) {
             	// Got file here.. load this on Canvas!
+
             	self.simData = $.parseJSON(transport.responseText);
 
             },
