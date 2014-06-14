@@ -35,47 +35,50 @@
 
 <body>
 <div id="wrapper">
-<div id="banner" class="well">
-</div>
-<div id="container">
-    <div id="sidebar-right" >
-      <div id="json-inp">
-        <input type="text" class="form-control" id="json-input">
-        <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load">
-        <input type="button" class="btn btn-success" value="Save/Edit" id="save-json">
-      </div>
-      
-    </div>  
+    <div id="container">
+        <div id="sidebar-right" >
+          <div id="json-inp">
+            <input type="text" class="form-control" id="json-input">
+            <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load">
+            <input type="button" class="btn btn-success" value="Save/Edit" id="save-json">
+          </div>
+        </div>  
+        <div id="canvas" >
+            <div id="control-button-group" class="btn-group">
+                <a href="#" class="btn btn-danger btn-small" id="playAnimation"><i class="icon-white icon-play"></i>Play Animation</a>
+                <!-- <a href="#" class="btn btn-danger btn-small" id="resetControls"><i class="icon-white icon-play"></i>Reset Controls</a> -->
+            </div>
+  
+            <div id="slider-wrapper">
+                <div id="timeSlider" class="slider" style="float:right; width:28em;padding-left: 2em;"></div> 
+            </div>    
+            <hr />
+            <div id="renderer"><!-- THREE Scene rendered here --></div>
+        
 
-    <div id="canvas" class="well">
-        <div id="control-button-group" class="btn-group">
-            <a href="#" class="btn btn-danger btn-small" id="playAnimation"><i class="icon-white icon-play"></i>Play Animation</a>
-            <a href="#" class="btn btn-danger btn-small" id="resetControls"><i class="icon-white icon-play"></i>Reset Controls</a>
         </div>
+        <!-- This script should probably go on some run_script.js file -->
+        <script type="text/javascript">
+            console.log("Herer")
+            DynamicsVisualizer.init();
+            DynamicsVisualizer.activateUIControls();
+            DynamicsVisualizer.Scene.create();
 
-        <div id="slider-wrapper"><div id="timeSlider" class="slider" style="float:right; width:28em;padding-left: 2em;"></div> </div>    
-        
+            //  Activate TrackBall Controls..
+            function activateTrackballControls(){ 
+                DynamicsVisualizer.primaryControls.update()
+                DynamicsVisualizer.Scene.webgl_renderer.render(DynamicsVisualizer.Scene._scene, DynamicsVisualizer.Scene._cameras.init_camera);
+                requestAnimationFrame(activateTrackballControls); 
+            };
+            activateTrackballControls();
 
-        <div id="renderer"><!-- THREE Scene rendered here --></div>
-        
-     
 
+        </script> 
     </div>
 
-    <script type="text/javascript">
-        DynamicsVisualizer.init();
-        DynamicsVisualizer.activateUIControls();
-        DynamicsVisualizer.Scene.create();
-    </script>
-
+    
 </div>  
-</div>
-
-
-
-
 </body>
-
 </html>
 
 

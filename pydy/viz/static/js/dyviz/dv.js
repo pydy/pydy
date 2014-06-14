@@ -80,6 +80,13 @@ DynamicsVisualizer = Class.create({
 
 		$("#timeSlider").slider({min:0,max:100,step:1, handle:"square", value:0});
 
+		$("#resetControls").click(function(){
+			self.Scene._resetControls();
+			// Activate CodeMirror... 
+			//
+		});
+
+
 		console.log("INFO: Activated UI controls");
 
 

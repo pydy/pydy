@@ -1,12 +1,12 @@
 {
     "newtonian_frame": "world",
     "name": "unnamed",
-    "simulationData": "2014-06-12_12:17:18_simulation_data.json",
-    "workspaceSize": 0.5,
+    "simulationData": "2014-06-12_19:49:51_simulation_data.json",
+    "workspaceSize": 0.2,
     "source": "PyDy",
     "objects": [
         {
-            "simulation_id": 73235664,
+            "simulation_id": 72005840,
             "name": "link",
             "color": "red",
             "reference_frame_name": "frameP",
@@ -33,7 +33,7 @@
             "type": "Cylinder"
         },
         {
-            "simulation_id": 73235984,
+            "simulation_id": 72006096,
             "name": "link",
             "color": "red",
             "reference_frame_name": "frameR",
@@ -60,7 +60,7 @@
             "type": "Cylinder"
         },
         {
-            "simulation_id": 73235920,
+            "simulation_id": 72005904,
             "name": "sphere",
             "color": "grey",
             "reference_frame_name": "N",
@@ -86,7 +86,7 @@
             "type": "Sphere"
         },
         {
-            "simulation_id": 73236432,
+            "simulation_id": 72007184,
             "name": "sphere",
             "color": "grey",
             "reference_frame_name": "N",
@@ -110,6 +110,56 @@
                 1.0
             ],
             "type": "Sphere"
+        },
+        {
+            "fov": 45,
+            "name": "DefaultCamera",
+            "far": 1000,
+            "simulation_id": 72192144,
+            "near": 1,
+            "init_orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                10.0,
+                1.0
+            ],
+            "type": "PerspectiveCamera"
+        },
+        {
+            "color": "white",
+            "init_orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                10.0,
+                1.0
+            ],
+            "simulation_id": 72192656,
+            "type": "PointLight",
+            "name": "DefaultLight"
         }
     ]
 }
