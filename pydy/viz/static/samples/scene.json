@@ -2,6 +2,8 @@
     "newtonian_frame": "world",
     "name": "unnamed",
     "simulationData": "2014-06-14_15:50:32_simulation_data.json",
+    "timeDelta": 0.5,
+    "timeSteps": 10,
     "workspaceSize": 0.2,
     "lights": [
         {

@@ -90,17 +90,12 @@
 
         addObjects: function(){
             var self = this;
-            var objects = this.model.objects;
-            for(var i=0;i<objects.length; i++)  {
-                console.log("adding:");
-                console.log(objects[i]);
-                self._addIndividualObject(objects[i]);
-            }    
+            var objects = self.model.objects;
+            for(var i=0;i<objects.length; i++)  self._addIndividualObject(objects[i]);
 
             // Now add all the objects contained in self._meshes onto scene.
-            for(var i in self._meshes){
-                self._scene.add(self._meshes[i]);
-            }
+            for(var i in self._meshes)  self._scene.add(self._meshes[i]);
+            
         },
 
         addCameras: function(){
@@ -108,10 +103,7 @@
             var cameras = this.model.cameras;
             for(var i=0;i<cameras.length; i++)  self._addIndividualCamera(cameras[i]);
 
-            for(var i in self._cameras){
-                self._scene.add(self._cameras[i]);
-            }
-
+            for(var i in self._cameras)  self._scene.add(self._cameras[i]);
         },
 
         addLights: function(){
@@ -119,10 +111,7 @@
             var lights = this.model.lights;
             for(var i=0;i<lights.length; i++)  self._addIndividualLight(lights[i]);
 
-            for(var i in self._lights){
-                self._scene.add(self._lights[i]);
-            }    
-
+            for(var i in self._lights)  self._scene.add(self._lights[i]);
         },
 
         _addIndividualObject: function(object){
@@ -225,7 +214,50 @@
         },
 
         runAnimation: function(){
+            // use SetInterval to iterate through timesteps..
+            // TODO Set timeArray and timeStep...
+            // should be mapped to play animation button..
+            var self = this;
+            var currentTime = 0;
+            var timeDelta = self.model.timeDelta;
+            console.log(window);
+            console.log(window.setInterval);
+            self.animationID = window.setInterval(function(){ 
+                // setAnimationTime sets slider and scene
+                // to that particular time.
+                console.log("Current Time: " + currentTime);
+                self.setAnimationTime(currentTime);
+                currentTime+=timeDelta;
 
+                
+            }, timeDelta*1000);
+
+        },
+
+        setAnimationTime: function(currentTime){
+            var self = this;
+            // Set the slider to the current animation time..
+            if(currentTime>=self._finalTime) {
+                console.log("Stopping Animation");
+                window.clearInterval(self.animationID);
+            }    
+            var percent = currentTime/self._finalTime*100;
+            $("#timeSlider").slider("setValue",percent);
+
+            // Now animate objects in scene too..
+            var i = self._timeArray.indexOf(currentTime);
+            
+            for(var id in self._meshes){
+                if(self.simData[id] != undefined){
+                    var element = new Float32Array(self.simData[id][i]);
+                    var orientationMatrix = new THREE.Matrix4();
+                    orientationMatrix.elements = element;
+                    //self._meshes[id].matrix.identity()
+                    self._meshes[id].applyMatrix(orientationMatrix);
+                }
+
+            }
+            
         }
 
 

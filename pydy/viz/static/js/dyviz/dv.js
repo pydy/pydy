@@ -70,7 +70,6 @@ DynamicsVisualizer = Class.create({
             console.log("INFO: found scene JSON file:" + self.sceneFilePath);
 			self.Parser.loadScene();
 
-
 		});
 
 		$("#json-save").click(function(){
@@ -81,9 +80,13 @@ DynamicsVisualizer = Class.create({
 		$("#timeSlider").slider({min:0,max:100,step:1, handle:"square", value:0});
 
 		$("#resetControls").click(function(){
-			self.Scene._resetControls();
 			// Activate CodeMirror... 
 			//
+		});
+
+		$("#playAnimation").click(function(){
+			self.Scene.runAnimation();
+			
 		});
 
 
