@@ -32,8 +32,14 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
 
             },
             onComplete: function(){
-            	console.log("request completed");
-                self.Scene.addObjects();
+            	console.log("request completed, adding Objects to scene");
+            	self.Scene.addObjects();
+            	self.Scene.addCameras();
+                self.Scene.addLights();
+                console.log("Added lights");
+                
+                
+
  
             },
             onFailure: function() { alert('Scene File not loaded!'); },
@@ -61,6 +67,7 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
             method:'get',
             onSuccess: function(transport) {
             	// Got file here.. load this on Canvas!
+            	// Add onComplete methods too
 
             	self.simData = $.parseJSON(transport.responseText);
 

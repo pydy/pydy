@@ -42,6 +42,7 @@
 
         },    
             
+        
     	_addDefaultLightsandCameras: function(){
             // This is an auxillary function 
             // for development purposes..
@@ -55,17 +56,16 @@
             camera.position.y = 00 
             camera.position.z = 100
             self._cameras["init_camera"] = camera;
-            console.log(self._cameras.init_camera);
             self._scene.add(self._cameras.init_camera);
 
             self._lights = {};
             var light = new THREE.PointLight(0xffffff);
             light.position.set(10,10,-10);
             self._lights["init_light"] = light;
-            console.log(self._lights.init_light)
             self._scene.add(self._lights.init_light);
 
     	},
+        
 
     	_addAxes: function(){
             var self = this;
@@ -91,11 +91,38 @@
         addObjects: function(){
             var self = this;
             var objects = this.model.objects;
-            self._frames = {};
-            for(var i=0;i<objects.length; i++)  self._addIndividualObject(objects[i]);
+            for(var i=0;i<objects.length; i++)  {
+                console.log("adding:");
+                console.log(objects[i]);
+                self._addIndividualObject(objects[i]);
+            }    
 
-            // Now add all the objects contained in self._meshes,_cameras, and
-            // _lights onto scene.
+            // Now add all the objects contained in self._meshes onto scene.
+            for(var i in self._meshes){
+                self._scene.add(self._meshes[i]);
+            }
+        },
+
+        addCameras: function(){
+            var self = this;
+            var cameras = this.model.cameras;
+            for(var i=0;i<cameras.length; i++)  self._addIndividualCamera(cameras[i]);
+
+            for(var i in self._cameras){
+                self._scene.add(self._cameras[i]);
+            }
+
+        },
+
+        addLights: function(){
+            var self = this;
+            var lights = this.model.lights;
+            for(var i=0;i<lights.length; i++)  self._addIndividualLight(lights[i]);
+
+            for(var i in self._lights){
+                self._scene.add(self._lights[i]);
+            }    
+
         },
 
         _addIndividualObject: function(object){
@@ -134,7 +161,7 @@
 
                     break;
 
-                // Add rest of objects too.    
+                // TODO: Add rest of objects too.    
             }
 
             var mesh = new THREE.Mesh(geometry, material);
@@ -143,18 +170,63 @@
             initMatrix.elements = element;
             mesh.matrix.identity();
             mesh.applyMatrix(initMatrix);
-
             self._meshes[object.simulation_id] = mesh;
         },
 
-        addCameras: function(){
+        _addIndividualCamera: function(camera){
+            
+            var self = this;
+            switch(camera.type){
+                case "PerspectiveCamera":
+                    var _camera = new THREE.PerspectiveCamera(camera.fov, 1,
+                                                     camera.near, camera.far);
+                    var element = new Float32Array(camera.init_orientation);
+                    var initMatrix = new THREE.Matrix4();
+                    initMatrix.elements = element;
+                    _camera.applyMatrix(initMatrix);
+                    break;
+                
+                /*case "OrthoGraphicCamera":
+                // TODO adjust JSONObj.width and height here..
+                    var _camera = new THREE.OrthographicCamera(
+                                         JSONObj.width / - 2, JSONObj.width / 2, 
+                                         JSONObj.height / 2, JSONObj.height / - 2,
+                                         _camera.near, _camera.far );
+                    var _element = new Float32Array(_camera.simulation_matrix[0]);
+                    var initMatrix = new THREE.Matrix4();
+                    initMatrix.elements = _element;
+                    _camera.applyMatrix(initMatrix);
+                */    
+            }
+
+            self._cameras[camera.simulation_id] = _camera;
+        },
+
+        _addIndividualLight: function(light){
+            // TODO: add individual lights to self._lights
+            var self = this;
+            var type = light.type;
+            switch(light.type) { 
+
+                case "PointLight":
+                    var color = new THREE.Color(light.color);
+                    var _light = new THREE.PointLight(color);
+                    var element = new Float32Array(light.init_orientation);
+                    var initMatrix = new THREE.Matrix4();
+                    initMatrix.elements = element;
+                    _light.applyMatrix(initMatrix);
+                    break;
+                //TODO add other light cases..
+                case "SomeOtherLight":
+                    break;
+            }    
+            self._lights[light.simulation_id] = _light;
 
         },
 
-        addLights: function(){
+        runAnimation: function(){
 
-        },
-
+        }
 
 
 
