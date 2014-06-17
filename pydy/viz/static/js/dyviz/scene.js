@@ -31,7 +31,8 @@
     		**/ 
     		var self = this;
     		self.webgl_renderer = new THREE.WebGLRenderer();
-    	    self.webgl_renderer.setSize(800, 600);
+            self.webgl_renderer.setSize(640, 480);
+            
     	    var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
     	    self.webgl_renderer.setClearColor(backgroundColor);	
     	    var container = $('#renderer');
@@ -214,14 +215,12 @@
         },
 
         runAnimation: function(){
-            // use SetInterval to iterate through timesteps..
-            // TODO Set timeArray and timeStep...
-            // should be mapped to play animation button..
             var self = this;
+            $("#playAnimation").css("display","none");
+            $("#stopAnimation").css("display","block");
             var currentTime = 0;
             var timeDelta = self.model.timeDelta;
-            console.log(window);
-            console.log(window.setInterval);
+            
             self.animationID = window.setInterval(function(){ 
                 // setAnimationTime sets slider and scene
                 // to that particular time.
@@ -238,12 +237,9 @@
             var self = this;
             // Set the slider to the current animation time..
             if(currentTime>=self._finalTime) {
-                console.log("Stopping Animation");
-                window.clearInterval(self.animationID);
+                self.stopAnimation();
             }    
             var percent = currentTime/self._finalTime*100;
-            $("#timeSlider").slider("setValue",percent);
-
             // Now animate objects in scene too..
             var i = self._timeArray.indexOf(currentTime);
             
@@ -257,7 +253,19 @@
                 }
 
             }
+            $("#timeSlider").slider("setValue",percent);
+            $("#time").html(currentTime);
             
+        },
+
+        stopAnimation: function(){
+            var self = this;
+            console.log("INFO: Stopping Animation");
+            window.clearInterval(self.animationID);
+            self.setAnimationTime(0)
+            $("#stopAnimation").css("display","none");
+            $("#playAnimation").css("display","block");
+
         }
 
 

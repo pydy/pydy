@@ -30,7 +30,15 @@ DynamicsVisualizer = Class.create({
 
 		    return false;
 		}
-
+		// Load different css for Browser and IPython notebook...
+		/*try{
+			jQuery('head').append('<link rel="stylesheet" type="text/css" href="css/ipython_main.css">');
+		}
+		catch(err){
+			alert("IPython notebook not triggered!")
+			console.log("IPython notebook not triggered, loading main.css");
+			$('head').append('<link rel="stylesheet" type="text/css" href="css/main.css">');
+		}*/
 
     },
 
@@ -86,6 +94,14 @@ DynamicsVisualizer = Class.create({
 
 		$("#playAnimation").click(function(){
 			self.Scene.runAnimation();
+			
+		});
+		$("#stopAnimation").click(function(){
+			self.Scene.stopAnimation();
+			
+		});
+		$("#distractionFreeMode").click(function(){
+			self.Utils.distractionFreeMode();
 			
 		});
 

@@ -35,7 +35,8 @@
 	            	self.Scene.addCameras();
 	                self.Scene.addLights();
 	                self.Parser.loadSimulation();
-	                console.log("Added lights");
+	                // activate run Animation button!
+	                $("#playAnimation").removeClass("disabled");
 	                
 	                
 

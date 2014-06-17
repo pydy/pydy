@@ -7,29 +7,36 @@
     <!--CSS -->
 
     <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="css/magnific-popup.css">
     <link type="text/css" rel="stylesheet" href="css/slider.css">
     <link type="text/css" rel="stylesheet" href="css/main.css">
+
     
     
 
     <!-- External Javascripts -->
-    <script type="text/javascript" src="js/external/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="js/external/utils/prototype.js"></script>
+    
+
     <script type="text/javascript" src="js/external/jquery/jquery-ui.js"></script>
     <script type="text/javascript" src="js/external/three/three.min.js"></script>
     <script type="text/javascript" src="js/external/three/TrackballControls.js"></script>
 
     <script type="text/javascript" src="js/external/bootstrap/bootstrap.min.js"></script>
 
-    <script type="text/javascript" src="js/external/utils/prototype.js"></script>
+    
     <script type="text/javascript" src="js/external/utils/modernizr-2.0.6.js"></script>
     <script type="text/javascript" src="js/external/utils/bootstrap-slider.js"></script>
+    <script type="text/javascript" src="js/external/utils/magnific-popup.min.js"></script>
     
     <!-- DyViz Javascripts -->
     <script type="text/javascript" src="js/dyviz/dv.js"></script>
     <script type="text/javascript" src="js/dyviz/scene.js"></script>
     <script type="text/javascript" src="js/dyviz/parser.js"></script>
     <script type="text/javascript" src="js/dyviz/logUtil.js"></script>
+    <script type="text/javascript" src="js/dyviz/utils.js"></script>
 
+    
 
 </head>
 
@@ -41,14 +48,18 @@
             <input type="text" class="form-control" id="json-input">
             <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load">
             <input type="button" class="btn btn-success" value="Save/Edit" id="save-json">
+
           </div>
-        </div>  
+        </div>
         <div id="canvas" >
-            <div id="control-button-group" class="btn-group">
-                <a href="#" class="btn btn-danger btn-small" id="playAnimation"><i class="icon-white icon-play"></i>Play Animation</a>
+            <div id="control-button-group" class="asdbtn-group">
+                <button id="playAnimation" class="btn btn-default btn-success btn-lg disabled"><span class="glyphicon glyphicon-play"></span> Play Animation</button>
+
+                <button id="stopAnimation" style="display:none;" class="btn btn-default btn-danger btn-lg active"><span class="glyphicon glyphicon-stop" ></span>Stop <span id="time" class="badge"></span></button>
+
                 <!-- <a href="#" class="btn btn-danger btn-small" id="resetControls"><i class="icon-white icon-play"></i>Reset Controls</a> -->
             </div>
-  
+            
             <div id="slider-wrapper">
                 <div id="timeSlider" class="slider" style="float:right; width:28em;padding-left: 2em;"></div> 
             </div>    
@@ -72,6 +83,13 @@
             };
             activateTrackballControls();
 
+            // Trial...
+            function a() {
+               jQuery('html, body').animate({
+                   scrollTop: jQuery("#wrapper").offset().top
+                    }, 2000);
+            };
+            a();
 
         </script> 
     </div>

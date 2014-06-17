@@ -65,16 +65,22 @@ input[type=text]:focus{
 
 	width: 69%;
     float: left;
-    margin-left: 2em;
     min-height: 10em;
     
 }
-
+/*
 #slider-wrapper{
-	float:right;
-	padding-left:2em;
+	margin:0.5em;
+}
+*/
+
+/* Overriding bootstrap button radius */
+#playAnimation{
+	border-radius: 0.5em;
+	margin-right: 0.5em;
 }
 
-.slider{
-	width:100px;
+#stopAnimation{
+	border-radius: 0.5em;
+	margin-right: 0.5em;
 }
