@@ -17,6 +17,9 @@
     <!-- External Javascripts -->
     <script type="text/javascript" src="js/external/utils/prototype.js"></script>
     
+    
+<!-- for browser testing, not for IPython usage -->
+    <script type="text/javascript" src="js/external/jquery/jquery.min.js"></script>    
 
     <script type="text/javascript" src="js/external/jquery/jquery-ui.js"></script>
     <script type="text/javascript" src="js/external/three/three.min.js"></script>
@@ -28,13 +31,15 @@
     <script type="text/javascript" src="js/external/utils/modernizr-2.0.6.js"></script>
     <script type="text/javascript" src="js/external/utils/bootstrap-slider.js"></script>
     <script type="text/javascript" src="js/external/utils/magnific-popup.min.js"></script>
-    
+
+    <script type="text/javascript" src="js/external/utils/prototype.js"></script>
     <!-- DyViz Javascripts -->
     <script type="text/javascript" src="js/dyviz/dv.js"></script>
     <script type="text/javascript" src="js/dyviz/scene.js"></script>
     <script type="text/javascript" src="js/dyviz/parser.js"></script>
     <script type="text/javascript" src="js/dyviz/logUtil.js"></script>
     <script type="text/javascript" src="js/dyviz/utils.js"></script>
+
 
     
 
@@ -48,6 +53,24 @@
             <input type="text" class="form-control" id="json-input">
             <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load">
             <input type="button" class="btn btn-success" value="Save/Edit" id="save-json">
+          </div>
+          <hr />
+          <div id="edit-objects">
+            <div class="btn-group">
+                <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+                     Edit Objects<span class="caret"></span>
+                </button>
+
+                <ul id="objectDropdown" class="dropdown-menu" role="menu">
+                <!-- Objects added Dynamically here, via javascript! -->
+                </ul>
+            </div>
+            <hr />
+            <div id="objectDialog" class="well">
+                
+            </div>
+
+
 
           </div>
         </div>
@@ -90,6 +113,32 @@
                     }, 2000);
             };
             a();
+
+            // for bootstrap proto panga..
+            (function() {
+                var isBootstrapEvent = false;
+                if (window.jQuery) {
+                    var all = jQuery('*');
+                    jQuery.each(['hide.bs.dropdown', 
+                        'hide.bs.collapse', 
+                        'hide.bs.modal', 
+                        'hide.bs.tooltip'], function(index, eventName) {
+                        all.on(eventName, function( event ) {
+                            isBootstrapEvent = true;
+                        });
+                    });
+                }
+                var originalHide = Element.hide;
+                Element.addMethods({
+                    hide: function(element) {
+                        if(isBootstrapEvent) {
+                            isBootstrapEvent = false;
+                            return element;
+                        }
+                        return originalHide(element);
+                    }
+                });
+            })();
 
         </script> 
     </div>

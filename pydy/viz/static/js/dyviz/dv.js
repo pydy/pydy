@@ -2,8 +2,6 @@
 
 var DynamicsVisualizer = {};
 
-(function($) {
-
 DynamicsVisualizer = Class.create({
 	/** 
 	  * DV is the main class for Dynamics Visualizer.
@@ -37,7 +35,7 @@ DynamicsVisualizer = Class.create({
 		catch(err){
 			alert("IPython notebook not triggered!")
 			console.log("IPython notebook not triggered, loading main.css");
-			$('head').append('<link rel="stylesheet" type="text/css" href="css/main.css">');
+			jQuery('head').append('<link rel="stylesheet" type="text/css" href="css/main.css">');
 		}*/
 
     },
@@ -70,37 +68,37 @@ DynamicsVisualizer = Class.create({
 
 
         var self = this;
-		$("#simulation-load").click(function(){
+		jQuery("#simulation-load").click(function(){
 			// Fetch FilePath from input..
 			// load it into the canvas
 
-            self.sceneFilePath = $("#json-input").val();
+            self.sceneFilePath = jQuery("#json-input").val();
             console.log("INFO: found scene JSON file:" + self.sceneFilePath);
 			self.Parser.loadScene();
 
 		});
 
-		$("#json-save").click(function(){
+		jQuery("#json-save").click(function(){
 			// Activate CodeMirror... 
 			//
 		});
 
-		$("#timeSlider").slider({min:0,max:100,step:1, handle:"square", value:0});
+		jQuery("#timeSlider").slider({min:0,max:100,step:1, handle:"square", value:0});
 
-		$("#resetControls").click(function(){
+		jQuery("#resetControls").click(function(){
 			// Activate CodeMirror... 
 			//
 		});
 
-		$("#playAnimation").click(function(){
+		jQuery("#playAnimation").click(function(){
 			self.Scene.runAnimation();
 			
 		});
-		$("#stopAnimation").click(function(){
+		jQuery("#stopAnimation").click(function(){
 			self.Scene.stopAnimation();
 			
 		});
-		$("#distractionFreeMode").click(function(){
+		jQuery("#distractionFreeMode").click(function(){
 			self.Utils.distractionFreeMode();
 			
 		});
@@ -111,23 +109,55 @@ DynamicsVisualizer = Class.create({
 
 	},
 
+	loadUIElements: function(){
+		var self = this;
+        console.log("Here1");
+        jQuery("#playAnimation").removeClass("disabled");
+
+        var objs = self.model.objects;
+        console.log("Here:" + objs);
+        for(var obj=0;obj<objs.length;obj++){
+
+            var toAppend = '<li><a id="'+ objs[obj].simulation_id + 
+                           '" href="#">' + objs[obj].name + '</a></li>';
+
+            jQuery("#objectDropdown").append(toAppend);
+
+            // adding click functions to all dropdown objs.
+
+            jQuery("#" + objs[obj].simulation_id).click(function(){
+            	self._openDialog(jQuery(this).attr("id"));
+          
+            });
+
+        }
+    },   
+
+    _openDialog: function(obj){
+    	var self = this;
+    	console.log("In Open dialog:")
+    	console.log(self._meshes[obj]["object-info"]);
+    	jQuery("")
+    	//jQuery("#objectDialog").append(self.model.objects[obj].toString())
+
+    },
+
     getBasePath: function(){
     	var self = this;
+
     	var slashes_fixed = self.sceneFilePath.replace(/\\/g, "/");
-        return slashes_fixed.split("/").slice(0,-1).join("/") + "/";
+    	return slashes_fixed.split("/").slice(0,-1).join("/") + "/";
     },
 
     getFileExtenstion: function(){
     	var self = this;
     	return self.sceneFilePath.split(".").slice(-1)[0].toLowerCase();
 
-    }
+   }
 
-    });
 
-    
-})(jQuery);
 
+});
 
 var DynamicsVisualizer = new DynamicsVisualizer();
 

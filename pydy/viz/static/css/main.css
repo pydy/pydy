@@ -68,11 +68,10 @@ input[type=text]:focus{
     min-height: 10em;
     
 }
-/*
-#slider-wrapper{
-	margin:0.5em;
+
+#objectDialog{
+	min-height: 15em;
 }
-*/
 
 /* Overriding bootstrap button radius */
 #playAnimation{
@@ -84,3 +83,4 @@ input[type=text]:focus{
 	border-radius: 0.5em;
 	margin-right: 0.5em;
 }
+
