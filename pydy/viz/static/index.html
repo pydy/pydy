@@ -7,19 +7,17 @@
     <!--CSS -->
 
     <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css">
-    <link type="text/css" rel="stylesheet" href="css/magnific-popup.css">
     <link type="text/css" rel="stylesheet" href="css/slider.css">
     <link type="text/css" rel="stylesheet" href="css/main.css">
 
-    
+    <link rel="stylesheet" href="css/codemirror/blackboard.css">
+    <link rel="stylesheet" href="css/codemirror/codemirror.css">
     
 
     <!-- External Javascripts -->
-    <script type="text/javascript" src="js/external/utils/prototype.js"></script>
     
-    
-<!-- for browser testing, not for IPython usage -->
-    <script type="text/javascript" src="js/external/jquery/jquery.min.js"></script>    
+    <!-- This one is for browser testing, not for IPython usage 
+    <script type="text/javascript" src="js/external/jquery/jquery.min.js"></script>    -->
 
     <script type="text/javascript" src="js/external/jquery/jquery-ui.js"></script>
     <script type="text/javascript" src="js/external/three/three.min.js"></script>
@@ -30,15 +28,20 @@
     
     <script type="text/javascript" src="js/external/utils/modernizr-2.0.6.js"></script>
     <script type="text/javascript" src="js/external/utils/bootstrap-slider.js"></script>
-    <script type="text/javascript" src="js/external/utils/magnific-popup.min.js"></script>
-
+    
     <script type="text/javascript" src="js/external/utils/prototype.js"></script>
+    <script type="text/javascript" src="js/external/codemirror/codemirror.min.js" ></script>
+    <script type="text/javascript" src="js/external/jquery/jquery.min.js"></script>
+
+
     <!-- DyViz Javascripts -->
     <script type="text/javascript" src="js/dyviz/dv.js"></script>
     <script type="text/javascript" src="js/dyviz/scene.js"></script>
     <script type="text/javascript" src="js/dyviz/parser.js"></script>
+    <script type="text/javascript" src="js/dyviz/editor.js"></script>
     <script type="text/javascript" src="js/dyviz/logUtil.js"></script>
-    <script type="text/javascript" src="js/dyviz/utils.js"></script>
+    <script type="text/javascript" src="js/dyviz/materials.js"></script>
+
 
 
     
@@ -91,6 +94,21 @@
         
 
         </div>
+
+        <!--- CodeMirror Editor HTML -->
+        <div id="model_edit" title="Model Editor"><!--
+          <textarea id="code" name="code"></textarea>'
+          <div id="editorToolbar" class="ui-widget-header ui-corner-all">
+            <button class="editorButton" id="editor_undo" value="undo">undo</button>
+            <button class="editorButton" id="editor_redo">redo</button>
+            <button class="editorButton" id="editor_update_model">Apply</button>
+            <div id="download_model_container" class="FloatRight FullHeight">'
+              <div class="verticalDivider FloatLeft"></div>'
+              <div id="download_model_link" class="ui-button editorButtonDownload" >(Click Apply<br/>to Save)</div>'
+            </div>
+          </div> -->
+        </div>
+
         <!-- This script should probably go on some run_script.js file -->
         <script type="text/javascript">
             console.log("Herer")
@@ -140,6 +158,7 @@
                 });
             })();
 
+            
         </script> 
     </div>
 

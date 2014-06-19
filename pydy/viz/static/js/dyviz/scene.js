@@ -14,11 +14,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self._addDefaultLightsandCameras();
         self._addAxes();
         self._addTrackBallControls(); // and render too.
-        //self._render_with_trackball(); // render with trackball controls
         
-        /* should work when load simulation button is pressed!
-        self._addObjects();
-        */
     
 	},
 
@@ -267,6 +263,18 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self.setAnimationTime(0)
         jQuery("#stopAnimation").css("display","none");
         jQuery("#playAnimation").css("display","block");
+
+    },
+
+    applySceneInfo: function(){
+        // TODO.. save data from the objectDialog
+        // into the _meshes, as well into codeMirror's JSON..
+        // 
+
+        
+
+        
+        alert("HEYA");    
 
     }
 
