@@ -208,6 +208,7 @@ class Scene(object):
 
 
         """
+
         if outfile_prefix is None:
             outfile_prefix = "_".join(str(datetime.datetime.now()).\
                                   split(".")[0].split(" "))
@@ -222,6 +223,11 @@ class Scene(object):
                                                            constant_values)
         self._scene_data_dict = self.generate_scene_dict(constant_map=constant_map)
         self._scene_data_dict["simulationData"] = self.simulation_json_file
+        
+        #TODO How to get timeDelta?
+        self._scene_data_dict["timeDelta"] = 0.5 
+        self._scene_data_dict["timeSteps"] = len(dynamic_values)
+
         
         scene_data_outfile = open(self.scene_json_file, 'w')
         scene_data_outfile.write(json.dumps(self._scene_data_dict, indent=4,
@@ -248,6 +254,7 @@ class Scene(object):
         self._scene_info["newtonian_frame"] = str(self._reference_frame)
         self._scene_info["workspaceSize"] = 0.2#This should be accomodated in scene
                                                 #instead of width/height of scene
+
         self._scene_info["objects"] = []
         self._scene_info["cameras"] = []
         self._scene_info["lights"] = []
@@ -278,7 +285,7 @@ class Scene(object):
         
         """
         #TODO: Add code to include lights and Cameras as well
-
+        
         self._simulation_info = {}
 
         for frame in self.visualization_frames:
@@ -288,6 +295,7 @@ class Scene(object):
                                                       constant_variables)
             frame.evaluate_transformation_matrix(dynamic_values, 
                                                          constant_values)
+            
 
             self._simulation_info.update(frame.generate_simulation_dict())
 
