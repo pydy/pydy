@@ -296,6 +296,11 @@ Related Packages
 Release Notes
 =============
 
+0.2.1
+-----
+
+- Unbundled unecessary files from tar ball.
+
 0.2.0
 -----
 
