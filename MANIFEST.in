@@ -1,6 +1,6 @@
 recursive-include docs *
 prune docs/_build
-include UNLICENSE
+include LICENSE.txt
 include *.rst
 include pydy/codegen/tests/expected_cython/*
 include bin/*.py
