@@ -292,3 +292,17 @@ Related Packages
 .. _pydy-code-gen: https://pypi.python.org/pypi/pydy-code-gen
 .. _pydy-viz: https://pypi.python.org/pypi/pydy-viz
 .. _instructions: http://www.scipy.org/install.html
+
+Release Notes
+=============
+
+0.2.0
+-----
+
+- Merged pydy_viz, pydy_code_gen, and pydy_examples into the source tree.
+- Added a method to output "static" visualizations from a Scene object.
+- Dropped the matplotlib dependency and now only three.js colors are valid.
+- Added joint torques to the n_pendulum model.
+- Added basic examples for codegen and viz.
+- Graceful fail if theano or cython are not present.
+- Shapes can now use sympy symbols for geometric dimensions.
