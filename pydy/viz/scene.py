@@ -165,7 +165,8 @@ class Scene(object):
 
     def generate_visualization_json(self, dynamic_variables,
                                     constant_variables, dynamic_values,
-                                    constant_values, outfile_prefix=None):
+                                    constant_values, time_delta=0.5, 
+                                    outfile_prefix=None):
         """
         generate_visualization_json() method generates a json str, which is
         saved to file.
@@ -188,6 +189,10 @@ class Scene(object):
         constant_values : list or tuple
             values of the parameters. The list or tuple
             should be respective to the par_sym.
+
+        time_delta : float
+            real time taken for each time step(in seconds). 
+            default is taken as 0.5s    
 
         outfile_prefix : str
             A prefix to be put while saving the scene_desc
@@ -225,7 +230,7 @@ class Scene(object):
         self._scene_data_dict["simulationData"] = self.simulation_json_file
         
         #TODO How to get timeDelta?
-        self._scene_data_dict["timeDelta"] = 0.5 
+        self._scene_data_dict["timeDelta"] = time_delta
         self._scene_data_dict["timeSteps"] = len(dynamic_values)
 
         
