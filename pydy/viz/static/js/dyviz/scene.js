@@ -222,7 +222,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self.animationID = window.setInterval(function(){ 
             // setAnimationTime sets slider and scene
             // to that particular time.
-            console.log("Current Time: " + currentTime);
             self.setAnimationTime(currentTime);
             currentTime+=timeDelta;
 
@@ -252,7 +251,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
         }
         jQuery("#timeSlider").slider("setValue",percent);
-        jQuery("#time").html(currentTime);
+        jQuery("#time").html(Math.round(currentTime*100)/100);
         
     },
 

@@ -1,9 +1,7 @@
 {
     "newtonian_frame": "world",
     "name": "unnamed",
-    "simulationData": "2014-06-14_15:50:32_simulation_data.json",
-    "timeDelta": 0.5,
-    "timeSteps": 10,
+    "simulationData": "2014-06-19_23:18:37_simulation_data.json",
     "workspaceSize": 0.2,
     "lights": [
         {
@@ -26,7 +24,7 @@
                 10.0,
                 1.0
             ],
-            "simulation_id": 97522320,
+            "simulation_id": 80200720,
             "type": "PointLight",
             "name": "DefaultLight"
         }
@@ -36,7 +34,7 @@
             "fov": 45,
             "name": "DefaultCamera",
             "far": 1000,
-            "simulation_id": 97521808,
+            "simulation_id": 80201616,
             "near": 1,
             "init_orientation": [
                 1.0,
@@ -59,10 +57,11 @@
             "type": "PerspectiveCamera"
         }
     ],
+    "timeDelta": 0.7,
     "source": "PyDy",
     "objects": [
         {
-            "simulation_id": 97335504,
+            "simulation_id": 80203536,
             "name": "link",
             "color": "red",
             "reference_frame_name": "frameP",
@@ -89,7 +88,7 @@
             "type": "Cylinder"
         },
         {
-            "simulation_id": 97335760,
+            "simulation_id": 80201104,
             "name": "link",
             "color": "red",
             "reference_frame_name": "frameR",
@@ -116,7 +115,7 @@
             "type": "Cylinder"
         },
         {
-            "simulation_id": 97335568,
+            "simulation_id": 80202128,
             "name": "sphere",
             "color": "grey",
             "reference_frame_name": "N",
@@ -142,7 +141,7 @@
             "type": "Sphere"
         },
         {
-            "simulation_id": 97336848,
+            "simulation_id": 80202320,
             "name": "sphere",
             "color": "grey",
             "reference_frame_name": "N",
@@ -167,5 +166,6 @@
             ],
             "type": "Sphere"
         }
-    ]
+    ],
+    "timeSteps": 300
 }
