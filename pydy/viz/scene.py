@@ -260,22 +260,22 @@ class Scene(object):
         self._scene_info["workspaceSize"] = 0.2#This should be accomodated in scene
                                                 #instead of width/height of scene
 
-        self._scene_info["objects"] = []
-        self._scene_info["cameras"] = []
-        self._scene_info["lights"] = []
+        self._scene_info["objects"] = {}
+        self._scene_info["cameras"] = {}
+        self._scene_info["lights"] = {}
         
         for frame in self.visualization_frames:
             _object_info = frame.generate_scene_dict(constant_map=constant_map)
-            self._scene_info["objects"].append(_object_info)
+            self._scene_info["objects"].update(_object_info)
         
         
         for camera in self.cameras:
             _object_info = camera.generate_scene_dict()
-            self._scene_info["cameras"].append(_object_info)          
+            self._scene_info["cameras"].update(_object_info)          
             
         for light in self.lights:
             _object_info = light.generate_scene_dict()
-            self._scene_info["lights"].append(_object_info)          
+            self._scene_info["lights"].update(_object_info)          
         
         return self._scene_info
             

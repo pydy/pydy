@@ -325,10 +325,11 @@ class VisualizationFrame(object):
 
         
         """
-        scene_dict = self.shape.generate_dict(constant_map=constant_map)
-        scene_dict["init_orientation"] = self._visualization_matrix[0]
-        scene_dict["reference_frame_name"] = str(self._reference_frame)
-        scene_dict["simulation_id"] = id(self)
+        scene_dict = { id(self): {} }
+        scene_dict[id(self)] = self.shape.generate_dict(constant_map=constant_map)
+        scene_dict[id(self)]["init_orientation"] = self._visualization_matrix[0]
+        scene_dict[id(self)]["reference_frame_name"] = str(self._reference_frame)
+        scene_dict[id(self)]["simulation_id"] = id(self)
 
         return scene_dict
 
