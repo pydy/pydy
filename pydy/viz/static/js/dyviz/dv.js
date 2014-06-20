@@ -83,8 +83,31 @@ DynamicsVisualizer = Class.create({
 			//
 		});
 
-		jQuery("#timeSlider").slider({min:0,max:100,step:1, handle:"square", value:0});
+		self._slider = jQuery("#timeSlider").slider({min:0,max:100,step:1, handle:"square", value:0});
+        jQuery("#timeSlider").fadeOut();
+        self._slider.on('slideStop',function(ev) { 
+        	var val = ev.value;
+        	var len = self._timeArray.length;
+        	var i = 0;
+        	var gotValue = false;
+        	for( i=0;i<self._timeArray.length && !gotValue;i++){
+        		console.log(self._timeArray[i]);
+        		console.log(self._timeArray[len-1]);
 
+        		var percent = (self._timeArray[i]/self._timeArray[len-1])*100;
+        		console.log("percent:" + percent + "and val:" + val);
+
+        		if(val <= percent){
+        			gotValue = true;
+        			break;
+        		}
+        	//
+            }
+            self.Scene.setAnimationTime(self._timeArray[i]);
+
+        });
+			
+			
 		jQuery("#resetControls").click(function(){
 			// Activate CodeMirror... 
 			//
@@ -109,6 +132,8 @@ DynamicsVisualizer = Class.create({
         
         jQuery("#playAnimation").removeClass("disabled");
         var objs = self.model.objects;
+        // clear dropdown of some old objects..
+        jQuery("#objectDropdown").find("li").remove()
         
         for(var obj in objs){
 

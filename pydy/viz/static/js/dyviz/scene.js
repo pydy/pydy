@@ -88,9 +88,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var self = this;
         var objects = self.model.objects;
         for(var i in objects)  self._addIndividualObject(objects[i]);
-
-        // Now add all the objects contained in self._meshes onto scene.
-        for(var i in self._meshes)  self._scene.add(self._meshes[i]);
         
     },
 
@@ -99,7 +96,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var cameras = this.model.cameras;
         for(var i in cameras)  self._addIndividualCamera(cameras[i]);
 
-        for(var i in self._cameras)  self._scene.add(self._cameras[i]);
+        //for(var i in self._cameras)  self._scene.add(self._cameras[i]);
     },
 
     addLights: function(){
@@ -107,12 +104,14 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var lights = this.model.lights;
         for(var i in lights)  self._addIndividualLight(lights[i]);
 
-        for(var i in self._lights)  self._scene.add(self._lights[i]);
+        //for(var i in self._lights)  self._scene.add(self._lights[i]);
     },
 
     _addIndividualObject: function(object){
         var self = this;
         var type = object.type;
+        console.log("In add-Ind");
+        console.log(object);
         
         // This is for shapes,
         // Need to do something else
@@ -155,10 +154,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         initMatrix.elements = element;
         mesh.matrix.identity();
         mesh.applyMatrix(initMatrix);
-        self._meshes[object.simulation_id] = mesh;
+        mesh["object-info"] = object;
+        mesh.name = object.simulation_id;
+        self._scene.add(mesh);
+        //self._meshes[object.simulation_id] = mesh;
 
         // This info is for object editing dialog..
-        self._meshes[object.simulation_id]["object-info"] = object;
+        //self._meshes[object.simulation_id]["object-info"] = object;
     },
 
     _addIndividualCamera: function(camera){
@@ -186,8 +188,10 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 _camera.applyMatrix(initMatrix);
             */    
         }
+        _camera.name = camera.simulation_id;
+        _camera["object-info"] = camera;
+        self._scene.add(_camera);
 
-        self._cameras[camera.simulation_id] = _camera;
     },
 
     _addIndividualLight: function(light){
@@ -207,8 +211,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
             //TODO add other light cases..
             case "SomeOtherLight":
                 break;
-        }    
-        self._lights[light.simulation_id] = _light;
+        } 
+        console.log("in Light");
+        _light.name = light.simulation_id;
+        console.log("in Light");
+        _light["object-info"] = light;
+        console.log("in Light");
+        self._scene.add(_light);
 
     },
 
@@ -239,19 +248,21 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var percent = currentTime/self._finalTime*100;
         // Now animate objects in scene too..
         var i = self._timeArray.indexOf(currentTime);
-        
-        for(var id in self._meshes){
+        var _children = self._scene.children;
+
+        for(var i=0;i<_children.length;i++){
+            var id = _children[i].name;
             if(self.simData[id] != undefined){
                 var element = new Float32Array(self.simData[id][i]);
                 var orientationMatrix = new THREE.Matrix4();
                 orientationMatrix.elements = element;
-                //self._meshes[id].matrix.identity()
-                self._meshes[id].applyMatrix(orientationMatrix);
+                //_children[i].matrix.identity()
+                _children[i].applyMatrix(orientationMatrix);
             }
 
         }
         jQuery("#timeSlider").slider("setValue",percent);
-        jQuery("#time").html(Math.round(currentTime*100)/100);
+        jQuery("#time").html(" " + Math.round(currentTime*100)/100 + "s");
         
     },
 
@@ -275,7 +286,22 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         
         alert("HEYA");    
 
+    },
+
+    _removeAll: function(){
+        var self = this;
+        var _children = self._scene.children;
+
+        for(var i=_children.length-1;i>=0;i--) { 
+            if(_children[i].name){
+                self._scene.remove(_children[i]);
+            }
+        };
+
+
+
     }
+
 
 
 
