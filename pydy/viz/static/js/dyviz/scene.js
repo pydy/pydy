@@ -135,13 +135,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
             case "Sphere":
                 var geometry = new THREE.SphereGeometry(
-                                               object.radius, 8);
+                                               object.radius, 100);
                 break;
 
             case "Cylinder":
                 var geometry = new THREE.CylinderGeometry(object.radius,
                                                           object.radius,
-                                                          object.length);
+                                                          object.length,100);
 
                 break;
 
@@ -247,17 +247,20 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         }    
         var percent = currentTime/self._finalTime*100;
         // Now animate objects in scene too..
-        var i = self._timeArray.indexOf(currentTime);
+        var time_index = self._timeArray.indexOf(currentTime);
         var _children = self._scene.children;
 
         for(var i=0;i<_children.length;i++){
             var id = _children[i].name;
             if(self.simData[id] != undefined){
-                var element = new Float32Array(self.simData[id][i]);
+
+                var element = new Float32Array(self.simData[id][time_index]);
                 var orientationMatrix = new THREE.Matrix4();
                 orientationMatrix.elements = element;
-                //_children[i].matrix.identity()
+                _children[i].matrix.identity()
                 _children[i].applyMatrix(orientationMatrix);
+                console.log(_children[i].name + " : ");
+                console.log(_children[i].matrix.elements);
             }
 
         }

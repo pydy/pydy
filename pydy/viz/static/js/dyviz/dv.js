@@ -91,12 +91,8 @@ DynamicsVisualizer = Class.create({
         	var i = 0;
         	var gotValue = false;
         	for( i=0;i<self._timeArray.length && !gotValue;i++){
-        		console.log(self._timeArray[i]);
-        		console.log(self._timeArray[len-1]);
-
+        		
         		var percent = (self._timeArray[i]/self._timeArray[len-1])*100;
-        		console.log("percent:" + percent + "and val:" + val);
-
         		if(val <= percent){
         			gotValue = true;
         			break;
