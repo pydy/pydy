@@ -146,6 +146,10 @@ DynamicsVisualizer = Class.create({
             });
 
         }
+
+        // TODO add constant map to sim-params box..
+        
+
     },   
 
     
