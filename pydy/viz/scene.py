@@ -222,6 +222,8 @@ class Scene(object):
                                   split(".")[0].split(" "))
             
         constant_map = dict(zip(constant_variables, constant_values))
+        constant_variables_str = [str(i) for i in constant_variables]
+        constant_map_for_json = dict(zip(constant_variables_str, constant_values))
         self.scene_json_file = outfile_prefix + "_scene_desc.json"
         self.simulation_json_file = outfile_prefix + "_simulation_data.json"
 
@@ -232,11 +234,11 @@ class Scene(object):
         self._scene_data_dict = self.generate_scene_dict(constant_map=constant_map)
         self._scene_data_dict["simulationData"] = self.simulation_json_file
         
-        #TODO How to get timeDelta?
         self._scene_data_dict["timeDelta"] = 1/fps
         self._scene_data_dict["timeSteps"] = len(dynamic_values)
 
-        
+
+        self._scene_data_dict["constant_map"] = constant_map_for_json
         scene_data_outfile = open(self.scene_json_file, 'w')
         scene_data_outfile.write(json.dumps(self._scene_data_dict, indent=4,
                                  separators=(',', ': ')))
