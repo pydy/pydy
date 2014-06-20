@@ -1,10 +1,15 @@
 {
     "newtonian_frame": "world",
+    "constant_map": {
+        "m": 10.0,
+        "l": 10.0,
+        "g": 9.81
+    },
     "name": "unnamed",
-    "simulationData": "2014-06-20_13:45:15_simulation_data.json",
+    "simulationData": "2014-06-20_23:54:56_simulation_data.json",
     "workspaceSize": 0.2,
     "lights": {
-        "80438480": {
+        "76521680": {
             "color": "white",
             "init_orientation": [
                 1.0,
@@ -24,17 +29,17 @@
                 10.0,
                 1.0
             ],
-            "simulation_id": 80438480,
+            "simulation_id": 76521680,
             "type": "PointLight",
             "name": "DefaultLight"
         }
     },
     "cameras": {
-        "80439184": {
+        "76523344": {
             "fov": 45,
             "name": "DefaultCamera",
             "far": 1000,
-            "simulation_id": 80439184,
+            "simulation_id": 76523344,
             "near": 1,
             "init_orientation": [
                 1.0,
@@ -60,8 +65,8 @@
     "timeDelta": 0.1,
     "source": "PyDy",
     "objects": {
-        "80441232": {
-            "simulation_id": 80441232,
+        "76525520": {
+            "simulation_id": 76525520,
             "name": "link",
             "color": "red",
             "reference_frame_name": "frameP",
@@ -87,8 +92,8 @@
             ],
             "type": "Cylinder"
         },
-        "80438864": {
-            "simulation_id": 80438864,
+        "76524112": {
+            "simulation_id": 76524112,
             "name": "link",
             "color": "red",
             "reference_frame_name": "frameR",
@@ -114,34 +119,8 @@
             ],
             "type": "Cylinder"
         },
-        "80439760": {
-            "simulation_id": 80439760,
-            "name": "sphere",
-            "color": "grey",
-            "reference_frame_name": "N",
-            "radius": 1.0,
-            "init_orientation": [
-                6.12323399573677e-17,
-                -1.0,
-                0.0,
-                0.0,
-                1.0,
-                6.12323399573677e-17,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                1.0,
-                0.0,
-                9.999999977670896,
-                -0.0006682679484692891,
-                0.0,
-                1.0
-            ],
-            "type": "Sphere"
-        },
-        "80438800": {
-            "simulation_id": 80438800,
+        "76524176": {
+            "simulation_id": 76524176,
             "name": "sphere",
             "color": "grey",
             "reference_frame_name": "N",
@@ -161,6 +140,32 @@
                 0.0,
                 9.999999977670896,
                 -10.00066826794847,
+                0.0,
+                1.0
+            ],
+            "type": "Sphere"
+        },
+        "76524048": {
+            "simulation_id": 76524048,
+            "name": "sphere",
+            "color": "grey",
+            "reference_frame_name": "N",
+            "radius": 1.0,
+            "init_orientation": [
+                6.12323399573677e-17,
+                -1.0,
+                0.0,
+                0.0,
+                1.0,
+                6.12323399573677e-17,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                9.999999977670896,
+                -0.0006682679484692891,
                 0.0,
                 1.0
             ],
