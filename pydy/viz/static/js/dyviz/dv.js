@@ -110,7 +110,7 @@ DynamicsVisualizer = Class.create({
         jQuery("#playAnimation").removeClass("disabled");
         var objs = self.model.objects;
         
-        for(var obj=0;obj<objs.length;obj++){
+        for(var obj in objs){
 
             var toAppend = '<li><a id="'+ objs[obj].simulation_id + 
                            '" href="#">' + objs[obj].name + '</a></li>';

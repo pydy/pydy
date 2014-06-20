@@ -87,7 +87,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
     addObjects: function(){
         var self = this;
         var objects = self.model.objects;
-        for(var i=0;i<objects.length; i++)  self._addIndividualObject(objects[i]);
+        for(var i in objects)  self._addIndividualObject(objects[i]);
 
         // Now add all the objects contained in self._meshes onto scene.
         for(var i in self._meshes)  self._scene.add(self._meshes[i]);
@@ -97,7 +97,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
     addCameras: function(){
         var self = this;
         var cameras = this.model.cameras;
-        for(var i=0;i<cameras.length; i++)  self._addIndividualCamera(cameras[i]);
+        for(var i in cameras)  self._addIndividualCamera(cameras[i]);
 
         for(var i in self._cameras)  self._scene.add(self._cameras[i]);
     },
@@ -105,7 +105,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
     addLights: function(){
         var self = this;
         var lights = this.model.lights;
-        for(var i=0;i<lights.length; i++)  self._addIndividualLight(lights[i]);
+        for(var i in lights)  self._addIndividualLight(lights[i]);
 
         for(var i in self._lights)  self._scene.add(self._lights[i]);
     },
