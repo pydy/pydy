@@ -250,8 +250,8 @@ class Scene(object):
     def generate_scene_dict(self, constant_map={}):
         """
         This method is used to create the dictionary compatible with 
-        MotionView. This JSON file contains all the relevant information
-        required by MotionView to draw the scene on the canvas.
+        PyDy visualizer. This JSON file contains all the relevant information
+        required by PyDy visualizer to draw the scene on the canvas.
         
         
         """
@@ -287,9 +287,9 @@ class Scene(object):
                                     constant_values):
         """
         This method is used to create the JSON file compatible with
-        MotionView. This JSON file consists of all the simulation data
+        PyDy visualizer. This JSON file consists of all the simulation data
         along with references to the objects, for allowing motion to the
-        objects in the MotionView visualizer.
+        objects in the PyDy visualizer.
         
         """
         #TODO: Add code to include lights and Cameras as well
