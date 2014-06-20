@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # standard library
+from __future__ import division
 import os
 import json
 import distutils
@@ -232,7 +233,7 @@ class Scene(object):
         self._scene_data_dict["simulationData"] = self.simulation_json_file
         
         #TODO How to get timeDelta?
-        self._scene_data_dict["timeDelta"] = round(1/fps,2)
+        self._scene_data_dict["timeDelta"] = 1/fps
         self._scene_data_dict["timeSteps"] = len(dynamic_values)
 
         
