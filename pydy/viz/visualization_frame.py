@@ -305,6 +305,9 @@ class VisualizationFrame(object):
         from `Shape.generate_dict()` followed by an
         init_orientation Key.
 
+        Before calling this method, all the transformation matrix
+        generation methods should be called, or it will give an error.
+
         Parameters
         ==========
         constant_map : dictionary
@@ -338,6 +341,9 @@ class VisualizationFrame(object):
         Generates the simulation information for this visualization
         frame. It maps the simulation data information to the
         scene information via a unique id.
+
+        Before calling this method, all the transformation matrix
+        generation methods should be called, or it will give an error.
         
         Returns
         =======
@@ -351,8 +357,11 @@ class VisualizationFrame(object):
             simulation_dict[id(self)] = self._visualization_matrix
 
         except:
-            raise RuntimeError("Please call the numerical ",
-                               "transformation methods, ",
+            raise RuntimeError("Cannot generate visualization data " + \
+                                "because numerical transformation " + \
+                               "has not been performed, " + \
+                                "Please call the numerical " + \
+                               "transformation methods, " + \
                                "before generating visualization dict")
 
 

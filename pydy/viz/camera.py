@@ -179,6 +179,9 @@ class PerspectiveCamera(VisualizationFrame):
         of dictionary. This contains camera parameters followed 
         by an init_orientation Key.
 
+        Before calling this method, all the transformation matrix
+        generation methods should be called, or it will give an error.
+
         Returns
         =======
         A dict with following Keys:
@@ -187,7 +190,7 @@ class PerspectiveCamera(VisualizationFrame):
         2. fov: Field of View value of the camera
         3. near: near value of the camera
         4. far: far value of the camera
-        1. init_orientation: Initial orientation of the camera
+        5. init_orientation: Initial orientation of the camera
         
         """
         scene_dict = { id(self): {} }
@@ -207,6 +210,8 @@ class PerspectiveCamera(VisualizationFrame):
         frame. It maps the simulation data information to the
         scene information via a unique id.
         
+        Before calling this method, all the transformation matrix
+        generation methods should be called, or it will give an error.
         Returns
         =======
 

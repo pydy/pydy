@@ -149,6 +149,8 @@ class PointLight(VisualizationFrame):
         of dictionary. This contains light parameters followed 
         by an init_orientation Key.
 
+        Before calling this method, all the transformation matrix
+        generation methods should be called, or it will give an error.
         Returns
         =======
         A dict with following Keys:
@@ -173,6 +175,9 @@ class PointLight(VisualizationFrame):
         Generates the simulation information for this Light object. 
         It maps the simulation data information to the
         scene information via a unique id.
+
+        Before calling this method, all the transformation matrix
+        generation methods should be called, or it will give an error.
         
         Returns
         =======
