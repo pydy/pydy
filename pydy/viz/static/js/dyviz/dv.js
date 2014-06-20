@@ -117,8 +117,13 @@ DynamicsVisualizer = Class.create({
 			self.Scene.stopAnimation();
 			
 		});
-		
-		console.log("INFO: Activated UI controls");
+		jQuery("#close-object-dialog").click(function(){
+			jQuery("#objectDialog").html(" ");
+			jQuery(this).addClass("disabled");
+
+		});
+
+        console.log("INFO: Activated UI controls");
 
 
 	},

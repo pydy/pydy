@@ -84,3 +84,8 @@ input[type=text]:focus{
 	margin-right: 0.5em;
 }
 
+#close-object-dialog{
+	border-radius: 0.5em;
+	margin-left:0.5em;
+}
+
