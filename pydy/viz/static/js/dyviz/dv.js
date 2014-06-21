@@ -152,13 +152,10 @@ DynamicsVisualizer = Class.create({
 
         }
 
-        // TODO add constant map to sim-params box..
-
         var constants = self.model.constant_map;
-        console.log(constants);
+        
         var div = jQuery("#simulation-params").fadeOut();
         for(var i in constants){
-        	alert("Here i:" + i);
         	div.append('<span class="input-group-addon">' + i + '</span>');
         	div.append(jQuery('<input />',{ type:'text', id: i, class: 'form-control', value: constants[i]}));
         }
