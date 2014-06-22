@@ -10,8 +10,8 @@
     <link type="text/css" rel="stylesheet" href="css/slider.css">
     <link type="text/css" rel="stylesheet" href="css/main.css">
 
-    <link rel="stylesheet" href="css/codemirror/blackboard.css">
     <link rel="stylesheet" href="css/codemirror/codemirror.css">
+    <link rel="stylesheet" href="css/codemirror/blackboard.css">
     
 
     <!-- External Javascripts -->
@@ -31,7 +31,8 @@
     <script type="text/javascript" src="js/external/utils/bootstrap-slider.js"></script>
     
     <script type="text/javascript" src="js/external/utils/prototype.js"></script>
-    <script type="text/javascript" src="js/external/codemirror/codemirror.min.js" ></script>
+    <script type="text/javascript" src="js/external/codemirror/codemirror.js" ></script>
+    <script type="text/javascript" src="js/external/codemirror/javascript-mode.js" ></script>
     
 
 
@@ -60,6 +61,7 @@
             <input type="text" class="form-control" id="json-input">
             <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load">
             <input type="button" class="btn btn-success" value="Save/Edit" id="save-json">
+
           </div>
           <hr />
           <div id="edit-objects">
@@ -71,7 +73,7 @@
                 <!-- Objects added Dynamically here, via javascript! -->
                 </ul>
                 <button id="close-object-dialog" class="btn btn-default btn-info disabled"> Close Dialog</button>
-                <br />*Selected object is shown in blue
+                <br />
             </div>
             <hr />
             <div id="objectDialog" class="well"> <!-- Object details added here --></div>
@@ -84,17 +86,23 @@
           </div>
         </div>
         <div id="canvas" >
-            <div id="control-button-group" class="btn-group">
-                <button id="playAnimation" class="btn btn-default btn-success  disabled" ><span class="glyphicon glyphicon-play"></span> Play Animation</button>
-
-                <button id="stopAnimation" style="display:none;" class="btn btn-default btn-danger active"><span class="glyphicon glyphicon-stop" ></span>Stop </button>
-                
-                <!-- <a href="#" class="btn btn-danger btn-small" id="resetControls"><i class="icon-white icon-play"></i>Reset Controls</a> -->
+            <div id="model-loader-wrapper" style="display:None">
+                <div class="btn-group">
+                  <button id="close-model-dialog" class="btn btn-primary btn-small"><i class="icon-white icon-list-alt"></i> Close Dialog</button>
+                </div>
+                <textarea rows="10" cols="50" id="model-loader" class="form-control"></textarea>
+                <hr />
             </div>
-            <span id="currentTime" class="glyphicon glyphicon-time" ></span><span id="time" ></span>
-            <hr /><div id="slider-wrapper">
-                <div id="timeSlider" class="slider" style="float:right; width:28em;padding-left: 2em;"></div> 
-            </div>    
+            <div id="control-button-group" style="display:inline-block;" class="btn-group">
+                <button id="playAnimation" class="btn btn-default btn-success  disabled" ><span class="glyphicon glyphicon-play"></span> Play Animation</button>
+                <button id="stopAnimation" style="display:none;" class="btn btn-default btn-danger active"><span class="glyphicon glyphicon-stop" ></span>Stop </button>
+                <button id="show-model" class="btn btn-default btn-info disabled"><span class="glyphicon glyphicon-stop" ></span>Show Model </button>
+                <div id="slider-wrapper">
+                    <span id="currentTime" class="glyphicon glyphicon-time" ></span><span style="margin-right:1em;" id="time"> 0s</span>
+                     <div id="timeSlider" class="slider" style="float:right; width:28em;padding-left: 2em;"></div> 
+                </div>    
+
+            </div>
             <hr />
             <div id="renderer"><!-- THREE Scene rendered here --></div>
         

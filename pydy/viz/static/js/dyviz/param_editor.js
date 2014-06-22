@@ -6,15 +6,15 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 		  * 
 		**/ 
         var self = this;
-        console.log("id-before-to:" + id);
-    	var toLoad = self._scene.getObjectByName(parseInt(id));
-        // Temporarily set its color to umm blue.
-        toLoad.material.color = new THREE.Color("blue");
-        toLoad = toLoad["object-info"]
-        console.log("toLoad");
-        console.log(toLoad);
 
-    	var mainDiv = jQuery('<div/>',{id: "object-"+ toLoad.simulation_id, style: 'display:none;'}); 
+        var toLoad = self._scene.getObjectByName(parseInt(id));
+        toLoad = toLoad["object-info"];
+        // Remove the old blinker and reset material to default..
+        window.clearInterval(self.blinkId);
+        //self._blinker.material = self._old_material;
+        //
+        self.Scene._blink(parseInt(id));
+        var mainDiv = jQuery('<div/>',{id: "object-"+ toLoad.simulation_id, style: 'display:none;'}); 
     	
     	// for name..
         var div1 = jQuery('<div />',{class: 'input-group'});
@@ -82,7 +82,8 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
           * 
         **/
     	var self = this;
-        alert(id);
+        // remove blinker..
+        window.clearInterval(self.blinkId);
         var int_id = parseInt(id);
     	var updated_object = {};
 
@@ -146,6 +147,15 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 
         }
     	
+    },
+
+    showModel: function(){
+        // update editor..
+
+        self.editor.getDoc().setValue(JSON.stringify(self.model,null,4));
+        jQuery("#model-loader-wrapper").slideIn();
+
+        self.editor.refresh();
     }
 
 });

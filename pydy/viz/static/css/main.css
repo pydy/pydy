@@ -25,10 +25,7 @@ input[type=text]:focus{
 	min-height:100px;
 }
 
-#json-inp{
-
-	
-}
+#slider-wrapper{ display: inline-block; }
 
 
 #container {
@@ -89,3 +86,7 @@ input[type=text]:focus{
 	margin-left:0.5em;
 }
 
+#show-model{
+	border-radius: 0.5em;
+	margin-left:0.5em;
+}

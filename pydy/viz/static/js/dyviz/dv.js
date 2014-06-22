@@ -84,7 +84,6 @@ DynamicsVisualizer = Class.create({
 		});
 
 		self._slider = jQuery("#timeSlider").slider({min:0,max:100,step:1, handle:"square", value:0});
-        jQuery("#timeSlider").fadeOut();
         self._slider.on('slideStop',function(ev) { 
         	var val = ev.value;
         	var len = self._timeArray.length;
@@ -123,6 +122,18 @@ DynamicsVisualizer = Class.create({
 
 		});
 
+		jQuery("#show-model").click(function(){
+			jQuery("#model-loader-wrapper").slideDown();
+			jQuery(this).addClass("disabled");
+
+		});
+
+		jQuery("#close-model-dialog").click(function(){
+			jQuery("#model-loader-wrapper").slideUp();
+			jQuery("#show-model").removeClass("disabled")
+
+		});
+
         console.log("INFO: Activated UI controls");
 
 
@@ -132,6 +143,7 @@ DynamicsVisualizer = Class.create({
 		var self = this;
         
         jQuery("#playAnimation").removeClass("disabled");
+        jQuery("#show-model").removeClass("disabled");
         var objs = self.model.objects;
         // clear dropdown of some old objects..
         jQuery("#objectDropdown").find("li").remove()
@@ -155,14 +167,23 @@ DynamicsVisualizer = Class.create({
         var constants = self.model.constant_map;
         
         var div = jQuery("#simulation-params").fadeOut();
+        div.html(" "); // clear html first
         for(var i in constants){
         	div.append('<span class="input-group-addon">' + i + '</span>');
         	div.append(jQuery('<input />',{ type:'text', id: i, class: 'form-control', value: constants[i]}));
         }
         div.fadeIn();
-        
-        
-
+        // enable CodeMirror...
+        jQuery("#model-loader").html(" ");
+        if(!self.editor){
+	        self.editor = CodeMirror.fromTextArea(document.getElementById('model-loader'), {
+	            height: "30em",
+	            mode: {name: "javascript", json: true},
+	            theme: "base16-light",
+	            textWrapping: true
+	        });
+        }
+        self.editor.getDoc().setValue(JSON.stringify(self.model,null,4));
     },   
 
     

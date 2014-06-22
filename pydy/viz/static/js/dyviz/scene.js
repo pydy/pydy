@@ -86,6 +86,9 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
     addObjects: function(){
         var self = this;
+        //clear old objects first
+        self._removeAll();
+        
         var objects = self.model.objects;
         for(var i in objects)  self._addIndividualObject(objects[i]);
         
@@ -110,15 +113,11 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
     _addIndividualObject: function(object){
         var self = this;
         var type = object.type;
-        console.log("In add-Ind");
-        console.log(object);
         
-        // This is for shapes,
-        // Need to do something else
-        // for camera, lights
-        //var material = self.Materials[object.material];
-        // meanwhile..
-        var material = new THREE.MeshLambertMaterial();
+        var material = self.Materials[object.material];
+        if(object.color != "default"){
+            material.color = new THREE.Color(object.color);
+        }    
         switch(type) {
 
             case "Mesh":
@@ -212,11 +211,9 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
             case "SomeOtherLight":
                 break;
         } 
-        console.log("in Light");
+        
         _light.name = light.simulation_id;
-        console.log("in Light");
         _light["object-info"] = light;
-        console.log("in Light");
         self._scene.add(_light);
 
     },
@@ -259,8 +256,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 orientationMatrix.elements = element;
                 _children[i].matrix.identity()
                 _children[i].applyMatrix(orientationMatrix);
-                console.log(_children[i].name + " : ");
-                console.log(_children[i].matrix.elements);
             }
 
         }
@@ -303,6 +298,28 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
 
 
+    },
+
+    _blink: function(id){
+        var self = this;
+        self._blinker = self._scene.getObjectByName(id);
+        var _material = new THREE.MeshLambertMaterial();
+        _material.color = new THREE.Color("blue")
+        _material.name = "blinker";
+        self._old_material = self._blinker.material;
+        var _flip_material = _material;
+        
+        self.blinkId = window.setInterval(function(){ 
+            self._blinker.material = _flip_material;
+            if(_flip_material.name == "blinker"){
+                _flip_material = self._old_material;
+                
+            }
+            else{
+                _flip_material = _material;
+            }
+        }, 500);
+        
     }
 
 
