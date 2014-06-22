@@ -115,9 +115,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var type = object.type;
         
         var material = self.Materials[object.material];
+        alert(object.color)
+        alert(object.radius)
+
         if(object.color != "default"){
             material.color = new THREE.Color(object.color);
-        }    
+        }
+
         switch(type) {
 
             case "Mesh":
@@ -144,7 +148,56 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
                 break;
 
-            // TODO: Add rest of objects too.    
+            case "Cone":        
+                var geometry = new THREE.CylinderGeometry(
+                                          object.radius,
+                                          object.radius/100,
+                                          object.length,
+                                          50,50);        
+                break;
+
+            case "Circle":        
+                var geometry = new THREE.CylinderGeometry(object.radius,
+                                                          object.radius,
+                                                          0.5,100);
+                break;
+
+            case "Plane":        
+                var geometry = new THREE.PlaneGeometry(
+                                          object.length,
+                                          object.width,                                      
+                                          100);
+                break;                        
+                
+            case "Tetrahedron":
+                var geometry = new THREE.TetrahedronGeometry(
+                                          object.radius);
+                break;                                    
+                
+            case "Octahedron":
+                var geometry = new THREE.OctahedronGeometry(
+                                          object.radius);
+                break;                                    
+                            
+            case "Icosahedron":
+                var geometry = new THREE.IcosahedronGeometry(
+                                          object.radius);
+                break;                                                
+                
+            case "Torus":
+                var geometry = new THREE.TorusGeometry(
+                                          object.radius,
+                                          object.tube_radius,100
+                                          );
+                break;                                                            
+                
+            case "TorusKnot":
+                var geometry = new THREE.TorusKnotGeometry(
+                                          object.radius,
+                                          object.tube_radius,100
+                                          );
+                break;                
+           
         }
 
         var mesh = new THREE.Mesh(geometry, material);

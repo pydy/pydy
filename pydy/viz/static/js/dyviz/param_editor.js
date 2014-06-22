@@ -97,15 +97,26 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         //Now by type, use switch case..
         switch(updated_object.type){
             case "Sphere":
+            case "Circle":
+            case "Tetrahedron":
+            case "Octahedron":
+            case "Icosahedron":
                 updated_object.radius = jQuery("#_radius").val()
                 break;
 
             case "Cylinder":
+            case "Cone":
                 updated_object.radius = jQuery("#_radius").val()
                 updated_object.length = jQuery("#_length").val()
                 break;
 
-            // TODO for all objects..     
+            case "Torus":
+            case "TorusKnot":    
+                updated_object.radius = jQuery("#_radius").val()
+                updated_object.tube_radius = jQuery("#_tubeRadius").val()
+                break;
+
+            // TODO for Mesh..     
 
 
         }
@@ -133,17 +144,32 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         switch(toLoad.type || toLoad){
         	// TODO all objects..
         	case "Sphere":
+            case "Circle":
+            case "Tetrahedron":
+            case "Octahedron":
+            case "Icosahedron":
         	    div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Radius'));
     	        div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius || 0.0}));
         	    break;
 
         	case "Cylinder":
+            case "Cone":
         	    div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Radius'));
     	        div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius  || 0.0}));
 
     	        div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
     	        div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 0.0}));
         	    break;
+
+            case "Torus":
+            case "TorusKnot":
+                div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Radius'));
+                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius  || 0.0}));
+
+                div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Tube Radius'));
+                div2.append(jQuery('<input />',{ type:'text', id: "_tubeRadius", class: 'form-control', value: toLoad.tube_radius || 0.0}));
+                break;    
+
 
         }
     	

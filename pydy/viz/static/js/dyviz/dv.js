@@ -84,7 +84,7 @@ DynamicsVisualizer = Class.create({
 		});
 
 		self._slider = jQuery("#timeSlider").slider({min:0,max:100,step:1, handle:"square", value:0});
-        self._slider.on('slideStop',function(ev) { 
+        self._slider.on('slide',function(ev) { 
         	var val = ev.value;
         	var len = self._timeArray.length;
         	var i = 0;
