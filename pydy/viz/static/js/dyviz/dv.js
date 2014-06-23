@@ -57,7 +57,7 @@ DynamicsVisualizer = Class.create({
 			self.Parser.loadScene();
 		});
 
-		self._slider = jQuery("#timeSlider").slider({min:0,max:100,step:1, handle:"square", value:0});
+		self._slider = jQuery("#time-slider").slider({min:0,max:100,step:1, handle:"square", value:0});
         self._slider.on('slide',function(ev) { 
         	var val = ev.value;
         	var len = self._timeArray.length;
@@ -75,16 +75,16 @@ DynamicsVisualizer = Class.create({
 			self.scene._resetControls();
 		});
 
-		jQuery("#playAnimation").click(function(){
+		jQuery("#play-animation").click(function(){
 			self.Scene.runAnimation();
 			
 		});
-		jQuery("#stopAnimation").click(function(){
+		jQuery("#stop-animation").click(function(){
 			self.Scene.stopAnimation();
 			
 		});
 		jQuery("#close-object-dialog").click(function(){
-			jQuery("#objectDialog").html(" ");
+			jQuery("#object-dialog").html(" ");
 			jQuery(this).addClass("disabled");
 
 		});
@@ -114,16 +114,16 @@ DynamicsVisualizer = Class.create({
 		**/
 		var self = this;
         
-        jQuery("#playAnimation").removeClass("disabled");
+        jQuery("#play-animation").removeClass("disabled");
         jQuery("#show-model").removeClass("disabled");
         var objs = self.model.objects;
   
-        jQuery("#objectDropdown").find("li").remove() // clean old dropdown list.
+        jQuery("#object-dropdown").find("li").remove() // clean old dropdown list.
         
         for(var obj in objs){
         	var toAppend = '<li><a id="'+ objs[obj].simulation_id + 
                            '" href="#">' + objs[obj].name + '</a></li>';
-            jQuery("#objectDropdown").append(toAppend);
+            jQuery("#object-dropdown").append(toAppend);
             // adding click functions to all dropdown objs.
             jQuery("#" + objs[obj].simulation_id).click(function(){
             	self.ParamEditor.openDialog(jQuery(this).attr("id"));

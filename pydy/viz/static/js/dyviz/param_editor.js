@@ -53,7 +53,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         mainDiv.append(div2);
         // finally a button..
         mainDiv.append('<hr /><button id="apply-' + id +  '" class="btn btn-primary btn-small">Apply</button>');
-        jQuery("#objectDialog").html(mainDiv);
+        jQuery("#object-dialog").html(mainDiv);
 
         // show after whole div is populated..
         mainDiv.fadeIn("slow");

@@ -6,7 +6,7 @@ DynamicsVisualizer.Scene.create();
 //  Activate TrackBall Controls..
 function activateTrackballControls(){ 
     DynamicsVisualizer.primaryControls.update()
-    DynamicsVisualizer.Scene.webgl_renderer.render(DynamicsVisualizer.Scene._scene, DynamicsVisualizer.Scene._cameras.init_camera);
+    DynamicsVisualizer.Scene.webgl_renderer.render(DynamicsVisualizer.Scene._scene, DynamicsVisualizer.currentCamera);
     requestAnimationFrame(activateTrackballControls); 
 };
 activateTrackballControls();

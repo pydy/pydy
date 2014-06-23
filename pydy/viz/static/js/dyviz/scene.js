@@ -45,7 +45,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var self = this;
         
         self.primaryCamera = new THREE.PerspectiveCamera();
-        camera.position.set(0,0,100);
+        self.primaryCamera.position.set(0,0,100);
         self._scene.add(self.primaryCamera);
         self.currentCamera = self.primaryCamera;
 
@@ -306,8 +306,8 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/ 
         var self = this;
         // toggle buttons..
-        jQuery("#playAnimation").css("display","none");
-        jQuery("#stopAnimation").css("display","block");
+        jQuery("#play-animation").css("display","none");
+        jQuery("#stop-animation").css("display","block");
 
         var currentTime = 0;
         var timeDelta = self.model.timeDelta;
@@ -346,7 +346,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
             }
 
         }
-        jQuery("#timeSlider").slider("setValue",percent);
+        jQuery("#time-slider").slider("setValue",percent);
         jQuery("#time").html(" " + Math.round(currentTime*100)/100 + "s");
         
     },
@@ -360,8 +360,8 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         console.log("INFO: Stopping Animation");
         window.clearInterval(self.animationID);
         self.setAnimationTime(0)
-        jQuery("#stopAnimation").css("display","none");
-        jQuery("#playAnimation").css("display","block");
+        jQuery("#stop-animation").css("display","none");
+        jQuery("#play-animation").css("display","block");
 
     },
 
