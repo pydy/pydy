@@ -71,12 +71,12 @@ input[type=text]:focus{
 }
 
 /* Overriding bootstrap button radius */
-#playAnimation{
+#play-animation{
 	border-radius: 0.5em;
 	margin-right: 0.5em;
 }
 
-#stopAnimation{
+#stop-animation{
 	border-radius: 0.5em;
 	margin-right: 0.5em;
 }
