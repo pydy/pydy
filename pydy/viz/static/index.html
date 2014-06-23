@@ -5,28 +5,22 @@
 <title>PyDy Visualizer</title>
 
     <!--CSS -->
-
     <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css">
     <link type="text/css" rel="stylesheet" href="css/slider.css">
     <link type="text/css" rel="stylesheet" href="css/main.css">
-
-    <link rel="stylesheet" href="css/codemirror/codemirror.css">
-    <link rel="stylesheet" href="css/codemirror/blackboard.css">
-    
+    <link type="text/css" rel="stylesheet" href="css/codemirror/codemirror.css">
+    <link type="text/css" rel="stylesheet" href="css/codemirror/blackboard.css">
 
     <!-- External Javascripts -->
-    
     <!-- This one is for browser testing, not for IPython usage -->
     <script type="text/javascript" src="js/external/jquery/jquery.min.js"></script>    
     <script type="text/javascript" src="js/external/jquery/jquery-ui.js"></script>
 
-    
     <script type="text/javascript" src="js/external/three/three.min.js"></script>
     <script type="text/javascript" src="js/external/three/TrackballControls.js"></script>
 
     <script type="text/javascript" src="js/external/bootstrap/bootstrap.min.js"></script>
 
-    
     <script type="text/javascript" src="js/external/utils/modernizr-2.0.6.js"></script>
     <script type="text/javascript" src="js/external/utils/bootstrap-slider.js"></script>
     
@@ -34,89 +28,67 @@
     <script type="text/javascript" src="js/external/codemirror/codemirror.js" ></script>
     <script type="text/javascript" src="js/external/codemirror/javascript-mode.js" ></script>
     
-
-
     <!-- DyViz Javascripts -->
     <script type="text/javascript" src="js/dyviz/dv.js"></script>
     <script type="text/javascript" src="js/dyviz/scene.js"></script>
     <script type="text/javascript" src="js/dyviz/parser.js"></script>
     <script type="text/javascript" src="js/dyviz/param_editor.js"></script>
-    <script type="text/javascript" src="js/dyviz/logUtil.js"></script>
     <script type="text/javascript" src="js/dyviz/materials.js"></script>
     <!--<script type="text/javascript" src="js/dyviz/main.js"></script> -->
-
-    
-
-
-
-    
 
 </head>
 
 <body>
 <div id="wrapper">
-    <div id="container">
-        <div id="sidebar-right" >
-          <div id="json-inp">
-            <input type="text" class="form-control" id="json-input">
-            <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load">
-            <input type="button" class="btn btn-success" value="Save/Edit" id="save-json">
-
-          </div>
-          <hr />
-          <div id="edit-objects">
-            <div class="btn-group">
-                <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
-                     Edit Objects<span class="caret"></span>
-                </button>
-                <ul id="objectDropdown" class="dropdown-menu" role="menu">
-                <!-- Objects added Dynamically here, via javascript! -->
-                </ul>
-                <button id="close-object-dialog" class="btn btn-default btn-info disabled"> Close Dialog</button>
-                <br />
-            </div>
-            <hr />
-            <div id="objectDialog" class="well"> <!-- Object details added here --></div>
-          </div>
-          <hr />
-          <span> Edit Simulation Parameters</span>
-          <div class="well" id="simulation-params-wrapper">
-            <div class="input-group" id="simulation-params"></div><hr />
-            <button id="rerun-simulation" class="btn btn-default btn-success"> Apply and Rerun Simulations</button>
-          </div>
+  <div id="container">
+    <div id="sidebar-right" >
+      <div id="json-inp">
+        <input type="text" class="form-control" id="json-input">
+        <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load">
+        <input type="button" class="btn btn-success" value="Save/Edit" id="save-json">
+      </div><!--!json-inp-->
+      <hr />
+      <div id="edit-objects">
+        <div class="btn-group">
+            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">Edit Objects
+              <span class="caret"></span>
+            </button>
+            <ul id="object-dropdown" class="dropdown-menu" role="menu"></ul>
+            <button id="close-object-dialog" class="btn btn-default btn-info disabled">Close Dialog</button>
+            <br />
         </div>
-        <div id="canvas" >
-            <div id="model-loader-wrapper" style="display:None">
-                <div class="btn-group">
-                  <button id="close-model-dialog" class="btn btn-primary btn-small"><i class="icon-white icon-list-alt"></i> Close Dialog</button>
-                </div>
-                <textarea rows="10" cols="50" id="model-loader" class="form-control"></textarea>
-                <hr />
-            </div>
-            <div id="control-button-group" style="display:inline-block;" class="btn-group">
-                <button id="playAnimation" class="btn btn-default btn-success  disabled" ><span class="glyphicon glyphicon-play"></span> Play Animation</button>
-                <button id="stopAnimation" style="display:none;" class="btn btn-default btn-danger active"><span class="glyphicon glyphicon-stop" ></span>Stop </button>
-                <button id="show-model" class="btn btn-default btn-info disabled"><span class="glyphicon glyphicon-stop" ></span>Show Model </button>
-                <div id="slider-wrapper">
-                    <span id="currentTime" class="glyphicon glyphicon-time" ></span><span style="margin-right:1em;" id="time"> 0s</span>
-                     <div id="timeSlider" class="slider" style="float:right; width:28em;padding-left: 2em;"></div> 
-                </div>    
-
-            </div>
-            <hr />
-            <div id="renderer"><!-- THREE Scene rendered here --></div>
-        
-
-        </div>
-
-        
-        <!-- This script should probably go on some run_script.js file -->
-        <script>
-
-        </script>
-
-
+        <hr />
+        <div id="object-dialog" class="well"> </div>
+      </div>
+      <hr />
+      <span> Edit Simulation Parameters</span>
+      <div class="well" id="simulation-params-wrapper">
+        <div class="input-group" id="simulation-params"></div><hr />
+        <button id="rerun-simulation" class="btn btn-default btn-success"> Apply and Rerun Simulations</button>
+      </div>
     </div>
+    <div id="canvas" >
+      <div id="model-loader-wrapper" style="display:None">
+        <button id="close-model-dialog" class="btn btn-primary btn-small"><i class="icon-white icon-list-alt"></i> Close Dialog</button>
+        <textarea rows="10" cols="50" id="model-loader" class="form-control"></textarea>
+        <hr />
+      </div>
+      <div id="control-button-group" style="display:inline-block;" class="btn-group">
+        <button id="play-animation" class="btn btn-default btn-success disabled" ><span class="glyphicon glyphicon-play"></span>Play Animatio</button>
+
+        <button id="stop-animation" style="display:none;" class="btn btn-default btn-danger active"><span class="glyphicon glyphicon-stop" ></span>Stop Animation</button>
+            
+        <button id="show-model" class="btn btn-default btn-info disabled"><span class="glyphicon glyphicon-stop" ></span>Show Model</button>
+          
+        <div id="slider-wrapper">
+          <span id="current-time" class="glyphicon glyphicon-time" ></span><span style="margin-right:1em;" id="time"> 0s</span>
+          <div id="time-slider" class="slider" style="float:right; width:28em;padding-left: 2em;"></div> 
+        </div>    
+      </div>
+      <hr />
+      <div id="renderer"></div>
+    </div>
+  </div>
 </div>  
 </body>
 <script type="text/javascript" src="js/dyviz/main.js"></script>
