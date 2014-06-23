@@ -3,17 +3,15 @@
 DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 	
 	create: function(){
-
 		/** 
 		  * This method creates the scene from the self.model
 		  * and renders it onto the canvas.
-		  * 
 		**/ 
 		var self = this;
         self._createRenderer();
         self._addDefaultLightsandCameras();
         self._addAxes();
-        self._addTrackBallControls(); // and render too.
+        self._addTrackBallControls();
         
     
 	},
@@ -22,7 +20,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 		/**
 		  * Creates a webGL Renderer
 		  * with a default background color.
-		  *
 		**/ 
 		var self = this;
 		self.webgl_renderer = new THREE.WebGLRenderer();
@@ -40,84 +37,113 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         
     
 	_addDefaultLightsandCameras: function(){
-        // This is an auxillary function 
-        // for development purposes..
-        // should be removed after everything 
-        // is in place and working.
-		var self = this;
-        self._cameras = {};
+        /** 
+          * This method adds a default light
+          * and a Perspective camera to the
+          * initial visualization
+        **/  
+        var self = this;
+        
+        self.primaryCamera = new THREE.PerspectiveCamera();
+        camera.position.set(0,0,100);
+        self._scene.add(self.primaryCamera);
+        self.currentCamera = self.primaryCamera;
 
-		var camera = new THREE.PerspectiveCamera();
-        camera.position.x = 00;
-        camera.position.y = 00;
-        camera.position.z = 100;
-        self._cameras["init_camera"] = camera;
-        self._scene.add(self._cameras.init_camera);
-
-        self._lights = {};
         var light = new THREE.PointLight(0xffffff);
         light.position.set(10,10,-10);
-        self._lights["init_light"] = light;
-        self._scene.add(self._lights.init_light);
-
-	},
+        self._scene.add(light);
+    },
     
 
 	_addAxes: function(){
+        /**
+          * Adds a default system of axes
+          * to the initial visualization.
+        **/ 
         var self = this;
-        self._meshes = {};
-		var self = this;
-		var axes = new THREE.AxisHelper(100);
-        self._meshes["axes"] = axes;
-        self._scene.add(self._meshes["axes"]);
+
+        var axes = new THREE.AxisHelper(100);
+        self._scene.add(axes);
         
 	},
 
     _addTrackBallControls: function(){
-    	
-    	this.primaryControls = new THREE.TrackballControls(this._cameras.init_camera,
-                                            this.webgl_renderer.domElement);
+        /**
+          * Adds Mouse controls 
+          * to the initial visualization
+          * using TrackballControls Library.
+        **/ 
+        var self = this;
+    	self.primaryControls = new THREE.TrackballControls(self.currentCamera,
+                                            self.webgl_renderer.domElement);
     
     },
 
     _resetControls: function(){
-    	this.primaryControls.reset();
+        /**
+          * Resets the scene camera to 
+          * the initial values(zoom, displacement etc.)
+        **/
+        var self = this;
+    	self.primaryControls.reset();
     },
 
     addObjects: function(){
+        /**
+          * Adds the geometries 
+          * loaded from the JSON file
+          * onto the scene. The file is 
+          * saved as an object in self.model
+          * and then rendered to canvas with this
+          * function.
+        **/
         var self = this;
-        //clear old objects first
-        self._removeAll();
+        
+
+        self._removeAll(); // Removes old objects first!
         
         var objects = self.model.objects;
-        for(var i in objects)  self._addIndividualObject(objects[i]);
+        for(var i in objects) self._addIndividualObject(objects[i]); 
         
     },
 
     addCameras: function(){
+        /** 
+          * Adds the cameras 
+          * loaded from the JSON file
+          * onto the scene. The cameras
+          * can be switched during animation
+          * from the `switch cameras` UI button.
+        **/
         var self = this;
         var cameras = this.model.cameras;
         for(var i in cameras)  self._addIndividualCamera(cameras[i]);
 
-        //for(var i in self._cameras)  self._scene.add(self._cameras[i]);
     },
 
     addLights: function(){
+        /**
+          * Adds the cameras 
+          * loaded from the JSON file
+          * onto the scene. The cameras
+          * can be switched during animation
+          * from the `switch cameras` UI button.
+        **/  
         var self = this;
         var lights = this.model.lights;
         for(var i in lights)  self._addIndividualLight(lights[i]);
-
-        //for(var i in self._lights)  self._scene.add(self._lights[i]);
     },
 
     _addIndividualObject: function(object){
+        /**
+          * Adds a single geometry object
+          * which is taken as an argument
+          * to this function.
+        **/  
         var self = this;
         var type = object.type;
         
         var material = self.Materials[object.material];
-        alert(object.color)
-        alert(object.radius)
-
         if(object.color != "default"){
             material.color = new THREE.Color(object.color);
         }
@@ -209,14 +235,14 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         mesh["object-info"] = object;
         mesh.name = object.simulation_id;
         self._scene.add(mesh);
-        //self._meshes[object.simulation_id] = mesh;
-
-        // This info is for object editing dialog..
-        //self._meshes[object.simulation_id]["object-info"] = object;
     },
 
     _addIndividualCamera: function(camera){
-        
+        /**
+          * Adds a single camera object
+          * which is taken as an argument
+          * to this function.
+        **/          
         var self = this;
         switch(camera.type){
             case "PerspectiveCamera":
@@ -228,17 +254,16 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 _camera.applyMatrix(initMatrix);
                 break;
             
-            /*case "OrthoGraphicCamera":
-            // TODO adjust JSONObj.width and height here..
+            case "OrthoGraphicCamera":
                 var _camera = new THREE.OrthographicCamera(
-                                     JSONObj.width / - 2, JSONObj.width / 2, 
-                                     JSONObj.height / 2, JSONObj.height / - 2,
-                                     _camera.near, _camera.far );
-                var _element = new Float32Array(_camera.simulation_matrix[0]);
+                                                -320, 320, 
+                                                240, -240,
+                                                camera.near, camera.far );
+                var _element = new Float32Array(camera.init_orientation);
                 var initMatrix = new THREE.Matrix4();
                 initMatrix.elements = _element;
                 _camera.applyMatrix(initMatrix);
-            */    
+            
         }
         _camera.name = camera.simulation_id;
         _camera["object-info"] = camera;
@@ -247,7 +272,12 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
     },
 
     _addIndividualLight: function(light){
-        // TODO: add individual lights to self._lights
+        /**
+          * Adds a single light object
+          * which is taken as an argument
+          * to this function.
+        **/  
+        
         var self = this;
         var type = light.type;
         switch(light.type) { 
@@ -260,50 +290,54 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 initMatrix.elements = element;
                 _light.applyMatrix(initMatrix);
                 break;
-            //TODO add other light cases..
-            case "SomeOtherLight":
-                break;
+            //TODO some other Light implementations
         } 
         
         _light.name = light.simulation_id;
         _light["object-info"] = light;
         self._scene.add(_light);
-
     },
 
     runAnimation: function(){
+        /**
+          * This function iterates over the
+          * the simulation data to render them
+          * on the canvas.
+        **/ 
         var self = this;
+        // toggle buttons..
         jQuery("#playAnimation").css("display","none");
         jQuery("#stopAnimation").css("display","block");
+
         var currentTime = 0;
         var timeDelta = self.model.timeDelta;
         
         self.animationID = window.setInterval(function(){ 
-            // setAnimationTime sets slider and scene
-            // to that particular time.
-            self.setAnimationTime(currentTime);
-            currentTime+=timeDelta;
-
-            
-        }, timeDelta*1000);
+                self.setAnimationTime(currentTime);
+                currentTime+=timeDelta;
+            }, 
+        timeDelta*1000);
 
     },
 
     setAnimationTime: function(currentTime){
+        /**
+          * Takes a time value as the argument
+          * and renders the simulation data 
+          * corresponding to that time value.
+        **/
         var self = this;
         // Set the slider to the current animation time..
         if(currentTime>=self._finalTime) {
             self.stopAnimation();
         }    
         var percent = currentTime/self._finalTime*100;
-        // Now animate objects in scene too..
+
         var time_index = self._timeArray.indexOf(currentTime);
         var _children = self._scene.children;
-
         for(var i=0;i<_children.length;i++){
             var id = _children[i].name;
             if(self.simData[id] != undefined){
-
                 var element = new Float32Array(self.simData[id][time_index]);
                 var orientationMatrix = new THREE.Matrix4();
                 orientationMatrix.elements = element;
@@ -318,6 +352,10 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
     },
 
     stopAnimation: function(){
+        /**
+          * Stops the animation, and
+          * sets the current time value to initial.
+        **/
         var self = this;
         console.log("INFO: Stopping Animation");
         window.clearInterval(self.animationID);
@@ -327,19 +365,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
     },
 
-    applySceneInfo: function(){
-        // TODO.. save data from the objectDialog
-        // into the _meshes, as well into codeMirror's JSON..
-        // 
-
-        
-
-        
-        alert("HEYA");    
-
-    },
-
     _removeAll: function(){
+        /**
+          * Removes all the geometry elements
+          * added to the scene from the loaded scene
+          * JSON file. Keeps the default elements, i.e.
+          * default axis, camera and light.
+        **/
         var self = this;
         var _children = self._scene.children;
 
@@ -354,6 +386,12 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
     },
 
     _blink: function(id){
+        /**
+          * Blinks the geometry element.
+          * takes the element simulation_id as the 
+          * argument and blinks it until some event is
+          * triggered(UI button press)
+        **/
         var self = this;
         self._blinker = self._scene.getObjectByName(id);
         var _material = new THREE.MeshLambertMaterial();
@@ -374,10 +412,4 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         }, 500);
         
     }
-
-
-
-
 });
-
-
