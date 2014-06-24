@@ -102,6 +102,15 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
                 updated_object.tube_radius = jQuery("#_tubeRadius").val()
                 break;
 
+            case "Plane":
+                updated_object.width = jQuery("#_width").val()
+                updated_object.length = jQuery("#_length").val()
+                break;    
+
+            case "Cube":
+                updated_object.length = jQuery("#_length").val()
+                break;        
+
             // TODO for Mesh..     
 
 
@@ -152,6 +161,19 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Tube Radius'));
                 div2.append(jQuery('<input />',{ type:'text', id: "_tubeRadius", class: 'form-control', value: toLoad.tube_radius || 0.0}));
                 break;    
+
+            case "Plane":
+                div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Width'));
+                div2.append(jQuery('<input />',{ type:'text', id: "_width", class: 'form-control', value: toLoad.width  || 0.0}));
+
+                div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
+                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 0.0}));
+                break;    
+
+            case "Cone":
+                div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
+                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 0.0}));
+                break;     
         }
     },
 
