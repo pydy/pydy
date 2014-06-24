@@ -3,30 +3,26 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 	openDialog: function(id){
 
 		/** 
-		  * 
+          * This function takes object's id
+          * as the argument, and populates the
+          * edit objects dialog box.
 		**/ 
         var self = this;
 
         var toLoad = self._scene.getObjectByName(parseInt(id));
         toLoad = toLoad["object-info"];
-        // Remove the old blinker and reset material to default..
         window.clearInterval(self.blinkId);
-        //self._blinker.material = self._old_material;
-        //
+
         self.Scene._blink(parseInt(id));
         var mainDiv = jQuery('<div/>',{id: "object-"+ toLoad.simulation_id, style: 'display:none;'}); 
     	
-    	// for name..
-        var div1 = jQuery('<div />',{class: 'input-group'});
+    	var div1 = jQuery('<div />',{class: 'input-group'});
     	div1.append('<span class="input-group-addon">Name</span>');
     	div1.append(jQuery('<input />',{ type:'text', id: "_name", class: 'form-control', value: toLoad.name}));
 
-        // for color..
-    	div1.append('<span class="input-group-addon">Color</span>');
+        div1.append('<span class="input-group-addon">Color</span>');
     	div1.append(jQuery('<input />',{ type:'text', id: "_color", class: 'form-control', value: toLoad.color}));
         
-        // for material.. a dropdown..
-
         var div_material = jQuery('<select />',{class: 'form-control', id:"_material"});
         div_material.append('<option value="' + toLoad.material + '">' + toLoad.material + '</option>');
         for(var i in self.Materials){
@@ -39,9 +35,6 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         	div_geom.append('<option value="' + self.Geometries[i] +  '">' + self.Geometries[i] + '</option>');
         }
 
-        console.log(jQuery("#geometry"));
-        
-        //rest geom. params depend on shape..
         var div2 = jQuery('<div />',{class: 'input-group', id: "geom-params"});
         
         mainDiv.append(div1);
@@ -51,19 +44,15 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         mainDiv.append(div_geom);
         mainDiv.append("<hr />");
         mainDiv.append(div2);
-        // finally a button..
+        
         mainDiv.append('<hr /><button id="apply-' + id +  '" class="btn btn-primary btn-small">Apply</button>');
         jQuery("#object-dialog").html(mainDiv);
 
-        // show after whole div is populated..
         mainDiv.fadeIn("slow");
-
         jQuery("#_geometry").change( function(){
-        
         	self.ParamEditor._addGeometryFor(jQuery(this).val());
         });
 
-        // finally activate button..
         jQuery("#apply-" + id).click(function(){
 			self.ParamEditor.applySceneInfo(jQuery(this).attr("id").split("-").slice(-1)[0]);
 			
@@ -71,19 +60,18 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 
         self.ParamEditor._addGeometryFor(toLoad);
         jQuery("#close-object-dialog").removeClass("disabled");
-
-
     },
 
     applySceneInfo: function(id){
         /** 
-          * To apply scene info, we modify the object and then 
-          * call Scene._addIndividualObject on it
-          * 
+          * This object applies the changes made in
+          * the edit objects dialog box to self.model
+          * and then renders the model onto canvas.
+          * It takes the id of the object as its argument.
         **/
     	var self = this;
-        // remove blinker..
         window.clearInterval(self.blinkId);
+
         var int_id = parseInt(id);
     	var updated_object = {};
 
@@ -93,8 +81,6 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         updated_object.type = jQuery("#_geometry").val();
         updated_object.simulation_id = int_id;
         
-
-        //Now by type, use switch case..
         switch(updated_object.type){
             case "Sphere":
             case "Circle":
@@ -121,28 +107,25 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 
         }
 
-        console.log("updated object: ");
-        console.log(updated_object);
-        
         jQuery.extend(true,self.model.objects[int_id],updated_object);
-        console.log(self.model)
         self.Scene._removeAll();
         self.Scene.addObjects();
         self.Scene.addCameras();
         self.Scene.addLights();
         self.loadUIElements();
-        //self.Scene._addIndividualObject(updated_object);
-
-
     },
 
     _addGeometryFor: function(toLoad){
+        /**
+          * Adds geometry info for a particular
+          * object onto the edit objects dialog
+          * box. Takes the object as the argument.
+        **/
     	var self = this;
         var div2 = jQuery("#geom-params");
         div2.html(" ");
         
         switch(toLoad.type || toLoad){
-        	// TODO all objects..
         	case "Sphere":
             case "Circle":
             case "Tetrahedron":
@@ -169,19 +152,18 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Tube Radius'));
                 div2.append(jQuery('<input />',{ type:'text', id: "_tubeRadius", class: 'form-control', value: toLoad.tube_radius || 0.0}));
                 break;    
-
-
         }
-    	
     },
 
     showModel: function(){
-        // update editor..
-
+        /**
+          * Updates the codemirror instance with
+          * the updated model, and shows it in the
+          * UI.
+         **/ 
         self.editor.getDoc().setValue(JSON.stringify(self.model,null,4));
         jQuery("#model-loader-wrapper").slideIn();
 
         self.editor.refresh();
     }
-
 });

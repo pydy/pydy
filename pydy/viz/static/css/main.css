@@ -90,3 +90,7 @@ input[type=text]:focus{
 	border-radius: 0.5em;
 	margin-left:0.5em;
 }
+
+ul {
+    list-style-type: none;
+}
