@@ -7,13 +7,11 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
 		/** 
 		  * This method calls an ajax request on the 
 		  * JSON file and reads the scene info from 
-		  * the JSON file. 
-		  * 
-		  * 
+		  * the JSON file, and saves it as an object
+		  * at self.model.
 		**/ 
 		var self = this;
 		var filePath = self.sceneFilePath;
-		
 		if(self.getFileExtenstion() !== "json"){
 			console.log("ALERT: File should be a valid JSON file!");
 			alert("File should be a valid JSON file!");
@@ -36,22 +34,13 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
                 self.Parser.loadSimulation();
                 // Load UI elements relevant for animation stuff!
                 self.loadUIElements();
-                
-                
-                
-
- 
             },
             onFailure: function() { alert('Scene File not loaded!'); },
             on404: function(){ alert("Scene File Not Found! Error:404"); }
-
         });
-		
-
 	},
 
 	loadSimulation: function(){
-
 		/** 
 		  * This method loads the simulation data 
 		  * from the simulation JSON file. The data is
@@ -67,25 +56,22 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
             method:'get',
             onSuccess: function(transport) {
             	self.simData = jQuery.parseJSON(transport.responseText);
-            	
-
-
             },
             onComplete: function(){
-            	// build timeArray and dataArray from simdata...
-            	
             	self.createTimeArray();
-            	//self.createDataArray();
+    
             },
-
-            onFailure: function() { alert('Simulation File not loaded!'); },
-            on404: function(){ alert("Simulation File Not Found! Error:404"); }
-
+            onFailure: function() { alert('ERROR: Simulation File not loaded!'); },
+            on404: function(){ alert("ERROR: Simulation File Not Found! Error:404"); }
         }); 
-
 	},
 
 	createTimeArray: function(){
+		/**
+		  * Creates a time array from 
+		  * the information inferred from
+		  * simulation data.
+		**/
 		var self = this;
 		var _NtimeSteps = self.model.timeSteps;
 		var timeDelta = self.model.timeDelta;
@@ -97,10 +83,8 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
 			time+=timeDelta;
 		}
 		self._finalTime = self._timeArray.slice(-1)[0];
-		console.log("Created Time Array");
+		console.log("INFO: Created Time Array");
 	}
-
-
 });
 
 
