@@ -26,7 +26,7 @@
                 0,
                 0,
                 0,
-                10,
+                100,
                 1
             ],
             "simulation_id": 76521680,
@@ -71,7 +71,7 @@
             "material": "earth",
             "color": "default",
             "reference_frame_name": "N",
-            "radius": "6",
+            "radius": "8",
             "init_orientation": [
                 6.12323399573677e-17,
                 -1,
@@ -98,8 +98,8 @@
             "material": "lava",
             "color": "white",
             "reference_frame_name": "frameR",
-            "length": "5",
-            "radius": "5",
+            "length": "4",
+            "radius": "100",
             "init_orientation": [
                 1,
                 0,
@@ -124,9 +124,9 @@
             "simulation_id": 76524176,
             "name": "sphere",
             "material": "lava",
-            "color": "white",
+            "color": "gold",
             "reference_frame_name": "N",
-            "radius": 1,
+            "radius": "100",
             "init_orientation": [
                 6.12323399573677e-17,
                 -1,
@@ -146,17 +146,17 @@
                 1
             ],
             "type": "Plane",
-            "width": "100",
-            "length": "100"
+            "width": "200",
+            "length": "200"
         },
         "76525520": {
             "simulation_id": 76525520,
             "name": "link",
             "material": "lava",
-            "color": "white",
+            "color": "gold",
             "reference_frame_name": "frameP",
-            "length": "4",
-            "radius": "3",
+            "length": "1000",
+            "radius": "2",
             "init_orientation": [
                 0.00006682679484699013,
                 0.9999999977670897,
@@ -175,8 +175,9 @@
                 0,
                 1
             ],
-            "type": "Icosahedron",
-            "tube_radius": "2"
+            "type": "TorusKnot",
+            "tube_radius": "4",
+            "width": "1000"
         }
     },
     "timeSteps": 300
