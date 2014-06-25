@@ -322,4 +322,5 @@ your publications or on the web. This citation can be used:
    Hubbard, "Constrained Multibody Dynamics With Python: From Symbolic Equation
    Generation to Publication", ASME 2013 International Design Engineering
    Technical Conferences and Computers and Information in Engineering
-   Conference, 2013.
+   Conference, 2013, `10.1115/DETC2013-13470
+   <http://dx.doi.org/10.1115/DETC2013-13470>`_.
