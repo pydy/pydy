@@ -311,3 +311,16 @@ Release Notes
 - Added basic examples for codegen and viz.
 - Graceful fail if theano or cython are not present.
 - Shapes can now use sympy symbols for geometric dimensions.
+
+Citation
+========
+
+If you make use of the PyDy toolchain in you work or research please cite us in
+your publications or on the web. This citation can be used:
+
+   Gilbert Gede, Dale L Peterson, Angadh S Nanjangud, Jason K Moore, and Mont
+   Hubbard, "Constrained Multibody Dynamics With Python: From Symbolic Equation
+   Generation to Publication", ASME 2013 International Design Engineering
+   Technical Conferences and Computers and Information in Engineering
+   Conference, 2013, `10.1115/DETC2013-13470
+   <http://dx.doi.org/10.1115/DETC2013-13470>`_.
