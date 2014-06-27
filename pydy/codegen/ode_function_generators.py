@@ -699,7 +699,7 @@ r : dictionary
         return rhs
 
     def _create_base_rhs_function(self):
-        """Sets the self._base_rhs function. This functin accepts arguments
+        """Sets the self._base_rhs function. This function accepts arguments
         in this form: (q, u, p) or (q, u, r, p)."""
 
         if self.system_type == 'full rhs':
@@ -918,15 +918,24 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
 
         self.define_inputs()
 
-        f = theano_function(self.inputs, outputs, on_unused_input='ignore')
+        # This affects compilation and removes the input check at each step.
+        theano.config.check_input = False
 
-        # Theano will run faster if you trust the input. I'm not sure
-        # what the implications of this are. See:
-        # http://deeplearning.net/software/theano/tutorial/faq.html#faster-small-theano-function
-        # Note that map(np.asarray, np.hstack(args)) is required if
-        # trust_input is True. If it is False, then it will sanitize the
-        # inputs. I'm not sure which one is faster.
-        f.trust_input = True
+        # Disable Theano garbage collection to lower the number of allocations.
+        theano.config.allow_gc = False
+
+        f_imp = theano_function(self.inputs, outputs,
+                                on_unused_input='ignore',
+                                mode=theano.Mode(linker='c'))
+
+        # While denoting an input as trusted lowers Theano overhead:
+        #     f.trust_input = True
+        # we can bypass additional overhead with the following function:
+        def f(*args):
+            for i in range(len(args)):
+                f_imp.input_storage[i].storage[0] = args[i]
+            f_imp.fn()
+            return [f_imp.output_storage[i].data for i in range(len(outputs))]
 
         return f
 
