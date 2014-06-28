@@ -8,15 +8,18 @@
   <link rel="stylesheet" type="text/css" href="jasmine/jasmine.css">
   <script type="text/javascript" src="jasmine/jasmine.js"></script>
   <script type="text/javascript" src="jasmine/jasmine-html.js"></script>
+  <script type="text/javascript" src="jasmine/boot.js"></script>
+  <script type="text/javascript" src="jasmine/console.js"></script>
 
-  <!-- blanket.js for test coverage -->
+  <!-- blanket.js for test coverage 
   
   <script type="text/javascript" src="lib/blanket.min.js"></script> 
   <script type="text/javascript" data-cover-only="canvas/" src="lib/jasmine-blanket.js"></script>  
+  -->
   
   <!-- include source files here... -->
   <script type="text/javascript" src="specs/specHelper.js"></script>    
-  <script type="text/javascript" src="lib/jquery.js"></script>
+  <script type="text/javascript" src="lib/jquery.min.js"></script>
   <script type="text/javascript" src="lib/jquery-ui.js"></script>
   <script type="text/javascript" src="lib/three.min.js"></script>
   <script type="text/javascript" src="lib/TrackballControls.js"></script>
@@ -31,29 +34,17 @@
   
   <script type="text/javascript">
     (function() {
-      var jasmineEnv = jasmine.getEnv();
-      jasmineEnv.updateInterval = 1000;
+if (navigator.userAgent.indexOf("PhantomJS") > 0) {
+  var consoleReporter = new jasmineRequire.ConsoleReporter()({
+    showColors: true,
+    timer: new jasmine.Timer,
+    print: function() {
+      console.log.apply(console, arguments)
+    }
+  });
 
-      var htmlReporter = new jasmine.HtmlReporter();
-
-      jasmineEnv.addReporter(htmlReporter);
-
-      jasmineEnv.specFilter = function(spec) {
-        return htmlReporter.specFilter(spec);
-      };
-
-      var currentWindowOnload = window.onload;
-
-      window.onload = function() {
-        if (currentWindowOnload) {
-          currentWindowOnload();
-        }
-        execJasmine();
-      };
-
-      function execJasmine() {
-        jasmineEnv.execute();
-      }
+  jasmine.getEnv().addReporter(consoleReporter);
+}
 
     })();
   </script>
@@ -63,3 +54,20 @@
 <body>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

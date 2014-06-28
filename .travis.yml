@@ -19,7 +19,11 @@ before_install:
   # Python.
   - pip install sphinx numpydoc
   - pip freeze
+  - sudo apt-get install phantomjs
 script:
   - nosetests -v --with-coverage --cover-package=pydy
   - cd docs && make html && cd ..
   - python setup.py install
+  - cd pydy/viz/static/js && phantomjs run-jasmine.js SpecRunner.html && cd ../../../../
+
+
