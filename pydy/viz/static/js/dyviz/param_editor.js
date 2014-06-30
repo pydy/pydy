@@ -1,12 +1,12 @@
 DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
-	
-	openDialog: function(id){
+    
+    openDialog: function(id){
 
-		/** 
+        /** 
           * This function takes object's id
           * as the argument, and populates the
           * edit objects dialog box.
-		**/ 
+        **/ 
         var self = this;
 
         var toLoad = self._scene.getObjectByName(parseInt(id));
@@ -15,24 +15,24 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 
         self.Scene._blink(parseInt(id));
         var mainDiv = jQuery('<div/>',{id: "object-"+ toLoad.simulation_id, style: 'display:none;'}); 
-    	
-    	var div1 = jQuery('<div />',{class: 'input-group'});
-    	div1.append('<span class="input-group-addon">Name</span>');
-    	div1.append(jQuery('<input />',{ type:'text', id: "_name", class: 'form-control', value: toLoad.name}));
+        
+        var div1 = jQuery('<div />',{class: 'input-group'});
+        div1.append('<span class="input-group-addon">Name</span>');
+        div1.append(jQuery('<input />',{ type:'text', id: "_name", class: 'form-control', value: toLoad.name}));
 
         div1.append('<span class="input-group-addon">Color</span>');
-    	div1.append(jQuery('<input />',{ type:'text', id: "_color", class: 'form-control', value: toLoad.color}));
+        div1.append(jQuery('<input />',{ type:'text', id: "_color", class: 'form-control', value: toLoad.color}));
         
         var div_material = jQuery('<select />',{class: 'form-control', id:"_material"});
         div_material.append('<option value="' + toLoad.material + '">' + toLoad.material + '</option>');
         for(var i in self.Materials){
-        	div_material.append('<option value="' + i +  '">' + i + '</option>');
+            div_material.append('<option value="' + i +  '">' + i + '</option>');
         }
 
         var div_geom = jQuery('<select />',{class: 'form-control', id:"_geometry"});
         div_geom.append('<option value="' + toLoad.type + '">' + toLoad.type + '</option>');
         for(var i=0;i<self.Geometries.length; i++){
-        	div_geom.append('<option value="' + self.Geometries[i] +  '">' + self.Geometries[i] + '</option>');
+            div_geom.append('<option value="' + self.Geometries[i] +  '">' + self.Geometries[i] + '</option>');
         }
 
         var div2 = jQuery('<div />',{class: 'input-group', id: "geom-params"});
@@ -50,13 +50,13 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 
         mainDiv.fadeIn("slow");
         jQuery("#_geometry").change( function(){
-        	self.ParamEditor._addGeometryFor(jQuery(this).val());
+            self.ParamEditor._addGeometryFor(jQuery(this).val());
         });
 
         jQuery("#apply-" + id).click(function(){
-			self.ParamEditor.applySceneInfo(jQuery(this).attr("id").split("-").slice(-1)[0]);
-			
-		});
+            self.ParamEditor.applySceneInfo(jQuery(this).attr("id").split("-").slice(-1)[0]);
+            
+        });
 
         self.ParamEditor._addGeometryFor(toLoad);
         jQuery("#close-object-dialog").removeClass("disabled");
@@ -69,11 +69,11 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
           * and then renders the model onto canvas.
           * It takes the id of the object as its argument.
         **/
-    	var self = this;
+        var self = this;
         window.clearInterval(self.blinkId);
 
         var int_id = parseInt(id);
-    	var updated_object = {};
+        var updated_object = {};
 
         updated_object.name = jQuery("#_name").val();
         updated_object.color = jQuery("#_color").val();
@@ -130,28 +130,28 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
           * object onto the edit objects dialog
           * box. Takes the object as the argument.
         **/
-    	var self = this;
+        var self = this;
         var div2 = jQuery("#geom-params");
         div2.html(" ");
         
         switch(toLoad.type || toLoad){
-        	case "Sphere":
+            case "Sphere":
             case "Circle":
             case "Tetrahedron":
             case "Octahedron":
             case "Icosahedron":
-        	    div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Radius'));
-    	        div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius || 0.0}));
-        	    break;
+                div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Radius'));
+                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius || 0.0}));
+                break;
 
-        	case "Cylinder":
+            case "Cylinder":
             case "Cone":
-        	    div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Radius'));
-    	        div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius  || 0.0}));
+                div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Radius'));
+                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius  || 0.0}));
 
-    	        div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
-    	        div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 0.0}));
-        	    break;
+                div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
+                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 0.0}));
+                break;
 
             case "Torus":
             case "TorusKnot":

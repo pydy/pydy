@@ -139,6 +139,4 @@ function loadMaterials() {
             shading: shading } );
 
 }
-
 loadMaterials();
-

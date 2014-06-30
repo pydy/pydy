@@ -1,34 +1,33 @@
 
-
 DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
-	
-	create: function(){
-		/** 
-		  * This method creates the scene from the self.model
-		  * and renders it onto the canvas.
-		**/ 
-		var self = this;
+    
+    create: function(){
+        /** 
+          * This method creates the scene from the self.model
+          * and renders it onto the canvas.
+        **/ 
+        var self = this;
         self._createRenderer();
         self._addDefaultLightsandCameras();
         self._addAxes();
         self._addTrackBallControls();
         
     
-	},
+    },
 
-	_createRenderer: function(){
-		/**
-		  * Creates a webGL Renderer
-		  * with a default background color.
-		**/ 
-		var self = this;
-		self.webgl_renderer = new THREE.WebGLRenderer();
+    _createRenderer: function(){
+        /**
+          * Creates a webGL Renderer
+          * with a default background color.
+        **/ 
+        var self = this;
+        self.webgl_renderer = new THREE.WebGLRenderer();
         self.webgl_renderer.setSize(640, 480);
         
-	    var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
-	    self.webgl_renderer.setClearColor(backgroundColor);	
-	    var container = jQuery('#renderer');
-	    container.append(self.webgl_renderer.domElement);	
+        var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
+        self.webgl_renderer.setClearColor(backgroundColor); 
+        var container = jQuery('#renderer');
+        container.append(self.webgl_renderer.domElement);   
         
         // new Scene..
         self._scene  = new THREE.Scene();
@@ -36,7 +35,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
     },    
         
     
-	_addDefaultLightsandCameras: function(){
+    _addDefaultLightsandCameras: function(){
         /** 
           * This method adds a default light
           * and a Perspective camera to the
@@ -55,7 +54,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
     },
     
 
-	_addAxes: function(){
+    _addAxes: function(){
         /**
           * Adds a default system of axes
           * to the initial visualization.
@@ -65,7 +64,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var axes = new THREE.AxisHelper(100);
         self._scene.add(axes);
         
-	},
+    },
 
     _addTrackBallControls: function(){
         /**
@@ -74,7 +73,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * using TrackballControls Library.
         **/ 
         var self = this;
-    	  self.primaryControls = new THREE.TrackballControls(self.currentCamera,
+          self.primaryControls = new THREE.TrackballControls(self.currentCamera,
                                             self.webgl_renderer.domElement);
     
     },
@@ -85,7 +84,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * the initial values(zoom, displacement etc.)
         **/
         var self = this;
-    	  self.primaryControls.reset();
+          self.primaryControls.reset();
     },
 
     addObjects: function(){
@@ -317,7 +316,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 currentTime+=timeDelta;
             }, 
         timeDelta*1000);
-
     },
 
     setAnimationTime: function(currentTime){
@@ -380,9 +378,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 self._scene.remove(_children[i]);
             }
         };
-
-
-
     },
 
     _blink: function(id){
