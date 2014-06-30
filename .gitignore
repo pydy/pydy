@@ -1,5 +1,7 @@
 *.py[cod]
 
+# Editor's default saves
+*~
 # C extensions
 *.so
 
