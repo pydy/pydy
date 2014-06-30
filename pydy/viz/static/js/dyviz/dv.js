@@ -15,9 +15,9 @@ DynamicsVisualizer = Class.create({
 		  * initializes the DynamicVisualizer object.
 		**/
 		var self = this;
-		console.log("INFO: initializing Visualizer");
+		console.log("[PyDy INFO]: initializing Visualizer");
 		if(!self.isWebGLCompatible()){
-			console.log("ALERT: Incompatible browser!");
+			console.log("[PyDy ALERT]: Incompatible browser!");
 			alert("The browser you are using is not compatible! " + 
 				"Please use a latest version of Chrome or Firefox");
 		    return false;
@@ -53,7 +53,7 @@ DynamicsVisualizer = Class.create({
         var self = this;
 		jQuery("#simulation-load").click(function(){
 			self.sceneFilePath = jQuery("#json-input").val();
-            console.log("INFO: Loading scene JSON file:" + self.sceneFilePath);
+            console.log("[PyDy INFO]: Loading scene JSON file:" + self.sceneFilePath);
 			self.Parser.loadScene();
 		});
 
@@ -101,7 +101,7 @@ DynamicsVisualizer = Class.create({
 
 		});
 
-        console.log("INFO: Activated UI controls");
+        console.log("[PyDy INFO]: Activated UI controls");
 
 
 	},

@@ -13,8 +13,7 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
 		var self = this;
 		var filePath = self.sceneFilePath;
 		if(self.getFileExtenstion() !== "json"){
-			console.log("ALERT: File should be a valid JSON file!");
-			alert("File should be a valid JSON file!");
+			alert("[PyDy ALERT]: File should be a valid JSON file!");
 			return;
 		}
 
@@ -27,7 +26,7 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
 
             },
             onComplete: function(){
-            	console.log("request completed, adding Objects to scene");
+            	console.log("[PyDy INFO]: Ajax request completed, adding Objects to scene");
             	self.Scene.addObjects();
             	self.Scene.addCameras();
                 self.Scene.addLights();
@@ -35,8 +34,8 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
                 // Load UI elements relevant for animation stuff!
                 self.loadUIElements();
             },
-            onFailure: function() { alert('Scene File not loaded!'); },
-            on404: function(){ alert("Scene File Not Found! Error:404"); }
+            onFailure: function() { alert('[PyDy ALERT]: Scene File not loaded!'); },
+            on404: function(){ alert("[PyDy ALERT]: Scene File Not Found! Error:404"); }
         });
 	},
 
@@ -61,8 +60,8 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
             	self.createTimeArray();
     
             },
-            onFailure: function() { alert('ERROR: Simulation File not loaded!'); },
-            on404: function(){ alert("ERROR: Simulation File Not Found! Error:404"); }
+            onFailure: function() { alert('[PyDy ALERT]: Simulation File not loaded!'); },
+            on404: function(){ alert("[PyDy ALERT]: Simulation File Not Found! Error:404"); }
         }); 
 	},
 
@@ -83,8 +82,6 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
 			time+=timeDelta;
 		}
 		self._finalTime = self._timeArray.slice(-1)[0];
-		console.log("INFO: Created Time Array");
+		console.log("[PyDy INFO]: Created Time Array");
 	}
 });
-
-

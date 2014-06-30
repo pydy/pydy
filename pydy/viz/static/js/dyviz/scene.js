@@ -74,7 +74,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * using TrackballControls Library.
         **/ 
         var self = this;
-    	self.primaryControls = new THREE.TrackballControls(self.currentCamera,
+    	  self.primaryControls = new THREE.TrackballControls(self.currentCamera,
                                             self.webgl_renderer.domElement);
     
     },
@@ -85,7 +85,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * the initial values(zoom, displacement etc.)
         **/
         var self = this;
-    	self.primaryControls.reset();
+    	  self.primaryControls.reset();
     },
 
     addObjects: function(){
@@ -357,7 +357,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * sets the current time value to initial.
         **/
         var self = this;
-        console.log("INFO: Stopping Animation");
+        console.log("[PyDy INFO]: Stopping Animation");
         window.clearInterval(self.animationID);
         self.setAnimationTime(0)
         jQuery("#stop-animation").css("display","none");
@@ -410,6 +410,5 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 _flip_material = _material;
             }
         }, 500);
-        
     }
 });
