@@ -24,4 +24,4 @@ script:
   - nosetests -v --with-coverage --cover-package=pydy
   - cd docs && make html && cd ..
   - python setup.py install
-  - cd pydy/viz/static/js && phantomjs run-jasmine.js SpecRunner.html && cd ../../../../
+  - cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html && cd ../../../../../
