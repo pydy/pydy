@@ -171,45 +171,67 @@ class PerspectiveCamera(VisualizationFrame):
         else:
             self._far = new_far
 
-    def generate_visualization_dict(self):
+    
+    def generate_scene_dict(self):
         """
-        Returns a dictionary of all the info required
-        for the visualization of this Camera
+        This method generates information for a static 
+        visualization in the initial conditions, in the form
+        of dictionary. This contains camera parameters followed 
+        by an init_orientation Key.
 
         Before calling this method, all the transformation matrix
         generation methods should be called, or it will give an error.
 
         Returns
         =======
-
-        a dictionary containing following keys:
-
-        name : name of the PerspectiveCamera
-        fov : Field Of View of the PerspectiveCamera
-        simulation_matrix : a N*4*4 matrix, converted to list, for
-        passing to Javascript for animation purposes, where N is the
-        number of timesteps for animations.
-
-
+        A dict with following Keys:
+        
+        1. name: name for the camera
+        2. fov: Field of View value of the camera
+        3. near: near value of the camera
+        4. far: far value of the camera
+        5. init_orientation: Initial orientation of the camera
+        
         """
-        self._data = {}
-        self._data['name'] = self.name
-        self._data['type'] = self.__repr__()
-        self._data['fov'] = self.fov
-        self._data['near'] = self.near
-        self._data['far'] = self.far
+        scene_dict = { id(self): {} }
+        scene_dict[id(self)]['name'] = self.name
+        scene_dict[id(self)]['type'] = self.__repr__()
+        scene_dict[id(self)]['fov'] = self.fov
+        scene_dict[id(self)]['near'] = self.near
+        scene_dict[id(self)]['far'] = self.far
+        scene_dict[id(self)]["simulation_id"] = id(self)
+        scene_dict[id(self)]["init_orientation"] = self._visualization_matrix[0]
 
+        return scene_dict
+
+    def generate_simulation_dict(self):
+        """
+        Generates the simulation information for this visualization
+        frame. It maps the simulation data information to the
+        scene information via a unique id.
+        
+        Before calling this method, all the transformation matrix
+        generation methods should be called, or it will give an error.
+        Returns
+        =======
+
+        A dictionary containing list of 4x4 matrices mapped to 
+        the unique id as the key.
+        
+        """
+        simulation_dict = {}
         try:
-            self._data['simulation_matrix'] = self._visualization_matrix.tolist()
+            simulation_dict[id(self)] = self._visualization_matrix
 
         except:
-            #Not sure which error to call here.
-            raise RuntimeError('''Please call the numerical
-                            transformation methods,
-                           before generating simulation dict ''')
+            raise RuntimeError("Please call the numerical ",
+                               "transformation methods, ",
+                               "before generating visualization dict")
 
 
-        return self._data
+        return simulation_dict
+        
+    
 
 class OrthoGraphicCamera(VisualizationFrame):
     """
@@ -349,40 +371,54 @@ class OrthoGraphicCamera(VisualizationFrame):
         else:
             self._far = new_far
 
-    def generate_visualization_dict(self):
+    def generate_scene_dict(self):
         """
-        Returns a dictionary of all the info required
-        for the visualization of this Camera
-
-        Before calling this method, all the transformation matrix
-        generation methods should be called, or it will give an error.
+        This method generates information for a static 
+        visualization in the initial conditions, in the form
+        of dictionary. This contains camera parameters followed 
+        by an init_orientation Key.
 
         Returns
         =======
-
-        a dictionary containing following keys:
-
-        name : name of the OrthoGraphicCamera
-        simulation_matrix : a N*4*4 matrix, converted to list, for
-        passing to Javascript for animation purposes, where N is the
-        number of timesteps for animations.
-
-
+        A dict with following Keys:
+        
+        1. name: name for the camera
+        2. near: near value of the camera
+        3. far: far value of the camera
+        4. init_orientation: Initial orientation of the camera
+        
         """
-        self._data = {}
-        self._data['name'] = self.name
-        self._data['type'] = self.__repr__()
-        self._data['near'] = self.near
-        self._data['far'] = self.far
+        scene_dict = {}
+        scene_dict['name'] = self.name
+        scene_dict['type'] = self.__repr__()
+        scene_dict['near'] = self.near
+        scene_dict['far'] = self.far
+        scene_dict["simulation_id"] = id(self)
+        scene_dict["init_orientation"] = self._visualization_matrix[0]
 
+        return scene_dict
+
+    def generate_simulation_dict(self):
+        """
+        Generates the simulation information for this visualization
+        frame. It maps the simulation data information to the
+        scene information via a unique id.
+        
+        Returns
+        =======
+
+        A dictionary containing list of 4x4 matrices mapped to 
+        the unique id as the key.
+        
+        """
+        simulation_dict = {}
         try:
-            self._data['simulation_matrix'] = self.simulation_matrix.tolist()
+            simulation_dict[id(self)] = self._visualization_matrix
 
         except:
-            #Not sure which error to call here.
-            raise RuntimeError('''Please call the numerical
-                            transformation methods,
-                           before generating simulation dict ''')
+            raise RuntimeError("Please call the numerical ",
+                               "transformation methods, ",
+                               "before generating visualization dict")
 
 
-        return self._data
+        return simulation_dict
