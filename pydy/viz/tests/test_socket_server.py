@@ -26,7 +26,7 @@ class TestSocketServer(object):
     def test_req2(self):
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connection.connect((self.host, self.server.port))
-        self.connection.send('GET /js/canvas/initialize.js')
+        self.connection.send('GET /js/dyviz/main.js')
 
         data = self.server.listen_once()
         path = os.path.join(os.path.dirname(__file__), '..', 'static', 'js',
