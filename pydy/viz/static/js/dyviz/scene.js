@@ -1,0 +1,409 @@
+
+DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
+    
+    create: function(){
+        /** 
+          * This method creates the scene from the self.model
+          * and renders it onto the canvas.
+        **/ 
+        var self = this;
+        self._createRenderer();
+        self._addDefaultLightsandCameras();
+        self._addAxes();
+        self._addTrackBallControls();
+        
+    
+    },
+
+    _createRenderer: function(){
+        /**
+          * Creates a webGL Renderer
+          * with a default background color.
+        **/ 
+        var self = this;
+        self.webgl_renderer = new THREE.WebGLRenderer();
+        self.webgl_renderer.setSize(640, 480);
+        
+        var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
+        self.webgl_renderer.setClearColor(backgroundColor); 
+        var container = jQuery('#renderer');
+        container.append(self.webgl_renderer.domElement);   
+        
+        // new Scene..
+        self._scene  = new THREE.Scene();
+
+    },    
+        
+    
+    _addDefaultLightsandCameras: function(){
+        /** 
+          * This method adds a default light
+          * and a Perspective camera to the
+          * initial visualization
+        **/  
+        var self = this;
+        
+        self.primaryCamera = new THREE.PerspectiveCamera();
+        self.primaryCamera.position.set(0,0,100);
+        self._scene.add(self.primaryCamera);
+        self.currentCamera = self.primaryCamera;
+
+        var light = new THREE.PointLight(0xffffff);
+        light.position.set(10,10,-10);
+        self._scene.add(light);
+    },
+    
+
+    _addAxes: function(){
+        /**
+          * Adds a default system of axes
+          * to the initial visualization.
+        **/ 
+        var self = this;
+
+        var axes = new THREE.AxisHelper(100);
+        self._scene.add(axes);
+        
+    },
+
+    _addTrackBallControls: function(){
+        /**
+          * Adds Mouse controls 
+          * to the initial visualization
+          * using TrackballControls Library.
+        **/ 
+        var self = this;
+          self.primaryControls = new THREE.TrackballControls(self.currentCamera,
+                                            self.webgl_renderer.domElement);
+    
+    },
+
+    _resetControls: function(){
+        /**
+          * Resets the scene camera to 
+          * the initial values(zoom, displacement etc.)
+        **/
+        var self = this;
+          self.primaryControls.reset();
+    },
+
+    addObjects: function(){
+        /**
+          * Adds the geometries 
+          * loaded from the JSON file
+          * onto the scene. The file is 
+          * saved as an object in self.model
+          * and then rendered to canvas with this
+          * function.
+        **/
+        var self = this;
+        
+
+        self._removeAll(); // Removes old objects first!
+        
+        var objects = self.model.objects;
+        for(var i in objects) self._addIndividualObject(objects[i]); 
+        
+    },
+
+    addCameras: function(){
+        /** 
+          * Adds the cameras 
+          * loaded from the JSON file
+          * onto the scene. The cameras
+          * can be switched during animation
+          * from the `switch cameras` UI button.
+        **/
+        var self = this;
+        var cameras = this.model.cameras;
+        for(var i in cameras)  self._addIndividualCamera(cameras[i]);
+
+    },
+
+    addLights: function(){
+        /**
+          * Adds the cameras 
+          * loaded from the JSON file
+          * onto the scene. The cameras
+          * can be switched during animation
+          * from the `switch cameras` UI button.
+        **/  
+        var self = this;
+        var lights = this.model.lights;
+        for(var i in lights)  self._addIndividualLight(lights[i]);
+    },
+
+    _addIndividualObject: function(object){
+        /**
+          * Adds a single geometry object
+          * which is taken as an argument
+          * to this function.
+        **/  
+        var self = this;
+        var type = object.type;
+        
+        var material = self.Materials[object.material];
+        if(object.color != "default"){
+            material.color = new THREE.Color(object.color);
+        }
+
+        switch(type) {
+
+            case "Mesh":
+                //TODO
+                break;
+
+            case "Cube":
+                var geometry = new THREE.CubeGeometry(
+                                  object.length,
+                                  object.length,
+                                  object.length, 
+                                  50, 50, 50);
+                break;
+
+            case "Sphere":
+                var geometry = new THREE.SphereGeometry(
+                                               object.radius, 100);
+                break;
+
+            case "Cylinder":
+                var geometry = new THREE.CylinderGeometry(object.radius,
+                                                          object.radius,
+                                                          object.length,100);
+
+                break;
+
+            case "Cone":        
+                var geometry = new THREE.CylinderGeometry(
+                                          object.radius,
+                                          object.radius/100,
+                                          object.length,
+                                          50,50);        
+                break;
+
+            case "Circle":        
+                var geometry = new THREE.CylinderGeometry(object.radius,
+                                                          object.radius,
+                                                          0.5,100);
+                break;
+
+            case "Plane":        
+                var geometry = new THREE.PlaneGeometry(
+                                          object.length,
+                                          object.width,                                      
+                                          100);
+                break;                        
+                
+            case "Tetrahedron":
+                var geometry = new THREE.TetrahedronGeometry(
+                                          object.radius);
+                break;                                    
+                
+            case "Octahedron":
+                var geometry = new THREE.OctahedronGeometry(
+                                          object.radius);
+                break;                                    
+                            
+            case "Icosahedron":
+                var geometry = new THREE.IcosahedronGeometry(
+                                          object.radius);
+                break;                                                
+                
+            case "Torus":
+                var geometry = new THREE.TorusGeometry(
+                                          object.radius,
+                                          object.tube_radius,100
+                                          );
+                break;                                                            
+                
+            case "TorusKnot":
+                var geometry = new THREE.TorusKnotGeometry(
+                                          object.radius,
+                                          object.tube_radius,100
+                                          );
+                break;                
+           
+        }
+
+        var mesh = new THREE.Mesh(geometry, material);
+        var element = new Float32Array(object.init_orientation);
+        var initMatrix = new THREE.Matrix4();
+        initMatrix.elements = element;
+        mesh.matrix.identity();
+        mesh.applyMatrix(initMatrix);
+        mesh["object-info"] = object;
+        mesh.name = object.simulation_id;
+        self._scene.add(mesh);
+    },
+
+    _addIndividualCamera: function(camera){
+        /**
+          * Adds a single camera object
+          * which is taken as an argument
+          * to this function.
+        **/          
+        var self = this;
+        switch(camera.type){
+            case "PerspectiveCamera":
+                var _camera = new THREE.PerspectiveCamera(camera.fov, 1,
+                                                 camera.near, camera.far);
+                var element = new Float32Array(camera.init_orientation);
+                var initMatrix = new THREE.Matrix4();
+                initMatrix.elements = element;
+                _camera.applyMatrix(initMatrix);
+                break;
+            
+            case "OrthoGraphicCamera":
+                var _camera = new THREE.OrthographicCamera(
+                                                -320, 320, 
+                                                240, -240,
+                                                camera.near, camera.far );
+                var _element = new Float32Array(camera.init_orientation);
+                var initMatrix = new THREE.Matrix4();
+                initMatrix.elements = _element;
+                _camera.applyMatrix(initMatrix);
+            
+        }
+        _camera.name = camera.simulation_id;
+        _camera["object-info"] = camera;
+        self._scene.add(_camera);
+
+    },
+
+    _addIndividualLight: function(light){
+        /**
+          * Adds a single light object
+          * which is taken as an argument
+          * to this function.
+        **/  
+        
+        var self = this;
+        var type = light.type;
+        switch(light.type) { 
+
+            case "PointLight":
+                var color = new THREE.Color(light.color);
+                var _light = new THREE.PointLight(color);
+                var element = new Float32Array(light.init_orientation);
+                var initMatrix = new THREE.Matrix4();
+                initMatrix.elements = element;
+                _light.applyMatrix(initMatrix);
+                break;
+            //TODO some other Light implementations
+        } 
+        
+        _light.name = light.simulation_id;
+        _light["object-info"] = light;
+        self._scene.add(_light);
+    },
+
+    runAnimation: function(){
+        /**
+          * This function iterates over the
+          * the simulation data to render them
+          * on the canvas.
+        **/ 
+        var self = this;
+        // toggle buttons..
+        jQuery("#play-animation").css("display","none");
+        jQuery("#stop-animation").css("display","block");
+
+        var currentTime = 0;
+        var timeDelta = self.model.timeDelta;
+        
+        self.animationID = window.setInterval(function(){ 
+                self.setAnimationTime(currentTime);
+                currentTime+=timeDelta;
+            }, 
+        timeDelta*1000);
+    },
+
+    setAnimationTime: function(currentTime){
+        /**
+          * Takes a time value as the argument
+          * and renders the simulation data 
+          * corresponding to that time value.
+        **/
+        var self = this;
+        // Set the slider to the current animation time..
+        if(currentTime>=self._finalTime) {
+            self.stopAnimation();
+        }    
+        var percent = currentTime/self._finalTime*100;
+
+        var time_index = self._timeArray.indexOf(currentTime);
+        var _children = self._scene.children;
+        for(var i=0;i<_children.length;i++){
+            var id = _children[i].name;
+            if(self.simData[id] != undefined){
+                var element = new Float32Array(self.simData[id][time_index]);
+                var orientationMatrix = new THREE.Matrix4();
+                orientationMatrix.elements = element;
+                _children[i].matrix.identity()
+                _children[i].applyMatrix(orientationMatrix);
+            }
+
+        }
+        jQuery("#time-slider").slider("setValue",percent);
+        jQuery("#time").html(" " + Math.round(currentTime*100)/100 + "s");
+        
+    },
+
+    stopAnimation: function(){
+        /**
+          * Stops the animation, and
+          * sets the current time value to initial.
+        **/
+        var self = this;
+        console.log("[PyDy INFO]: Stopping Animation");
+        window.clearInterval(self.animationID);
+        self.setAnimationTime(0)
+        jQuery("#stop-animation").css("display","none");
+        jQuery("#play-animation").css("display","block");
+
+    },
+
+    _removeAll: function(){
+        /**
+          * Removes all the geometry elements
+          * added to the scene from the loaded scene
+          * JSON file. Keeps the default elements, i.e.
+          * default axis, camera and light.
+        **/
+        var self = this;
+        var _children = self._scene.children;
+
+        for(var i=_children.length-1;i>=0;i--) { 
+            if(_children[i].name){
+                self._scene.remove(_children[i]);
+            }
+        };
+    },
+
+    _blink: function(id){
+        /**
+          * Blinks the geometry element.
+          * takes the element simulation_id as the 
+          * argument and blinks it until some event is
+          * triggered(UI button press)
+        **/
+        var self = this;
+        self._blinker = self._scene.getObjectByName(id);
+        var _material = new THREE.MeshLambertMaterial();
+        _material.color = new THREE.Color("blue")
+        _material.name = "blinker";
+        self._old_material = self._blinker.material;
+        var _flip_material = _material;
+        
+        self.blinkId = window.setInterval(function(){ 
+            self._blinker.material = _flip_material;
+            if(_flip_material.name == "blinker"){
+                _flip_material = self._old_material;
+                
+            }
+            else{
+                _flip_material = _material;
+            }
+        }, 500);
+    }
+});
