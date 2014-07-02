@@ -32,6 +32,6 @@ class TestSocketServer(object):
         path = os.path.join(os.path.dirname(__file__), '..', 'static', 'js',
                             'dyviz', 'main.js')
         print data
-        print open(path).read()
-        
+        #print open(path).read()
+
         assert data == open(path).read()
