@@ -9,7 +9,7 @@ DynamicsVisualizer = Class.create({
       * maps buttons' `onClick` to functions.
     **/ 
 
-    init: function(){    
+    _initialize: function(){    
         /**
           * Checks whether the browser supports webGLs, and
           * initializes the DynamicVisualizer object.
@@ -27,7 +27,9 @@ DynamicsVisualizer = Class.create({
         if(sceneFileURI){
             console.log("[PyDy INFO]: Found scene desc from URL");
             jQuery("#json-input").val(sceneFileURI);
-            jQuery("#simulation-load").click();
+            self.sceneFilePath = sceneFileURI;
+            console.log("[PyDy INFO]: Loading scene JSON file:" + self.sceneFilePath);
+            self.Parser.loadScene();
         }
         
     },
