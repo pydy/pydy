@@ -22,6 +22,14 @@ DynamicsVisualizer = Class.create({
                 "Please use a latest version of Chrome or Firefox");
             return false;
         }
+
+        var sceneFileURI = self.getQueryString("load");
+        if(sceneFileURI){
+            console.log("[PyDy INFO]: Found scene desc from URL");
+            jQuery("#json-input").val(sceneFileURI);
+            jQuery("#simulation-load").click();
+        }
+        
     },
 
 
@@ -171,7 +179,15 @@ DynamicsVisualizer = Class.create({
         var self = this;
         return self.sceneFilePath.split(".").slice(-1)[0].toLowerCase();
 
-   }
+   },
+
+   getQueryString: function(key){
+       key = key.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+       var regex = new RegExp("[\\?&]" + key + "=([^&#]*)"),
+       results = regex.exec(location.search);
+       return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
 });
 
 var DynamicsVisualizer = new DynamicsVisualizer();
