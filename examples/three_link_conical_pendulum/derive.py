@@ -22,7 +22,7 @@ delta = me.dynamicsymbols('delta:{}'.format(n))
 # At each joint there are point masses (i.e. the bobs).
 m_bob = symbols('m:{}'.format(n))
 
-# Each link is modeled as a cylinder so it will have a lenght, mass, and a
+# Each link is modeled as a cylinder so it will have a length, mass, and a
 # symmetric inertia tensor.
 l = symbols('l:{}'.format(n))
 m_link = symbols('M:{}'.format(n))
