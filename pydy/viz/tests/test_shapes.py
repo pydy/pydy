@@ -38,7 +38,7 @@ def test_shape():
     shape_ = Shape(color='blue')
 
     assert shape_.name == 'unnamed'
-    assert shape_.__str__() == 'Shape unnamed color:blue material:None'
+    assert shape_.__str__() == 'Shape unnamed color:blue material:default'
     assert shape_.__repr__() == 'Shape'
 
 
@@ -50,7 +50,7 @@ def test_shape_geometry_with_expressions():
     expected = {"color": "grey",
                 "type": "Shape",
                 "name": "unnamed",
-                "length": 16.0, "material":"None"}
+                "length": 16.0, "material":"default"}
     actual = shape.generate_dict(constant_map={symbols('l'): 16.0})
     assert actual == expected
 
@@ -61,7 +61,7 @@ def test_shape_geometry_with_expressions():
                 "type": "Shape",
                 "name": "unnamed",
                 "length": 20.0, 
-                "material": "None"}
+                "material": "default"}
     actual = shape.generate_dict(constant_map={symbols('l1'): 4.0,
                                                symbols('l2'): 4.0})
     assert actual == expected
@@ -97,7 +97,7 @@ def test_cube():
     cube = Cube(10.0, color='blue')
 
     assert cube.name == 'unnamed'
-    assert cube.__str__() == 'Cube unnamed color:blue material:None length:10.0'
+    assert cube.__str__() == 'Cube unnamed color:blue material:default length:10.0'
     assert cube.__repr__() == 'Cube'
 
     cube = Cube(symbols('V') ** (1.0 / 3.0))
@@ -106,7 +106,7 @@ def test_cube():
                       "type": "Cube",
                       "name": "unnamed",
                       "length": 3.0, 
-                      "material": "None"}
+                      "material": "default"}
 
 
 def test_cylinder():
@@ -145,7 +145,7 @@ def test_cylinder():
     cylinder_ = Cylinder(10.0, 5.0, color='blue')
     assert cylinder_.name == 'unnamed'
     assert cylinder_.__str__() == \
-        'Cylinder unnamed color:blue material:None length:10.0 radius:5.0'
+        'Cylinder unnamed color:blue material:default length:10.0 radius:5.0'
 
     assert cylinder_.__repr__() == 'Cylinder'
 
@@ -183,7 +183,7 @@ def test_cone():
     cone_ = Cone(10.0, 5.0, color='darkblue')
     assert cone_.name == 'unnamed'
     assert cone_.__str__() == \
-        'Cone unnamed color:darkblue material:None length:10.0 radius:5.0'
+        'Cone unnamed color:darkblue material:default length:10.0 radius:5.0'
     assert cone_.__repr__() == 'Cone'
 
 
@@ -191,7 +191,7 @@ def test_sphere():
     sphere = Sphere(10.0, name='sphere', color='azure')
     assert sphere.name == 'sphere'
     assert sphere.__str__() == \
-                   'Sphere sphere color:azure material:None radius:10.0'
+                   'Sphere sphere color:azure material:default radius:10.0'
     assert sphere.__repr__() == 'Sphere'
     assert sphere.radius == 10.0
     assert sphere.color == 'azure'
@@ -209,13 +209,13 @@ def test_sphere():
                                       "type": "Sphere",
                                       "name": "sphere1",
                                       "radius": 14.0, 
-                                      "material": "None"}
+                                      "material": "default"}
     assert isinstance(sphere, Shape)
 
     sphere_ = Sphere(10.0, color='azure')
     assert sphere_.name == 'unnamed'
     assert sphere_.__str__() == \
-                 'Sphere unnamed color:azure material:None radius:10.0'
+                 'Sphere unnamed color:azure material:default radius:10.0'
     assert sphere_.__repr__() == 'Sphere'
 
 
@@ -224,7 +224,7 @@ def test_circle():
 
     assert circle.name == 'circle'
     assert circle.__str__() == \
-                    'Circle circle color:gold material:None radius:10.0'
+                    'Circle circle color:gold material:default radius:10.0'
     assert circle.__repr__() == 'Circle'
     assert circle.radius == 10.0
     assert circle.color == 'gold'
@@ -242,7 +242,7 @@ def test_circle():
                                       "type": "Circle",
                                       "name": "circle1",
                                       "radius": 12.0,
-                                      "material": "None"
+                                      "material": "default"
                                           }
 
     assert isinstance(circle, Shape)
@@ -250,7 +250,7 @@ def test_circle():
     circle = Circle(10.0, color='gold')
     assert circle.name == 'unnamed'
     assert circle.__str__() == \
-                'Circle unnamed color:gold material:None radius:10.0'
+                'Circle unnamed color:gold material:default radius:10.0'
     assert circle.__repr__() == 'Circle'
 
 
@@ -263,7 +263,7 @@ def test_mesh():
     assert mesh_shape.name == 'mesh'
     #TODO Handle these long strings
     assert mesh_shape.__str__() == \
-        'Mesh mesh color:green material:None points:[[ 2.  3.  1.]\n [ 4.  6.  2.]\n [ 5.  3.  1.]\n [ 5.  3.  6.]\n [ 2.  8.  4.]\n [ 7.  4.  1.]]'
+        'Mesh mesh color:green material:default points:[[ 2.  3.  1.]\n [ 4.  6.  2.]\n [ 5.  3.  1.]\n [ 5.  3.  6.]\n [ 2.  8.  4.]\n [ 7.  4.  1.]]'
                     
     assert mesh_shape.__repr__() == 'Mesh'
     assert_allclose(mesh_shape.points, point_list)
@@ -288,7 +288,7 @@ def test_mesh():
                 "type": "Mesh",
                 "name": "mesh1",
                 "points": np.asarray(new_point_list),
-                "material":  "None"}
+                "material":  "default"}
 
     for key in ['color', 'type', 'name']:
         actual[key] == expected[key]
@@ -299,7 +299,7 @@ def test_mesh():
     mesh_shape_ = Mesh(points=point_list, color='green')
     assert mesh_shape_.name == 'unnamed'
     assert mesh_shape_.__str__() == \
-        'Mesh unnamed color:green material:None points:[[ 2.  3.  1.]\n [ 4.  6.  2.]\n [ 5.  3.  1.]\n [ 5.  3.  6.]\n [ 2.  8.  4.]\n [ 7.  4.  1.]]'
+        'Mesh unnamed color:green material:default points:[[ 2.  3.  1.]\n [ 4.  6.  2.]\n [ 5.  3.  1.]\n [ 5.  3.  6.]\n [ 2.  8.  4.]\n [ 7.  4.  1.]]'
     assert mesh_shape_.__repr__() == 'Mesh'
 
 
@@ -307,7 +307,7 @@ def test_plane():
     plane = Plane(10.0, 20.0, name='plane', color='indigo')
     assert plane.name == 'plane'
     assert plane.__str__() == \
-        'Plane plane color:indigo material:None length:10.0 width:20.0'
+        'Plane plane color:indigo material:default length:10.0 width:20.0'
     assert plane.__repr__() == 'Plane'
     assert plane.length == 10.0
     assert plane.width == 20.0
@@ -330,14 +330,14 @@ def test_plane():
                                      "name": "plane1",
                                      "width": 10.0,
                                      "length": 30.0,
-                                     "material": "None"}
+                                     "material": "default"}
 
     assert isinstance(plane, Shape)
 
     plane_ = Plane(10.0, 20.0, color='indigo')
     assert plane_.name == 'unnamed'
     assert plane_.__str__() == \
-        'Plane unnamed color:indigo material:None length:10.0 width:20.0'
+        'Plane unnamed color:indigo material:default length:10.0 width:20.0'
     assert plane_.__repr__() == 'Plane'
 
 
@@ -349,7 +349,7 @@ def test_tetrahedron():
     tetrahedron = Tetrahedron(5.0, name='tetrahedron', color='maroon')
     assert tetrahedron.name == 'tetrahedron'
     assert tetrahedron.__str__() == \
-        'Tetrahedron tetrahedron color:maroon material:None radius:5.0'
+        'Tetrahedron tetrahedron color:maroon material:default radius:5.0'
     assert tetrahedron.__repr__() == 'Tetrahedron'
     assert tetrahedron.radius == 5.0
     assert tetrahedron.color == 'maroon'
@@ -367,13 +367,13 @@ def test_tetrahedron():
                                            "type": "Tetrahedron",
                                            "name": "tetrahedron1",
                                            "radius": 7.0,
-                                           "material": "None"}
+                                           "material": "default"}
     assert isinstance(tetrahedron, Shape)
 
     tetrahedron_ = Tetrahedron(5.0, color='maroon')
     assert tetrahedron_.name == 'unnamed'
     assert tetrahedron_.__str__() == \
-        'Tetrahedron unnamed color:maroon material:None radius:5.0'
+        'Tetrahedron unnamed color:maroon material:default radius:5.0'
     assert tetrahedron_.__repr__() == 'Tetrahedron'
 
 
@@ -381,7 +381,7 @@ def test_octahedron():
     octahedron = Octahedron(12.0, name='octahedron', color='purple')
     assert octahedron.name == 'octahedron'
     assert octahedron.__str__() == \
-        'Octahedron octahedron color:purple material:None radius:12.0'
+        'Octahedron octahedron color:purple material:default radius:12.0'
     assert octahedron.__repr__() == 'Octahedron'
     assert octahedron.radius == 12.0
     assert octahedron.color == 'purple'
@@ -399,14 +399,14 @@ def test_octahedron():
                                           "type": "Octahedron",
                                           "name": "octahedron1",
                                           "radius": 2.0,
-                                          "material": "None"}
+                                          "material": "default"}
 
     assert isinstance(octahedron, Shape)
 
     octahedron_ = Octahedron(12.0, color='purple')
     assert octahedron_.name == 'unnamed'
     assert octahedron_.__str__() == \
-        'Octahedron unnamed color:purple material:None radius:12.0'
+        'Octahedron unnamed color:purple material:default radius:12.0'
     assert octahedron_.__repr__() == 'Octahedron'
 
 
@@ -414,7 +414,7 @@ def test_icosahedron():
     icosahedron = Icosahedron(11.0, name='icosahedron', color='blue')
     assert icosahedron.name == 'icosahedron'
     assert icosahedron.__str__() == \
-        'Icosahedron icosahedron color:blue material:None radius:11.0'
+        'Icosahedron icosahedron color:blue material:default radius:11.0'
     assert icosahedron.__repr__() == 'Icosahedron'
     assert icosahedron.radius == 11.0
     assert icosahedron.color == 'blue'
@@ -432,14 +432,14 @@ def test_icosahedron():
                                            "type": "Icosahedron",
                                            "name": "icosahedron1",
                                            "radius": 3.0,
-                                           "material": "None"}
+                                           "material": "default"}
 
     assert isinstance(icosahedron, Shape)
 
     icosahedron_ = Icosahedron(11.0, color='blue')
     assert icosahedron_.name == 'unnamed'
     assert icosahedron_.__str__() == \
-        'Icosahedron unnamed color:blue material:None radius:11.0'
+        'Icosahedron unnamed color:blue material:default radius:11.0'
     assert icosahedron_.__repr__() == 'Icosahedron'
 
 
@@ -448,7 +448,7 @@ def test_torus():
 
     assert torus.name == 'torus'
     assert torus.__str__() == \
-        'Torus torus color:red material:None radius:10.0 tube_radius:2.0'
+        'Torus torus color:red material:default radius:10.0 tube_radius:2.0'
     assert torus.__repr__() == 'Torus'
     assert torus.radius == 10.0
     assert torus.tube_radius == 2.0
@@ -471,14 +471,14 @@ def test_torus():
                                      "name": "torus1",
                                      "radius": 15.0,
                                      "tube_radius": 4.0,
-                                     "material": "None"}
+                                     "material": "default"}
 
     assert isinstance(torus, Shape)
 
     torus_ = Torus(10.0, 2.0, color='red')
     assert torus_.name == 'unnamed'
     assert torus_.__str__() == \
-        'Torus unnamed color:red material:None radius:10.0 tube_radius:2.0'
+        'Torus unnamed color:red material:default radius:10.0 tube_radius:2.0'
     assert torus_.__repr__() == 'Torus'
 
 
@@ -488,7 +488,7 @@ def test_tube():
 
     assert tube.name == 'tube'
     assert tube.__str__() == \
-         'Tube tube color:red material:None points:[[ 2.  4.  5.]\n [ 2.  6.  4.]\n [ 1.  5.  8.]] radius:10.0'
+         'Tube tube color:red material:default points:[[ 2.  4.  5.]\n [ 2.  6.  4.]\n [ 1.  5.  8.]] radius:10.0'
     assert tube.__repr__() == 'Tube'
     assert tube.radius == 10.0
     assert_allclose(tube.points, point_list)
@@ -514,7 +514,7 @@ def test_tube():
                 "name": "tube1",
                 "radius": 15.0,
                 "points": np.asarray(new_point_list),
-                "material": "None"}
+                "material": "default"}
 
     for key in ['color', 'type', 'name', 'radius']:
         actual[key] == expected[key]
@@ -525,7 +525,7 @@ def test_tube():
     tube_ = Tube(10.0, point_list, color='red')
     assert tube_.name == 'unnamed'
     assert tube_.__str__() == \
-        'Tube unnamed color:red material:None points:[[ 2.  4.  5.]\n [ 2.  6.  4.]\n [ 1.  5.  8.]] radius:10.0'
+        'Tube unnamed color:red material:default points:[[ 2.  4.  5.]\n [ 2.  6.  4.]\n [ 1.  5.  8.]] radius:10.0'
     assert tube_.__repr__() == 'Tube'
 
 
@@ -535,7 +535,7 @@ def test_torus_knot():
 
     assert torus_knot.name == 'torus_knot'
     assert torus_knot.__str__() == \
-        'TorusKnot torus_knot color:red material:None radius:10.0 tube_radius:2.0'
+        'TorusKnot torus_knot color:red material:default radius:10.0 tube_radius:2.0'
     assert torus_knot.__repr__() == 'TorusKnot'
     assert torus_knot.radius == 10.0
     assert torus_knot.tube_radius == 2.0
@@ -558,12 +558,12 @@ def test_torus_knot():
                                           "name": "torus_knot1",
                                           "radius": 12.0,
                                           "tube_radius": 1,
-                                          "material": "None"}
+                                          "material": "default"}
 
     assert isinstance(torus_knot, Shape)
 
     torus_knot_ = TorusKnot(10.0, 2.0, color='red')
     assert torus_knot_.name == 'unnamed'
     assert torus_knot_.__str__() == \
-        'TorusKnot unnamed color:red material:None radius:10.0 tube_radius:2.0'
+        'TorusKnot unnamed color:red material:default radius:10.0 tube_radius:2.0'
     assert torus_knot_.__repr__() == 'TorusKnot'
