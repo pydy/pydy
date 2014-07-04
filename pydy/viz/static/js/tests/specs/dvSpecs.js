@@ -33,16 +33,27 @@ describe("DynamicsVisualizer's main class should  ", function() {
 });
 
 /**
-TODO add ui fixtures, and test UI
+Bug in jasmine-jquery, added an issue at:
+https://github.com/velesin/jasmine-jquery/issues/199
+
+//TODO add ui fixtures, and test UI
 describe("DynamicsVisualizer's UI ", function() {
-    beforeEach(function(){
-       loadFixtures("sample_data/uiFixtures.html")
+    beforeEach(function () {
+    jQuery.ajax({
+      async: false, // must be synchronous to guarantee that no tests are run before fixture is loaded
+      dataType: 'html',
+      url: 'sample_data/uiFixture.html',
+      success: function(data) {
+        $('body').append($(data));
+      }
     });
+  });
+    
     it("should have Play Animation button disabled, initially!", function() {
+        loadFixtures("uiFixtures.html")
         expect(jQuery("#play-animation")).toBeMatchedBy('.disabled');
     });
 
 });
 
 **/
-
