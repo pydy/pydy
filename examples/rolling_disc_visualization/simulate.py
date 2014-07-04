@@ -15,7 +15,7 @@ constants = {r: 10*0.25 * 3.141459, m: 10.0, g: 9.81}
 # Time-varying
 # ------------
 
-coordinates = [q1, q2, q3]
+coordinates = [x, y, q1, q2, q3]
 
 speeds = [u1, u2,  u3]
 
@@ -25,7 +25,7 @@ specified = []
 xdot_function = generate_ode_function(MM, forcing,
         constants.keys(), coordinates, speeds, specified)
 
-initial_coordinates = [0, 0.1 * 3.141459, 0]
+initial_coordinates = [1, 0, 0, 0, 0] # TODO 0.1 * 3.141459, 0]
 initial_speeds = [0, 5*0.25 * 3.141459, 0]
 x0 = concatenate((initial_coordinates, initial_speeds), axis=1)
 
