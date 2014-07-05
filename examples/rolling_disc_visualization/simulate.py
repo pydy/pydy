@@ -1,5 +1,5 @@
 
-from numpy import concatenate, array, linspace, pi
+import numpy as np
 from scipy.integrate import odeint
 from pydy.codegen.code import generate_ode_function
 
@@ -11,19 +11,29 @@ from derive import *
 # Constants
 # ---------
 
-constants = {r: 10*0.25 * 3.141459, m: 10.0, g: 9.81}
+constants = {r: 5.0, m: 10.0, g: 9.81}
 
 # Time-varying
 # ------------
 
 coordinates = [q1, q2, q3, q4, q5]
 speeds = [u1, u2, u3]
+states = coordinates + speeds
 
-xdot_function = generate_ode_function(M, F, constants.keys(), coordinates, speeds)
+xdot_function = generate_ode_function(M, F,
+                                      constants.keys(),
+                                      coordinates, speeds)
 
-initial_coordinates = [0.0, 0.01, 0.0, 0.0, 0.0]
-initial_speeds = [0.0, 5.0*0.25*pi, 0.0]
-x0 = concatenate((initial_coordinates, initial_speeds), axis=1)
+initial_conditions = {q1: 0.0,
+                      q2: np.deg2rad(5.0),
+                      q3: 0.0,
+                      q4: 0.0,
+                      q5: 0.0,
+                      u1: 0.0,
+                      u2: 10.0 / constants[r],
+                      u3: 0.0}
+
+x0 = [initial_conditions[s] for s in states]
 
 args = {'constants': constants.values()}
 
@@ -33,5 +43,5 @@ args = {'constants': constants.values()}
 frames_per_sec = 60
 final_time = 10.0
 
-t = linspace(0.0, final_time, final_time * frames_per_sec)
+t = np.linspace(0.0, final_time, final_time * frames_per_sec)
 x = odeint(xdot_function, x0, t, args=(args,))
