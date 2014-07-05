@@ -11,20 +11,20 @@ from simulate import *
 
 disc = Cylinder(name='disc', length=0.01, radius=r, color="red")
 
-disc_viz_frame = VisualizationFrame("disc_frame", R, Dmc, disc)
+disc_viz_frame = VisualizationFrame("disc_frame", R, Ro, disc)
 
 # In the derivation, the "ground" is the xy plane. However, the ground plane in
 # the visualizer is the xz plane. We rotate everything 90 degrees around the
 # Newtonian x axis. so that the disc starts standing on the "ground" in the
 # visualizer.
-world_frame = N.orientnew('world', 'Axis', [0.5 * pi, N.x])
-scene = Scene(world_frame, No, disc_viz_frame)
+#world_frame = N.orientnew('world', 'Axis', [0.5 * pi, N.x])
+#scene = Scene(world_frame, No, disc_viz_frame)
 
+scene = Scene(N, No, disc_viz_frame)
 
 # Create the visualization
 # ========================
 
 scene.generate_visualization_json(coordinates + speeds, constants.keys(), x,
-        constants.values()) 
-print len(x)
+        constants.values())
 scene.create_static_html()
