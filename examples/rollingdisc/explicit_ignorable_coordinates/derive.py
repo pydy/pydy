@@ -53,7 +53,7 @@ me.mprint(kd)
 
 velocity_constraints = [
                         me.dot(C.vel(N), Y.x), # slip in the direction of rolling.
-                        me.dot(C.vel(N),  Y.y), # perpendicular to the dir. of rolling.
+                        me.dot(C.vel(N), Y.y), # perpendicular to the dir. of rolling.
                        ]
 
 ForceList = [(Ro, -m * g * Y.z)]
@@ -121,3 +121,12 @@ F = F_kin.col_join(F_dyn)
 
 # F may not evaluate exactly as F in the method that derives without the
 # ignorable coordinates.
+
+# x' should equal to r * u2 * cos(q1)
+# and
+# y' should equal to r * u2 * sin(q1)
+# but this code is returning:
+# x' = r * (u2 - u3 * tan(q2)) * cos(q1)
+# x' = r * u2 * cos(q1) - r * u3 * sin(q2)
+# I'm not sure why that extra term is there. For small roll angles (q2) this
+# is zero.
