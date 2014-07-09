@@ -294,8 +294,10 @@ class Scene(object):
         objects in the PyDy visualizer.
         
         """
-        #TODO: Add code to include lights and Cameras as well
-        
+        #Saving the arguments for re-running simulations
+        self.constant_variables = constant_variables
+        self.constant_values = costant_values
+        self.dynamic_values = dynamic_values
         self._simulation_info = {}
 
         for frame in self.visualization_frames:
@@ -404,8 +406,18 @@ class Scene(object):
         versions>=2.0.0
         
         """
+        
         #1. Copy static data to the folder where IPython
         #   Kernel is running.
+
         #2. Create Widgets from relevant information from Scene
+        self.create_widgets()
         #3. Call Index.html from copied static in the IPython notebook, 
         #   Using display call.
+        if IPython:
+            IPython.core.display.HTML(filename="index.html")
+        else:
+            raise TypeError("This method should be called from IPython \
+                             notebook only")
+       
+        
