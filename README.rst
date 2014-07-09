@@ -70,7 +70,7 @@ PyDy has hard dependencies on the following software\ [#]_:
 PyDy has optional dependencies on these packages:
 
 - IPython_ >= 0.3.0
-- Theano_ >= 0.6.0 (>= 0.7.0 with Python >= 3.3)
+- Theano_ >= 0.7.0
 - Cython_ >= 0.17 (>= 0.20.1 with Python >= 3.3)
 
 .. _Theano: http://deeplearning.net/software/theano/
