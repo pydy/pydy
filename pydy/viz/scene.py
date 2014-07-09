@@ -396,3 +396,16 @@ class Scene(object):
 
         except:
             self._display_from_interpreter()
+    
+    def display_ipython(self):
+        """
+        Method to display the visualization inside the 
+        Ipython notebook. It is only supported by IPython
+        versions>=2.0.0
+        
+        """
+        #1. Copy static data to the folder where IPython
+        #   Kernel is running.
+        #2. Create Widgets from relevant information from Scene
+        #3. Call Index.html from copied static in the IPython notebook, 
+        #   Using display call.
