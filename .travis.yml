@@ -11,7 +11,7 @@ before_install:
   # Remove the version of NumPy pre-installed into the Travis virtualenv so
   # that we test with the system installed version.
   - pip uninstall -y numpy
-  - pip install --no-deps Theano==0.6.0
+  - pip install --no-deps git+git://github.com/Theano/Theano.git@548729f1205f41d3323da0321e06e1d4dcadf3f8
   - pip install sympy==0.7.4.1
   # Note that the `make html` command that runs 'build-sphinx' does not work if
   # Sphinx is installed with 'apt-get install sphinx'. It can't find the
