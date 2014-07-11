@@ -8,6 +8,7 @@ import distutils
 import distutils.dir_util
 import webbrowser
 import datetime
+import shutil
 # external
 from sympy.physics.mechanics import ReferenceFrame, Point
 
@@ -20,6 +21,9 @@ __all__ = ['Scene']
 
 try:
     from IPython.lib import backgroundjobs as bg
+    from IPython.html import widgets
+    from IPython.display import clear_output, display
+
 except ImportError:
     IPython = None
 
@@ -296,7 +300,7 @@ class Scene(object):
         """
         #Saving the arguments for re-running simulations
         self.constant_variables = constant_variables
-        self.constant_values = costant_values
+        self.constant_values = constant_values
         self.dynamic_values = dynamic_values
         self._simulation_info = {}
 
@@ -472,14 +476,36 @@ class Scene(object):
         #1. Copy static data to the folder where IPython
         #   Kernel is running.
         self.create_static_html()
-        #2. Create Widgets from relevant information from Scene
-        self.create_widgets()
-        #3. Call Index.html from copied static in the IPython notebook, 
-        #   Using display call.
+        self._create_widgets()
+        
         if IPython:
             IPython.core.display.HTML(filename="static/ipython_index.html")
         else:
             raise TypeError("This method should be called from IPython \
                              notebook only")
        
-        
+    def _create_widgets(self):
+        """
+        Creates the IPython FloatSlider Widgets 
+        corresponding to constants saved in 
+        self.constant_variables.
+        These method should be strictly called after
+        the generate_simulation_dict method has been called
+
+        """
+        widget_dict = {}
+        for variable, init_value in zip(self.constant_variables, \
+                                       self.constant_values):
+            widget_dict[str(variable)] = widgets.FloatSliderWidget(min=0, 
+                                           max=init_value*100,step=init_value/10,
+                                           value=init_value, desc=str(variable))
+
+
+        def save_constants(**kwargs):
+            self._constant_values = []
+            for val in kwargs.values():
+                self._constant_values.append(val)
+
+        inter = widgets.interact(save_constants, **widget_dict)
+        #shows widget..
+        inter.widget
