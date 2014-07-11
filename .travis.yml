@@ -1,24 +1,29 @@
 language: python
 python:
   - 2.7
-virtualenv:
-  system_site_packages: true
-before_install:
-  # On Ubuntu 12.04 numpy is at 1.6.1, SciPy is at 0.9.0 and Cython is at
-  # 0.15.1.
-  - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy cython
-  - sudo apt-get install -y -qq python-coverage
-  # Remove the version of NumPy pre-installed into the Travis virtualenv so
-  # that we test with the system installed version.
-  - pip uninstall -y numpy
-  - pip install --no-deps Theano==0.6.0
-  - pip install sympy==0.7.4.1
-  # Note that the `make html` command that runs 'build-sphinx' does not work if
-  # Sphinx is installed with 'apt-get install sphinx'. It can't find the
-  # numpydoc extension if it is. It must be bypassing virtualenv to the system
-  # Python.
-  - pip install sphinx numpydoc
-  - pip freeze
+  - 3.3
+  - 3.4
+install:
+  - sudo apt-get update
+  # This saves us some downloading for this version
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget http://repo.continuum.io/miniconda/Miniconda-3.4.2-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget http://repo.continuum.io/miniconda/Miniconda3-3.4.2-Linux-x86_64.sh -O miniconda.sh;
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a
+  # Create an environment that includes the dependency versions pinned to those
+  # available in Ubuntu 14.04 LTS.
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy=1.8.1 scipy=0.13.3 sympy=0.7.4.1 cython=0.20.1 theano=0.6.0
+  - source activate test-environment
+  - conda install nose coverage  # for testing
+  - conda install sphinx numpydoc  # for docs
+  - conda list
 script:
   - nosetests -v --with-coverage --cover-package=pydy
   - cd docs && make html && cd ..

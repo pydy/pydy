@@ -59,20 +59,27 @@ class TestCode():
 
         states = np.array([x, v])
 
-        mass_matrix, forcing_vector, constants, coordinates, speeds, specified = \
-            generate_mass_spring_damper_equations_of_motion()
+        system = generate_mass_spring_damper_equations_of_motion()
+
+        mass_matrix = system[0]
+        forcing_vector = system[1]
+        constants = system[2]
+        coordinates = system[3]
+        speeds = system[4]
+        specified = system[5]
 
         expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x + F)])
 
         backends = ['lambdify', 'theano', 'cython']
 
         for backend in backends:
-            rhs = generate_ode_function(mass_matrix, forcing_vector,
-                                        constants, coordinates, speeds,
-                                        specified, generator=backend)
-            dx = rhs(states, 0.0, args)
-
-            testing.assert_allclose(dx, expected_dx)
+            try:
+                rhs = generate_ode_function(*system, generator=backend)
+            except ValueError:
+                print('The {} backend does not seem to be installed, skipping test.'.format(backend))
+            else:
+                dx = rhs(states, 0.0, args)
+                testing.assert_allclose(dx, expected_dx)
 
         # Now try it with a function defining the specified quantities.
         args['specified'] = lambda x, t: np.sin(t)
@@ -83,26 +90,27 @@ class TestCode():
                                               np.sin(t))])
 
         for backend in backends:
-            rhs = generate_ode_function(mass_matrix, forcing_vector,
-                                        constants, coordinates, speeds,
-                                        specified, generator=backend)
-            dx = rhs(states, t, args)
-
-            testing.assert_allclose(dx, expected_dx)
+            try:
+                rhs = generate_ode_function(*system, generator=backend)
+            except ValueError:
+                print('The {} backend does not seem to be installed, skipping test.'.format(backend))
+            else:
+                dx = rhs(states, t, args)
+                testing.assert_allclose(dx, expected_dx)
 
         # Now try it without specified values.
-        mass_matrix, forcing_vector, constants, coordinates, speeds, specified = \
-            generate_mass_spring_damper_equations_of_motion(external_force=False)
+        system = generate_mass_spring_damper_equations_of_motion(external_force=False)
 
         expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x)])
 
         for backend in backends:
-            rhs = generate_ode_function(mass_matrix, forcing_vector,
-                                        constants, coordinates, speeds,
-                                        specified, generator=backend)
-            dx = rhs(states, 0.0, args)
-
-            testing.assert_allclose(dx, expected_dx)
+            try:
+                rhs = generate_ode_function(*system, generator=backend)
+            except ValueError:
+                print('The {} backend does not seem to be installed, skipping test.'.format(backend))
+            else:
+                dx = rhs(states, 0.0, args)
+                testing.assert_allclose(dx, expected_dx)
 
     def teardown(self):
 

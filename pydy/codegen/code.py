@@ -2,6 +2,7 @@
 
 # standard library
 import os
+import sys
 import subprocess
 import importlib
 import random
@@ -26,7 +27,7 @@ else:
     cython_installed = True
 
 # internal libraries
-from templates import c_template, h_template, pyx_template, setup_template
+from .templates import c_template, h_template, pyx_template, setup_template
 
 # Python 2 vs 3 importing
 try:
@@ -35,12 +36,12 @@ except ImportError:
     from string import ascii_letters as all_letters
 
 # debugging
-try:
-    from IPython.core.debugger import Tracer
-except ImportError:
-    pass
-else:
-    set_trace = Tracer()
+#try:
+    #from IPython.core.debugger import Tracer
+#except ImportError:
+    #pass
+#else:
+    #set_trace = Tracer()
 
 
 class CythonGenerator(object):
@@ -49,7 +50,7 @@ class CythonGenerator(object):
                  constants, coordinates, speeds, specified=None):
 
         """Instantiates an object that can generates a Cython shared object
-        module with a function that evaluates the provided mass_matrix and
+        module with a function that evaluates the provided mass matrix and
         the forcing vector given the numerical values of the input
         variables.
 
@@ -124,7 +125,7 @@ class CythonGenerator(object):
 
         # TODO: make common sub expressions optional
 
-        list_of_lists = self.symbols.values()
+        list_of_lists = list(self.symbols.values())
         if None in list_of_lists:
             list_of_lists.remove(None)
         all_symbols = list(chain.from_iterable(list_of_lists))

@@ -48,12 +48,13 @@ class Server(threading.Thread):
         static_path = os.path.dirname(__file__)
         static_path = os.path.join(static_path, 'static')
         try:
-            request = data.split(' ')[1]
+            request = data.decode('UTF-8').split(' ')[1]
         except IndexError:
-			#If error occurs in parsing a request,
-			#Better to reload the page, to avoid broken
-			#javascripts
-			request = '/'
+            #If error occurs in parsing a request,
+            #Better to reload the page, to avoid broken
+            #javascripts
+            request = '/'
+
         if request == '/':
         #If requested for http://localhost:port/
         #Send index.html file
@@ -66,7 +67,7 @@ class Server(threading.Thread):
             send_buffer = 'var JSONObj = '
 
         elif request == '/close-server':
-            print "Server closed successfully!"
+            print("Server closed successfully!")
             self.close()
 
 
@@ -91,11 +92,11 @@ class Server(threading.Thread):
         conn, addr = self.socket.accept()
         data = conn.recv(1024)
         sent_data = self._parse_data(data)
-        conn.send(sent_data)
+        conn.send(sent_data.encode('UTF-8'))
         return sent_data
 
     def run(self):
-        print 'server started successfully, on port:', self.port
+        print('Server started successfully, on port: {}'.format(self.port))
 
         while 1:
             try:
@@ -107,18 +108,18 @@ class Server(threading.Thread):
                 conn.send(sent_data)
                 conn.close()
             except KeyboardInterrupt:
-                print "Are you sure you want to shutdown[Y/N]?"
+                print("Are you sure you want to shutdown[Y/N]?")
                 a = raw_input()
                 if a == "Y" or a == "y":
                     self.close()
                 else:
                     pass
-            except socket.error, e:
+            except socket.error as e:
                 if isinstance(e.args, tuple):
-                    print "errno is %d" % e[0]
+                    print("errno is %d" % e[0])
                 if e[0] == errno.EPIPE:
                     # remote peer disconnected
-                    print "Detected remote disconnect"
+                    print("Detected remote disconnect")
 
     def close(self):
         self.socket.shutdown(socket.SHUT_RDWR)

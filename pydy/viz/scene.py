@@ -376,19 +376,17 @@ class Scene(object):
                     force = True
 
             if force is True:
-                print 'Cleaning up static directory..'
+                print('Cleaning up static directory..')
                 distutils.dir_util.remove_tree(os.path.join(os.getcwd(),
                                                             'static'))
-                print 'All Done!'
+                print('All Done!')
             else:
                 print('Aborted.')
 
     def _display_from_interpreter(self):
         server = Server(json=self.saved_json_file)
-        print '''Your visualization is being rendered at
-                 http://localhost:%s/
-                 Visit the url in your webgl compatible browser
-                 to see the animation in full glory''' % (server.port)
+        print("Your visualization is being rendered at http://localhost:{}/".format(server.port))
+        print("Visit the url in your webgl compatible browser to see the animation in full glory")
         server.run()
 
     def _display_from_ipython(self):
@@ -400,11 +398,9 @@ class Scene(object):
         jobs = bg.BackgroundJobManager()
         jobs.new('server.run()')
 
-        print '''
-        Your visualization is being rendered at
-        http://localhost:%s/
-        Opening the visualization in new tab...'''%(server.port)
-        webbrowser.open("http://localhost:%s/"%server.port)
+        print("Your visualization is being rendered at http://localhost:{}/".format(server.port))
+        print("Opening the visualization in new tab...")
+        webbrowser.open("http://localhost:{}/".format(server.port))
 
     def display(self):
         """

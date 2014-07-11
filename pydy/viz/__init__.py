@@ -1,3 +1,4 @@
+#from __future__ import absolute_import
 __all__ = []
 
 # The following pattern is used below for importing sub-modules:
@@ -13,26 +14,26 @@ __all__ = []
 
 __version__ = "0.1.0"
 
-import visualization_frame
-from visualization_frame import *
+from . import visualization_frame
+from .visualization_frame import *
 __all__.extend(visualization_frame.__all__)
 
-import shapes
-from shapes import *
+from . import shapes
+from .shapes import *
 __all__.extend(shapes.__all__)
 
-import scene
-from scene import *
+from . import scene
+from .scene import *
 __all__.extend(scene.__all__)
 
-import camera
-from camera import *
+from . import camera
+from .camera import *
 __all__.extend(camera.__all__)
 
-import light
-from light import *
+from . import light
+from .light import *
 __all__.extend(light.__all__)
 
-import server
-from server import *
+from . import server
+from .server import *
 __all__.extend(server.__all__)
