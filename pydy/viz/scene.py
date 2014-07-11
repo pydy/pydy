@@ -333,24 +333,86 @@ class Scene(object):
 
         return self._simulation_info    
         
-    def _copy_static_dir(self):
-        """
-        Copies all the static files required in the
-        visualization to the current working directory
-        The files and sub directories are stored within
-        a hidden directory named .pydy_viz in the current
-        working directory.
-        Working directory can be cleaned by calling _cleanup()
-        method, which deletes the .pydy_viz directory.
+    def create_static_html(self, overwrite=False):
+        """Creates a directory named ``static`` in the current working
+        directory which contains all of the HTML, CSS, and Javascript files
+        required to run the visualization. Simply open ``static/index.html``
+        in a WebGL compliant browser to view and interact with the
+        visualization.
+
+        This method can also be used to output files for embedding the
+        visualizations in the static webpages. Simply copy the contents of
+        static directory in the relevant directory for embedding in a static
+        website.
+
+        Parameters
+        ----------
+        dir_name : string
+            A valid directory name.
+        overwrite : boolean, optional, default=False
+            If true, the directory named ``static`` in the current working
+            directory will be overwritten.
 
         """
-        dst = os.path.join(os.getcwd(), '.pydy_viz')
-        os.mkdir(dst)
-        src = os.path.join(os.path.dirname(__file__), 'static')
-        distutils.dir_util.copy_tree(src, dst)
 
-    def _cleanup(self):
-        distutils.dir_util.remove_tree(os.path.join(os.getcwd(), '.pydy_viz'))
+        dst = os.path.join(os.getcwd(), 'static')
+
+        if os.path.exists(dst) and overwrite is False:
+            ans = raw_input("The 'static' directory already exists. Would "
+                            + "you like to overwrite the contents? [y|n]\n")
+            if ans == 'y':
+                shutil.rmtree(dst)
+                overwrite = True
+        elif os.path.exists(dst) and overwrite is True:
+            shutil.rmtree(dst)
+        elif not os.path.exists(dst):
+            overwrite = True
+
+        if overwrite is True:
+            src = os.path.join(os.path.dirname(__file__), 'static')
+            print("Copying static data.")
+            shutil.copytree(src, dst)
+            print("Copying Simulation data.")
+            _outfile_loc = os.path.join(os.getcwd(), 'static', 'data.json')
+            outfile = open(_outfile_loc, "w")
+            # For static rendering, we need to define json data as a
+            # JavaScript variable.
+            outfile.write('var JSONObj=')
+            outfile.write(json.dumps(self._data_dict, indent=4,
+                                    separators=(',', ': ')))
+            outfile.write(';')
+            outfile.close()
+            print("To view the visualization, open {}".format(
+                os.path.join(dst, 'index.html')) +
+                " in a WebGL compliant browser.")
+        else:
+            print('Aborted.')
+
+    def remove_static_html(self, force=False):
+        """Removes the ``static`` directory from the current working
+        directory.
+
+        Parameters
+        ----------
+        force : boolean, optional, default=False
+            If true, no warning is issued before the removal of the
+            directory.
+
+        """
+        if os.path.exists('static'):
+            if force is False:
+                ans = raw_input("Are you sure you would like to delete the " +
+                                "'static' directory? [y|n]\n")
+                if ans == 'y':
+                    force = True
+
+            if force is True:
+                print 'Cleaning up static directory..'
+                distutils.dir_util.remove_tree(os.path.join(os.getcwd(),
+                                                            'static'))
+                print 'All Done!'
+            else:
+                print('Aborted.')
 
     def _display_from_interpreter(self):
         server = Server(json=self.saved_json_file)
@@ -409,13 +471,13 @@ class Scene(object):
         
         #1. Copy static data to the folder where IPython
         #   Kernel is running.
-
+        self.create_static_html()
         #2. Create Widgets from relevant information from Scene
         self.create_widgets()
         #3. Call Index.html from copied static in the IPython notebook, 
         #   Using display call.
         if IPython:
-            IPython.core.display.HTML(filename="index.html")
+            IPython.core.display.HTML(filename="static/ipython_index.html")
         else:
             raise TypeError("This method should be called from IPython \
                              notebook only")
