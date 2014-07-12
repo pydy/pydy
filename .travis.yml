@@ -20,17 +20,20 @@ install:
   # available in Ubuntu 14.04 LTS.
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy=1.8.1 scipy=0.13.3 sympy=0.7.4.1 cython=0.20.1 theano=0.6.0;
+      source activate test-environment;
+      conda install sphinx numpydoc;  # for docs
     else
       conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy=1.8.1 scipy=0.13.3 sympy=0.7.4.1 cython=0.20.1;
+      source activate test-environment;
     fi
-  - source activate test-environment
   - conda install setuptools  # for installation
   - conda install nose coverage  # for testing
-  - conda install sphinx numpydoc  # for docs
   - conda list
 script:
   - nosetests -v --with-coverage --cover-package=pydy
-  - cd docs
-  - make html
-  - cd ..
   - python setup.py install
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      cd docs;
+      make html;
+      cd ..;
+    fi
