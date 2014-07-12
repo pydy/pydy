@@ -502,9 +502,9 @@ class Scene(object):
 
 
         def save_constants(**kwargs):
-            self._constant_values = []
+            self.constant_values = []
             for val in kwargs.values():
-                self._constant_values.append(val)
+                self.constant_values.append(val)
 
         inter = widgets.interact(save_constants, **widget_dict)
         #shows widget..
