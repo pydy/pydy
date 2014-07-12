@@ -5,7 +5,6 @@ python:
   - 3.4
 install:
   - sudo apt-get update
-  # This saves us some downloading for this version
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       wget http://repo.continuum.io/miniconda/Miniconda-3.4.2-Linux-x86_64.sh -O miniconda.sh;
     else
@@ -19,12 +18,19 @@ install:
   - conda info -a
   # Create an environment that includes the dependency versions pinned to those
   # available in Ubuntu 14.04 LTS.
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy=1.8.1 scipy=0.13.3 sympy=0.7.4.1 cython=0.20.1 theano=0.6.0
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy=1.8.1 scipy=0.13.3 sympy=0.7.4.1 cython=0.20.1 theano=0.6.0
+    else
+      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy=1.8.1 scipy=0.13.3 sympy=0.7.4.1 cython=0.20.1
+    fi
   - source activate test-environment
+  - conda install setuptools  # for installation
   - conda install nose coverage  # for testing
   - conda install sphinx numpydoc  # for docs
   - conda list
 script:
   - nosetests -v --with-coverage --cover-package=pydy
-  - cd docs && make html && cd ..
+  - cd docs
+  - make html
+  - cd ..
   - python setup.py install
