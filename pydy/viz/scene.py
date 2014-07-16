@@ -20,6 +20,7 @@ from .light import PointLight
 __all__ = ['Scene']
 
 try:
+    import IPython
     from IPython.lib import backgroundjobs as bg
     from IPython.html import widgets
     from IPython.display import clear_output, display
@@ -377,15 +378,18 @@ class Scene(object):
             print("Copying static data.")
             shutil.copytree(src, dst)
             print("Copying Simulation data.")
-            _outfile_loc = os.path.join(os.getcwd(), 'static', 'data.json')
-            outfile = open(_outfile_loc, "w")
+            _scene_outfile_loc = os.path.join(os.getcwd(), 'static', self.scene_json_file)
+            _simulation_outfile_loc = os.path.join(os.getcwd(), 'static', self.simulation_json_file)
+            scene_outfile = open(_scene_outfile_loc, "w")
+            simulation_outfile = open(_simulation_outfile_loc, "w")
             # For static rendering, we need to define json data as a
             # JavaScript variable.
-            outfile.write('var JSONObj=')
-            outfile.write(json.dumps(self._data_dict, indent=4,
+            scene_outfile.write(json.dumps(self._scene_data_dict, indent=4,
                                     separators=(',', ': ')))
-            outfile.write(';')
-            outfile.close()
+            scene_outfile.close()
+            simulation_outfile.write(json.dumps(self._simulation_data_dict, indent=4,
+                                    separators=(',', ': ')))
+            simulation_outfile.close()
             print("To view the visualization, open {}".format(
                 os.path.join(dst, 'index.html')) +
                 " in a WebGL compliant browser.")
@@ -473,16 +477,20 @@ class Scene(object):
         
         """
         
+        if IPython:
+            print "Now opening visualization.."
+            IPython.core.display.HTML("<b> This is some crazy html</b>")
+        else:
+            print "Error occured! :("
+            raise TypeError("This method should be called from IPython \
+                             notebook only")
         #1. Copy static data to the folder where IPython
         #   Kernel is running.
         self.create_static_html()
         self._create_widgets()
+        print "Copied data, and created widgets"
         
-        if IPython:
-            IPython.core.display.HTML(filename="static/ipython_index.html")
-        else:
-            raise TypeError("This method should be called from IPython \
-                             notebook only")
+        
        
     def _create_widgets(self):
         """
