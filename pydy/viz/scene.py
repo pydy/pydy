@@ -476,19 +476,20 @@ class Scene(object):
         versions>=2.0.0
         
         """
-        
-        if IPython:
-            print "Now opening visualization.."
-            IPython.core.display.HTML("<b> This is some crazy html</b>")
-        else:
-            print "Error occured! :("
-            raise TypeError("This method should be called from IPython \
-                             notebook only")
+
         #1. Copy static data to the folder where IPython
         #   Kernel is running.
         self.create_static_html()
         self._create_widgets()
         print "Copied data, and created widgets"
+        
+        if IPython:
+            print "Now opening visualization.."
+            IPython.core.display.HTML(filename="static/index_ipython.html")
+        else:
+            print "Error occured! :("
+            raise TypeError("This method should be called from IPython \
+                             notebook only")        
         
         
        
