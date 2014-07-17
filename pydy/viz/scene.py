@@ -482,16 +482,16 @@ class Scene(object):
         self.create_static_html()
         self._create_widgets()
         print "Copied data, and created widgets"
-        
-        if IPython:
-            print "Now opening visualization.."
-            IPython.core.display.HTML(filename="static/index_ipython.html")
-        else:
-            print "Error occured! :("
-            raise TypeError("This method should be called from IPython \
-                             notebook only")        
-        
-        
+        self.container = widgets.ContainerWidget()
+        components = []
+        for i in self.widget_dict.values():
+            components.append(i)
+        #Try to couple html with other widgets with ContainerWidget
+        f = open("static/index_ipython.html")
+        a = widgets.HTMLWidget(value=f.read())
+        components.append(a)
+        self.container.children = components
+        self.container #display
        
     def _create_widgets(self):
         """
@@ -502,10 +502,10 @@ class Scene(object):
         the generate_simulation_dict method has been called
 
         """
-        widget_dict = {}
+        self.widget_dict = {}
         for variable, init_value in zip(self.constant_variables, \
                                        self.constant_values):
-            widget_dict[str(variable)] = widgets.FloatSliderWidget(min=0, 
+            self.widget_dict[str(variable)] = widgets.FloatSliderWidget(min=0, 
                                            max=init_value*100,step=init_value/10,
                                            value=init_value, desc=str(variable))
 
@@ -515,6 +515,4 @@ class Scene(object):
             for val in kwargs.values():
                 self.constant_values.append(val)
 
-        inter = widgets.interact(save_constants, **widget_dict)
-        #shows widget..
-        inter.widget
+        inter = widgets.interact(save_constants, **self.widget_dict)
