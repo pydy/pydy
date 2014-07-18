@@ -476,43 +476,23 @@ class Scene(object):
         versions>=2.0.0
         
         """
-
-        #1. Copy static data to the folder where IPython
-        #   Kernel is running.
         self.create_static_html()
-        self._create_widgets()
-        print "Copied data, and created widgets"
-        self.container = widgets.ContainerWidget()
-        components = []
-        for i in self.widget_dict.values():
-            components.append(i)
-        #Try to couple html with other widgets with ContainerWidget
-        f = open("static/index_ipython.html")
-        a = widgets.HTMLWidget(value=f.read())
-        components.append(a)
-        self.container.children = components
-        self.container #display
-       
-    def _create_widgets(self):
-        """
-        Creates the IPython FloatSlider Widgets 
-        corresponding to constants saved in 
-        self.constant_variables.
-        These method should be strictly called after
-        the generate_simulation_dict method has been called
-
-        """
-        self.widget_dict = {}
-        for variable, init_value in zip(self.constant_variables, \
-                                       self.constant_values):
-            self.widget_dict[str(variable)] = widgets.FloatSliderWidget(min=0, 
-                                           max=init_value*100,step=init_value/10,
-                                           value=init_value, desc=str(variable))
-
-
+        self._widget_dict = {}
         def save_constants(**kwargs):
+            """
+            Saves the constants
+            """
             self.constant_values = []
             for val in kwargs.values():
                 self.constant_values.append(val)
+        
+        for var, init_val in \
+            zip(self.constant_variables, self.constant_values):
+            self._widget_dict[str(var)] = widgets.FloatSliderWidget(min=0, 
+                                           max=init_val*100,step=init_val/10,
+                                           value=init_val, desc=str(var))
 
-        inter = widgets.interact(save_constants, **self.widget_dict)
+        inter = widgets.interact(save_constants, **self._widget_dict)
+        html_file = open("static/index_ipython.html")
+        html_widget = widgets.HTMLWidget(value=html_file.read())
+        display(html_widget)
