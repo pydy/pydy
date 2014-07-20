@@ -468,7 +468,10 @@ class Scene(object):
 
         except:
             self._display_from_interpreter()
-    
+
+    def _button_click(self):
+        print "button was clicked!!"
+
     def display_ipython(self):
         """
         Method to display the visualization inside the 
@@ -476,8 +479,11 @@ class Scene(object):
         versions>=2.0.0
         
         """
+
         self.create_static_html()
         self._widget_dict = {}
+        self.container = widgets.ContainerWidget()
+        components = []
         def save_constants(**kwargs):
             """
             Saves the constants
@@ -488,11 +494,21 @@ class Scene(object):
         
         for var, init_val in \
             zip(self.constant_variables, self.constant_values):
-            self._widget_dict[str(var)] = widgets.FloatSliderWidget(min=0, 
-                                           max=init_val*100,step=init_val/10,
-                                           value=init_val, desc=str(var))
+            self._widget_dict[str(var)] = widgets.FloatTextWidget(value=init_val, 
+                                                              description=str(var))
+            components.append(self._widget_dict[str(var)])
 
-        inter = widgets.interact(save_constants, **self._widget_dict)
+        button = widgets.ButtonWidget(description="Rerun Simulations")
+        def button_click(clicked):
+            self.constant_values = []    
+            for i in self._widget_dict.values():
+                self.constant_values.append(i.value)
+            clear_output()    
+
+        button.on_click(button_click)
+        components.append(button)
         html_file = open("static/index_ipython.html")
-        html_widget = widgets.HTMLWidget(value=html_file.read())
-        display(html_widget)
+        self.html_widget = widgets.HTMLWidget(value=html_file.read()%("static/" + self.scene_json_file))
+        self.container.children = components
+        display(self.container)
+        display(self.html_widget)
