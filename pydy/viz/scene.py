@@ -225,7 +225,14 @@ class Scene(object):
         if outfile_prefix is None:
             outfile_prefix = "_".join(str(datetime.datetime.now()).\
                                   split(".")[0].split(" "))
-            
+        
+        #Saving the arguments for re-running simulations
+        self.constant_variables = constant_variables
+        self.dynamic_variables = dynamic_variables
+        self.constant_values = constant_values
+        self.dynamic_values = dynamic_values
+        self.outfile_prefix = outfile_prefix
+        self.fps = fps
         constant_map = dict(zip(constant_variables, constant_values))
         constant_variables_str = [str(i) for i in constant_variables]
         constant_map_for_json = dict(zip(constant_variables_str, constant_values))
@@ -299,10 +306,6 @@ class Scene(object):
         objects in the PyDy visualizer.
         
         """
-        #Saving the arguments for re-running simulations
-        self.constant_variables = constant_variables
-        self.constant_values = constant_values
-        self.dynamic_values = dynamic_values
         self._simulation_info = {}
 
         for frame in self.visualization_frames:
@@ -503,6 +506,12 @@ class Scene(object):
             self.constant_values = []    
             for i in self._widget_dict.values():
                 self.constant_values.append(i.value)
+            self.generate_visualization_json(self.dynamic_variables,
+                                    self.constant_variables, self.dynamic_values,
+                                    self.constant_values,fps=self.fps, 
+                                    outfile_prefix=self.outfile_prefix)
+            self.remove_static_html(force=True)
+            self.create_static_html()
             clear_output()    
 
         button.on_click(button_click)
