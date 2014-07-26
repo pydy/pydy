@@ -472,9 +472,6 @@ class Scene(object):
         except:
             self._display_from_interpreter()
 
-    def _button_click(self):
-        print "button was clicked!!"
-
     def display_ipython(self):
         """
         Method to display the visualization inside the 
@@ -487,14 +484,6 @@ class Scene(object):
         self._widget_dict = {}
         self.container = widgets.ContainerWidget()
         components = []
-        def save_constants(**kwargs):
-            """
-            Saves the constants
-            """
-            self.constant_values = []
-            for val in kwargs.values():
-                self.constant_values.append(val)
-        
         for var, init_val in \
             zip(self.constant_variables, self.constant_values):
             self._widget_dict[str(var)] = widgets.FloatTextWidget(value=init_val, 
@@ -516,8 +505,8 @@ class Scene(object):
 
         button.on_click(button_click)
         components.append(button)
-        html_file = open("static/index_ipython.html")
-        self.html_widget = widgets.HTMLWidget(value=html_file.read()%("static/" + self.scene_json_file))
+        html_file = open("static/index.html")
+        self.html_widget = widgets.HTMLWidget(value=html_file.read().format(load_url='static/' + self.scene_json_file))
         self.container.children = components
         display(self.container)
         display(self.html_widget)
