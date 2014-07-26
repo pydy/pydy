@@ -404,21 +404,20 @@ class Scene(object):
             directory.
 
         """
-        if os.path.exists('static'):
-            if force is False:
-                ans = raw_input("Are you sure you would like to delete the " +
+        if !os.path.exists('static'):
+            print "All Done!"
+            return
+        if !force:
+            ans = raw_input("Are you sure you would like to delete the " +
                                 "'static' directory? [y|n]\n")
-                if ans == 'y':
-                    force = True
-
-            if force is True:
-                print 'Cleaning up static directory..'
-                distutils.dir_util.remove_tree(os.path.join(os.getcwd(),
+            if ans == 'y':
+                force = True
+        if force:
+            distutils.dir_util.remove_tree(os.path.join(os.getcwd(),
                                                             'static'))
-                print 'All Done!'
-            else:
-                print('Aborted.')
-
+            print "All Done!"
+        else:
+            print "aborted!"    
 
     def display(self):
         """
