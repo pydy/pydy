@@ -292,3 +292,35 @@ Related Packages
 .. _pydy-code-gen: https://pypi.python.org/pypi/pydy-code-gen
 .. _pydy-viz: https://pypi.python.org/pypi/pydy-viz
 .. _instructions: http://www.scipy.org/install.html
+
+Release Notes
+=============
+
+0.2.1
+-----
+
+- Unbundled unecessary files from tar ball.
+
+0.2.0
+-----
+
+- Merged pydy_viz, pydy_code_gen, and pydy_examples into the source tree.
+- Added a method to output "static" visualizations from a Scene object.
+- Dropped the matplotlib dependency and now only three.js colors are valid.
+- Added joint torques to the n_pendulum model.
+- Added basic examples for codegen and viz.
+- Graceful fail if theano or cython are not present.
+- Shapes can now use sympy symbols for geometric dimensions.
+
+Citation
+========
+
+If you make use of the PyDy toolchain in you work or research please cite us in
+your publications or on the web. This citation can be used:
+
+   Gilbert Gede, Dale L Peterson, Angadh S Nanjangud, Jason K Moore, and Mont
+   Hubbard, "Constrained Multibody Dynamics With Python: From Symbolic Equation
+   Generation to Publication", ASME 2013 International Design Engineering
+   Technical Conferences and Computers and Information in Engineering
+   Conference, 2013, `10.1115/DETC2013-13470
+   <http://dx.doi.org/10.1115/DETC2013-13470>`_.

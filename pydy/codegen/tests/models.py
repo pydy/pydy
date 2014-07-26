@@ -94,9 +94,13 @@ def generate_mass_spring_damper_equations_of_motion(external_force=True):
             specified)
 
 
-def generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=True):
-    """Returns the implicit form of the symbolic equations of motion for a
-    2D n-link pendulum on a sliding cart under the influence of gravity.
+def generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=True,
+                                                         joint_torques=False):
+    """Returns the the symbolic first order equations of motion for a 2D
+    n-link pendulum on a sliding cart under the influence of gravity in this
+    form:
+
+        M(x) x(t) = F(x, u, t)
 
     Parameters
     ----------
@@ -104,6 +108,9 @@ def generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=True):
         The number of links in the pendulum.
     cart_force : boolean, default=True
         If true an external specified lateral force is applied to the cart.
+    joint_torques : boolean, default=False
+        If true joint torques will be added as specified inputs at each
+        joint.
 
     Returns
     -------
@@ -121,7 +128,8 @@ def generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=True):
         A sequence of all the dynamic symbols, i.e. functions of time, which
         describe the generalized speeds of the system.
     specfied : list
-
+        A sequence of all the dynamic symbols, i.e. functions of time, which
+        describe the specified inputs to the system.
 
     Notes
     -----
@@ -130,13 +138,23 @@ def generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=True):
 
     M x' = F, where x = [u0, ..., un+1, q0, ..., qn+1]
 
+    The joint angles are all defined relative to the ground where the x axis
+    defines the ground line and the y axis points up. The joint torques are
+    applied between each adjacent link and the between the cart and the
+    lower link where a positive torque corresponds to positive angle.
+
     """
+    if n <= 0:
+        raise ValueError('The number of links must be a positive integer.')
 
-    q = me.dynamicsymbols('q:' + str(n + 1))
-    u = me.dynamicsymbols('u:' + str(n + 1))
+    q = me.dynamicsymbols('q:{}'.format(n + 1))
+    u = me.dynamicsymbols('u:{}'.format(n + 1))
 
-    m = symbols('m:' + str(n + 1))
-    l = symbols('l:' + str(n))
+    if joint_torques is True:
+        T = me.dynamicsymbols('T1:{}'.format(n + 1))
+
+    m = symbols('m:{}'.format(n + 1))
+    l = symbols('l:{}'.format(n))
     g, t = symbols('g t')
 
     I = me.ReferenceFrame('I')
@@ -154,12 +172,17 @@ def generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=True):
     forces = [(P0, -m[0] * g * I.y)]
     kindiffs = [q[0].diff(t) - u[0]]
 
+    if cart_force is True or joint_torques is True:
+        specified = []
+    else:
+        specified = None
+
     for i in range(n):
-        Bi = I.orientnew('B' + str(i), 'Axis', [q[i + 1], I.z])
+        Bi = I.orientnew('B{}'.format(i), 'Axis', [q[i + 1], I.z])
         Bi.set_ang_vel(I, u[i + 1] * I.z)
         frames.append(Bi)
 
-        Pi = points[-1].locatenew('P' + str(i + 1), l[i] * Bi.x)
+        Pi = points[-1].locatenew('P{}'.format(i + 1), l[i] * Bi.x)
         Pi.v2pt_theory(points[-1], I, Bi)
         points.append(Pi)
 
@@ -168,14 +191,24 @@ def generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=True):
 
         forces.append((Pi, -m[i + 1] * g * I.y))
 
+        if joint_torques is True:
+
+            specified.append(T[i])
+
+            if i == 0:
+                forces.append((I, -T[i] * I.z))
+
+            if i == n - 1:
+                forces.append((Bi, T[i] * I.z))
+            else:
+                forces.append((Bi, T[i] * I.z - T[i + 1] * I.z))
+
         kindiffs.append(q[i + 1].diff(t) - u[i + 1])
 
     if cart_force is True:
         F = me.dynamicsymbols('F')
         forces.append((P0, F * I.x))
-        specified = [F]
-    else:
-        specified = None
+        specified.append(F)
 
     kane = me.KanesMethod(I, q_ind=q, u_ind=u, kd_eqs=kindiffs)
     kane.kanes_equations(forces, particles)
