@@ -14,7 +14,7 @@ from sympy.physics.mechanics import ReferenceFrame, Point
 
 # local
 from .camera import PerspectiveCamera
-from .server import Server
+from .server import run_server
 from .light import PointLight
 
 __all__ = ['Scene']
@@ -425,28 +425,6 @@ class Scene(object):
             else:
                 print('Aborted.')
 
-    def _display_from_interpreter(self):
-        server = Server(json=self.saved_json_file)
-        print '''Your visualization is being rendered at
-                 http://localhost:%s/
-                 Visit the url in your webgl compatible browser
-                 to see the animation in full glory''' % (server.port)
-        server.run()
-
-    def _display_from_ipython(self):
-        # This is a hack using IPython BackgroundJobs
-        # module. Once we have an IPython2.0 release
-        # It can be modified to display visualizations
-        # in IPython output cell itself.
-        server = Server(json=self.saved_json_file)
-        jobs = bg.BackgroundJobManager()
-        jobs.new('server.run()')
-
-        print '''
-        Your visualization is being rendered at
-        http://localhost:%s/
-        Opening the visualization in new tab...'''%(server.port)
-        webbrowser.open("http://localhost:%s/"%server.port)
 
     def display(self):
         """
@@ -463,15 +441,9 @@ class Scene(object):
         calling this method
 
         """
-        try:
-            # If it detects any IPython frontend
-            # (qtconsole, interpreter or notebook)
-            config = get_ipython().config
-            self._display_from_ipython()
-
-        except:
-            self._display_from_interpreter()
-
+        self.create_static_html()
+        run_server(scene_file=self.scene_json_file)
+        
     def display_ipython(self):
         """
         Method to display the visualization inside the 
@@ -505,7 +477,7 @@ class Scene(object):
 
         button.on_click(button_click)
         components.append(button)
-        html_file = open("static/index.html")
+        html_file = open("static/index_ipython.html")
         self.html_widget = widgets.HTMLWidget(value=html_file.read().format(load_url='static/' + self.scene_json_file))
         self.container.children = components
         display(self.container)

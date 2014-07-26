@@ -35,4 +35,3 @@ __all__.extend(light.__all__)
 
 import server
 from server import *
-__all__.extend(server.__all__)
