@@ -8,7 +8,7 @@ import distutils
 import distutils.dir_util
 import webbrowser
 import datetime
-import shutil
+
 # external
 from sympy.physics.mechanics import ReferenceFrame, Point
 
@@ -341,7 +341,7 @@ class Scene(object):
 
         return self._simulation_info    
         
-    def create_static_html(self, overwrite=False):
+    def create_static_html(self, overwrite=False,silent=False):
         """Creates a directory named ``static`` in the current working
         directory which contains all of the HTML, CSS, and Javascript files
         required to run the visualization. Simply open ``static/index.html``
@@ -355,12 +355,12 @@ class Scene(object):
 
         Parameters
         ----------
-        dir_name : string
-            A valid directory name.
         overwrite : boolean, optional, default=False
-            If true, the directory named ``static`` in the current working
+            If True, the directory named ``static`` in the current working
             directory will be overwritten.
-
+        Silent : boolean, optional, default=False
+            If True, no messages will be displayed to 
+            STDOUT            
         """
 
         dst = os.path.join(os.getcwd(), 'static')
@@ -369,35 +369,29 @@ class Scene(object):
             ans = raw_input("The 'static' directory already exists. Would "
                             + "you like to overwrite the contents? [y|n]\n")
             if ans == 'y':
-                shutil.rmtree(dst)
-                overwrite = True
-        elif os.path.exists(dst) and overwrite is True:
-            shutil.rmtree(dst)
-        elif not os.path.exists(dst):
-            overwrite = True
+                distutils.dir_util.remove_tree(dst)
+            else:
+                if not silent: print "Aborted!"
+                return
+        
+        src = os.path.join(os.path.dirname(__file__), 'static')
+        if not silent: print("Copying static data.")
+        distutils.dir_util.copy_tree(src, dst)
+        if not silent: print("Copying Simulation data.")
+        _scene_outfile_loc = os.path.join(os.getcwd(), 'static', self.scene_json_file)
+        _simulation_outfile_loc = os.path.join(os.getcwd(), 'static', self.simulation_json_file)
+        scene_outfile = open(_scene_outfile_loc, "w")
+        simulation_outfile = open(_simulation_outfile_loc, "w")
 
-        if overwrite is True:
-            src = os.path.join(os.path.dirname(__file__), 'static')
-            print("Copying static data.")
-            shutil.copytree(src, dst)
-            print("Copying Simulation data.")
-            _scene_outfile_loc = os.path.join(os.getcwd(), 'static', self.scene_json_file)
-            _simulation_outfile_loc = os.path.join(os.getcwd(), 'static', self.simulation_json_file)
-            scene_outfile = open(_scene_outfile_loc, "w")
-            simulation_outfile = open(_simulation_outfile_loc, "w")
-            # For static rendering, we need to define json data as a
-            # JavaScript variable.
-            scene_outfile.write(json.dumps(self._scene_data_dict, indent=4,
-                                    separators=(',', ': ')))
-            scene_outfile.close()
-            simulation_outfile.write(json.dumps(self._simulation_data_dict, indent=4,
-                                    separators=(',', ': ')))
-            simulation_outfile.close()
-            print("To view the visualization, open {}".format(
-                os.path.join(dst, 'index.html')) +
-                " in a WebGL compliant browser.")
-        else:
-            print('Aborted.')
+        scene_outfile.write(json.dumps(self._scene_data_dict, indent=4,
+                                separators=(',', ': ')))
+        scene_outfile.close()
+        simulation_outfile.write(json.dumps(self._simulation_data_dict, indent=4,
+                                separators=(',', ': ')))
+        simulation_outfile.close()
+        if not silent: print("To view the visualization, open {}".format(
+                            os.path.join(dst, 'index.html')) +
+                            " in a WebGL compliant browser.")
 
     def remove_static_html(self, force=False):
         """Removes the ``static`` directory from the current working
@@ -471,10 +465,8 @@ class Scene(object):
                                     self.constant_variables, self.dynamic_values,
                                     self.constant_values,fps=self.fps, 
                                     outfile_prefix=self.outfile_prefix)
-            self.remove_static_html(force=True)
-            self.create_static_html()
-            clear_output()    
-
+            self.create_static_html(overwrite=True, silent=True)
+        
         button.on_click(button_click)
         components.append(button)
         html_file = open("static/index_ipython.html")
