@@ -50,7 +50,7 @@
 
   
   <script type="text/javascript">
-    (function() {
+(function() {
       jasmine.getFixtures().fixturesPath = "sample_data"
       if (navigator.userAgent.indexOf("PhantomJS") > 0) {
       var consoleReporter = new jasmineRequire.ConsoleReporter()({
@@ -65,10 +65,10 @@
         }
     });
 
-  jasmine.getEnv().addReporter(consoleReporter);
-}
-
-    })();
+    jasmine.getEnv().addReporter(consoleReporter);
+  
+   }
+})();
   </script>
 
 </head>
@@ -76,6 +76,7 @@
 <body>
 </body>
 </html>
+
 
 
 

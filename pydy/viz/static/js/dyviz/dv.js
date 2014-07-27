@@ -22,6 +22,7 @@ DynamicsVisualizer = Class.create({
                 "Please use a latest version of Chrome or Firefox");
             return false;
         }
+        return true;
     },
 
 
