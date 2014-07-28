@@ -4,6 +4,7 @@
 from __future__ import division
 import os
 import json
+import shutil
 import distutils
 import distutils.dir_util
 import webbrowser
@@ -341,7 +342,8 @@ class Scene(object):
 
         return self._simulation_info    
         
-    def create_static_html(self, overwrite=False,silent=False):
+    def create_static_html(self, overwrite=False, silent=False):
+
         """Creates a directory named ``static`` in the current working
         directory which contains all of the HTML, CSS, and Javascript files
         required to run the visualization. Simply open ``static/index.html``
