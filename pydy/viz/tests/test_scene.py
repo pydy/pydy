@@ -48,13 +48,14 @@ def test_create_static_html():
     viz_frame = VisualizationFrame(ceiling, block, sphere)
     scene = Scene(ceiling, origin, viz_frame)
     scene.generate_visualization_json([position, speed], list(constants), y,
-                                      args['constants'])
+                                      args['constants'], outfile_prefix="test")
 
     # test static dir creation
     scene.create_static_html(overwrite=True)
     assert os.path.exists('static')
     assert os.path.exists('static/index.html')
-    assert os.path.exists('static/data.json')
+    assert os.path.exists('static/test_scene_desc.json')
+    assert os.path.exists('static/test_simulation_data.json')
 
     # test static dir deletion
     scene.remove_static_html(force=True)
