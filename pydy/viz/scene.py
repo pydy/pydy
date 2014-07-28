@@ -404,11 +404,11 @@ class Scene(object):
             directory.
 
         """
-        if !os.path.exists('static'):
+        if not os.path.exists('static'):
             print "All Done!"
             return
 
-        if !force:
+        if not force:
             ans = raw_input("Are you sure you would like to delete the " +
                                 "'static' directory? [y|n]\n")
             if ans == 'y':
