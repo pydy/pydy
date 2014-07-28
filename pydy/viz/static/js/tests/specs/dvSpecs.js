@@ -1,4 +1,3 @@
-
 describe("DynamicsVisualizer's main class should  ", function() {
     it("have an initializer which returns false, when non-supported browser is used", function() {
         var browserState = Modernizr.canvas && Modernizr.webgl;
@@ -27,9 +26,40 @@ describe("DynamicsVisualizer's main class should  ", function() {
 });
 
 describe("DynamicsVisualizer's UI ", function() {
+    beforeEach(function() {
+        loadFixtures("uiFixtures.html");
+    });
+
     it("should have Play Animation button disabled, initially!", function() {
-        loadFixtures("uiFixtures.html")
         expect(jQuery("#play-animation")).toBeMatchedBy('.disabled');
     });
 
+    it("should have Play Animation button disabled, initially!", function() {
+        expect(jQuery("#play-animation")).toBeMatchedBy('.disabled');
+    });
+
+    it("should have Stop Animation button hidden, initially!", function() {
+        expect(jQuery("#stop-animation")).toBeHidden();
+    });
+});
+
+describe("After activating UI controls,", function() {
+    beforeEach(function() {
+        loadFixtures("uiFixtures.html");
+        DynamicsVisualizer.init();
+        DynamicsVisualizer.activateUIControls();
+    });
+
+    it("On clicking Load Simulation button, its click function should be triggered", function() {
+        var spyEvent = spyOnEvent('#simulation-load', 'click')
+        jQuery("#simulation-load").click()
+        expect('click').toHaveBeenTriggeredOn('#simulation-load');
+    });
+    it("On clicking Load Simulation button, Scene File path should be updated", function() {
+        jQuery("#simulation-load").click()
+        console.log(jQuery("#json-input").val());
+        expect(DynamicsVisualizer.sceneFilePath).toEqual('#simulation-load');
+
+    });
+    
 });
