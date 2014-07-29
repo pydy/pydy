@@ -9,7 +9,7 @@ from sympy import symbols
 import sympy.physics.mechanics as me
 
 
-def generate_mass_spring_damper_equations_of_motion(external_force=True):
+def generate_mass_spring_damper_equations_of_motion(external_force=True, kane=False):
     """Returns the symbolic equations of motion and associated variables for a
     simple one degree of freedom mass, spring, damper system with gravity
     and an optional external specified force.
@@ -90,8 +90,11 @@ def generate_mass_spring_damper_equations_of_motion(external_force=True):
     else:
         specified = None
 
-    return (mass_matrix, forcing_vector, constants, coordinates, speeds,
-            specified)
+    if kane:
+        return kane
+    else:
+        return (mass_matrix, forcing_vector, constants, coordinates, speeds,
+                specified)
 
 
 def generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=True,
