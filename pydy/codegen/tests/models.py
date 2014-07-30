@@ -9,7 +9,8 @@ from sympy import symbols
 import sympy.physics.mechanics as me
 
 
-def generate_mass_spring_damper_equations_of_motion(external_force=True, kane=False):
+def generate_mass_spring_damper_equations_of_motion(external_force=True,
+        only_return_kane=False):
     """Returns the symbolic equations of motion and associated variables for a
     simple one degree of freedom mass, spring, damper system with gravity
     and an optional external specified force.
@@ -26,8 +27,16 @@ def generate_mass_spring_damper_equations_of_motion(external_force=True, kane=Fa
         | F
         V
 
+    Parameters
+    ----------
+    only_return_kane : bool, optional (default: False)
+        If True, this method only returns the KanesMethod object.
+
     Returns
     -------
+    kane : KanesMethod
+        If the keyword argument `only_return_kane` is True, this is the only
+        object returned.
     mass_matrix : sympy.MutableMatrix, shape(2,2)
         The symbolic mass matrix of the system which are linear in
         derivatives of the states.
@@ -90,7 +99,7 @@ def generate_mass_spring_damper_equations_of_motion(external_force=True, kane=Fa
     else:
         specified = None
 
-    if kane:
+    if only_return_kane:
         return kane
     else:
         return (mass_matrix, forcing_vector, constants, coordinates, speeds,
