@@ -20,9 +20,7 @@ class TestSystem():
                                      [2.0, 1.5, 0.5, 9.8]))
         self.sys = System(self.kane,
                           code_gen_backend='lambdify',
-                          ode_solver=odeint,
-                          specified_symbols=(self.specified_symbol,),
-                          specified_values=np.ones(1),
+                          specifieds={self.specified_symbol: np.ones(1)},
                           initial_conditions=np.zeros(2),
                           constants=self.constant_map)
 
@@ -30,10 +28,13 @@ class TestSystem():
 
         sys = System(self.kane)
 
+        assert sys.rhs == None
         assert sys.method is self.kane
         assert sys.code_gen_backend == 'lambdify'
-        assert sys.specified_symbols is dynamicsymbols('F')
-        testing.assert_allclose(sys.specified_values, np.zeros(1))
+        assert sys.ode_solver is odeint
+        assert len(sys.specifieds) == 1
+        assert sys.specifieds.keys()[0] is dynamicsymbols('F')
+        testing.assert_allclose(sys.specifieds.values(), np.zeros(1))
         testing.assert_allclose(sys.initial_conditions, np.zeros(2))
         assert sys.constants == dict(zip(symbols('m, k, c, g'),
                                      [1.0, 1.0, 1.0, 1.0]))
@@ -52,6 +53,13 @@ class TestSystem():
         testing.assert_allclose(sys.specified_values, np.ones(1))
         testing.assert_allclose(sys.initial_conditions, np.zeros(2))
         assert sys.constants == self.constant_map
+
+    def test_constants(self):
+
+        constants_map = {symbol('m'): 3.0, symbol('c'): 4.5}
+        sys = System(self.kane, constants=constants_map)
+        assert sys.constants_map == constants_map
+
 
         sys.backend == 'cython'
 
@@ -114,3 +122,13 @@ class TestSystem():
 
     def test_integrate(self):
 
+    """
+    method : sympy.physics.mechanics.KanesMethod or
+                sympy.physics.mechanics.LagrangesMethod
+        The method used to generate the equations of motion.
+    constants : dict, optional (default: all 1.0)
+    specifieds : dict, optional (default: all 0)
+    code_gen_backend : str, optional (default: 'lambdify')
+    ode_solver : function, optional (default: scipy.integrate.odeint)
+    initial_conditions : dict, optional (default: all zero)
+        """
