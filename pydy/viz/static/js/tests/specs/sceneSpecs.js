@@ -5,7 +5,6 @@
  *  - DynamicsVisualizer.Scene._addTrackBallControls();
 */ 
 
-
 describe("DynamicsVisualizer's Scene class should  ", function() {
 
 	beforeEach(function(){
