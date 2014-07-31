@@ -46,7 +46,7 @@ describe("DynamicsVisualizer's UI ", function() {
 describe("After activating UI controls,", function() {
     beforeEach(function() {
         loadFixtures("uiFixtures.html");
-        DynamicsVisualizer.init();
+        //DynamicsVisualizer.init();
         DynamicsVisualizer.activateUIControls();
     });
 
@@ -56,10 +56,8 @@ describe("After activating UI controls,", function() {
         expect('click').toHaveBeenTriggeredOn('#simulation-load');
     });
     it("On clicking Load Simulation button, Scene File path should be updated", function() {
-        jQuery("#simulation-load").click()
+        jQuery("#simulation-load").click();
         console.log(jQuery("#json-input").val());
-        expect(DynamicsVisualizer.sceneFilePath).toEqual('#simulation-load');
-
+        expect(DynamicsVisualizer.sceneFilePath).toEqual('sample_data/scene_desc.json');
     });
-    
 });
