@@ -39,7 +39,7 @@ def test_create_static_html():
     # integrate eoms
     evaluate_ode = generate_ode_function(*system)
     x0 = array([0.1, -1.0])
-    args = {'constants': array([1.0, 1.0, 0.2, 9.8])}
+    args = {'constants': dict(zip(constants, array([1.0, 1.0, 0.2, 9.8])))}
     t = linspace(0.0, 10.0, 100)
     y = odeint(evaluate_ode, x0, t, args=(args,))
 

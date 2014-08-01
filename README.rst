@@ -252,8 +252,8 @@ force::
    from scipy.integrate import odeint
 
    x0 = array([0.1, -1.0])
-   args = {'constants': array([1.0, 1.0, 0.2, 9.8]),
-           'specified': lambda x, t: sin(t)}
+   args = {'constants': {mass: 1.0, stiffness: 1.0, damping: 0.2, gravity: 9.8},
+           'specified': {force: lambda x, t: sin(t)}}
    t = linspace(0.0, 10.0, 1000)
 
    y = odeint(evaluate_ode, x0, t, args=(args,))
