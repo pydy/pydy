@@ -48,19 +48,25 @@ class TestCythonGenerator():
         for f in files:
             os.remove(f)
 
+
 class TestCode():
 
     def test_generate_ode_function(self):
 
+        system = generate_mass_spring_damper_equations_of_motion()
+        mass_matrix = system[0]
+        forcing_vector = system[1]
+        constants = system[2]
+        coordinates = system[3]
+        speeds = system[4]
+        specified = system[5]
+
         m, k, c, g, F, x, v = np.random.random(7)
 
-        args = {'constants': np.array([m, k, c, g]),
-                'specified': np.array([F])}
+        args = {'constants': dict(zip(constants, [m, k, c, g])),
+                'specified': {specified[0]: F}}
 
         states = np.array([x, v])
-
-        mass_matrix, forcing_vector, constants, coordinates, speeds, specified = \
-            generate_mass_spring_damper_equations_of_motion()
 
         expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x + F)])
 
@@ -75,7 +81,7 @@ class TestCode():
             testing.assert_allclose(dx, expected_dx)
 
         # Now try it with a function defining the specified quantities.
-        args['specified'] = lambda x, t: np.sin(t)
+        args['specified'] = {specified[0]: lambda x, t: np.sin(t)}
 
         t = 14.345
 

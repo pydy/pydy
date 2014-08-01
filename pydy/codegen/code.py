@@ -10,6 +10,7 @@ from itertools import chain
 # external libraries
 import numpy as np
 from sympy import lambdify, numbered_symbols, cse, symbols
+from sympy.core.function import UndefinedFunction
 from sympy.printing.ccode import CCodePrinter
 try:
     import theano
@@ -405,6 +406,10 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
         # support)
         raise NotImplementedError('The {} code generation is not implemented'.format(generator))
 
+    def list_syms(ident, syms):
+        identation = ' ' * ident
+        return identation + '- ' + ('\n' + identation + '- ').join([str(s) for s in syms])
+
     def evaluate_ode(x, t, args):
         """Returns the derivatives of the states, i.e. numerically evaluates
         the right hand side of the first order differential equation(s).
@@ -415,17 +420,29 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
         ----------
         x : ndarray, shape({num_states},)
             The current state vector:
-                {state_list}
+{state_list}
         t : float
             The current time.
         args : dictionary
-            constants : ndarray, shape({num_constants},)
-                {constant_list}
-            specified : ndarray, shape({num_specified},) or a function
-                If this is a function it must be of the form f(x, t), where
-                x is the current state vector and t is the current time and
-                it must return an ndarray of the correct shape.
-                {specified_list}
+            constants : dictionary, len({num_constants})
+                A dictionary that maps the constant symbols to floats. The
+                dictionary must contain these keys:
+{constant_list}
+            specified : dictionary
+                A dictionary that maps the specified functions of time to
+                floats, ndarrays, or functions that produce ndarrays. The
+                keys can be a single specified symbolic function of time or
+                a tuple of symbols.  The total number of symbols must be
+                equal to {num_specified}. If the value is a function it must
+                be of the form f(x, t), where x is the current state vector
+                ndarray and t is the current time float and it must return
+                an ndarray of the correct shape. For example:
+                    args['specified'] = {{a: 1.0,
+                                         (d, b) : np.array([1.0, 2.0]),
+                                         (e, f) : lambda x, t: np.array(x[0], x[1]),
+                                         c: lambda x, t: np.array(x[2])}}
+                The dictionary must contian these functions of time:
+{specified_list}
 
         Returns
         -------
@@ -434,24 +451,35 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
 
         """
 
-        segmented = [args['constants'],
+        # TODO : It would be nice if the user could pass in empty arrays to
+        # be filled instead of creating a new array each time this function
+        # is called.
+
+        # TODO : Ideally this dictionary parsing wouldn't be inside this rhs
+        # function. Most of it can be moved up on level. This would save
+        # computation time.
+
+        segmented = [np.array([args['constants'][c] for c in constants]),
                      x[:len(coordinates)],
                      x[len(coordinates):]]
 
         if specified is not None:
-            try:
-                sp_val = args['specified'](x, t)
-            except TypeError:  # not callable
-                # If not callable, then it should be a float or ndarray.
-                sp_val = args['specified']
 
-            # If the value is just a float, then convert to a 1D array.
-            try:
-                len(sp_val)
-            except TypeError:
-                sp_val = np.asarray([sp_val])
+            specified_values = np.zeros(len(specified))
 
-            segmented.append(sp_val)
+            for k, v in args['specified'].items():
+                # TODO : Not sure if this is the best check here.
+                if isinstance(type(k), UndefinedFunction):
+                    k = (k,)
+                idx = [specified.index(symmy) for symmy in k]
+                try:
+                    specified_values[idx] = v(x, t)
+                except TypeError:  # not callable
+                    # If not callable, then it should be a float, ndarray,
+                    # or indexable.
+                    specified_values[idx] = v
+
+            segmented.append(specified_values)
 
         mass_matrix_values, forcing_vector_values = \
             mass_forcing_func(*segmented)
@@ -468,18 +496,16 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
         return dx
 
     template_values = {'num_states': len(coordinates + speeds),
-                       'state_list': ', '.join([str(s) for s in coordinates
-                                                + speeds]),
+                       'state_list': list_syms(16, coordinates + speeds),
                        'num_constants': len(constants),
-                       'constant_list': ', '.join([str(c) for c in constants]),
+                       'constant_list': list_syms(20, constants),
                        'num_specified': '0',
                        'specified_list': '',
                        }
 
     if specified is not None:
         template_values['num_specified'] = len(specified)
-        template_values['specified_list'] = ', '.join([str(s) for s in
-                                                       specified])
+        template_values['specified_list'] = list_syms(20, specified)
 
     evaluate_ode.__doc__ = evaluate_ode.__doc__.format(**template_values)
 
