@@ -12,7 +12,8 @@ from numpy import testing
 
 # local libraries
 from ..code import generate_ode_function, CythonGenerator
-from .models import generate_mass_spring_damper_equations_of_motion
+from .models import (generate_mass_spring_damper_equations_of_motion,
+                     generate_n_link_pendulum_on_cart_equations_of_motion)
 
 
 class TestCythonGenerator():
@@ -50,6 +51,41 @@ class TestCythonGenerator():
 
 
 class TestCode():
+
+    def test_rhs_args(self):
+
+        sys = generate_n_link_pendulum_on_cart_equations_of_motion(3,
+                                                                   True,
+                                                                   True)
+        constants = sys[2]
+        coordinates = sys[3]
+        speeds = sys[4]
+        specified = sys[5]
+
+        rhs = generate_ode_function(*sys)
+
+        x = np.array(np.random.random(len(coordinates + speeds)))
+
+        args = {'constants': {k: 1.0 for k in constants}}
+
+        args['specified'] = dict(zip(specified, [1.0, 2.0, 3.0, 4.0]))
+
+        xd_01 = rhs(x, 0.0, args)
+
+        args['specified'] = {tuple(specified): lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])}
+
+        xd_02 = rhs(x, 0.0, args)
+
+        # There are four specified inputs available.
+        args['specified'] = {specified[0]: lambda x, t: np.ones(1),
+                             (specified[3], specified[1]): lambda x, t: np.array([4.0, 2.0]),
+                             specified[2]: 3.0 * np.ones(1)}
+
+        xd_03 = rhs(x, 0.0, args)
+
+        testing.assert_allclose(xd_01, xd_02)
+        testing.assert_allclose(xd_01, xd_03)
+
 
     def test_generate_ode_function(self):
 
