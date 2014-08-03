@@ -74,11 +74,11 @@ class System(object):
 
     @property
     def coordinates(self):
-        return self.method._q
+        return self.eom_method._q
 
     @property
-    def sppeds(self):
-        return self.method._u
+    def speeds(self):
+        return self.eom_method._u
 
     @property
     def states(self):
@@ -86,7 +86,7 @@ class System(object):
         evaluate_ode_function).
 
         """
-        return self.method._q + self.method._u
+        return self.coordinates + self.speeds
 
     @property
     def eom_method(self):
@@ -172,9 +172,9 @@ class System(object):
         if symbol not in all_symbols:
             raise ValueError("Symbol {} is not a 'specified' symbol.".format(k))
 
-    def _assert_symbol_appears_multiple_times(self, symbol, specifieds):
-        if symbol in specifieds:
-            raise ValueError("Symbol {} appears in {} more than once.".format(
+    def _assert_symbol_appears_multiple_times(self, symbol, symbols_so_far):
+        if symbol in symbols_so_far:
+            raise ValueError("Symbol {} appears more than once.".format(
                 symbol, specifieds))
 
     def _check_specifieds(self, specifieds):
@@ -191,24 +191,14 @@ class System(object):
             else:
                 self._assert_is_specified_symbol(k, symbols)
 
-            # Length of the numerical values is same as number of symbols.
-            if hasattr(v, '__call__'):
-                # How do we reliably check the output size of the 
-                # function? Do we call the function with test inputs? That is
-                # not reliable... My vote is that we just don't do the check.
-                pass
-            else:
-                if len(k) != len(v):
-                    raise ValueError("{} is not the same length as {}".format(
-                        k, v))
-
             # Each specified symbol can appear only once.
             if isinstance(k, tuple):
                 for ki in k:
-                    self._assert_symbol_appears_multiple_times(ki, specifieds)
+                    self._assert_symbol_appears_multiple_times(ki,
+                            symbols_so_far)
                     symbols_so_far.append(ki)
             else:
-                self._assert_symbol_appears_multiple_times(ki, specifieds)
+                self._assert_symbol_appears_multiple_times(k, symbols_so_far)
                 symbols_so_far.append(k)
 
     def _symbol_is_in_specifieds_dict(self, symbol, specifieds_dict):
@@ -360,7 +350,7 @@ class System(object):
 
     def _Kane_inlist_insyms(self):
         """TODO temporary."""
-        uaux = self._eom_method._uaux
+        uaux = self.eom_method._uaux
         uauxdot = [diff(i, t) for i in uaux]
         # dictionary of auxiliary speeds & derivatives which are equal to zero
         subdict = dict(
@@ -368,9 +358,9 @@ class System(object):
 
         # Checking for dynamic symbols outside the dynamic differential
         # equations; throws error if there is.
-        insyms = set(self._eom_method._q + self._eom_method._qdot +
-                self._eom_method._u + self._eom_method._udot + uaux + uauxdot)
-        inlist = self._eom_method._f_d.subs(subdict)
+        insyms = set(self.eom_method._q + self.eom_method._qdot +
+                self.eom_method._u + self.eom_method._udot + uaux + uauxdot)
+        inlist = self.eom_method._f_d.subs(subdict)
         return inlist, insyms
 
     def _Kane_undefined_dynamicsymbols(self):
@@ -381,7 +371,7 @@ class System(object):
         interface for obtaining these quantities.
 
         """
-        return list(self._eom_method._find_dynamicsymbols(
+        return list(self.eom_method._find_dynamicsymbols(
             *self._Kane_inlist_insyms()))
 
     def _Kane_constant_symbols(self):
@@ -393,7 +383,7 @@ class System(object):
         TODO temporary.
 
         """
-        constants = list(self._eom_method._find_othersymbols(
+        constants = list(self.eom_method._find_othersymbols(
             *self._Kane_inlist_insyms()))
         constants.remove(symbols('t'))
         return constants
