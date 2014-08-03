@@ -25,6 +25,9 @@ class TestSystem():
                           specifieds={self.specified_symbol: np.ones(1)},
                           constants=self.constant_map)
 
+        self.kane_nlink = n_link_cart(3, cart_force=True, joint_torques=True,
+                only_return_kane=True)
+
     def test_init(self):
 
         # Check defaults for most attributes.
@@ -155,9 +158,7 @@ class TestSystem():
 
         # Complex error-checking when using property as a dict.
         # -----------------------------------------------------
-        km = n_link_cart(3, cart_force=True, joint_torques=True,
-                only_return_kane=True)
-        sys = System(km)
+        sys = System(self.kane_nlink)
         spec_syms = sys.specifieds.keys()
         times = np.linspace(0, 0.5, 10)
         sys.specifieds = {spec_syms[0]: lambda x, t: np.ones(t),
@@ -169,9 +170,7 @@ class TestSystem():
 
         sys.specifieds[(spec_syms[0], spec_syms[3])] = 5.8
 
-        km = n_link_cart(3, cart_force=True, joint_torques=True,
-                only_return_kane=True)
-        sys = System(km)
+        sys = System(self.kane_nlink)
         # This puts too many entries in the dict.
         sys.specifieds[(spec_syms[0], spec_syms[3])] = 5.8
         testing.assert_raises(ValueError, sys.integrate, times)
@@ -261,8 +260,7 @@ class TestSystem():
 
         # n-link cart: play with specifieds.
         # ----------------------------------
-        km = n_link_cart(3, cart_force=True, joint_torques=True, only_return_kane=True)
-        sys = System(km)
+        sys = System(self.kane_nlink)
         spec_syms = sys.specifieds.keys()
         rhs = sys.generate_ode_function()
         x = np.array(np.random.random(len(self.sys.states)))

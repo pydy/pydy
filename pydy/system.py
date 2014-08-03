@@ -1,10 +1,11 @@
 
 from .codegen.code import generate_ode_function
 from scipy.integrate import odeint
+from sympy import symbols
 
 class System(object):
     """Manages the simulation (integration) of a system whose equations are
-    given by KanesMethod or LagrangesMethod.
+    given by KanesMethod.
 
     Many of the attributes are also properties, and can be directly modified.
 
@@ -23,7 +24,7 @@ class System(object):
         km = KanesMethod(...)
         km.kanes_equations(force_list, body_list)
         sys = System(km)
-        times = [0, 5.0]
+        times = np.linspace(0, 5, 100)
         sys.integrate(times)
 
     In this case, we use defaults for the numerical values of the constants,
@@ -35,16 +36,15 @@ class System(object):
         sys.constants = {symbol('m'): 5.0}
         sys.integrate(times)
 
-    In this case, we generate the numerical ode function for you behind the
-    scenes. If you want to customize how this function is generated, you must
-    call `generate_ode_function` on your own::
+    In this case, the System generates the numerical ode function for you
+    behind the scenes. If you want to customize how this function is generated,
+    you must call `generate_ode_function` on your own::
 
         sys = System(KM)
         sys.generate_ode_function(generator='cython')
         sys.integrate(times)
 
     """
-
     def __init__(self, eom_method, constants=dict(), specifieds=dict(),
             ode_solver=odeint, initial_conditions=dict()):
         """See the class's attributes for a description of the arguments to
@@ -56,12 +56,9 @@ class System(object):
 
         Parameters
         ----------
-        eom_method : sympy.physics.mechanics.KanesMethod or
-                sympy.physics.mechanics.LagrangesMethod
-            If using `KanesMethod`, you must have called
-            `KanesMethod.kanes_equations()` *before* constructing this
-            `System`. Similarly, if using `LagrangesMethod`, you must have
-            called `LagrangesMethod.form_lagranges_equations()`.
+        eom_method : sympy.physics.mechanics.KanesMethod
+            You must have called `KanesMethod.kanes_equations()` *before*
+            constructing this `System`.
         constants : dict, optional (default: all 1.0)
         specifieds : dict, optional (default: all 0)
         ode_solver : function, optional (default: scipy.integrate.odeint)
@@ -93,9 +90,8 @@ class System(object):
 
     @property
     def eom_method(self):
-        """ This is either a sympy.physics.mechanics.KanesMethod or
-        sympy.physics.mechanics.LagrangesMethod. The method used to generate
-        the equations of motion. Read-only.
+        """ This is a sympy.physics.mechanics.KanesMethod. The method used to
+        generate the equations of motion. Read-only.
 
         """
         return self._eom_method
@@ -119,7 +115,7 @@ class System(object):
     def _system_constants_symbols(self):
         """Wrapper."""
         # TODO is it expensive to make repeated calls to this?
-        return self.eom_method._find_othersymbols()
+        return self._Kane_constant_symbols()
 
     def _default_constants(self):
         symbols = self._system_constants_symbols()
@@ -165,7 +161,8 @@ class System(object):
     def _system_specifieds_symbols(self):
         """Wrapper."""
         # TODO is it expensive to make repeated calls to this?
-        return self.eom_method._find_dynamicsymbols()
+        # TODO eventually use a method in the KanesMethod class.
+        return self._Kane_undefined_dynamicsymbols()
 
     def _default_specifieds(self):
         symbols = self._system_specifieds_symbols()
@@ -360,3 +357,45 @@ class System(object):
                     'specified': self.specifieds,
                     }
                 )
+
+    def _Kane_inlist_insyms(self):
+        """TODO temporary."""
+        uaux = self._eom_method._uaux
+        uauxdot = [diff(i, t) for i in uaux]
+        # dictionary of auxiliary speeds & derivatives which are equal to zero
+        subdict = dict(
+                list(zip(uaux + uauxdot, [0] * (len(uaux) + len(uauxdot)))))
+
+        # Checking for dynamic symbols outside the dynamic differential
+        # equations; throws error if there is.
+        insyms = set(self._eom_method._q + self._eom_method._qdot +
+                self._eom_method._u + self._eom_method._udot + uaux + uauxdot)
+        inlist = self._eom_method._f_d.subs(subdict)
+        return inlist, insyms
+
+    def _Kane_undefined_dynamicsymbols(self):
+        """Similar to `_find_dynamicsymbols()`, except that it checks all syms
+        used in the system. Code is copied from `linearize()`.
+
+        TODO temporarily here until KanesMethod and Lagranges method have an
+        interface for obtaining these quantities.
+
+        """
+        return list(self._eom_method._find_dynamicsymbols(
+            *self._Kane_inlist_insyms()))
+
+    def _Kane_constant_symbols(self):
+        """Similar to `_find_othersymbols()`, except it checks all syms used in
+        the system.
+
+        Remove the time symbol.
+
+        TODO temporary.
+
+        """
+        constants = list(self._eom_method._find_othersymbols(
+            *self._Kane_inlist_insyms()))
+        constants.remove(symbols('t'))
+        return constants
+
+   
