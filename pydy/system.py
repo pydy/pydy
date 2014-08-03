@@ -45,9 +45,8 @@ class System(object):
 
     """
 
-    default_ode_solver = odeint
-
-    def __init__(self, eom_method, **kwargs):
+    def __init__(self, eom_method, constants=dict(), specifieds=dict(),
+            ode_solver=odeint, initial_conditions=dict()):
         """See the class's attributes for a description of the arguments to
         this constructor.
 
@@ -70,28 +69,10 @@ class System(object):
 
         """
         self._eom_method = eom_method
-
-        # This will invoke the setters and do the necessary error-checking, and
-        # fill in defaults.
-        for k, v in kwargs:
-            setattr(self, k, v)
-
-        # For all attributes not provided in kwargs, set attribute to default.
-        if self.constants == None: 
-            # This will invoke the setting of defaults.
-            self.constants = dict()
-
-        if self.specifieds == None:
-            # This will invoke the setting of defaults.
-            self.specifieds = dict()
-
-        if self.ode_solver == None:
-            self.ode_solver = self.default_ode_solver
-
-        if self.initial_conditions == None:
-            # This will invoke the setting of defaults.
-            self.initial_conditions = dict()
-
+        self.constants = constants
+        self.specifieds = specifieds
+        self.ode_solver = ode_solver
+        self.initial_conditions = initial_conditions
         self._evaluate_ode_function = None
 
     @property
@@ -129,7 +110,7 @@ class System(object):
         """
         return self._constants
 
-    @specifieds.setter
+    @constants.setter
     def constants(self, constants):
         self._check_constants(constants)
         self._constants = self._default_constants()
@@ -137,7 +118,8 @@ class System(object):
 
     def _system_constants_symbols(self):
         """Wrapper."""
-        return method._find_othersymbols()
+        # TODO is it expensive to make repeated calls to this?
+        return self.eom_method._find_othersymbols()
 
     def _default_constants(self):
         symbols = self._system_constants_symbols()
@@ -169,7 +151,7 @@ class System(object):
 
             sys = System(km)
             sys.specifieds = {(a, b, c): np.ones(3), d: lambda x, t: -3 * x[0]}
-            sys.specifieds = {(a, b, c): lambda x, t: k * x}
+            sys.specifieds = {(a, b, c): lambda x, t: np.ones(3)}
 
         """
         return self._specifieds
@@ -177,23 +159,31 @@ class System(object):
     @specifieds.setter
     def specifieds(self, specifieds):
         self._check_specifieds(specifieds)
-        self._specifieds = self._default_specifieds()
-        self._specifieds.update(specifieds)
+        self._specifieds = specifieds
+        self._fill_in_default_specifieds()
 
     def _system_specifieds_symbols(self):
         """Wrapper."""
-        return method._find_dynamicsymbols()
+        # TODO is it expensive to make repeated calls to this?
+        return self.eom_method._find_dynamicsymbols()
 
     def _default_specifieds(self):
-        symbols = self._system_specifieds()
+        symbols = self._system_specifieds_symbols()
         return dict(zip(symbols, len(symbols) * [0.0]))
         
-    def _assert_is_specified_symbol(symbol, all_symbols):
+    def _assert_is_specified_symbol(self, symbol, all_symbols):
         if symbol not in all_symbols:
-            raise Exception("Symbol {} is not a 'specified' symbol.".format(k))
+            raise ValueError("Symbol {} is not a 'specified' symbol.".format(k))
+
+    def _assert_symbol_appears_multiple_times(self, symbol, specifieds):
+        if symbol in specifieds:
+            raise ValueError("Symbol {} appears in {} more than once.".format(
+                symbol, specifieds))
 
     def _check_specifieds(self, specifieds):
         symbols = self._system_specifieds_symbols()
+
+        symbols_so_far = list()
 
         for k, v in specifieds.items():
 
@@ -206,7 +196,7 @@ class System(object):
 
             # Length of the numerical values is same as number of symbols.
             if hasattr(v, '__call__'):
-                # TODO how do we reliably check the output size of the 
+                # How do we reliably check the output size of the 
                 # function? Do we call the function with test inputs? That is
                 # not reliable... My vote is that we just don't do the check.
                 pass
@@ -214,6 +204,32 @@ class System(object):
                 if len(k) != len(v):
                     raise ValueError("{} is not the same length as {}".format(
                         k, v))
+
+            # Each specified symbol can appear only once.
+            if isinstance(k, tuple):
+                for ki in k:
+                    self._assert_symbol_appears_multiple_times(ki, specifieds)
+                    symbols_so_far.append(ki)
+            else:
+                self._assert_symbol_appears_multiple_times(ki, specifieds)
+                symbols_so_far.append(k)
+
+    def _symbol_is_in_specifieds_dict(self, symbol, specifieds_dict):
+        for k in specifieds_dict.keys():
+            if symbol == k:
+                return True
+            elif isinstance(k, tuple):
+                return symbol in k
+            else:
+                raise ValueError("Unexpected key {}.".format(k))
+        return False
+
+    def _fill_in_default_specifieds(self):
+        if self.specifieds == None:
+            self.specifieds = dict()
+        for symbol in self._system_specifieds_symbols():
+            if not self._symbol_is_in_specifieds_dict(symbol, self.specifieds):
+                self._specifieds[symbol] = 0.0
 
     @property
     def ode_solver(self):
@@ -247,7 +263,8 @@ class System(object):
         """
         return self._initial_conditions
 
-    @initial_conditions.setter(self, initial_conditions):
+    @initial_conditions.setter
+    def initial_conditions(self, initial_conditions):
         self._check_initial_conditions(initial_conditions)
         self._initial_conditions = self._default_initial_conditions()
         self._initial_conditions.update(initial_conditions)
@@ -297,12 +314,12 @@ class System(object):
         self._evaluate_ode_function = generate_ode_function(
                 # args:
                 self.method.mass_matrix_full, self.method.forcing_full,
-                self.constants.keys(),
+                self._system_constants_symbols(),
                 self.coordinates, self.speeds,
                 # kwargs:
-                specified=self.specifieds.keys(),
+                specified=self._system_specifieds_symbols(),
                 generator=generator,
-                **kwargs,
+                **kwargs
                 )
         return self.evaluate_ode_function
 
@@ -323,9 +340,15 @@ class System(object):
             len(times) if len(times) > 2, or is determined by the `ode_solver`.
 
         """
+        # Users might have changed these properties by directly accessing the
+        # dict, without using the setter. Before we integrate, make sure they
+        # did not muck up these dicts.
+        _check_constants(self.constants)
+        _check_specifieds(self.specifieds)
+        _check_initial_conditions(self.initial_conditions)
+
         if self.evaluate_ode_function == None:
             self.generate_ode_function()
-        # TODO double-check this.
         initial_conditions_in_proper_order = \
                 [self.initial_conditions[k] for k in self.states]
         return self.ode_solver(
@@ -333,7 +356,7 @@ class System(object):
                 initial_conditions_in_proper_order,
                 times,
                 args={
-                    'constants': self.constants.values(),
-                    'specified': self.specifieds.values()
+                    'constants': self.constants,
+                    'specified': self.specifieds,
                     }
                 )

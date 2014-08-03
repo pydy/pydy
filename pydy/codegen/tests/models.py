@@ -107,7 +107,8 @@ def generate_mass_spring_damper_equations_of_motion(external_force=True,
 
 
 def generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=True,
-                                                         joint_torques=False):
+        joint_torques=False,
+        only_return_kane=False):
     """Returns the the symbolic first order equations of motion for a 2D
     n-link pendulum on a sliding cart under the influence of gravity in this
     form:
@@ -123,9 +124,14 @@ def generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=True,
     joint_torques : boolean, default=False
         If true joint torques will be added as specified inputs at each
         joint.
+    only_return_kane : bool, optional (default: False)
+        If True, this method only returns the KanesMethod object.
 
     Returns
     -------
+    kane : KanesMethod
+        If the keyword argument `only_return_kane` is True, this is the only
+        object returned.
     mass_matrix : sympy.MutableMatrix, shape(2 * (n + 1), 2 * (n + 1))
         The symbolic mass matrix of the system which are linear in u' and q'.
     forcing_vector : sympy.MutableMatrix, shape(2 * (n + 1), 1)
@@ -234,5 +240,9 @@ def generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=True,
     for i in range(n):
         constants += [l[i], m[i + 1]]
 
-    return (mass_matrix, forcing_vector, constants, coordinates, speeds,
-            specified)
+
+    if only_return_kane:
+        return kane
+    else:
+        return (mass_matrix, forcing_vector, constants, coordinates, speeds,
+                specified)

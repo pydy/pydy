@@ -51,13 +51,14 @@ sphereR_viz_frame = VisualizationFrame('sphereR', N, R, sphere)
 # this, we create a world frame that is rotated +90 degrees about the N frame's
 # z direction.
 world_frame = N.orientnew('world', 'Axis', [0.5 * pi, N.z])
-scene = Scene(sys, world_frame, O,
+scene = Scene(world_frame, O,
         linkP_viz_frame, linkR_viz_frame, sphereP_viz_frame, sphereR_viz_frame)
 
 
 # Create the visualization
 # ========================
 
-scene.generate_visualization_json(times)
+scene.generate_visualization_json(coordinates + speeds, constants.keys(), x,
+        constants.values())
 
 scene.display()
