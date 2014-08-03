@@ -50,7 +50,7 @@ class TestCythonGenerator():
             os.remove(f)
 
 
-class TestCode():
+class TestCodeRHSArgs():
 
     def test_rhs_args(self):
 
@@ -72,20 +72,22 @@ class TestCode():
 
         xd_01 = rhs(x, 0.0, args)
 
-        args['specified'] = {tuple(specified): lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])}
+        args['specified'] = {
+                tuple(specified): lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])}
 
         xd_02 = rhs(x, 0.0, args)
 
         # There are four specified inputs available.
         args['specified'] = {specified[0]: lambda x, t: np.ones(1),
-                             (specified[3], specified[1]): lambda x, t: np.array([4.0, 2.0]),
-                             specified[2]: 3.0 * np.ones(1)}
+                (specified[3], specified[1]): lambda x, t: np.array([4.0, 2.0]),
+                specified[2]: 3.0 * np.ones(1)}
 
         xd_03 = rhs(x, 0.0, args)
 
         testing.assert_allclose(xd_01, xd_02)
         testing.assert_allclose(xd_01, xd_03)
 
+class TestCode():
 
     def test_generate_ode_function(self):
 

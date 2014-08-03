@@ -36,6 +36,13 @@ class System(object):
         sys.constants = {symbol('m'): 5.0}
         sys.integrate(times)
 
+    To double-check the constants, specifieds and states in your problem, look
+    at::
+
+        sys.constants_symbols()
+        sys.specifieds_symbols()
+        sys.states()
+
     In this case, the System generates the numerical ode function for you
     behind the scenes. If you want to customize how this function is generated,
     you must call `generate_ode_function` on your own::
@@ -66,6 +73,11 @@ class System(object):
 
         """
         self._eom_method = eom_method
+
+        # TODO what if user adds symbols after constructing a System?
+        self._constants_symbols = self._Kane_constant_symbols()
+        self._specifieds_symbols = self._Kane_undefined_dynamicsymbols()
+
         self.constants = constants
         self.specifieds = specifieds
         self.ode_solver = ode_solver
@@ -108,24 +120,25 @@ class System(object):
 
     @constants.setter
     def constants(self, constants):
+        print "DEBUG constants setter", constants
         self._check_constants(constants)
-        self._constants = self._default_constants()
-        self._constants.update(constants)
+        self._constants = constants
 
-    def _system_constants_symbols(self):
-        """Wrapper."""
-        # TODO is it expensive to make repeated calls to this?
-        return self._Kane_constant_symbols()
-
-    def _default_constants(self):
-        symbols = self._system_constants_symbols()
-        return dict(zip(symbols, len(symbols) * [1.0]))
+    @property
+    def constants_symbols(self):
+        """The constants (not functions of time) in the system."""
+        return self._constants_symbols
 
     def _check_constants(self, constants):
-        symbols = self._system_constants_symbols()
+        print "DEBUG0 check constants", constants
+        symbols = self.constants_symbols
         for k in constants.keys():
             if k not in symbols:
                 raise ValueError("Symbol {} is not a constant.".format(k))
+
+    def _constants_padded_with_defaults(self):
+        return dict(self.constants.items() + {s: 1.0 for s in
+            self.constants_symbols if s not in self.constants}.items())
 
     @property
     def specifieds(self):
@@ -156,29 +169,25 @@ class System(object):
     def specifieds(self, specifieds):
         self._check_specifieds(specifieds)
         self._specifieds = specifieds
-        self._fill_in_default_specifieds()
 
-    def _system_specifieds_symbols(self):
-        """Wrapper."""
-        # TODO is it expensive to make repeated calls to this?
+    @property
+    def specifieds_symbols(self):
+        """The dynamicsymbols you must specify."""
         # TODO eventually use a method in the KanesMethod class.
-        return self._Kane_undefined_dynamicsymbols()
-
-    def _default_specifieds(self):
-        symbols = self._system_specifieds_symbols()
-        return dict(zip(symbols, len(symbols) * [0.0]))
+        return self._specifieds_symbols
         
     def _assert_is_specified_symbol(self, symbol, all_symbols):
         if symbol not in all_symbols:
-            raise ValueError("Symbol {} is not a 'specified' symbol.".format(k))
+            raise ValueError("Symbol {} is not a 'specified' symbol.".format(
+                symbol))
 
     def _assert_symbol_appears_multiple_times(self, symbol, symbols_so_far):
         if symbol in symbols_so_far:
             raise ValueError("Symbol {} appears more than once.".format(
-                symbol, specifieds))
+                symbol))
 
     def _check_specifieds(self, specifieds):
-        symbols = self._system_specifieds_symbols()
+        symbols = self.specifieds_symbols
 
         symbols_so_far = list()
 
@@ -203,20 +212,14 @@ class System(object):
 
     def _symbol_is_in_specifieds_dict(self, symbol, specifieds_dict):
         for k in specifieds_dict.keys():
-            if symbol == k:
+            if symbol == k or (isinstance(k, tuple) and symbol in k):
                 return True
-            elif isinstance(k, tuple):
-                return symbol in k
-            else:
-                raise ValueError("Unexpected key {}.".format(k))
         return False
 
-    def _fill_in_default_specifieds(self):
-        if self.specifieds == None:
-            self.specifieds = dict()
-        for symbol in self._system_specifieds_symbols():
-            if not self._symbol_is_in_specifieds_dict(symbol, self.specifieds):
-                self._specifieds[symbol] = 0.0
+    def _specifieds_padded_with_defaults(self):
+        return dict(self.specifieds.items() + {s: 0.0 for s in
+            self.specifieds_symbols if not
+            self._symbol_is_in_specifieds_dict(s, self.specifieds)}.items())
 
     @property
     def ode_solver(self):
@@ -242,8 +245,8 @@ class System(object):
 
     @property
     def initial_conditions(self):
-        """ Initial conditions for all coordinates and speeds. Keys are the
-        symbols for the coordinates and speeds, and values are floats.
+        """ Initial conditions for all states (coordinates and speeds). Keys
+        are the symbols for the coordinates and speeds, and values are floats.
         Coordinates or speeds that are not specified in this dict are given a
         default value of 0.0.
 
@@ -253,18 +256,18 @@ class System(object):
     @initial_conditions.setter
     def initial_conditions(self, initial_conditions):
         self._check_initial_conditions(initial_conditions)
-        self._initial_conditions = self._default_initial_conditions()
-        self._initial_conditions.update(initial_conditions)
+        self._initial_conditions = initial_conditions
 
-    def _default_initial_conditions(self):
+    def _check_initial_conditions(self, initial_conditions):
         symbols = self.states
-        return dict(zip(symbols, len(symbols) * [0.0]))
-
-    def _check_initial_conditions(self, constants):
-        symbols = self.states
-        for k in constants.keys():
+        print "DEBUG6 check initial conditions", initial_conditions
+        for k in initial_conditions.keys():
             if k not in symbols:
                 raise ValueError("Symbol {} is not a state.".format(k))
+
+    def _initial_conditions_padded_with_defaults(self):
+        return dict(self.initial_conditions.items() + {s: 0.0 for s in
+            self.states if s not in self.initial_conditions}.items())
 
     @property
     def evaluate_ode_function(self):
@@ -300,11 +303,12 @@ class System(object):
         """
         self._evaluate_ode_function = generate_ode_function(
                 # args:
-                self.method.mass_matrix_full, self.method.forcing_full,
-                self._system_constants_symbols(),
+                self.eom_method.mass_matrix_full,
+                self.eom_method.forcing_full,
+                self.constants_symbols,
                 self.coordinates, self.speeds,
                 # kwargs:
-                specified=self._system_specifieds_symbols(),
+                specified=self.specifieds_symbols,
                 generator=generator,
                 **kwargs
                 )
@@ -330,22 +334,25 @@ class System(object):
         # Users might have changed these properties by directly accessing the
         # dict, without using the setter. Before we integrate, make sure they
         # did not muck up these dicts.
-        _check_constants(self.constants)
-        _check_specifieds(self.specifieds)
-        _check_initial_conditions(self.initial_conditions)
+        self._check_constants(self.constants)
+        self._check_specifieds(self.specifieds)
+        self._check_initial_conditions(self.initial_conditions)
 
         if self.evaluate_ode_function == None:
             self.generate_ode_function()
+
+        init_conds_dict = self._initial_conditions_padded_with_defaults()
         initial_conditions_in_proper_order = \
-                [self.initial_conditions[k] for k in self.states]
+                [init_conds_dict[k] for k in self.states]
+
         return self.ode_solver(
                 self.evaluate_ode_function,
                 initial_conditions_in_proper_order,
                 times,
-                args={
-                    'constants': self.constants,
-                    'specified': self.specifieds,
-                    }
+                args=({
+                    'constants': self._constants_padded_with_defaults(),
+                    'specified': self._specifieds_padded_with_defaults(),
+                    },)
                 )
 
     def _Kane_inlist_insyms(self):
@@ -360,7 +367,8 @@ class System(object):
         # equations; throws error if there is.
         insyms = set(self.eom_method._q + self.eom_method._qdot +
                 self.eom_method._u + self.eom_method._udot + uaux + uauxdot)
-        inlist = self.eom_method._f_d.subs(subdict)
+        inlist = (self.eom_method.forcing_full[:] +
+                self.eom_method.mass_matrix_full[:])
         return inlist, insyms
 
     def _Kane_undefined_dynamicsymbols(self):
