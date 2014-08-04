@@ -2,7 +2,6 @@
 import numpy as np
 from numpy import testing
 from sympy import symbols
-from sympy.core.cache import print_cache
 from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
 
@@ -11,7 +10,6 @@ from ..codegen.tests.models import \
     generate_mass_spring_damper_equations_of_motion as mass_spring_damper
 from ..codegen.tests.models import \
     generate_n_link_pendulum_on_cart_equations_of_motion as n_link_cart
-
 
 
 class TestSystem():
@@ -101,17 +99,17 @@ class TestSystem():
 
         # Using the property as a dict.
         # -----------------------------
-        # TODO sys = System(self.kane)
+        sys = System(self.kane)
         # Modifying the dict directly does change the dict.
-        # TODO sys.constants[symbols('m')] = 9.3
-        # TODO assert sys.constants.keys() == [symbols('m')]
-        # TODO testing.assert_allclose(sys.constants.values(), [9.3])
+        sys.constants[symbols('m')] = 9.3
+        assert sys.constants.keys() == [symbols('m')]
+        testing.assert_allclose(sys.constants.values(), [9.3])
 
         # Putting in a non-constant key does not raise exception.
-        # TODO sys.constants[dynamicsymbols('v')] = 9.8
+        sys.constants[dynamicsymbols('v')] = 9.8
         # Then, if we integrate, we do error-checking and we get an exception.
-        # TODO with testing.assert_raises(ValueError):
-        # TODO     sys.integrate([0.0, 1.0])
+        with testing.assert_raises(ValueError):
+            sys.integrate([0.0, 1.0])
 
 
         # Provide a constant that isn't actually a constant.
@@ -125,26 +123,29 @@ class TestSystem():
 
         sys = System(self.kane)
         assert sys.specifieds == dict()
+        sys.specifieds = {dynamicsymbols('F'): 5.9}
+        assert sys.specifieds.keys() == [dynamicsymbols('F')]
+        testing.assert_allclose(sys.specifieds.values(), [5.9])
 
         # Using the property as a dict.
         # -----------------------------
         # Modifying the dict directly does change the dict.
-        print "HoYYYYYYYYYYY", sys.specifieds
         sys.specifieds[dynamicsymbols('F')] = 5.1
-        print "HAYYYYYYYYYYY", sys.specifieds
         assert sys.specifieds.keys() == [dynamicsymbols('F')]
         testing.assert_allclose(sys.specifieds.values(), [5.1])
-# TODO        # Putting in a non-specified key does not raise exception.
-# TODO        sys.specifieds[dynamicsymbols('v')] = 3.5
-# TODO        # Then, if we integrate, we do error-checking and we get an exception.
-# TODO        with testing.assert_raises(ValueError):
-# TODO            sys.integrate([0.0, 1.0])
-# TODO
-# TODO        # Putting in a value of the wrong length does not raise exception.
-# TODO        sys.specifieds[dynamicsymbols('F')] = 3.1 * np.ones(2)
-# TODO        # Then, if we integrate, we do error-checking and we get an exception.
-# TODO        with testing.assert_raises(ValueError):
-# TODO            sys.integrate([0.0, 1.0])
+        # Putting in a non-specified key does not raise exception.
+        sys.specifieds[dynamicsymbols('v')] = 3.5
+        # Then, if we integrate, we do error-checking and we get an exception.
+        with testing.assert_raises(ValueError):
+            sys.integrate([0.0, 1.0])
+
+        sys = System(self.kane)
+        # Putting in a value of the wrong length does not raise exception.
+        sys.specifieds[dynamicsymbols('F')] = 3.1 * np.ones(2)
+        # Then, if we integrate, we do error-checking and we get an exception.
+        # TODO actually, this does not seem to throw an exception.
+        # TODO with testing.assert_raises(ValueError):
+        # TODO     sys.integrate([0.0, 1.0])
 
 
         # The specified symbol must exist in the equations of motion and not
@@ -152,9 +153,9 @@ class TestSystem():
         # ------------------------------------------------------------------
         sys = System(self.kane)
         with testing.assert_raises(ValueError):
-            sys.specifieds = {dynamicsymbols('x'): 5.1}
+            sys.specifieds = {symbols('m'): 5.4}
         with testing.assert_raises(ValueError):
-            sys.specifieds = {symbols('m'): 5.1}
+            sys.specifieds = {dynamicsymbols('x'): 5.1}
 
         # Complex error-checking when using property as a dict.
         # -----------------------------------------------------
@@ -171,7 +172,6 @@ class TestSystem():
             sys.integrate(times)
 
         sys = System(self.kane_nlink)
-        print "DEBUG fresh sys",  sys.specifieds
         # This puts too many entries in the dict.
         sys.specifieds[spec_syms[0]] = 3.7
         sys.specifieds[(spec_syms[0], spec_syms[3])] = 5.8
@@ -180,9 +180,7 @@ class TestSystem():
 
         # This gets rid of the previous default entries, and should work
         # properly.
-        print "DEBUG specifieds", sys.specifieds, spec_syms[0]
         sys.specifieds.pop(spec_syms[0])
-        print "DEBUG specifieds after pop", sys.specifieds
         sys.integrate(times)
 
 
@@ -217,22 +215,19 @@ class TestSystem():
         assert sys.initial_conditions.keys() == ic.keys()
         testing.assert_allclose(sys.initial_conditions.values(), ic.values())
 
-        # The ordering must be correct. The dict might mess this up.
-        # ----------------------------------------------------------
-        # TODO
-
 
         # Using the property as a dict.
         # -----------------------------
         # Modifying hte dict directly does change the dict.
-# TODO        sys = System(self.kane)
-# TODO        sys.initial_conditions[dynamicsymbols('x')] = 5.8
-# TODO        assert sys.initial_conditions.keys() == [dynamicsymbols('x')]
-# TODO        testing.assert_allclose(sys.initial_conditions.values(), [5.1])
-# TODO        # Putting in a non-state key does not raise exception.
-# TODO        sys.initial_conditions[symbols('m')] = 7.9
-# TODO        # Then, if we integrate, we do error-checking and we get an exception.
-# TODO        testing.assert_raises(ValueError, sys.integrate, [0.0, 1.0])
+        sys = System(self.kane)
+        sys.initial_conditions[dynamicsymbols('x')] = 5.8
+        assert sys.initial_conditions.keys() == [dynamicsymbols('x')]
+        testing.assert_allclose(sys.initial_conditions.values(), [5.8])
+        # Putting in a non-state key does not raise exception.
+        sys.initial_conditions[symbols('m')] = 7.9
+        # Then, if we integrate, we do error-checking and we get an exception.
+        with testing.assert_raises(ValueError):
+            sys.integrate([0.0, 1.0])
 
 
         # Keys must be coords or speeds.
@@ -329,10 +324,6 @@ class TestSystem():
         sys = System(self.kane)
         with testing.assert_raises(NotImplementedError):
             sys.generate_ode_function(generator='made-up')
-
-    def teardown(self):
-
-        print_cache()
 
 
 

@@ -1,87 +1,96 @@
+"""The System class manages the simulation (integration) of a system whose
+equations are given by KanesMethod.
+
+Many of the attributes are also properties, and can be directly modified.
+
+Here is the procedure for using this class.
+
+    1. specify your options either via the constructor or via the
+       attributes.
+    2. optionally, call ``generate_ode_function()`` if you want to customize
+       how this function is generated.
+    3. call ``integrate()`` to simulate your system.
+
+Examples
+--------
+The simplest usage of this class is as follows. First, we need a
+KanesMethod object on which we have already invoked ``kanes_equations()``::
+
+    km = KanesMethod(...)
+    km.kanes_equations(force_list, body_list)
+    sys = System(km)
+    times = np.linspace(0, 5, 100)
+    sys.integrate(times)
+
+In this case, we use defaults for the numerical values of the constants,
+specified quantities, initial conditions, etc. You probably won't like
+these defaults. You can also specify such values via constructor keyword
+arguments or via the attributes::
+
+    sys = System(km, initial_conditions={symbol('q1'): 0.5})
+    sys.constants = {symbol('m'): 5.0}
+    sys.integrate(times)
+
+To double-check the constants, specifieds and states in your problem, look
+at these properties::
+
+    sys.constants_symbols
+    sys.specifieds_symbols
+    sys.states
+
+In this case, the System generates the numerical ode function for you
+behind the scenes. If you want to customize how this function is generated,
+you must call ``generate_ode_function`` on your own::
+
+    sys = System(KM)
+    sys.generate_ode_function(generator='cython')
+    sys.integrate(times)
+
+"""
 
 from .codegen.code import generate_ode_function
 from scipy.integrate import odeint
 from sympy import symbols
 
 class System(object):
-    """Manages the simulation (integration) of a system whose equations are
-    given by KanesMethod.
+    """See the class's attributes for a description of the arguments to
+    this constructor.
 
-    Many of the attributes are also properties, and can be directly modified.
+    The parameters to this constructor are all attributes of the System.
+    Actually, they are properties. With the exception of ``eom_method``,
+    these attributes can be modified directly at any future point.
 
-    The usage of this class is to:
-
-        1. specify your options either via the constructor or via the
-           attributes.
-        2. optionally, call `generate_ode_function` if you want to customize
-           how this function is generated.
-        3. call `integrate` to simulate your system.
-
-    Examples
-    --------
-    The simplest usage of this class is as follows::
-
-        km = KanesMethod(...)
-        km.kanes_equations(force_list, body_list)
-        sys = System(km)
-        times = np.linspace(0, 5, 100)
-        sys.integrate(times)
-
-    In this case, we use defaults for the numerical values of the constants,
-    specified quantities, initial conditions, etc. You probably won't like
-    these defaults. You can also specify such values via constructor keyword
-    arguments or via the attributes::
-
-        sys = System(km, initial_conditions={symbol('q1'): 0.5})
-        sys.constants = {symbol('m'): 5.0}
-        sys.integrate(times)
-
-    To double-check the constants, specifieds and states in your problem, look
-    at::
-
-        sys.constants_symbols()
-        sys.specifieds_symbols()
-        sys.states()
-
-    In this case, the System generates the numerical ode function for you
-    behind the scenes. If you want to customize how this function is generated,
-    you must call `generate_ode_function` on your own::
-
-        sys = System(KM)
-        sys.generate_ode_function(generator='cython')
-        sys.integrate(times)
+    Parameters
+    ----------
+    eom_method : sympy.physics.mechanics.KanesMethod
+        You must have called ``KanesMethod.kanes_equations()`` *before*
+        constructing this ``System``.
+    constants : dict, optional (default: all 1.0)
+    specifieds : dict, optional (default: all 0)
+    ode_solver : function, optional (default: scipy.integrate.odeint)
+    initial_conditions : dict, optional (default: all zero)
 
     """
-    def __init__(self, eom_method, constants=dict(), specifieds=dict(),
-            ode_solver=odeint, initial_conditions=dict()):
-        """See the class's attributes for a description of the arguments to
-        this constructor.
-
-        The parameters to this constructor are all attributes of the System.
-        Actually, they are properties. With the exception of `eom_method`,
-        these attributes can be modified directly at any future point.
-
-        Parameters
-        ----------
-        eom_method : sympy.physics.mechanics.KanesMethod
-            You must have called `KanesMethod.kanes_equations()` *before*
-            constructing this `System`.
-        constants : dict, optional (default: all 1.0)
-        specifieds : dict, optional (default: all 0)
-        ode_solver : function, optional (default: scipy.integrate.odeint)
-        initial_conditions : dict, optional (default: all zero)
-
-        """
+    def __init__(self, eom_method, constants=None, specifieds=None,
+            ode_solver=None, initial_conditions=None):
         self._eom_method = eom_method
 
         # TODO what if user adds symbols after constructing a System?
         self._constants_symbols = self._Kane_constant_symbols()
         self._specifieds_symbols = self._Kane_undefined_dynamicsymbols()
 
-        self.constants = constants
-        self.specifieds = specifieds
-        self.ode_solver = ode_solver
-        self.initial_conditions = initial_conditions
+        if constants == None: self.constants = dict()
+        else: self.constants = constants
+
+        if specifieds == None: self.specifieds = dict()
+        else: self.specifieds = specifieds
+
+        if ode_solver == None: self.ode_solver = odeint
+        else: self.ode_solver = ode_solver
+
+        if initial_conditions == None: self.initial_conditions = dict()
+        else: self.initial_conditions = initial_conditions
+
         self._evaluate_ode_function = None
 
     @property
@@ -120,7 +129,6 @@ class System(object):
 
     @constants.setter
     def constants(self, constants):
-        print "DEBUG constants setter", constants
         self._check_constants(constants)
         self._constants = constants
 
@@ -130,7 +138,6 @@ class System(object):
         return self._constants_symbols
 
     def _check_constants(self, constants):
-        print "DEBUG0 check constants", constants
         symbols = self.constants_symbols
         for k in constants.keys():
             if k not in symbols:
@@ -143,14 +150,14 @@ class System(object):
     @property
     def specifieds(self):
         """A dict that provides numerical values for the specified quantities
-        in the problem (all dynamicsymbols that are not given by the `method`).
-        Keys are the symbols for the specified quantities, or a tuple of
-        symbols, and values are the floats, arrays of floats, or functions that
-        generate the values. If a dictionary value is a function, it must have
-        the same signature as `f(x, t)`, the ode right-hand-side function (see
-        the documentation for the `ode_solver` attribute). You needn't provide
-        values for all specified symbols. Those for which you do not give a
-        value will default to 0.0.
+        in the problem (all dynamicsymbols that are not defined by the
+        equations of motion).  Keys are the symbols for the specified
+        quantities, or a tuple of symbols, and values are the floats, arrays of
+        floats, or functions that generate the values. If a dictionary value is
+        a function, it must have the same signature as ``f(x, t)``, the ode
+        right-hand-side function (see the documentation for the ``ode_solver``
+        attribute). You needn't provide values for all specified symbols. Those
+        for which you do not give a value will default to 0.0.
 
         Examples
         --------
@@ -240,7 +247,7 @@ class System(object):
     def ode_solver(self, ode_solver):
         if not hasattr(ode_solver, '__call__'):
             raise ValueError(
-                    "`ode_solver` ({}) is not a function.".format(ode_solver))
+                    "``ode_solver`` ({}) is not a function.".format(ode_solver))
         self._ode_solver = ode_solver
 
     @property
@@ -260,7 +267,6 @@ class System(object):
 
     def _check_initial_conditions(self, initial_conditions):
         symbols = self.states
-        print "DEBUG6 check initial conditions", initial_conditions
         for k in initial_conditions.keys():
             if k not in symbols:
                 raise ValueError("Symbol {} is not a state.".format(k))
@@ -271,29 +277,30 @@ class System(object):
 
     @property
     def evaluate_ode_function(self):
-        """A function generated by `generate_ode_function` that computes the
+        """A function generated by ``generate_ode_function`` that computes the
         state derivatives:
         
             x' = evaluate_ode_function(x, t, args=(...))
 
-        This function is used by the `ode_solver`.
+        This function is used by the ``ode_solver``.
 
         """
         return self._evaluate_ode_function
 
     def generate_ode_function(self, generator='lambdify', **kwargs):
-        """Calls `pydy.codegen.code.generate_ode_function` with the appropriate
-        arguments, and sets the `evaluate_ode_function` attribute to the
-        resulting function.
+        """Calls ``pydy.codegen.code.generate_ode_function`` with the
+        appropriate arguments, and sets the ``evaluate_ode_function`` attribute
+        to the resulting function.
 
         Parameters
         ----------
         generator : str, optional (default: 'lambdify')
-            See documentation for `pydy.codegen.code.generate_ode_function`
+            See documentation for ``pydy.codegen.code.generate_ode_function()``
         kwargs
             All other kwargs are passed onto
-            `pydy.codegen.code.generate_ode_function`. Don't specify the
-            `specified` kwarg though; this class takes care of those.
+            ``pydy.codegen.code.generate_ode_function()``. Don't specify the
+            ``specified`` keyword argument though; the ``System`` class takes
+            care of those.
 
         Returns
         -------
@@ -315,20 +322,23 @@ class System(object):
         return self.evaluate_ode_function
 
     def integrate(self, times):
-        """Integrates the equations `evaluate_ode_function` using `ode_solver`.
+        """Integrates the equations ``evaluate_ode_function()`` using
+        ``ode_solver``.
 
         It is necessary to have first generated an ode function. If you have
         not done so, we do so automatically by invoking
-        `generate_ode_function`. However, if you want to customize how this
+        ``generate_ode_function()``. However, if you want to customize how this
         function is generated (e.g., change the generator to cython), you can
-        call `generate_ode_function` on your own (before calling `integrate`).
+        call ``generate_ode_function()`` on your own (before calling
+        ``integrate()``).
 
         Returns
         -------
         x_history : np.array, shape(num_integrator_time_steps, 2)
             The trajectory of states (coordinates and speeds) through the
             requested time interval. num_integrator_time_steps is either
-            len(times) if len(times) > 2, or is determined by the `ode_solver`.
+            len(times) if len(times) > 2, or is determined by the
+            ``ode_solver``.
 
         """
         # Users might have changed these properties by directly accessing the
@@ -372,8 +382,8 @@ class System(object):
         return inlist, insyms
 
     def _Kane_undefined_dynamicsymbols(self):
-        """Similar to `_find_dynamicsymbols()`, except that it checks all syms
-        used in the system. Code is copied from `linearize()`.
+        """Similar to ``_find_dynamicsymbols()``, except that it checks all syms
+        used in the system. Code is copied from ``linearize()``.
 
         TODO temporarily here until KanesMethod and Lagranges method have an
         interface for obtaining these quantities.
@@ -383,7 +393,7 @@ class System(object):
             *self._Kane_inlist_insyms()))
 
     def _Kane_constant_symbols(self):
-        """Similar to `_find_othersymbols()`, except it checks all syms used in
+        """Similar to ``_find_othersymbols()``, except it checks all syms used in
         the system.
 
         Remove the time symbol.
