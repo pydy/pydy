@@ -314,6 +314,12 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self.animationID = window.setInterval(function(){ 
                 self.setAnimationTime(currentTime);
                 currentTime+=timeDelta;
+                if(currentTime>=self._finalTime && jQuery("#play-looped").is(":checked")){
+                  currentTime = 0;
+                }
+                if(currentTime>=self._finalTime && !jQuery("#play-looped").is(":checked")){
+                  self.stopAnimation();
+                }
             }, 
         timeDelta*1000);
     },
@@ -325,10 +331,15 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * corresponding to that time value.
         **/
         var self = this;
-        // Set the slider to the current animation time..
-        if(currentTime>=self._finalTime) {
+        /**
+        if(currentTime>=self._finalTime && !jQuery("#play-looped").is(":checked")) {
             self.stopAnimation();
-        }    
+        }
+        
+        if(currentTime>=self._finalTime && jQuery("#play-looped").is(":checked")) {
+            currentTime = self._timeArray[0];
+        }
+        **/
         var percent = currentTime/self._finalTime*100;
 
         var time_index = self._timeArray.indexOf(currentTime);

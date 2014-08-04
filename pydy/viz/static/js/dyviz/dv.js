@@ -108,7 +108,6 @@ DynamicsVisualizer = Class.create({
             jQuery("#show-model").removeClass("disabled")
 
         });
-
         console.log("[PyDy INFO]: Activated UI controls");
 
 
@@ -121,7 +120,6 @@ DynamicsVisualizer = Class.create({
           * scene JSON is loaded onto canvas.
         **/
         var self = this;
-        
         jQuery("#play-animation").removeClass("disabled");
         jQuery("#show-model").removeClass("disabled");
         var objs = self.model.objects;
