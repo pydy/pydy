@@ -23,7 +23,7 @@ DynamicsVisualizer = Class.create({
             return false;
         }
 
-        var sceneFileURI = self.getQueryString("load");
+        var sceneFileURI = self.getQueryString("load") || jQuery("#json-input").val();
         if(sceneFileURI){
             console.log("[PyDy INFO]: Found scene desc from URL");
             jQuery("#json-input").val(sceneFileURI);
