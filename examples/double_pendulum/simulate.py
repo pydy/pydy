@@ -4,7 +4,7 @@ This file will use pydy.codegen to simulate the double pendulum.
 """
 
 from numpy import concatenate, array, linspace
-from pydy.codegen.code import generate_ode_function
+from pydy.system import System
 from scipy.integrate import odeint
 
 from double_pendulum import *

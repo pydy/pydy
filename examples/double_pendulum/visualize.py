@@ -58,7 +58,7 @@ scene = Scene(world_frame, O,
 # Create the visualization
 # ========================
 
-scene.generate_visualization_json(coordinates + speeds, constants.keys(), x,
+scene.generate_visualization_json(sys.states, constants.keys(), x,
         constants.values())
 
 scene.display()
