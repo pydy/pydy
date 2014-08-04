@@ -459,7 +459,7 @@ class Scene(object):
                                                               description=str(var))
             components.append(self._widget_dict[str(var)])
 
-        button = widgets.ButtonWidget(description="Rerun Simulations")
+        self.button = widgets.ButtonWidget(description="Rerun Simulations")
         def button_click(clicked):
             self.constant_values = []    
             for i in self._widget_dict.values():
@@ -470,10 +470,19 @@ class Scene(object):
                                     outfile_prefix=self.outfile_prefix)
             self.create_static_html(overwrite=True, silent=True)
         
-        button.on_click(button_click)
-        components.append(button)
+        self.button.on_click(button_click)
+        #components.append(button)
         html_file = open("static/index_ipython.html")
         self.html_widget = widgets.HTMLWidget(value=html_file.read().format(load_url='static/' + self.scene_json_file))
         self.container.children = components
+        self.container.set_css({"max-height": "10em",
+                                "overflow-y": "scroll",
+                                "display":"block"
+                                })
+        self.html_widget.set_css({"display":"block",
+                                  "float":"left"
+                                  })
+        self.button.add_class('btn-info')
         display(self.container)
+        display(self.button)
         display(self.html_widget)
