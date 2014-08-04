@@ -61,4 +61,4 @@ scene = Scene(world_frame, O,
 scene.generate_visualization_json(coordinates + speeds, constants.keys(), x,
         constants.values())
 
-scene.display()
+# scene.display()
