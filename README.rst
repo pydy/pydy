@@ -227,36 +227,27 @@ Derive the system::
                         kd_eqs=kinematic_equations)
    kane.kanes_equations(forces, particles)
 
-Store the expressions and symbols in sequences for the code generation::
+Create the manager for integration. Specify numerical values for the constants
+and specified quantities. Here, we specify sinusoidal forcing::
 
-   mass_matrix = kane.mass_matrix_full
-   forcing_vector = kane.forcing_full
-   constants = (mass, stiffness, damping, gravity)
-   coordinates = (position,)
-   speeds = (speed,)
-   specified = (force,)
+   from numpy import array, linspace, sin
+   from pydy.system import System
+
+   sys = System(kane,
+        constants={mass: 1.0, stiffness: 1.0, damping: 0.2, gravity: 9.8},
+        specified={force: lambda x, t: sin(t)},
+        initial_conditions=array([0.1, -1.0]))
 
 Now generate the function needed for numerical evaluation of the ODEs. The
 generator can use various back ends: ``lambdify``, ``theano``, or ``cython``::
 
-   from pydy.codegen.code import generate_ode_function
-
-   evaluate_ode = generate_ode_function(mass_matrix, forcing_vector, constants,
-                                        coordinates, speeds, specified,
-                                        generator='lambdify')
+   sys.generate_ode_function(generator='lambdify')
 
 Integrate the equations of motion under the influence of a specified sinusoidal
 force::
 
-   from numpy import array, linspace, sin
-   from scipy.integrate import odeint
-
-   x0 = array([0.1, -1.0])
-   args = {'constants': {mass: 1.0, stiffness: 1.0, damping: 0.2, gravity: 9.8},
-           'specified': {force: lambda x, t: sin(t)}}
    t = linspace(0.0, 10.0, 1000)
-
-   y = odeint(evaluate_ode, x0, t, args=(args,))
+   y = sys.integrate(t)
 
 Plot the results::
 
