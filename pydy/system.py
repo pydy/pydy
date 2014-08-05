@@ -27,7 +27,7 @@ specified quantities, initial conditions, etc. You probably won't like
 these defaults. You can also specify such values via constructor keyword
 arguments or via the attributes::
 
-    sys = System(km, initial_conditions={symbol('q1'): 0.5})
+    sys = System(km, initial_conditions={dynamicsymbol('q1'): 0.5})
     sys.constants = {symbol('m'): 5.0}
     sys.integrate(times)
 
@@ -48,9 +48,12 @@ you must call ``generate_ode_function`` on your own::
 
 """
 
-from .codegen.code import generate_ode_function
+import sympy as sym
+
 from scipy.integrate import odeint
-from sympy import symbols
+
+from .codegen.code import generate_ode_function
+
 
 class System(object):
     """See the class's attributes for a description of the arguments to
@@ -66,52 +69,72 @@ class System(object):
         You must have called ``KanesMethod.kanes_equations()`` *before*
         constructing this ``System``.
     constants : dict, optional (default: all 1.0)
+        This dictionary maps SymPy Symbol objects to floats.
     specifieds : dict, optional (default: all 0)
+        This dictionary maps SymPy Functions of time objects, or tuples of
+        them, to floats, NumPy arrays, or functions of the state and time.
     ode_solver : function, optional (default: scipy.integrate.odeint)
+        This function computes the derivatives of the states.
     initial_conditions : dict, optional (default: all zero)
+        This dictionary maps SymPy Functions of time objects to floats.
 
     """
     def __init__(self, eom_method, constants=None, specifieds=None,
-            ode_solver=None, initial_conditions=None):
+                 ode_solver=None, initial_conditions=None):
         self._eom_method = eom_method
 
-        # TODO what if user adds symbols after constructing a System?
+        # TODO : What if user adds symbols after constructing a System?
         self._constants_symbols = self._Kane_constant_symbols()
         self._specifieds_symbols = self._Kane_undefined_dynamicsymbols()
 
-        if constants == None: self.constants = dict()
-        else: self.constants = constants
+        if constants is None:
+            self.constants = dict()
+        else:
+            self.constants = constants
 
-        if specifieds == None: self.specifieds = dict()
-        else: self.specifieds = specifieds
+        if specifieds is None:
+            self.specifieds = dict()
+        else:
+            self.specifieds = specifieds
 
-        if ode_solver == None: self.ode_solver = odeint
-        else: self.ode_solver = ode_solver
+        if ode_solver is None:
+            self.ode_solver = odeint
+        else:
+            self.ode_solver = ode_solver
 
-        if initial_conditions == None: self.initial_conditions = dict()
-        else: self.initial_conditions = initial_conditions
+        if initial_conditions is None:
+            self.initial_conditions = dict()
+        else:
+            self.initial_conditions = initial_conditions
 
         self._evaluate_ode_function = None
 
     @property
     def coordinates(self):
+        """Returns a list of the symbolic functions of time representing the
+        system's generalized coordinates."""
         return self.eom_method._q
 
     @property
     def speeds(self):
+        """Returns a list of the symbolic functions of time representing the
+        system's generalized speeds."""
         return self.eom_method._u
 
     @property
     def states(self):
-        """These are in the same order as used in integration (as passed into
-        evaluate_ode_function).
+        """Returns a list of the symbolic functions of time representing the
+        system's states, i.e. generalized coordinates plus the generalized
+        speeds. These are in the same order as used in integration (as
+        passed into evaluate_ode_function) and match the order of the mass
+        matrix and forcing vector.
 
         """
         return self.coordinates + self.speeds
 
     @property
     def eom_method(self):
-        """ This is a sympy.physics.mechanics.KanesMethod. The method used to
+        """This is a sympy.physics.mechanics.KanesMethod. The method used to
         generate the equations of motion. Read-only.
 
         """
@@ -134,7 +157,7 @@ class System(object):
 
     @property
     def constants_symbols(self):
-        """The constants (not functions of time) in the system."""
+        """The symbolic constants (not functions of time) in the system."""
         return self._constants_symbols
 
     def _check_constants(self, constants):
@@ -151,7 +174,7 @@ class System(object):
     def specifieds(self):
         """A dict that provides numerical values for the specified quantities
         in the problem (all dynamicsymbols that are not defined by the
-        equations of motion).  Keys are the symbols for the specified
+        equations of motion). Keys are the symbols for the specified
         quantities, or a tuple of symbols, and values are the floats, arrays of
         floats, or functions that generate the values. If a dictionary value is
         a function, it must have the same signature as ``f(x, t)``, the ode
@@ -182,7 +205,7 @@ class System(object):
         """The dynamicsymbols you must specify."""
         # TODO eventually use a method in the KanesMethod class.
         return self._specifieds_symbols
-        
+
     def _assert_is_specified_symbol(self, symbol, all_symbols):
         if symbol not in all_symbols:
             raise ValueError("Symbol {} is not a 'specified' symbol.".format(
@@ -231,14 +254,14 @@ class System(object):
     @property
     def ode_solver(self):
         """A function that performs forward integration. It must have the same
-        signature as odeint, which is::
-       
+        signature as scipy.integrate.odeint, which is::
+
             x_history = ode_solver(f, x0, t, args=(args,))
 
-        where f is a function f(x, t), x0 are the initial conditions, x_history
-        is the history, x is the state, t is the time, and args is a keyword
-        argument takes arguments that are then passed to f. The default is
-        odeint.
+        where f is a function f(x, t, args), x0 are the initial conditions,
+        x_history is the state time history, x is the state, t is the time,
+        and args is a keyword argument takes arguments that are then passed
+        to f. The default solver is odeint.
 
         """
         return self._ode_solver
@@ -246,16 +269,16 @@ class System(object):
     @ode_solver.setter
     def ode_solver(self, ode_solver):
         if not hasattr(ode_solver, '__call__'):
-            raise ValueError(
-                    "``ode_solver`` ({}) is not a function.".format(ode_solver))
+            msg = "``ode_solver`` ({}) is not a function."
+            raise ValueError(msg.format(ode_solver))
         self._ode_solver = ode_solver
 
     @property
     def initial_conditions(self):
-        """ Initial conditions for all states (coordinates and speeds). Keys
-        are the symbols for the coordinates and speeds, and values are floats.
-        Coordinates or speeds that are not specified in this dict are given a
-        default value of 0.0.
+        """Initial conditions for all states (coordinates and speeds). Keys
+        are the symbols for the coordinates and speeds, and values are
+        floats. Coordinates or speeds that are not specified in this dict
+        are given a default value of 0.0.
 
         """
         return self._initial_conditions
@@ -272,14 +295,14 @@ class System(object):
                 raise ValueError("Symbol {} is not a state.".format(k))
 
     def _initial_conditions_padded_with_defaults(self):
-        return dict(self.initial_conditions.items() + {s: 0.0 for s in
-            self.states if s not in self.initial_conditions}.items())
+        d = {s: 0.0 for s in self.states if s not in self.initial_conditions}
+        return dict(self.initial_conditions.items() + d.items())
 
     @property
     def evaluate_ode_function(self):
         """A function generated by ``generate_ode_function`` that computes the
         state derivatives:
-        
+
             x' = evaluate_ode_function(x, t, args=(...))
 
         This function is used by the ``ode_solver``.
@@ -306,7 +329,7 @@ class System(object):
         -------
         evaluate_ode_function : function
             A function which evaluates the derivaties of the states.
-        
+
         """
         self._evaluate_ode_function = generate_ode_function(
                 # args:
@@ -403,7 +426,5 @@ class System(object):
         """
         constants = list(self.eom_method._find_othersymbols(
             *self._Kane_inlist_insyms()))
-        constants.remove(symbols('t'))
+        constants.remove(sym.symbols('t'))
         return constants
-
-   

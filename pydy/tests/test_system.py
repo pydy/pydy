@@ -309,7 +309,7 @@ class TestSystem():
         x_05 = sys.ode_solver(sys.evaluate_ode_function,
                 x0, times, args=(
                     {'constants': sys._constants_padded_with_defaults(),
-                    'specified': sys._specifieds_padded_with_defaults()},))
+                     'specified': sys._specifieds_padded_with_defaults()},))
 
         testing.assert_allclose(x_04, x_05)
 
@@ -324,10 +324,3 @@ class TestSystem():
         sys = System(self.kane)
         with testing.assert_raises(NotImplementedError):
             sys.generate_ode_function(generator='made-up')
-
-
-
-
-
-
-
