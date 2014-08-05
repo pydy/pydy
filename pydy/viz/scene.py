@@ -449,7 +449,7 @@ class Scene(object):
         
         """
 
-        self.create_static_html()
+        self.create_static_html(silent=True)
         self._widget_dict = {}
         self.container = widgets.ContainerWidget()
         components = []
