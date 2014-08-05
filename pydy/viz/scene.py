@@ -461,6 +461,8 @@ class Scene(object):
 
         self.button = widgets.ButtonWidget(description="Rerun Simulations")
         def button_click(clicked):
+            self.button.add_class('disabled')
+            self.button.description = 'Rerunning Simulation ...'
             self.constant_values = []    
             for i in self._widget_dict.values():
                 self.constant_values.append(i.value)
@@ -469,6 +471,9 @@ class Scene(object):
                                     self.constant_values,fps=self.fps, 
                                     outfile_prefix=self.outfile_prefix)
             self.create_static_html(overwrite=True, silent=True)
+            self.button.remove_class('disabled')
+            self.button.description = 'Rerun Simulation'
+
         
         self.button.on_click(button_click)
         #components.append(button)
@@ -482,7 +487,8 @@ class Scene(object):
         self.html_widget.set_css({"display":"block",
                                   "float":"left"
                                   })
-        self.button.add_class('btn-info')
         display(self.container)
         display(self.button)
         display(self.html_widget)
+        self.button.add_class('btn-info')
+
