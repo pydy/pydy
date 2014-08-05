@@ -122,7 +122,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
     addLights: function(){
         /**
-          * Adds the cameras 
+          * Adds the Lights 
           * loaded from the JSON file
           * onto the scene. The cameras
           * can be switched during animation
