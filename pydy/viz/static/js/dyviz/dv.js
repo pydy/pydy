@@ -174,18 +174,22 @@ DynamicsVisualizer = Class.create({
     getFileExtenstion: function(){
         /**
           * Returns the extension of
-          * the loaded Scene file.
+          * the uploaded Scene file.
         **/ 
         var self = this;
         return self.sceneFilePath.split(".").slice(-1)[0].toLowerCase();
 
-   },
+    },
 
    getQueryString: function(key){
-       key = key.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-       var regex = new RegExp("[\\?&]" + key + "=([^&#]*)"),
-       results = regex.exec(location.search);
-       return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        /**
+          * Returns the GET Parameter from url corresponding
+          * to `key`
+        **/
+        key = key.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + key + "=([^&#]*)"),
+        results = regex.exec(location.search);
+        return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
     }
 
 });
