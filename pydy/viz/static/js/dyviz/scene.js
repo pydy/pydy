@@ -22,7 +22,8 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/ 
         var self = this;
         self.webgl_renderer = new THREE.WebGLRenderer();
-        self.webgl_renderer.setSize(640, 480);
+        var width = jQuery(window).width() * 0.4;
+        self.webgl_renderer.setSize(width, 480);
         
         var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
         self.webgl_renderer.setClearColor(backgroundColor); 
