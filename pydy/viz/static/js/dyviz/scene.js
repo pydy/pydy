@@ -341,7 +341,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
             currentTime = self._timeArray[0];
         }
         **/
-        var percent = currentTime/self._finalTime*100;
+        var percent = Math.round(currentTime/self._finalTime*100*100)/100;
 
         var time_index = self._timeArray.indexOf(currentTime);
         var _children = self._scene.children;
