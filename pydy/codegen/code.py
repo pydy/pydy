@@ -428,20 +428,31 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
                 A dictionary that maps the constant symbols to floats. The
                 dictionary must contain these keys:
 {constant_list}
-            specified : dictionary
-                A dictionary that maps the specified functions of time to
-                floats, ndarrays, or functions that produce ndarrays. The
-                keys can be a single specified symbolic function of time or
-                a tuple of symbols.  The total number of symbols must be
-                equal to {num_specified}. If the value is a function it must
+            specified : dictionary; ndarray, shape({num_specified},); function
+                There are three options for this dictionary. (1) is more flexible
+                but (2) and (3) are much more efficient.
+                (1) A dictionary that maps the specified functions of time to
+                floats, ndarrays, or functions that produce ndarrays.
+                The keys can be a single specified symbolic function of
+                time or a tuple of symbols.  The total number of symbols must
+                be equal to {num_specified}. If the value is a function it must
                 be of the form f(x, t), where x is the current state vector
-                ndarray and t is the current time float and it must return
-                an ndarray of the correct shape. For example:
+                ndarray and t is the current time float and it must return an
+                ndarray of the correct shape. For example:
                     args['specified'] = {{a: 1.0,
                                          (d, b) : np.array([1.0, 2.0]),
                                          (e, f) : lambda x, t: np.array(x[0], x[1]),
                                          c: lambda x, t: np.array(x[2])}}
-                The dictionary must contian these functions of time:
+
+                (2) ndarray: The specified values in the same order as the
+                symbols given to `generate_ode_function()`, and must be the
+                correct shape.
+                (3) function: It must be of the form f(x, t), where x is the
+                current state vector and t is the current time and it must
+                return an ndarray of the correct shape (an ndarray like for
+                (2)).
+
+                The dictionary must contain these functions of time:
 {specified_list}
 
         Returns
@@ -465,19 +476,36 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
 
         if specified is not None:
 
-            specified_values = np.zeros(len(specified))
+            if isinstance(args['specified'], dict):
 
-            for k, v in args['specified'].items():
-                # TODO : Not sure if this is the best check here.
-                if isinstance(type(k), UndefinedFunction):
-                    k = (k,)
-                idx = [specified.index(symmy) for symmy in k]
+                specified_values = np.zeros(len(specified))
+    
+                for k, v in args['specified'].items():
+                    # TODO : Not sure if this is the best check here.
+                    if isinstance(type(k), UndefinedFunction):
+                        k = (k,)
+                    idx = [specified.index(symmy) for symmy in k]
+                    try:
+                        specified_values[idx] = v(x, t)
+                    except TypeError:  # not callable
+                        # If not callable, then it should be a float, ndarray,
+                        # or indexable.
+                        specified_values[idx] = v
+
+            else:
+                # More efficient.
+
                 try:
-                    specified_values[idx] = v(x, t)
-                except TypeError:  # not callable
-                    # If not callable, then it should be a float, ndarray,
-                    # or indexable.
-                    specified_values[idx] = v
+                    specified_values = args['specified'](x, t)
+                except TypeError: # not callable.
+                    # If not callable, then it should be a float or ndarray.
+                    specified_values = args['specified']
+
+                # If the value is just a float, then convert to a 1D array.
+                try:
+                    len(specified_values)
+                except TypeError:
+                    specified_values = np.asarray([specified_values])
 
             segmented.append(specified_values)
 

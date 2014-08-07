@@ -235,7 +235,7 @@ and specified quantities. Here, we specify sinusoidal forcing::
 
    sys = System(kane,
         constants={mass: 1.0, stiffness: 1.0, damping: 0.2, gravity: 9.8},
-        specified={force: lambda x, t: sin(t)},
+        specified={'symbols': [force], 'values': lambda x, t: sin(t)},
         initial_conditions=array([0.1, -1.0]))
 
 Now generate the function needed for numerical evaluation of the ODEs. The

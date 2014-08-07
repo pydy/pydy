@@ -87,6 +87,15 @@ class TestCodeRHSArgs():
         testing.assert_allclose(xd_01, xd_02)
         testing.assert_allclose(xd_01, xd_03)
 
+        # Test old and efficient RHS args.
+        args['specified'] = np.array([1.0, 2.0, 3.0, 4.0])
+        xd_04 = rhs(x, 0.0, args)
+        testing.assert_allclose(xd_01, xd_04)
+
+        args['specified'] = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
+        xd_05 = rhs(x, 0.0, args)
+        testing.assert_allclose(xd_01, xd_05)
+
 class TestCode():
 
     def test_generate_ode_function(self):

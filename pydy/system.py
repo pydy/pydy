@@ -174,23 +174,45 @@ class System(object):
     def specifieds(self):
         """A dict that provides numerical values for the specified quantities
         in the problem (all dynamicsymbols that are not defined by the
-        equations of motion). Keys are the symbols for the specified
-        quantities, or a tuple of symbols, and values are the floats, arrays of
-        floats, or functions that generate the values. If a dictionary value is
-        a function, it must have the same signature as ``f(x, t)``, the ode
-        right-hand-side function (see the documentation for the ``ode_solver``
-        attribute). You needn't provide values for all specified symbols. Those
-        for which you do not give a value will default to 0.0.
+        equations of motion). There are two possible formats. (1) is more
+        flexible, but (2) is more efficient (by a factor of 3).
+
+        (1) Keys are the symbols for the specified quantities, or a tuple of
+        symbols, and values are the floats, arrays of floats, or functions that
+        generate the values. If a dictionary value is a function, it must have
+        the same signature as ``f(x, t)``, the ode right-hand-side function
+        (see the documentation for the ``ode_solver`` attribute). You needn't
+        provide values for all specified symbols. Those for which you do not
+        give a value will default to 0.0.
+
+        (2) There are two keys: 'symbols' and 'values'. The value for 'symbols'
+        is an iterable of *all* the specified quantities in the order that you
+        have provided them in 'values'. Values is an ndarray, whose length is
+        `len(sys.specifieds_symbols)`, or a function of x and t that returns an
+        ndarray (also of length `len(sys.specifieds_symbols)`). NOTE: You must
+        provide values for all specified symbols. In this case, we do *not*
+        provide default values.
+
+        NOTE: If you switch formats with the same instance of System, you
+        *must* call `generate_ode_function()` before calling `integrate()`
+        again.
 
         Examples
         --------
-        Keys can be individual symbols, or a tuple of symbols. Length of a
-        value must match the length of the corresponding key. Values can be
-        functions that return iterables::
+        Here are examples for (1). Keys can be individual symbols, or a tuple
+        of symbols. Length of a value must match the length of the
+        corresponding key. Values can be functions that return iterables::
 
             sys = System(km)
             sys.specifieds = {(a, b, c): np.ones(3), d: lambda x, t: -3 * x[0]}
             sys.specifieds = {(a, b, c): lambda x, t: np.ones(3)}
+
+         Here are examples for (2):
+
+            sys.specifieds = {'symbols': (a, b, c, d),
+                              'values': np.ones(4)}
+            sys.specifieds = {'symbols': (a, b, c, d),
+                              'values': lambda x, t: np.ones(4)}
 
         """
         return self._specifieds
@@ -216,29 +238,55 @@ class System(object):
             raise ValueError("Symbol {} appears more than once.".format(
                 symbol))
 
+    def _specifieds_are_in_format_2(self, specifieds):
+        keys = specifieds.keys()
+        if ('symbols' in keys and 'values' in keys):
+            return True
+        else:
+            return False
+
     def _check_specifieds(self, specifieds):
         symbols = self.specifieds_symbols
 
         symbols_so_far = list()
 
-        for k, v in specifieds.items():
+        if self._specifieds_are_in_format_2(specifieds):
 
             # The symbols must be specifieds.
-            if isinstance(k, tuple):
-                for ki in k:
-                    self._assert_is_specified_symbol(ki, symbols)
-            else:
-                self._assert_is_specified_symbol(k, symbols)
+            for sym in specifieds['symbols']:
+                self._assert_is_specified_symbol(sym, symbols)
 
             # Each specified symbol can appear only once.
-            if isinstance(k, tuple):
-                for ki in k:
-                    self._assert_symbol_appears_multiple_times(ki,
-                            symbols_so_far)
-                    symbols_so_far.append(ki)
-            else:
-                self._assert_symbol_appears_multiple_times(k, symbols_so_far)
-                symbols_so_far.append(k)
+            for sym in specifieds['symbols']:
+                self._assert_symbol_appears_multiple_times(sym, symbols_so_far)
+                symbols_so_far.append(sym)
+
+            # Must have provided all specifieds.
+            for sym in self.specifieds_symbols:
+                if sym not in specifieds['symbols']:
+                    raise ValueError(
+                            "Specified symbol {} is not provided.".format(sym))
+
+        else:
+
+            for k, v in specifieds.items():
+
+                # The symbols must be specifieds.
+                if isinstance(k, tuple):
+                    for ki in k:
+                        self._assert_is_specified_symbol(ki, symbols)
+                else:
+                    self._assert_is_specified_symbol(k, symbols)
+
+                # Each specified symbol can appear only once.
+                if isinstance(k, tuple):
+                    for ki in k:
+                        self._assert_symbol_appears_multiple_times(ki,
+                                symbols_so_far)
+                        symbols_so_far.append(ki)
+                else:
+                    self._assert_symbol_appears_multiple_times(k, symbols_so_far)
+                    symbols_so_far.append(k)
 
     def _symbol_is_in_specifieds_dict(self, symbol, specifieds_dict):
         for k in specifieds_dict.keys():
@@ -331,6 +379,10 @@ class System(object):
             A function which evaluates the derivaties of the states.
 
         """
+        if self._specifieds_are_in_format_2(self.specifieds):
+            specified_value = self.specifieds['symbols']
+        else:
+            specified_value = self.specifieds_symbols
         self._evaluate_ode_function = generate_ode_function(
                 # args:
                 self.eom_method.mass_matrix_full,
@@ -338,7 +390,7 @@ class System(object):
                 self.constants_symbols,
                 self.coordinates, self.speeds,
                 # kwargs:
-                specified=self.specifieds_symbols,
+                specified=specified_value,
                 generator=generator,
                 **kwargs
                 )
@@ -378,13 +430,18 @@ class System(object):
         initial_conditions_in_proper_order = \
                 [init_conds_dict[k] for k in self.states]
 
+        if self._specifieds_are_in_format_2(self.specifieds):
+            specified_value = self.specifieds['values']
+        else:
+            specified_value = self._specifieds_padded_with_defaults()
+
         return self.ode_solver(
                 self.evaluate_ode_function,
                 initial_conditions_in_proper_order,
                 times,
                 args=({
                     'constants': self._constants_padded_with_defaults(),
-                    'specified': self._specifieds_padded_with_defaults(),
+                    'specified': specified_value,
                     },)
                 )
 
@@ -392,9 +449,6 @@ class System(object):
         """TODO temporary."""
         uaux = self.eom_method._uaux
         uauxdot = [diff(i, t) for i in uaux]
-        # dictionary of auxiliary speeds & derivatives which are equal to zero
-        subdict = dict(
-                list(zip(uaux + uauxdot, [0] * (len(uaux) + len(uauxdot)))))
 
         # Checking for dynamic symbols outside the dynamic differential
         # equations; throws error if there is.

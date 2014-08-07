@@ -61,6 +61,15 @@ class TestSystem():
         testing.assert_allclose(sys.constants.values(),
                 self.constant_map.values())
 
+        # Use old specifieds.
+        # -------------------
+        sys = System(self.kane,
+                     ode_solver=odeint,
+                     specifieds={'symbols': [self.specified_symbol],
+                         'values': np.ones(1)},
+                     initial_conditions=ic,
+                     constants=self.constant_map)
+
     def test_coordinates(self):
         assert self.sys.coordinates == self.kane._q
 
@@ -182,6 +191,42 @@ class TestSystem():
         # properly.
         sys.specifieds.pop(spec_syms[0])
         sys.integrate(times)
+
+        # Test old way of providing specifieds.
+        # -------------------------------------
+        sys = System(self.kane_nlink)
+        spec_syms = sys.specifieds_symbols
+        # Get numbers using the new way.
+        sys.specifieds = dict(zip(spec_syms, [1.0, 2.0, 3.0, 4.0]))
+        x_01 = sys.integrate(times)
+
+        # Now use the old way.
+        sys.specifieds = {'symbols': spec_syms,
+                'values': [1.0, 2.0, 3.0, 4.0]}
+        x_02 = sys.integrate(times)
+        testing.assert_allclose(x_01, x_02)
+
+        # Error checks for the new way.
+        # -----------------------------
+        with testing.assert_raises(ValueError):
+            sys.specifieds = {'symbols': [symbols('m1')], 'values': [1.0]}
+        with testing.assert_raises(ValueError):
+            sys.specifieds = {'symbols': [symbols('T2, T2')], 'values': [1, 2]}
+        with testing.assert_raises(ValueError):
+            sys.specifieds = {'symbols': [dynamicsymbols('T2')], 'values':
+                    [1.0]}
+
+        # Reordering causes issues!
+        # -------------------------
+        sys.specifieds = {'symbols':
+                [spec_syms[1], spec_syms[0], spec_syms[2], spec_syms[3]],
+                'values': [2.0, 1.0, 3.0, 4.0]}
+        x_03 = sys.integrate(times)
+        # I tested: x_01 is not allclose to x_03.
+
+        sys.generate_ode_function()
+        x_04 = sys.integrate(times)
+        testing.assert_allclose(x_01, x_04)
 
 
     def test_ode_solver(self):
