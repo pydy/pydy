@@ -1,34 +1,33 @@
 describe("DynamicsVisualizer's Parser class should have a loadScene method which when called", function() {
-	beforeEach(function(){
-        DynamicsVisualizer.sceneFilePath = "scene_desc.json";
-        DynamicsVisualizer.Parser.loadScene();
-    });
-    
-    
-    it("should load objects to be rendered", function() {
-        console.log(DynamicsVisualizer.model);
-        //expect(DynamicsVisualizer._scene).toBe(expectedBasePath);
-    });
-
-    it("should load lights to be rendered", function() {
+	beforeEach(function(done) {
+        setTimeout(function() {
+          DynamicsVisualizer.sceneFilePath = "sample_data/scene_desc.json";
+          DynamicsVisualizer.Parser.loadScene();
+          done();
+        }, 1000);
+        });
+    it("should have DynamicsVisualizer.model defined", function(done) {
+        //DynamicsVisualizer.sceneFilePath = "sample_data/scene_desc.json";
+        //DynamicsVisualizer.Parser.loadScene();
+        expect(DynamicsVisualizer.model).toBeDefined();
+        done();
         
-        //expect(DynamicsVisualizer._scene).toBe(expectedBasePath);
     });
 
-    it("should load cameras to be rendered", function() {
+    it("should load camera to be rendered", function() {
+        //DynamicsVisualizer.
+        expect(DynamicsVisualizer._scene[0]).toBe(THREE.PerspectiveCamera);
+    });
+
+    it("should load light to be rendered", function() {
         
-        //expect(DynamicsVisualizer._scene).toBe(expectedBasePath);
+        //expect(DynamicsVisualizer._scene[1]).toBe(THREE.PointLight});
     });
 
-});
-
-describe("On succesful calling Parser.loadscene, loadUIElements should be called and", function() {
-	beforeEach(function(){
-        DynamicsVisualizer.sceneFilePath = "sample_data/scene_desc.json";
-        DynamicsVisualizer.Parser.loadScene();
+    it("should load axes to be rendered", function() {
+        //expect(DynamicsVisualizer._scene[2]).toBe(THREE.AxisHelper);
     });
-    
-    
+
     it("play animation should be un-disabled", function() {
         expect(jQuery("#play-animation")).not.toBeMatchedBy('.disabled');
     });
@@ -36,37 +35,13 @@ describe("On succesful calling Parser.loadscene, loadUIElements should be called
         expect(jQuery("#show-model")).not.toBeMatchedBy('.disabled');
     });
 
-    it("Code mirror's editor object should be defined", function() {
-        expect(DynamicsVisualizer.editor).toBeDefined();
-    });
-});
-
-
-
-
-describe("DynamicsVisualizer's Parser class should have a loadSimulation method which ", function() {
-	beforeEach(function(){
-        DynamicsVisualizer.sceneFilePath = "sample_data/scene_desc.json";
-        DynamicsVisualizer.loadScene();
-        DynamicsVisualizer.Parser.loadSimulation();
-    });
-    
     it("should save simulation data in an object upon success", function() {
+        expect(DynamicsVisualizer.simData).toBeDefined();
         
-        //expect(DynamicsVisualizer._scene).toBe(expectedBasePath);
     });
 
-});
-
-describe("DynamicsVisualizer's Parser class should have a loadSimulation method which ", function() {
-	beforeEach(function(){
-        DynamicsVisualizer.sceneFilePath = "sample_data/scene_desc.json";
-        DynamicsVisualizer.Parser.loadScene();
-    });
-    
     it("should create a timeArray on succesful completion", function() {
-        
-        //expect(DynamicsVisualizer._scene).toBe(expectedBasePath);
+        expect(DynamicsVisualizer._timeArray).toBeDefined();
     });
 
 });

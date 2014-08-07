@@ -32,6 +32,7 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
                 self.Parser.loadSimulation();
                 // Load UI elements relevant for animation stuff!
                 self.loadUIElements();
+                console.log("Done with loadScene");
             },
             onFailure: function() { 
                 alert('[PyDy ALERT]: Scene File not loaded!'); 
