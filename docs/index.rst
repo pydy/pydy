@@ -14,6 +14,14 @@ codegen package
 
     codegen/api.rst
 
+System class
+------------
+
+.. toctree::
+   :maxdepth: 1
+
+   system.rst
+
 viz package
 -----------
 
