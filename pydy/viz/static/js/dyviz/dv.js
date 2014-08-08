@@ -18,8 +18,8 @@ DynamicsVisualizer = Class.create({
         console.log("[PyDy INFO]: initializing Visualizer");
         if(!self.isWebGLCompatible()){
             console.log("[PyDy ALERT]: Incompatible browser!");
-            alert("The browser you are using is not compatible! " + 
-                "Please use a latest version of Chrome or Firefox");
+            alert("The browser does not seems to be webgl compatible! " + 
+                "Please check here for browser compatibility: http://caniuse.com/webgl ");
             return false;
         }
 
@@ -64,6 +64,7 @@ DynamicsVisualizer = Class.create({
             console.log("[PyDy INFO]: Loading scene JSON file:" + self.sceneFilePath);
             self.Parser.loadScene();
         });
+        
 
         self._slider = jQuery("#time-slider").slider({min:0,max:100,step:1, handle:"square", value:0});
         self._slider.on('slide',function(ev) { 
@@ -157,6 +158,9 @@ DynamicsVisualizer = Class.create({
             });
         }
         self.editor.getDoc().setValue(JSON.stringify(self.model,null,4));
+
+        // Get animation Speed..
+        self.animSpeed = jQuery("#anim-speed").val();
     },   
 
     
