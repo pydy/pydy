@@ -6,41 +6,51 @@ DynamicsVisualizer.Geometries = ['Shape', 'Cube', 'Cylinder',
                                  'Torus', 'TorusKnot', 'Tube',
                                  'Mesh'];
 DynamicsVisualizer.Materials["default"] = new THREE.MeshLambertMaterial();
+DynamicsVisualizer.texture_base_path = "static/textures/"
+
+// If IPython,
+if(typeof IPython == "undefined"){
+
+    DynamicsVisualizer.texture_base_path = "textures/";
+
+}
+
+
 function loadMaterials() {
 
-    var checkerBoardTexture = THREE.ImageUtils.loadTexture( "textures/checkerboard.jpg" );
+    var checkerBoardTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "checkerboard.jpg" );
     checkerBoardTexture.wrapS = checkerBoardTexture.wrapT = THREE.RepeatWrapping;
     checkerBoardTexture.anisotropy = 4;
 
-    var metalTexture = THREE.ImageUtils.loadTexture( "textures/metal.jpg" );
+    var metalTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "metal.jpg" );
     metalTexture.wrapS = metalTexture.wrapT = THREE.RepeatWrapping;
     metalTexture.repeat.set(2,2);
     metalTexture.anisotropy = 4;
 
-    var moonTexture = THREE.ImageUtils.loadTexture( "textures/moon.jpg" );
+    var moonTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "moon.jpg" );
     moonTexture.wrapS = moonTexture.wrapT = THREE.RepeatWrapping;
     moonTexture.anisotropy = 4;
 
-    var earthTexture = THREE.ImageUtils.loadTexture( "textures/earth.jpg" );
+    var earthTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "earth.jpg" );
     earthTexture.wrapS = earthTexture.wrapT = THREE.RepeatWrapping;
     earthTexture.anisotropy = 4;
 
-    var grassTexture = THREE.ImageUtils.loadTexture( "textures/grass.jpg" );
+    var grassTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "grass.jpg" );
     grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping;
     grassTexture.repeat.set(1,1);
     grassTexture.anisotropy = 4;
 
-    var dirtTexture = THREE.ImageUtils.loadTexture( "textures/dirt.jpg" );
+    var dirtTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "dirt.jpg" );
     dirtTexture.wrapS = dirtTexture.wrapT = THREE.RepeatWrapping;
     dirtTexture.repeat.set(1,1);
     dirtTexture.anisotropy = 4;
 
-    var waterTexture = THREE.ImageUtils.loadTexture( "textures/water.jpg" );
+    var waterTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "water.jpg" );
     waterTexture.wrapS = waterTexture.wrapT = THREE.RepeatWrapping;
     waterTexture.repeat.set(1,1);
     waterTexture.anisotropy = 4;
 
-    var lavaTexture = THREE.ImageUtils.loadTexture( "textures/lavatile.jpg" );
+    var lavaTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "lavatile.jpg" );
     lavaTexture.repeat.set( 4, 2 );
     lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping;
     lavaTexture.anisotropy = 4;
