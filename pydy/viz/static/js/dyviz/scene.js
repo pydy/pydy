@@ -111,9 +111,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         /** 
           * Adds the cameras 
           * loaded from the JSON file
-          * onto the scene. The cameras
-          * can be switched during animation
-          * from the `switch cameras` UI button.
+          * onto the scene.
         **/
         var self = this;
         var cameras = this.model.cameras;
@@ -125,9 +123,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         /**
           * Adds the Lights 
           * loaded from the JSON file
-          * onto the scene. The cameras
-          * can be switched during animation
-          * from the `switch cameras` UI button.
+          * onto the scene.
         **/  
         var self = this;
         var lights = this.model.lights;
