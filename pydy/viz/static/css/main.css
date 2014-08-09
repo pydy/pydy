@@ -76,6 +76,11 @@ input[type=text]:focus{
 	margin-right: 0.5em;
 }
 
+#pause-animation{
+	border-radius: 0.5em;
+	margin-right: 0.5em;
+}
+
 #stop-animation{
 	border-radius: 0.5em;
 	margin-right: 0.5em;

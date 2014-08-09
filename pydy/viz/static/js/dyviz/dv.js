@@ -88,6 +88,10 @@ DynamicsVisualizer = Class.create({
             self.Scene.runAnimation();
             
         });
+        jQuery("#pause-animation").click(function(){
+            self.Scene.pauseAnimation();
+            
+        });
         jQuery("#stop-animation").click(function(){
             self.Scene.stopAnimation();
             
@@ -100,12 +104,19 @@ DynamicsVisualizer = Class.create({
 
         jQuery("#show-model").click(function(){
             jQuery("#model-loader-wrapper").slideDown();
+            self.editor.refresh();
+            // Make JSON downloadable..
+            var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(self.model,null,"    "));
+            jQuery('<a href="data:' + data + 
+                '" download="scene_desc.json" class="btn btn-success btn-large"> \
+                <i class="icon-white icon-download-alt">download JSON</a>').appendTo('#download-json');
             jQuery(this).addClass("disabled");
 
         });
 
         jQuery("#close-model-dialog").click(function(){
             jQuery("#model-loader-wrapper").slideUp();
+            jQuery("#download-json").html(" ");
             jQuery("#show-model").removeClass("disabled")
 
         });

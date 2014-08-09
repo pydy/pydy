@@ -49,7 +49,6 @@
       <div id="json-inp">
         <input type="text" class="form-control" id="json-input" value="{load_url}">
         <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load">
-        <input type="button" class="btn btn-success" value="Save/Edit" id="save-json">
       </div><!--!json-inp-->
       <hr />
       <div id="edit-objects">
@@ -68,16 +67,18 @@
     </div>
     <div id="canvas" >
       <div id="model-loader-wrapper" style="display:None">
-        <button id="close-model-dialog" class="btn btn-primary btn-small"><i class="icon-white icon-list-alt"></i> Close Dialog</button>
+        <button id="close-model-dialog" class="btn btn-primary btn-small"><i class="icon-white icon-list-alt"></i> Close Dialog</button><div id="download-json"><!-- appends JSON download link via jQuery --></div>
         <textarea rows="10" cols="50" id="model-loader" class="form-control"></textarea>
         <hr />
       </div>
       <div id="control-button-group" style="display:inline-block;" class="btn-group">
-        <button id="play-animation" class="btn btn-default btn-success disabled" ><span class="glyphicon glyphicon-play"></span>Play Animation</button>
+        <button id="play-animation" class="btn btn-default btn-success disabled" ><span class="glyphicon glyphicon-play"></span>Play</button>
 
-        <button id="stop-animation" style="display:none;" class="btn btn-default btn-danger active"><span class="glyphicon glyphicon-stop" ></span>Stop Animation</button>
+         <button id="pause-animation" style="display:none;" class="btn btn-default btn-info active"><span class="glyphicon glyphicon-pause" ></span>Pause</button>
+
+        <button id="stop-animation" style="display:none;" class="btn btn-default btn-danger active"><span class="glyphicon glyphicon-stop" ></span>Stop</button>
             
-        <button id="show-model" class="btn btn-default btn-info disabled"><span class="glyphicon glyphicon-stop" ></span>Show Scene JSON</button>
+        <button id="show-model" class="btn btn-default btn-info disabled"><span class="glyphicon glyphicon-edit" ></span>Show Scene JSON</button>
           
         <div id="slider-wrapper">
           <span class="glyphicon glyphicon-time" ></span><span style="margin-right:1em;" id="time"> 0s</span>
