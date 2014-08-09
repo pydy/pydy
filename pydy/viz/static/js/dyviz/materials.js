@@ -3,8 +3,8 @@ DynamicsVisualizer.Geometries = ['Cube', 'Cylinder',
                                  'Cone', 'Sphere', 'Circle',
                                  'Plane', 'Tetrahedron',
                                  'Octahedron', 'Icosahedron',
-                                 'Torus', 'TorusKnot', 'Tube',]
-//                                 'Mesh'];
+                                 'Torus', 'TorusKnot']
+
 DynamicsVisualizer.Materials["default"] = new THREE.MeshLambertMaterial();
 DynamicsVisualizer.texture_base_path = "static/textures/"
 
