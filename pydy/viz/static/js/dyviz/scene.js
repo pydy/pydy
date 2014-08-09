@@ -337,7 +337,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
             currentTime = self._timeArray[0];
         }
         **/
-        var percent = Math.round(currentTime/self._finalTime*100*100)/100;
+        var percent = (currentTime/self._finalTime*100).toFixed(3);
 
         var time_index = self._timeArray.indexOf(currentTime);
         var _children = self._scene.children;
@@ -353,7 +353,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
         }
         jQuery("#time-slider").slider("setValue",percent);
-        jQuery("#time").html(" " + Math.round(currentTime*100)/100 + "s");
+        jQuery("#time").html(" " + currentTime.toFixed(3) + " s");
         
     },
 
