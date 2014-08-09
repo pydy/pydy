@@ -24,15 +24,23 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         div1.append(jQuery('<input />',{ type:'text', id: "_color", class: 'form-control', value: toLoad.color}));
         
         var div_material = jQuery('<select />',{class: 'form-control', id:"_material"});
-        div_material.append('<option value="' + toLoad.material + '">' + toLoad.material + '</option>');
         for(var i in self.Materials){
-            div_material.append('<option value="' + i +  '">' + i + '</option>');
+            if(i == toLoad.type) {
+                div_material.append('<option value="' + i +  '" selected="selected" >' + i + '</option>');
+                
+            }
+            else {
+                div_material.append('<option value="' + i +  '">' + i + '</option>');
+            }
         }
 
         var div_geom = jQuery('<select />',{class: 'form-control', id:"_geometry"});
-        div_geom.append('<option value="' + toLoad.type + '">' + toLoad.type + '</option>');
         for(var i=0;i<self.Geometries.length; i++){
-            div_geom.append('<option value="' + self.Geometries[i] +  '">' + self.Geometries[i] + '</option>');
+            if(self.Geometries[i] == toLoad.type){
+                div_geom.append('<option value="' + self.Geometries[i] +  '" selected="selected">' + self.Geometries[i] + '</option>');
+            }  else {
+                div_geom.append('<option value="' + self.Geometries[i] +  '">' + self.Geometries[i] + '</option>');
+            }
         }
 
         var div2 = jQuery('<div />',{class: 'input-group', id: "geom-params"});
