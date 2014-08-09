@@ -149,39 +149,40 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
             case "Octahedron":
             case "Icosahedron":
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Radius'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius || 1.0}));
                 break;
 
             case "Cylinder":
             case "Cone":
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Radius'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius  || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius  || 1.0}));
 
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 1.0}));
                 break;
 
             case "Torus":
             case "TorusKnot":
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Radius'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius  || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius  || 1.0}));
 
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Tube Radius'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_tubeRadius", class: 'form-control', value: toLoad.tube_radius || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_tubeRadius", class: 'form-control', value: toLoad.tube_radius || 1.0}));
                 break;    
 
             case "Plane":
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Width'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_width", class: 'form-control', value: toLoad.width  || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_width", class: 'form-control', value: toLoad.width  || 1.0}));
 
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 1.0}));
                 break;    
 
-            case "Cone":
+            case "Cube":
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 1.0}));
                 break;     
+
         }
     },
 
