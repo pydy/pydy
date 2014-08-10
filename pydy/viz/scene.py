@@ -24,7 +24,7 @@ try:
     import IPython
     from IPython.lib import backgroundjobs as bg
     from IPython.html import widgets
-    from IPython.display import clear_output, display
+    from IPython.display import clear_output, display, Javascript
 
 except ImportError:
     IPython = None
@@ -471,7 +471,9 @@ class Scene(object):
                                     self.constant_values,fps=self.fps, 
                                     outfile_prefix=self.outfile_prefix)
             self.create_static_html(overwrite=True, silent=True)
+            display(Javascript("DynamicsVisualizer.Parser.loadScene()"));
             self.button.remove_class('disabled')
+             
             self.button.description = 'Rerun Simulation'
 
         
