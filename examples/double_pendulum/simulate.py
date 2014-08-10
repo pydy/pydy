@@ -20,6 +20,7 @@ frames_per_sec = 60
 final_time = 5.0
 
 times = linspace(0.0, final_time, final_time * frames_per_sec)
-
-x = sys.integrate(times)
+sys.times = times
+x = sys.integrate()
+print x
 

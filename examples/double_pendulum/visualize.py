@@ -58,8 +58,7 @@ scene = Scene(world_frame, O,
 # Create the visualization
 # ========================
 
-scene.generate_visualization_json(sys.states, constants.keys(), x,
-        constants.values())
+scene.generate_visualization_json_system(sys)
 
 if __name__ == "__main__":
     scene.display()

@@ -17,6 +17,7 @@ from sympy.physics.mechanics import ReferenceFrame, Point
 from .camera import PerspectiveCamera
 from .server import run_server
 from .light import PointLight
+from ..system import System
 
 __all__ = ['Scene']
 
@@ -342,6 +343,25 @@ class Scene(object):
 
         return self._simulation_info    
         
+    def generate_visualization_json_system(self, system, **kwargs):
+        """ Alternative method compatible with System class
+        for generating visualization JSON.
+
+        Parameters
+        ----------
+        system: object, pydy.System
+        
+        Keyword arguments are same as generate_visualization_json.
+   
+        """
+        if not isinstance(system,System):
+            raise TypeError("{} should be a valid pydy.System object".format(system))
+        
+        self.generate_visualization_json(system.states,
+                                          system.constants_symbols, 
+                                          system.integrate(),
+                                          system.constants, **kwargs)
+
     def create_static_html(self, overwrite=False, silent=False):
 
         """Creates a directory named ``static`` in the current working
