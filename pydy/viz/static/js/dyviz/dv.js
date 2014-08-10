@@ -76,6 +76,7 @@ DynamicsVisualizer = Class.create({
                 var percent = (self._timeArray[i]/self._timeArray[len-1])*100;
                 if(val <= percent){ gotValue = true; break; }
             }
+            self.currentTime = self._timeArray[i];
             self.Scene.setAnimationTime(self._timeArray[i]);
         });
             

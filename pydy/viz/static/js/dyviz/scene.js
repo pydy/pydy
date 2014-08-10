@@ -176,7 +176,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                                           object.radius,
                                           object.radius/100,
                                           object.length,
-                                          50,50);        
+                                          50,50, openEnded=true);        
                 break;
 
             case "Circle":        
@@ -310,6 +310,8 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         if(!self.animationPaused){
           self.currentTime = 0;
         };
+
+        self.animationPaused = false;
         var timeDelta = self.model.timeDelta;
         
         self.animationID = window.setInterval(function(){ 
