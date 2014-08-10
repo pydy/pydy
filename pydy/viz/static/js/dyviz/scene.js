@@ -140,11 +140,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var self = this;
         var type = object.type;
         
-        var material = self.Materials[object.material];
-        if(object.color != "default"){
-            material.color = new THREE.Color(object.color);
-        }
-
         switch(type) {
 
             case "Mesh":
@@ -223,6 +218,8 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
            
         }
 
+        var material = self.Materials[object.material];
+        material.color = new THREE.Color(object.color);
         var mesh = new THREE.Mesh(geometry, material);
         var element = new Float32Array(object.init_orientation);
         var initMatrix = new THREE.Matrix4();

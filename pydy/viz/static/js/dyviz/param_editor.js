@@ -128,7 +128,6 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         }
 
         jQuery.extend(true,self.model.objects[int_id],updated_object);
-        self.Scene._removeAll();
         self.Scene.addObjects();
         self.Scene.addCameras();
         self.Scene.addLights();
