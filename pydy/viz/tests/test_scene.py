@@ -42,7 +42,7 @@ def test_create_static_html():
     viz_frame = VisualizationFrame(ceiling, block, sphere)
     scene = Scene(ceiling, origin, viz_frame)
     scene.generate_visualization_json(sys.states, sys.constants.keys(), y,
-                                      sys.constants.values())
+                                      sys.constants.values(), outfile_prefix='test')
 
     # test static dir creation
     scene.create_static_html(overwrite=True)
