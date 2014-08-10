@@ -9,7 +9,7 @@ DynamicsVisualizer = Class.create({
       * maps buttons' `onClick` to functions.
     **/ 
 
-    init: function(){    
+    _initialize: function(){    
         /**
           * Checks whether the browser supports webGLs, and
           * initializes the DynamicVisualizer object.
@@ -18,11 +18,20 @@ DynamicsVisualizer = Class.create({
         console.log("[PyDy INFO]: initializing Visualizer");
         if(!self.isWebGLCompatible()){
             console.log("[PyDy ALERT]: Incompatible browser!");
-            alert("The browser you are using is not compatible! " + 
-                "Please use a latest version of Chrome or Firefox");
+            alert("The browser does not seems to be webgl compatible! " + 
+                "Please check here for browser compatibility: http://caniuse.com/webgl ");
             return false;
         }
-        return true;
+
+        var sceneFileURI = self.getQueryString("load") || jQuery("#json-input").val();
+        if(sceneFileURI){
+            console.log("[PyDy INFO]: Found scene desc from URL");
+            jQuery("#json-input").val(sceneFileURI);
+            self.sceneFilePath = sceneFileURI;
+            console.log("[PyDy INFO]: Loading scene JSON file:" + self.sceneFilePath);
+            self.Parser.loadScene();
+        }
+        
     },
 
 
@@ -55,6 +64,7 @@ DynamicsVisualizer = Class.create({
             console.log("[PyDy INFO]: Loading scene JSON file:" + self.sceneFilePath);
             self.Parser.loadScene();
         });
+        
 
         self._slider = jQuery("#time-slider").slider({min:0,max:100,step:1, handle:"square", value:0});
         self._slider.on('slide',function(ev) { 
@@ -66,6 +76,7 @@ DynamicsVisualizer = Class.create({
                 var percent = (self._timeArray[i]/self._timeArray[len-1])*100;
                 if(val <= percent){ gotValue = true; break; }
             }
+            self.currentTime = self._timeArray[i];
             self.Scene.setAnimationTime(self._timeArray[i]);
         });
             
@@ -76,6 +87,10 @@ DynamicsVisualizer = Class.create({
 
         jQuery("#play-animation").click(function(){
             self.Scene.runAnimation();
+            
+        });
+        jQuery("#pause-animation").click(function(){
+            self.Scene.pauseAnimation();
             
         });
         jQuery("#stop-animation").click(function(){
@@ -90,16 +105,22 @@ DynamicsVisualizer = Class.create({
 
         jQuery("#show-model").click(function(){
             jQuery("#model-loader-wrapper").slideDown();
+            self.editor.refresh();
+            // Make JSON downloadable..
+            var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(self.model,null,"    "));
+            jQuery('<a href="data:' + data + 
+                '" download="scene_desc.json" class="btn btn-success btn-large"> \
+                <i class="icon-white icon-download-alt">download JSON</a>').appendTo('#download-json');
             jQuery(this).addClass("disabled");
 
         });
 
         jQuery("#close-model-dialog").click(function(){
             jQuery("#model-loader-wrapper").slideUp();
+            jQuery("#download-json").html(" ");
             jQuery("#show-model").removeClass("disabled")
 
         });
-
         console.log("[PyDy INFO]: Activated UI controls");
 
 
@@ -112,7 +133,6 @@ DynamicsVisualizer = Class.create({
           * scene JSON is loaded onto canvas.
         **/
         var self = this;
-        
         jQuery("#play-animation").removeClass("disabled");
         jQuery("#show-model").removeClass("disabled");
         var objs = self.model.objects;
@@ -150,6 +170,9 @@ DynamicsVisualizer = Class.create({
             });
         }
         self.editor.getDoc().setValue(JSON.stringify(self.model,null,4));
+
+        // Get animation Speed..
+        self.animSpeed = jQuery("#anim-speed").val();
     },   
 
     
@@ -167,12 +190,24 @@ DynamicsVisualizer = Class.create({
     getFileExtenstion: function(){
         /**
           * Returns the extension of
-          * the loaded Scene file.
+          * the uploaded Scene file.
         **/ 
         var self = this;
         return self.sceneFilePath.split(".").slice(-1)[0].toLowerCase();
 
-   }
+    },
+
+   getQueryString: function(key){
+        /**
+          * Returns the GET Parameter from url corresponding
+          * to `key`
+        **/
+        key = key.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + key + "=([^&#]*)"),
+        results = regex.exec(location.search);
+        return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
 });
 
 var DynamicsVisualizer = new DynamicsVisualizer();

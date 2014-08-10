@@ -1,5 +1,5 @@
 
-DynamicsVisualizer.init();
+DynamicsVisualizer._initialize();
 DynamicsVisualizer.activateUIControls();
 DynamicsVisualizer.Scene.create();
 
@@ -36,3 +36,4 @@ activateTrackballControls();
         }
     });
 })();
+

@@ -13,6 +13,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self._addDefaultLight();
         self._addAxes();
         self._addTrackBallControls();
+        self.animationPaused = false;
         
     
     },
@@ -24,7 +25,8 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/ 
         var self = this;
         self.webgl_renderer = new THREE.WebGLRenderer();
-        self.webgl_renderer.setSize(640, 480);
+        var width = jQuery(window).width() * 0.4;
+        self.webgl_renderer.setSize(width, 480);
         
         var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
         self.webgl_renderer.setClearColor(backgroundColor);
@@ -125,9 +127,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         /** 
           * Adds the cameras 
           * loaded from the JSON file
-          * onto the scene. The cameras
-          * can be switched during animation
-          * from the `switch cameras` UI button.
+          * onto the scene.
         **/
         var self = this;
         var cameras = this.model.cameras;
@@ -137,11 +137,9 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
     addLights: function(){
         /**
-          * Adds the cameras 
+          * Adds the Lights 
           * loaded from the JSON file
-          * onto the scene. The cameras
-          * can be switched during animation
-          * from the `switch cameras` UI button.
+          * onto the scene.
         **/  
         var self = this;
         var lights = this.model.lights;
@@ -193,7 +191,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                                           object.radius,
                                           object.radius/100,
                                           object.length,
-                                          50,50);        
+                                          50,50, openEnded=true);        
                 break;
 
             case "Circle":        
@@ -321,14 +319,26 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var self = this;
         // toggle buttons..
         jQuery("#play-animation").css("display","none");
+        jQuery("#pause-animation").css("display","block");
         jQuery("#stop-animation").css("display","block");
+        
+        if(!self.animationPaused){
+          self.currentTime = 0;
+        };
 
-        var currentTime = 0;
+        self.animationPaused = false;
         var timeDelta = self.model.timeDelta;
         
         self.animationID = window.setInterval(function(){ 
-                self.setAnimationTime(currentTime);
-                currentTime+=timeDelta;
+                self.setAnimationTime(self.currentTime);
+                self.currentTime+=timeDelta;
+                if(self.currentTime>=self._finalTime && jQuery("#play-looped").is(":checked")){
+                  self.currentTime = 0;
+                }
+                if(self.currentTime>=self._finalTime && !jQuery("#play-looped").is(":checked")){
+                  self.stopAnimation();
+                  self.currenTime = 0;
+                }
             }, 
         timeDelta*1000);
     },
@@ -340,11 +350,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * corresponding to that time value.
         **/
         var self = this;
-        // Set the slider to the current animation time..
-        if(currentTime>=self._finalTime) {
-            self.stopAnimation();
-        }    
-        var percent = currentTime/self._finalTime*100;
+        var percent = (currentTime/self._finalTime*100).toFixed(3);
 
         var time_index = self._timeArray.indexOf(currentTime);
         var _children = self._scene.children;
@@ -360,10 +366,24 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
         }
         jQuery("#time-slider").slider("setValue",percent);
-        jQuery("#time").html(" " + Math.round(currentTime*100)/100 + "s");
+        jQuery("#time").html(" " + currentTime.toFixed(3) + " s");
         
     },
 
+    pauseAnimation: function(){
+       /**
+         * Pauses the animation at the 
+         * current frame.
+       **/
+       var self = this;
+       console.log("[PyDy INFO]: Pausing Animation");
+       jQuery("#stop-animation").css("display","block");
+       jQuery("#pause-animation").css("display","none");
+       jQuery("#play-animation").css("display","block");
+       window.clearInterval(self.animationID);
+       self.animationPaused = true;
+       
+    },
     stopAnimation: function(){
         /**
           * Stops the animation, and
@@ -371,9 +391,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/
         var self = this;
         console.log("[PyDy INFO]: Stopping Animation");
-        window.clearInterval(self.animationID);
-        self.setAnimationTime(0)
+        if(!self.animationPaused){
+          window.clearInterval(self.animationID);
+        }  
+        self.currentTime = 0;
+        self.setAnimationTime(0);
         jQuery("#stop-animation").css("display","none");
+        jQuery("#pause-animation").css("display","none");
         jQuery("#play-animation").css("display","block");
 
     },
@@ -404,20 +428,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/
         var self = this;
         self._blinker = self._scene.getObjectByName(id);
-        var _material = new THREE.MeshLambertMaterial();
-        _material.color = new THREE.Color("blue")
-        _material.name = "blinker";
-        self._old_material = self._blinker.material;
-        var _flip_material = _material;
-        
+        console.log("BLinker: " + self._blinker.name)
+        self._blinker.visible = false;
         self.blinkId = window.setInterval(function(){ 
-            self._blinker.material = _flip_material;
-            if(_flip_material.name == "blinker"){
-                _flip_material = self._old_material;
-                
-            }
-            else{
-                _flip_material = _material;
+            if(self._blinker.visible == false){
+                self._blinker.visible = true;  
+            } else{
+                self._blinker.visible = false;  
             }
         }, 500);
     }

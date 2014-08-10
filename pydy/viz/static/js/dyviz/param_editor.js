@@ -12,7 +12,9 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         var toLoad = self._scene.getObjectByName(parseInt(id));
         toLoad = toLoad["object-info"];
         window.clearInterval(self.blinkId);
-
+        if(typeof self._blinker != "undefined"){
+            self._blinker.visible = true;
+        }
         self.Scene._blink(parseInt(id));
         var mainDiv = jQuery('<div/>',{id: "object-"+ toLoad.simulation_id, style: 'display:none;'}); 
         
@@ -24,15 +26,23 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         div1.append(jQuery('<input />',{ type:'text', id: "_color", class: 'form-control', value: toLoad.color}));
         
         var div_material = jQuery('<select />',{class: 'form-control', id:"_material"});
-        div_material.append('<option value="' + toLoad.material + '">' + toLoad.material + '</option>');
         for(var i in self.Materials){
-            div_material.append('<option value="' + i +  '">' + i + '</option>');
+            if(i == toLoad.type) {
+                div_material.append('<option value="' + i +  '" selected="selected" >' + i + '</option>');
+                
+            }
+            else {
+                div_material.append('<option value="' + i +  '">' + i + '</option>');
+            }
         }
 
         var div_geom = jQuery('<select />',{class: 'form-control', id:"_geometry"});
-        div_geom.append('<option value="' + toLoad.type + '">' + toLoad.type + '</option>');
         for(var i=0;i<self.Geometries.length; i++){
-            div_geom.append('<option value="' + self.Geometries[i] +  '">' + self.Geometries[i] + '</option>');
+            if(self.Geometries[i] == toLoad.type){
+                div_geom.append('<option value="' + self.Geometries[i] +  '" selected="selected">' + self.Geometries[i] + '</option>');
+            }  else {
+                div_geom.append('<option value="' + self.Geometries[i] +  '">' + self.Geometries[i] + '</option>');
+            }
         }
 
         var div2 = jQuery('<div />',{class: 'input-group', id: "geom-params"});
@@ -71,6 +81,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         **/
         var self = this;
         window.clearInterval(self.blinkId);
+        self._blinker.visible = true;
 
         var int_id = parseInt(id);
         var updated_object = {};
@@ -141,39 +152,40 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
             case "Octahedron":
             case "Icosahedron":
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Radius'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius || 1.0}));
                 break;
 
             case "Cylinder":
             case "Cone":
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Radius'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius  || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius  || 1.0}));
 
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 1.0}));
                 break;
 
             case "Torus":
             case "TorusKnot":
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Radius'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius  || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_radius", class: 'form-control', value: toLoad.radius  || 1.0}));
 
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Tube Radius'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_tubeRadius", class: 'form-control', value: toLoad.tube_radius || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_tubeRadius", class: 'form-control', value: toLoad.tube_radius || 1.0}));
                 break;    
 
             case "Plane":
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Width'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_width", class: 'form-control', value: toLoad.width  || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_width", class: 'form-control', value: toLoad.width  || 1.0}));
 
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 1.0}));
                 break;    
 
-            case "Cone":
+            case "Cube":
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
-                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 0.0}));
+                div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 1.0}));
                 break;     
+
         }
     },
 

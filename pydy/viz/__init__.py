@@ -11,8 +11,6 @@ __all__ = []
 #    determine which names are imported when
 #    "from sympy.physics.mechanics import *" is done.
 
-__version__ = "0.1.0"
-
 import visualization_frame
 from visualization_frame import *
 __all__.extend(visualization_frame.__all__)
@@ -35,4 +33,3 @@ __all__.extend(light.__all__)
 
 import server
 from server import *
-__all__.extend(server.__all__)

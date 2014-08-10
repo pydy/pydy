@@ -66,7 +66,7 @@ Three_ColorKeywords = ['aliceblue', 'antiquewhite', 'aqua',
                        'violet', 'wheat', 'white', 'whitesmoke',
                        'yellow', 'yellowgreen']
                        
-Materials = ["None", "CHECKERBOARD", "METAL", "DIRT", "FOIL", "WATER", "GRASS",
+Materials = ["default", "CHECKERBOARD", "METAL", "DIRT", "FOIL", "WATER", "GRASS",
              "checkerboard", "metal", "dirt", "foil", "water", "grass"]
                                     
 
@@ -107,7 +107,7 @@ class Shape(object):
 
     """
     #TODO Need to modify the default material
-    def __init__(self, name='unnamed', color='grey', material="None"):
+    def __init__(self, name='unnamed', color='grey', material="default"):
         self.name = name
         if not isinstance(color, str) \
         and color not in Three_ColorKeywords:

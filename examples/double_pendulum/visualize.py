@@ -61,4 +61,5 @@ scene = Scene(world_frame, O,
 scene.generate_visualization_json(coordinates + speeds, constants.keys(), x,
         constants.values())
 
-scene.display()
+if __name__ == "__main__":
+    scene.display()

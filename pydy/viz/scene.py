@@ -4,22 +4,28 @@
 from __future__ import division
 import os
 import json
+import shutil
 import distutils
 import distutils.dir_util
 import webbrowser
 import datetime
+
 # external
 from sympy.physics.mechanics import ReferenceFrame, Point
 
 # local
 from .camera import PerspectiveCamera
-from .server import Server
+from .server import run_server
 from .light import PointLight
 
 __all__ = ['Scene']
 
 try:
+    import IPython
     from IPython.lib import backgroundjobs as bg
+    from IPython.html import widgets
+    from IPython.display import clear_output, display, Javascript
+
 except ImportError:
     IPython = None
 
@@ -220,7 +226,14 @@ class Scene(object):
         if outfile_prefix is None:
             outfile_prefix = "_".join(str(datetime.datetime.now()).\
                                   split(".")[0].split(" "))
-            
+        
+        #Saving the arguments for re-running simulations
+        self.constant_variables = constant_variables
+        self.dynamic_variables = dynamic_variables
+        self.constant_values = constant_values
+        self.dynamic_values = dynamic_values
+        self.outfile_prefix = outfile_prefix
+        self.fps = fps
         constant_map = dict(zip(constant_variables, constant_values))
         constant_variables_str = [str(i) for i in constant_variables]
         constant_map_for_json = dict(zip(constant_variables_str, constant_values))
@@ -294,8 +307,6 @@ class Scene(object):
         objects in the PyDy visualizer.
         
         """
-        #TODO: Add code to include lights and Cameras as well
-        
         self._simulation_info = {}
 
         for frame in self.visualization_frames:
@@ -331,47 +342,86 @@ class Scene(object):
 
         return self._simulation_info    
         
-    def _copy_static_dir(self):
-        """
-        Copies all the static files required in the
-        visualization to the current working directory
-        The files and sub directories are stored within
-        a hidden directory named .pydy_viz in the current
-        working directory.
-        Working directory can be cleaned by calling _cleanup()
-        method, which deletes the .pydy_viz directory.
+    def create_static_html(self, overwrite=False, silent=False):
 
+        """Creates a directory named ``static`` in the current working
+        directory which contains all of the HTML, CSS, and Javascript files
+        required to run the visualization. Simply open ``static/index.html``
+        in a WebGL compliant browser to view and interact with the
+        visualization.
+
+        This method can also be used to output files for embedding the
+        visualizations in the static webpages. Simply copy the contents of
+        static directory in the relevant directory for embedding in a static
+        website.
+
+        Parameters
+        ----------
+        overwrite : boolean, optional, default=False
+            If True, the directory named ``static`` in the current working
+            directory will be overwritten.
+        Silent : boolean, optional, default=False
+            If True, no messages will be displayed to 
+            STDOUT            
         """
-        dst = os.path.join(os.getcwd(), '.pydy_viz')
-        os.mkdir(dst)
+
+        dst = os.path.join(os.getcwd(), 'static')
+
+        if os.path.exists(dst) and overwrite is False:
+            ans = raw_input("The 'static' directory already exists. Would "
+                            + "you like to overwrite the contents? [y|n]\n")
+            if ans == 'y':
+                distutils.dir_util.remove_tree(dst)
+            else:
+                if not silent: print "Aborted!"
+                return
+        
         src = os.path.join(os.path.dirname(__file__), 'static')
+        if not silent: print("Copying static data.")
         distutils.dir_util.copy_tree(src, dst)
+        if not silent: print("Copying Simulation data.")
+        _scene_outfile_loc = os.path.join(os.getcwd(), 'static', self.scene_json_file)
+        _simulation_outfile_loc = os.path.join(os.getcwd(), 'static', self.simulation_json_file)
+        scene_outfile = open(_scene_outfile_loc, "w")
+        simulation_outfile = open(_simulation_outfile_loc, "w")
 
-    def _cleanup(self):
-        distutils.dir_util.remove_tree(os.path.join(os.getcwd(), '.pydy_viz'))
+        scene_outfile.write(json.dumps(self._scene_data_dict, indent=4,
+                                separators=(',', ': ')))
+        scene_outfile.close()
+        simulation_outfile.write(json.dumps(self._simulation_data_dict, indent=4,
+                                separators=(',', ': ')))
+        simulation_outfile.close()
+        if not silent: print("To view the visualization, open {}".format(
+                            os.path.join(dst, 'index.html')) +
+                            " in a WebGL compliant browser.")
 
-    def _display_from_interpreter(self):
-        server = Server(json=self.saved_json_file)
-        print '''Your visualization is being rendered at
-                 http://localhost:%s/
-                 Visit the url in your webgl compatible browser
-                 to see the animation in full glory''' % (server.port)
-        server.run()
+    def remove_static_html(self, force=False):
+        """Removes the ``static`` directory from the current working
+        directory.
 
-    def _display_from_ipython(self):
-        # This is a hack using IPython BackgroundJobs
-        # module. Once we have an IPython2.0 release
-        # It can be modified to display visualizations
-        # in IPython output cell itself.
-        server = Server(json=self.saved_json_file)
-        jobs = bg.BackgroundJobManager()
-        jobs.new('server.run()')
+        Parameters
+        ----------
+        force : boolean, optional, default=False
+            If true, no warning is issued before the removal of the
+            directory.
 
-        print '''
-        Your visualization is being rendered at
-        http://localhost:%s/
-        Opening the visualization in new tab...'''%(server.port)
-        webbrowser.open("http://localhost:%s/"%server.port)
+        """
+        if not os.path.exists('static'):
+            print "All Done!"
+            return
+
+        if not force:
+            ans = raw_input("Are you sure you would like to delete the " +
+                                "'static' directory? [y|n]\n")
+            if ans == 'y':
+                force = True
+                
+        if force:
+            distutils.dir_util.remove_tree(os.path.join(os.getcwd(),
+                                                            'static'))
+            print "All Done!"
+        else:
+            print "aborted!"    
 
     def display(self):
         """
@@ -388,11 +438,59 @@ class Scene(object):
         calling this method
 
         """
-        try:
-            # If it detects any IPython frontend
-            # (qtconsole, interpreter or notebook)
-            config = get_ipython().config
-            self._display_from_ipython()
+        self.create_static_html()
+        run_server(scene_file=self.scene_json_file)
+        
+    def display_ipython(self):
+        """
+        Method to display the visualization inside the 
+        Ipython notebook. It is only supported by IPython
+        versions>=2.0.0
+        
+        """
 
-        except:
-            self._display_from_interpreter()
+        self.create_static_html(silent=True)
+        self._widget_dict = {}
+        self.container = widgets.ContainerWidget()
+        components = []
+        for var, init_val in \
+            zip(self.constant_variables, self.constant_values):
+            self._widget_dict[str(var)] = widgets.FloatTextWidget(value=init_val, 
+                                                              description=str(var))
+            components.append(self._widget_dict[str(var)])
+
+        self.button = widgets.ButtonWidget(description="Rerun Simulations")
+        def button_click(clicked):
+            self.button.add_class('disabled')
+            self.button.description = 'Rerunning Simulation ...'
+            self.constant_values = []    
+            for i in self._widget_dict.values():
+                self.constant_values.append(i.value)
+            self.generate_visualization_json(self.dynamic_variables,
+                                    self.constant_variables, self.dynamic_values,
+                                    self.constant_values,fps=self.fps, 
+                                    outfile_prefix=self.outfile_prefix)
+            self.create_static_html(overwrite=True, silent=True)
+            display(Javascript("DynamicsVisualizer.Parser.loadScene()"));
+            self.button.remove_class('disabled')
+             
+            self.button.description = 'Rerun Simulation'
+
+        
+        self.button.on_click(button_click)
+        #components.append(button)
+        html_file = open("static/index_ipython.html")
+        self.html_widget = widgets.HTMLWidget(value=html_file.read().format(load_url='static/' + self.scene_json_file))
+        self.container.children = components
+        self.container.set_css({"max-height": "10em",
+                                "overflow-y": "scroll",
+                                "display":"block"
+                                })
+        self.html_widget.set_css({"display":"block",
+                                  "float":"left"
+                                  })
+        display(self.container)
+        display(self.button)
+        display(self.html_widget)
+        self.button.add_class('btn-info')
+
