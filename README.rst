@@ -8,8 +8,8 @@ PyDy
 PyDy_, short for Python Dynamics, is a tool kit written in and accessed through
 the Python programming language that utilizes an array of scientific tools to
 study multibody dynamics. The goal is to have a modular framework and
-eventually a physics abstraction layer which utilizes a variety of backend that
-can provide the user with their desired workflow, including:
+eventually a physics abstraction layer which utilizes a variety of backends
+that can provide the user with their desired workflow, including:
 
 - Model specification
 - Equation of motion generation
@@ -29,7 +29,7 @@ visualization.
 Installation
 ============
 
-The PyDy workflow has hard dependecies on these Python packages:
+The PyDy workflow has hard dependencies on these Python packages:
 
 - Python >= 2.7
 - setuptools
@@ -85,11 +85,11 @@ Tests require nose:
 
 - nose: 1.3.0
 
-Isolated Virtual Environment Installation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Isolated Environments
+~~~~~~~~~~~~~~~~~~~~~
 
 The following installation assumes you have virtualenvwrapper_ and all the
-dependencies needed to build the packages::
+dependencies needed to build the various packages::
 
    $ mkvirtualenv pydy-dev
    (pydy-dev)$ pip install numpy scipy cython nose theano sympy
@@ -99,6 +99,16 @@ dependencies needed to build the packages::
    (pydy-dev)$ python setup.py develop
 
 .. _virtualenvwrapper: https://pypi.python.org/pypi/virtualenvwrappe://pypi.python.org/pypi/virtualenvwrapper
+
+Or with conda_::
+
+   $ conda create -n pydy-dev numpy scipy cython nose theano sympy matplotlib
+   $ source activate pydy-dev
+   (pydy-dev)$ git clone git@github.com:pydy/pydy.git
+   (pydy-dev)$ cd pydy
+   (pydy-dev)$ python setup.py develop
+
+.. _conda: https://github.com/conda/conda
 
 Run the tests::
 
@@ -123,61 +133,6 @@ Run the benchmark to test the n-link pendulum problem.::
 
 Usage
 =====
-
-Simply import the modules and functions when in a Python interpreter::
-
-   >>> from sympy import symbols
-   >>> from sympy.physics import mechanics
-   >>> from pydy import codegen, viz
-
-Documentation
-=============
-
-The documentation is hosted at http://pydy-viz.readthedocs.org but you can also
-build them from source using the following instructions:
-
-Requires:
-
-- Sphinx
-- numpydoc
-
-::
-
-   pip install sphinx numpydoc
-
-To build the HTML docs::
-
-   $ sphinx-build -b html docs/src docs/build
-
-View::
-
-   $ firefox docs/build/index.html
-
-Code Generation
-===============
-
-This package provides code generation facilities for PyDy_. For now, it
-generates functions that can evaluate the right hand side of the ordinary
-differential equations generated with sympy.physics.mechanics_ with three
-different backends: SymPy's lambdify_, Theano_, and Cython_.
-
-.. _PyDy: http://pydy.org
-.. _sympy.physics.mechanics: http://docs.sympy.org/latest/modules/physics/mechanics
-.. _lambdify: http://docs.sympy.org/latest/modules/utilities/lambdify.html#sympy.utilities.lambdify.lambdify
-.. _Theano: http://deeplearning.net/software/theano/
-.. _Cython: http://cython.org/
-
-Optional Dependencies
----------------------
-
-To enable different code generation backends, you can install the various
-optional dependencies:
-
-- Cython: >=0.15.1
-- Theano: >=0.6.0
-
-Usage
------
 
 This is an example of a simple 1 degree of freedom system: a mass, spring,
 damper system under the influence of gravity and a force::
@@ -224,39 +179,31 @@ Derive the system::
    particles = [block]
 
    kane = me.KanesMethod(ceiling, q_ind=[position], u_ind=[speed],
-                        kd_eqs=kinematic_equations)
+                         kd_eqs=kinematic_equations)
    kane.kanes_equations(forces, particles)
 
-Store the expressions and symbols in sequences for the code generation::
+Create a system to manage integration. Specify numerical values for the
+constants and specified quantities. Here, we specify sinusoidal forcing::
 
-   mass_matrix = kane.mass_matrix_full
-   forcing_vector = kane.forcing_full
-   constants = (mass, stiffness, damping, gravity)
-   coordinates = (position,)
-   speeds = (speed,)
-   specified = (force,)
+   from numpy import array, linspace, sin
+   from pydy.system import System
 
-Now generate the function needed for numerical evaluation of the ODEs. The
-generator can use various back ends: ``lambdify``, ``theano``, or ``cython``::
+   sys = System(kane,
+                constants={mass: 1.0, stiffness: 1.0,
+                           damping: 0.2, gravity: 9.8},
+                specified={'symbols': [force],
+                           'values': lambda x, t: sin(t)},
+                initial_conditions=array([0.1, -1.0]))
 
-   from pydy.codegen.code import generate_ode_function
+Now generate the function needed for numerical evaluation of the ODEs::
 
-   evaluate_ode = generate_ode_function(mass_matrix, forcing_vector, constants,
-                                        coordinates, speeds, specified,
-                                        generator='lambdify')
+   sys.generate_ode_function()
 
 Integrate the equations of motion under the influence of a specified sinusoidal
 force::
 
-   from numpy import array, linspace, sin
-   from scipy.integrate import odeint
-
-   x0 = array([0.1, -1.0])
-   args = {'constants': array([1.0, 1.0, 0.2, 9.8]),
-           'specified': lambda x, t: sin(t)}
    t = linspace(0.0, 10.0, 1000)
-
-   y = odeint(evaluate_ode, x0, t, args=(args,))
+   y = sys.integrate(t)
 
 Plot the results::
 
@@ -266,13 +213,61 @@ Plot the results::
    plt.legend((str(position), str(speed)))
    plt.show()
 
+Documentation
+=============
+
+The documentation is hosted at http://pydy.readthedocs.org but you can also
+build them from source using the following instructions:
+
+Requires:
+
+- Sphinx
+- numpydoc
+
+::
+
+   pip install sphinx numpydoc
+
+To build the HTML docs::
+
+   $ sphinx-build -b html docs/src docs/build
+
+View::
+
+   $ firefox docs/build/index.html
+
+Packages
+========
+
+Code Generation
+---------------
+
+This package provides code generation facilities for PyDy_. For now, it
+generates functions that can evaluate the right hand side of the ordinary
+differential equations generated with sympy.physics.mechanics_ with three
+different backends: SymPy's lambdify_, Theano_, and Cython_.
+
+.. _PyDy: http://pydy.org
+.. _sympy.physics.mechanics: http://docs.sympy.org/latest/modules/physics/mechanics
+.. _lambdify: http://docs.sympy.org/latest/modules/utilities/lambdify.html#sympy.utilities.lambdify.lambdify
+.. _Theano: http://deeplearning.net/software/theano/
+.. _Cython: http://cython.org/
+
+To enable different code generation backends, you can install the various
+optional dependencies:
+
+- Cython: >=0.15.1
+- Theano: >=0.6.0
+
 Visualization (viz)
-===================
+-------------------
 
 Visualization of multibody systems generated with PyDy.
 
 Related Packages
 ================
+
+These are various related Python packages that have similar functionality.
 
 - https://github.com/cdsousa/sympybotics
 - https://pypi.python.org/pypi/Hamilton
@@ -296,10 +291,16 @@ Related Packages
 Release Notes
 =============
 
+0.3.0
+-----
+
+- Added a new System class and module to more seamlessly manage integrating the
+  equations of motion.
+
 0.2.1
 -----
 
-- Unbundled unecessary files from tar ball.
+- Unbundled unnecessary files from tar ball.
 
 0.2.0
 -----

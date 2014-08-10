@@ -49,5 +49,5 @@ x0 = hstack((ones(6) * radians(10.0), zeros(6)))
 
 print("Integrating equations of motion.")
 state_trajectories = odeint(right_hand_side, x0, t,
-                            args=({'constants': param_vals},))
+                            args=({'constants': dict(zip(param_syms, param_vals))},))
 print("Integration done.")
