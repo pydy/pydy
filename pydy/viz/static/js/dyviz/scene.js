@@ -413,20 +413,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/
         var self = this;
         self._blinker = self._scene.getObjectByName(id);
-        var _material = new THREE.MeshLambertMaterial();
-        _material.color = new THREE.Color("blue")
-        _material.name = "blinker";
-        self._old_material = self._blinker.material;
-        var _flip_material = _material;
-        
+        console.log("BLinker: " + self._blinker.name)
+        self._blinker.visible = false;
         self.blinkId = window.setInterval(function(){ 
-            self._blinker.material = _flip_material;
-            if(_flip_material.name == "blinker"){
-                _flip_material = self._old_material;
-                
-            }
-            else{
-                _flip_material = _material;
+            if(self._blinker.visible == false){
+                self._blinker.visible = true;  
+            } else{
+                self._blinker.visible = false;  
             }
         }, 500);
     }

@@ -12,7 +12,9 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         var toLoad = self._scene.getObjectByName(parseInt(id));
         toLoad = toLoad["object-info"];
         window.clearInterval(self.blinkId);
-
+        if(typeof self._blinker != "undefined"){
+            self._blinker.visible = true;
+        }
         self.Scene._blink(parseInt(id));
         var mainDiv = jQuery('<div/>',{id: "object-"+ toLoad.simulation_id, style: 'display:none;'}); 
         
@@ -79,6 +81,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         **/
         var self = this;
         window.clearInterval(self.blinkId);
+        self._blinker.visible = true;
 
         var int_id = parseInt(id);
         var updated_object = {};
