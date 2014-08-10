@@ -35,7 +35,8 @@ def test_create_static_html():
 
     # integrate eoms
     t = linspace(0.0, 10.0, 100)
-    y = sys.integrate(t)
+    sys.times = t
+    y = sys.integrate()
 
     # create visualization
     sphere = Sphere()
