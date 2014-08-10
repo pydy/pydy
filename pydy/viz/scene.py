@@ -492,7 +492,6 @@ class Scene(object):
                 self.constant_values.append(i.value)
             if self.system is not None:
                 #update system constants
-                display(Javascript("alert('here!');"))
                 self.system.constants = dict(zip(self.system.constants, self.constant_values))
                 self.generate_visualization_json_system(self.system)
             else:    
