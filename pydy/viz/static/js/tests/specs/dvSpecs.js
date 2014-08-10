@@ -2,7 +2,7 @@ describe("DynamicsVisualizer's main class should  ", function() {
     it("have an initializer which returns false, when non-supported browser is used", function() {
         var browserState = Modernizr.canvas && Modernizr.webgl;
         alert(browserState);
-    	var returnVal = DynamicsVisualizer.init();
+    	var returnVal = DynamicsVisualizer._initialize();
         expect(returnVal).toBe(browserState);
     });
     
@@ -46,7 +46,7 @@ describe("DynamicsVisualizer's UI ", function() {
 describe("After activating UI controls,", function() {
     beforeEach(function() {
         loadFixtures("uiFixtures.html");
-        DynamicsVisualizer.init();
+        DynamicsVisualizer._initialize();
         DynamicsVisualizer.activateUIControls();
     });
 
