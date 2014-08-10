@@ -9,7 +9,7 @@ import distutils
 import distutils.dir_util
 import webbrowser
 import datetime
-
+from collections import OrderedDict
 # external
 from sympy.physics.mechanics import ReferenceFrame, Point
 
@@ -354,7 +354,7 @@ class Scene(object):
         Keyword arguments are same as generate_visualization_json.
    
         """
-        if not isinstance(system,System):
+        if not isinstance(system, System):
             self.system = None
             raise TypeError("{} should be a valid pydy.System object".format(system))
         else:
@@ -474,7 +474,7 @@ class Scene(object):
         """
 
         self.create_static_html(silent=True)
-        self._widget_dict = {}
+        self._widget_dict = OrderedDict()
         self.container = widgets.ContainerWidget()
         components = []
         for var, init_val in \
@@ -482,7 +482,7 @@ class Scene(object):
             self._widget_dict[str(var)] = widgets.FloatTextWidget(value=init_val, 
                                                               description=str(var))
             components.append(self._widget_dict[str(var)])
-
+        
         self.button = widgets.ButtonWidget(description="Rerun Simulations")
         def button_click(clicked):
             self.button.add_class('disabled')
@@ -492,7 +492,8 @@ class Scene(object):
                 self.constant_values.append(i.value)
             if self.system is not None:
                 #update system constants
-                dict(zip(self.system.constants, self.constant_values))
+                display(Javascript("alert('here!');"))
+                self.system.constants = dict(zip(self.system.constants, self.constant_values))
                 self.generate_visualization_json_system(self.system)
             else:    
                 self.generate_visualization_json(self.dynamic_variables,
