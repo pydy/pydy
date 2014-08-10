@@ -35,12 +35,12 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
                 console.log("Done with loadScene");
             },
             onFailure: function() { 
-                alert('[PyDy ALERT]: Scene File not loaded!'); 
-                console.log('[PyDy ALERT]: Scene File not loaded!'); 
+                alert('[PyDy ALERT]: Scene file not loaded!'); 
+                console.log('[PyDy ALERT]: Scene file not loaded!'); 
             },
             on404: function(){ 
-                alert("[PyDy ALERT]: Scene File Not Found! Error:404"); 
-                console.log("[PyDy ALERT]: Scene File Not Found! Error:404"); 
+                alert("[PyDy ALERT]: Scene file not Found! error:404"); 
+                console.log("[PyDy ALERT]: Scene file not found! error:404"); 
             }
         });
     },
