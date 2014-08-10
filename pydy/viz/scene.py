@@ -355,7 +355,11 @@ class Scene(object):
    
         """
         if not isinstance(system,System):
+            self.system = None
             raise TypeError("{} should be a valid pydy.System object".format(system))
+        else:
+            #save system
+            self.system = system
         
         self.generate_visualization_json(system.states,
                                           system.constants_symbols, 
