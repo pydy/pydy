@@ -117,8 +117,9 @@ class TestSystem():
         # Putting in a non-constant key does not raise exception.
         sys.constants[dynamicsymbols('v')] = 9.8
         # Then, if we integrate, we do error-checking and we get an exception.
+        sys.times = [0.0, 1.0]
         with testing.assert_raises(ValueError):
-            sys.integrate([0.0, 1.0])
+            sys.integrate()
 
 
         # Provide a constant that isn't actually a constant.
@@ -145,8 +146,9 @@ class TestSystem():
         # Putting in a non-specified key does not raise exception.
         sys.specifieds[dynamicsymbols('v')] = 3.5
         # Then, if we integrate, we do error-checking and we get an exception.
+        sys.times = [0.0, 1.0]
         with testing.assert_raises(ValueError):
-            sys.integrate([0.0, 1.0])
+            sys.integrate()
 
         sys = System(self.kane)
         # Putting in a value of the wrong length does not raise exception.
@@ -176,21 +178,23 @@ class TestSystem():
                 spec_syms[2]: 3.0 * np.ones(1)}
         # These won't throw an exception b/c we're modifying the dict directly.
         sys.specifieds[spec_syms[1]] = 7.1
+        sys.times = times
         # This does.
         with testing.assert_raises(ValueError):
-            sys.integrate(times)
+            sys.integrate()
 
         sys = System(self.kane_nlink)
         # This puts too many entries in the dict.
         sys.specifieds[spec_syms[0]] = 3.7
         sys.specifieds[(spec_syms[0], spec_syms[3])] = 5.8
+        sys.times = times
         with testing.assert_raises(ValueError):
-            sys.integrate(times)
+            sys.integrate()
 
         # This gets rid of the previous default entries, and should work
         # properly.
         sys.specifieds.pop(spec_syms[0])
-        sys.integrate(times)
+        sys.integrate()
 
         # Test old way of providing specifieds.
         # -------------------------------------
@@ -198,12 +202,13 @@ class TestSystem():
         spec_syms = sys.specifieds_symbols
         # Get numbers using the new way.
         sys.specifieds = dict(zip(spec_syms, [1.0, 2.0, 3.0, 4.0]))
-        x_01 = sys.integrate(times)
+        sys.times = times
+        x_01 = sys.integrate()
 
         # Now use the old way.
         sys.specifieds = {'symbols': spec_syms,
                 'values': [1.0, 2.0, 3.0, 4.0]}
-        x_02 = sys.integrate(times)
+        x_02 = sys.integrate()
         testing.assert_allclose(x_01, x_02)
 
         # Error checks for the new way.
@@ -221,11 +226,11 @@ class TestSystem():
         sys.specifieds = {'symbols':
                 [spec_syms[1], spec_syms[0], spec_syms[2], spec_syms[3]],
                 'values': [2.0, 1.0, 3.0, 4.0]}
-        x_03 = sys.integrate(times)
+        x_03 = sys.integrate()
         # I tested: x_01 is not allclose to x_03.
 
         sys.generate_ode_function()
-        x_04 = sys.integrate(times)
+        x_04 = sys.integrate()
         testing.assert_allclose(x_01, x_04)
 
 
@@ -264,15 +269,16 @@ class TestSystem():
         # Using the property as a dict.
         # -----------------------------
         # Modifying hte dict directly does change the dict.
-        sys = System(self.kane)
+        sys = System(self.kane, times=[0.0, 1.0])
         sys.initial_conditions[dynamicsymbols('x')] = 5.8
         assert sys.initial_conditions.keys() == [dynamicsymbols('x')]
         testing.assert_allclose(sys.initial_conditions.values(), [5.8])
         # Putting in a non-state key does not raise exception.
         sys.initial_conditions[symbols('m')] = 7.9
         # Then, if we integrate, we do error-checking and we get an exception.
+
         with testing.assert_raises(ValueError):
-            sys.integrate([0.0, 1.0])
+            sys.integrate()
 
 
         # Keys must be coords or speeds.
@@ -324,12 +330,12 @@ class TestSystem():
 
         # Try without calling generate_ode_function.
         # ------------------------------------------
-        sys = System(self.kane)
-        x_01 = sys.integrate(times)
+        sys = System(self.kane, times=times)
+        x_01 = sys.integrate()
 
-        sys = System(self.kane)
+        sys = System(self.kane, times=times)
         rhs = sys.generate_ode_function(generator='lambdify')
-        x_02 = sys.integrate(times)
+        x_02 = sys.integrate()
 
         testing.assert_allclose(x_01, x_02)
 
@@ -337,7 +343,7 @@ class TestSystem():
         # -----------------------------------------
         constants_dict = dict(zip(symbols('m, k, c, g'), [1.0, 1.0, 1.0, 1.0]))
         specified_dict = {dynamicsymbols('F'): 0.0}
-        x_03 = sys.ode_solver(sys.evaluate_ode_function, [0, 0], times,
+        x_03 = sys.ode_solver(sys.evaluate_ode_function, [0, 0], sys.times,
                 args=({
                     'constants': constants_dict,
                     'specified': specified_dict},))
@@ -345,14 +351,14 @@ class TestSystem():
 
         # Ensure that initial conditions are reordered properly.
         # ------------------------------------------------------
-        sys = System(self.kane)
+        sys = System(self.kane, times=times)
         # I know that this is the order of the states.
         x0 = [5.1, 3.7]
         ic = {dynamicsymbols('x'): x0[0], dynamicsymbols('v'): x0[1]}
         sys.initial_conditions = ic
-        x_04 = sys.integrate(times)
+        x_04 = sys.integrate()
         x_05 = sys.ode_solver(sys.evaluate_ode_function,
-                x0, times, args=(
+                x0, sys.times, args=(
                     {'constants': sys._constants_padded_with_defaults(),
                      'specified': sys._specifieds_padded_with_defaults()},))
 
@@ -361,11 +367,12 @@ class TestSystem():
         # Test a generator other than lambdify.
         # -------------------------------------
         sys.generate_ode_function(generator='theano')
-        x_06 = sys.integrate(times)
+        sys.times = times
+        x_06 = sys.integrate()
         testing.assert_allclose(x_04, x_06)
 
         # Unrecognized generator.
         # -----------------------
-        sys = System(self.kane)
+        sys = System(self.kane, times=times)
         with testing.assert_raises(NotImplementedError):
             sys.generate_ode_function(generator='made-up')
