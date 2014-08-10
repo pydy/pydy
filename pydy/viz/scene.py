@@ -360,7 +360,7 @@ class Scene(object):
         self.generate_visualization_json(system.states,
                                           system.constants_symbols, 
                                           system.integrate(),
-                                          system.constants, **kwargs)
+                                          system.constants.values(), **kwargs)
 
     def create_static_html(self, overwrite=False, silent=False):
 
