@@ -490,7 +490,12 @@ class Scene(object):
             self.constant_values = []    
             for i in self._widget_dict.values():
                 self.constant_values.append(i.value)
-            self.generate_visualization_json(self.dynamic_variables,
+            if self.system is not None:
+                #update system constants
+                dict(zip(self.system.constants, self.constant_values))
+                self.generate_visualization_json_system(self.system)
+            else:    
+                self.generate_visualization_json(self.dynamic_variables,
                                     self.constant_variables, self.dynamic_values,
                                     self.constant_values,fps=self.fps, 
                                     outfile_prefix=self.outfile_prefix)
@@ -517,4 +522,3 @@ class Scene(object):
         display(self.button)
         display(self.html_widget)
         self.button.add_class('btn-info')
-
