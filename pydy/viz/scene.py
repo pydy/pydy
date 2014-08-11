@@ -501,10 +501,8 @@ class Scene(object):
                                     outfile_prefix=self.outfile_prefix)
             self.create_static_html(overwrite=True, silent=True)
             js = 'jQuery("#json-input").val("{}");'.format('static/' + self.scene_json_file)
-         
-            display(Javascript('alert("' + js + '");'))
             display(Javascript(js))
-            display(Javascript("DynamicsVisualizer.Parser.loadScene()"));
+            display(Javascript('jQuery("#simulation-load").click()'));
             self.button.remove_class('disabled')
              
             self.button.description = 'Rerun Simulation'
