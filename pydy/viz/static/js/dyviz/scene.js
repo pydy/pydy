@@ -8,7 +8,9 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/ 
         var self = this;
         self._createRenderer();
-        self._addDefaultLightsandCameras();
+        self._createEmptyScene();
+        self._addDefaultCamera();
+        self._addDefaultLight();
         self._addAxes();
         self._addTrackBallControls();
         self.animationPaused = false;
@@ -27,20 +29,26 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self.webgl_renderer.setSize(width, 480);
         
         var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
-        self.webgl_renderer.setClearColor(backgroundColor); 
+        self.webgl_renderer.setClearColor(backgroundColor);
         var container = jQuery('#renderer');
         container.append(self.webgl_renderer.domElement);   
-        
+    
+    },
+
+    _createEmptyScene: function(){
+        /**
+          * Creates a THREE Scene
+          * 
+        **/ 
+        var self = this;
         // new Scene..
         self._scene  = new THREE.Scene();
+    },
 
-    },    
-        
-    
-    _addDefaultLightsandCameras: function(){
+    _addDefaultCamera: function(){
         /** 
-          * This method adds a default light
-          * and a Perspective camera to the
+          * This method adds
+          * a Perspective camera to the
           * initial visualization
         **/  
         var self = this;
@@ -50,6 +58,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self._scene.add(self.primaryCamera);
         self.currentCamera = self.primaryCamera;
 
+    },
+    _addDefaultLight: function(){
+        /** 
+          * This method adds a default light
+          * initial visualization
+        **/  
+        var self = this;
         var light = new THREE.PointLight(0xffffff);
         light.position.set(10,10,-10);
         self._scene.add(light);
@@ -75,7 +90,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * using TrackballControls Library.
         **/ 
         var self = this;
-          self.primaryControls = new THREE.TrackballControls(self.currentCamera,
+        self.primaryControls = new THREE.TrackballControls(self.currentCamera,
                                             self.webgl_renderer.domElement);
     
     },
@@ -86,7 +101,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * the initial values(zoom, displacement etc.)
         **/
         var self = this;
-          self.primaryControls.reset();
+        self.primaryControls.reset();
     },
 
     addObjects: function(){

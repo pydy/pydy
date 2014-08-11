@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <title>Jasmine Spec Runner</title>
+  <script type="text/javascript" src="../external/jquery/jquery.min.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="../external/jasmine/jasmine.css">
+
+  <script type="text/javascript" src="../external/jasmine/jasmine.js"></script>
+  <script type="text/javascript" src="../external/jasmine/jasmine-html.js"></script>
+  <script type="text/javascript" src="../external/jasmine/boot.js"></script>
+  <script type="text/javascript" src="../external/jasmine/console.js"></script>
+  <script type="text/javascript" src="../external/jasmine/jasmine-jquery.js"></script>
+
+  <!-- include source files here... -->
+  <!-- External Javascripts -->
+    
+    <script type="text/javascript" src="../external/bootstrap/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../external/codemirror/codemirror.js" ></script> 
+    -->
+    <script type="text/javascript" src="../external/jquery/jquery-ui.js"></script>
+
+    <script type="text/javascript" src="../external/three/three.min.js"></script>
+    <script type="text/javascript" src="../external/three/three-r67.min.js"></script>
+    <script type="text/javascript" src="../external/three/TrackballControls.js"></script>
+
+    
+
+    <script type="text/javascript" src="../external/utils/modernizr-2.0.6.js"></script>
+    <script type="text/javascript" src="../external/utils/bootstrap-slider.js"></script>
+    
+    <script type="text/javascript" src="../external/utils/prototype.js"></script>
+    
+    <script type="text/javascript" src="../external/codemirror/javascript-mode.js" ></script>
+    
+    <!-- DyViz Javascripts -->
+    <script type="text/javascript" src="../dyviz/dv.js"></script>
+    <script type="text/javascript" src="../dyviz/scene.js"></script>
+    <script type="text/javascript" src="../dyviz/parser.js"></script>
+    <script type="text/javascript" src="../dyviz/param_editor.js"></script>
+    <script type="text/javascript" src="../dyviz/materials.js"></script>
+    <!--<script type="text/javascript" src="../dyviz/main.js"></script>-->
+
+  <!-- include spec files here... -->
+  <script type="text/javascript" src="specs/dvSpecs.js"></script>
+  <script type="text/javascript" src="specs/parserSpecs.js"></script>
+  <script type="text/javascript" src="specs/sceneSpecs.js"></script>
+  <script type="text/javascript" src="specs/paramEditorSpecs.js"></script>
+
+  
+  <script type="text/javascript">
+(function() {
+      jasmine.getFixtures().fixturesPath = "sample_data"
+      if (navigator.userAgent.indexOf("PhantomJS") > 0) {
+      var consoleReporter = new jasmineRequire.ConsoleReporter()({
+        showColors: true,
+        timer: new jasmine.Timer,
+        print: function (contents) {
+          if(typeof process !== 'undefined') {
+              process.stdout.write(contents);
+          } else {
+            console.log.apply(console, arguments)
+          }
+        }
+    });
+
+    jasmine.getEnv().addReporter(consoleReporter);
+  
+   }
+})();
+  </script>
+
+</head>
+
+<body>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
