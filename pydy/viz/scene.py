@@ -500,6 +500,10 @@ class Scene(object):
                                     self.constant_values,fps=self.fps, 
                                     outfile_prefix=self.outfile_prefix)
             self.create_static_html(overwrite=True, silent=True)
+            js = 'jQuery("#json-input").val("{}");'.format('static/' + self.scene_json_file)
+         
+            display(Javascript('alert("' + js + '");'))
+            display(Javascript(js))
             display(Javascript("DynamicsVisualizer.Parser.loadScene()"));
             self.button.remove_class('disabled')
              
