@@ -20,7 +20,7 @@ from simulate import *
 
 # Each link in the pendulum is visualized with a cylinder, and a sphere at its
 # far end.
-link = Cylinder(name='link', radius=0.5, length=constants[l], color='red')
+link = Cylinder(name='link', radius=0.5, length=l, color='red')
 sphere = Sphere(name='sphere', radius=1.0)
 
 # By default, Cylinders are drawn so that their center is at the origin of the
