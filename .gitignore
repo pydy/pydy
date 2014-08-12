@@ -23,6 +23,12 @@ __pycache__
 # Installer logs
 pip-log.txt
 
+# ipython checkpoints
+*.ipynb_checkpoints
+
+# sphinx docs build
+*_build
+
 # Unit test / coverage reports
 .coverage
 .tox

@@ -44,7 +44,6 @@ behind the scenes. If you want to customize how this function is generated,
 you must call ``generate_ode_function`` on your own::
 
     sys = System(KM)
-    sys.times = times
     sys.generate_ode_function(generator='cython')
     sys.integrate()
 
