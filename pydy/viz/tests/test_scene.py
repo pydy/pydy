@@ -35,20 +35,21 @@ def test_create_static_html():
 
     # integrate eoms
     t = linspace(0.0, 10.0, 100)
-    y = sys.integrate(t)
+    sys.times = t
+    y = sys.integrate()
 
     # create visualization
     sphere = Sphere()
     viz_frame = VisualizationFrame(ceiling, block, sphere)
     scene = Scene(ceiling, origin, viz_frame)
-    scene.generate_visualization_json(sys.states, sys.constants.keys(), y,
-                                      sys.constants.values())
+    scene.generate_visualization_json_system(sys, outfile_prefix="test")
 
     # test static dir creation
     scene.create_static_html(overwrite=True)
     assert os.path.exists('static')
     assert os.path.exists('static/index.html')
-    assert os.path.exists('static/data.json')
+    assert os.path.exists('static/test_scene_desc.json')
+    assert os.path.exists('static/test_simulation_data.json')
 
     # test static dir deletion
     scene.remove_static_html(force=True)

@@ -18,25 +18,26 @@ KanesMethod object on which we have already invoked ``kanes_equations()``::
 
     km = KanesMethod(...)
     km.kanes_equations(force_list, body_list)
-    sys = System(km)
     times = np.linspace(0, 5, 100)
-    sys.integrate(times)
+    sys = System(km, times=times)
+    sys.integrate()
 
 In this case, we use defaults for the numerical values of the constants,
 specified quantities, initial conditions, etc. You probably won't like
 these defaults. You can also specify such values via constructor keyword
 arguments or via the attributes::
 
-    sys = System(km, initial_conditions={dynamicsymbol('q1'): 0.5})
+    sys = System(km, initial_conditions={dynamicsymbol('q1'): 0.5}, times=times)
     sys.constants = {symbol('m'): 5.0}
-    sys.integrate(times)
+    sys.integrate()
 
-To double-check the constants, specifieds and states in your problem, look
+To double-check the constants, specifieds, states and times in your problem, look
 at these properties::
 
     sys.constants_symbols
     sys.specifieds_symbols
     sys.states
+    sys.times
 
 In this case, the System generates the numerical ode function for you
 behind the scenes. If you want to customize how this function is generated,
@@ -44,7 +45,7 @@ you must call ``generate_ode_function`` on your own::
 
     sys = System(KM)
     sys.generate_ode_function(generator='cython')
-    sys.integrate(times)
+    sys.integrate()
 
 """
 
@@ -78,9 +79,14 @@ class System(object):
     initial_conditions : dict, optional (default: all zero)
         This dictionary maps SymPy Functions of time objects to floats.
 
+    times : dict, optional 
+        An array_like object, which contains time values over which 
+        equations are integrated. It has to be supplied before
+        System.integrate can be called.
+
     """
     def __init__(self, eom_method, constants=None, specifieds=None,
-                 ode_solver=None, initial_conditions=None):
+                 ode_solver=None, initial_conditions=None, times=None):
         self._eom_method = eom_method
 
         # TODO : What if user adds symbols after constructing a System?
@@ -106,6 +112,11 @@ class System(object):
             self.initial_conditions = dict()
         else:
             self.initial_conditions = initial_conditions
+
+        if times is None:
+            self._times = []
+        else:
+            self._times = times        
 
         self._evaluate_ode_function = None
 
@@ -298,7 +309,33 @@ class System(object):
         return dict(self.specifieds.items() + {s: 0.0 for s in
             self.specifieds_symbols if not
             self._symbol_is_in_specifieds_dict(s, self.specifieds)}.items())
+    
+    @property
+    def times(self):
+        """ An array_like object,
+        containing time values over which the
+        eoms are integrated, numerically.
 
+        The object should be in a format
+        which the integration module to be used
+        can accept. Since this attribute is not
+        checked for compatibility, User becomes 
+        responsible to supply it correctly.
+        """
+        return self._times
+
+    @times.setter
+    def times(self, new_times):
+        self._times = new_times
+
+    def _check_times(self, times):
+        """
+        Very basic checking. 
+        TODO: add more checking
+        """
+        if len(times) == 0:
+            raise TypeError("times supplied should be in an array_like format")
+        return True
     @property
     def ode_solver(self):
         """A function that performs forward integration. It must have the same
@@ -396,7 +433,7 @@ class System(object):
                 )
         return self.evaluate_ode_function
 
-    def integrate(self, times):
+    def integrate(self):
         """Integrates the equations ``evaluate_ode_function()`` using
         ``ode_solver``.
 
@@ -422,7 +459,7 @@ class System(object):
         self._check_constants(self.constants)
         self._check_specifieds(self.specifieds)
         self._check_initial_conditions(self.initial_conditions)
-
+        self._check_times(self.times)
         if self.evaluate_ode_function == None:
             self.generate_ode_function()
 
@@ -438,7 +475,7 @@ class System(object):
         return self.ode_solver(
                 self.evaluate_ode_function,
                 initial_conditions_in_proper_order,
-                times,
+                self.times,
                 args=({
                     'constants': self._constants_padded_with_defaults(),
                     'specified': specified_value,

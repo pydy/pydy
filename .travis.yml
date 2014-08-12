@@ -8,6 +8,7 @@ before_install:
   # 0.15.1.
   - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy cython
   - sudo apt-get install -y -qq python-coverage
+  - sudo apt-get install phantomjs
   # Remove the version of NumPy pre-installed into the Travis virtualenv so
   # that we test with the system installed version.
   - pip uninstall -y numpy
@@ -23,3 +24,4 @@ script:
   - nosetests -v --with-coverage --cover-package=pydy
   - cd docs && make html && cd ..
   - python setup.py install
+  - cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html && cd ../../../../../
