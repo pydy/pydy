@@ -39,10 +39,15 @@ SciPy Stack
 - SymPy_ >= 0.7.4.1
 - NumPy_ >= 1.6.1
 - SciPy_ >= 0.9.0
-- IPython_ >= 0.13.0
+- IPython_ (dev)
 
 It's best to install the SciPy Stack dependencies using the instructions_
 provided on the SciPy website.
+
+**Note:** The pydy.viz has IPython(3.0.0-dev) as the dependency. It can be installed by::
+
+    $ pip install -e -e git+https://github.com/ipython/ipython.git@d39f4ecb3cf3b7fc7f0a44fc7fda0db592c8cb3c#egg=ipython-master
+
 
 Once the dependencies are installed, the package can be installed from PyPi
 using::
@@ -294,6 +299,8 @@ Release Notes
 
 - Added a new System class and module to more seamlessly manage integrating the
   equations of motion.
+- Added new method `Scene.display_ipython` to allow visualizations to run in IPython notebooks(requires IPython dev for this to work)
+- Added new material attribute for Shape
 
 0.2.1
 -----
