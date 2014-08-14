@@ -124,12 +124,6 @@ Javascript tests::
 
    cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html && cd ../../../../../
 
-Then run a simple HTTP Server with Python (the server is required due to some
-cross browser issues with blanket.js)::
-
-   $ python -m SimpleHTTPServer
-
-Now visit http://localhost:8000/SpecRunner.html in a webgl compliant browser.
 
 Run the benchmark to test the n-link pendulum problem.::
 
