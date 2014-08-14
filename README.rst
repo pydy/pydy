@@ -39,14 +39,14 @@ SciPy Stack
 - SymPy_ >= 0.7.4.1
 - NumPy_ >= 1.6.1
 - SciPy_ >= 0.9.0
-- IPython_ (dev)
+- IPython_ (3.0.0-dev)
 
 It's best to install the SciPy Stack dependencies using the instructions_
 provided on the SciPy website.
 
-**Note:** The pydy.viz has IPython(3.0.0-dev) as the dependency. It can be installed by::
+**Note:** The pydy.viz has patched IPython(3.0.0-dev) as the dependency. It can be installed by::
 
-    $ pip install -e -e git+https://github.com/ipython/ipython.git@d39f4ecb3cf3b7fc7f0a44fc7fda0db592c8cb3c#egg=ipython-master
+    $ pip install -e git+https://github.com/ipython/ipython.git@f0d869dfabef4f39628ba6a50fd409e52101ebfc#egg=ipython-tarzzz/fix-requirejs
 
 
 Once the dependencies are installed, the package can be installed from PyPi
