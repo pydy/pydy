@@ -85,6 +85,10 @@ Tests require nose:
 
 - nose: 1.3.0
 
+Javascript testing requires phantomjs:
+
+- phantomjs: 1.9.0
+
 Isolated Environments
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -115,10 +119,10 @@ Run the tests::
    (pydy-dev)$ nosetests
 
 For the Javascript tests the Jasmine and blanket.js libraries are used.  Both
-of these libraries are included in pydy-viz with the source. To run the
-Javascript tests, go to the javascript library directory::
+of these libraries are included in pydy.viz with the source. To run the
+Javascript tests::
 
-   $ cd pydy/viz/static/js
+   cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html && cd ../../../../../
 
 Then run a simple HTTP Server with Python (the server is required due to some
 cross browser issues with blanket.js)::
