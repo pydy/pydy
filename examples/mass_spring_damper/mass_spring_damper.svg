@@ -15,7 +15,7 @@
    height="400"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.3.1 r9886"
+   inkscape:version="0.48.4 r9939"
    sodipodi:docname="mass_spring_damper.svg">
   <sodipodi:namedview
      id="base"
@@ -28,7 +28,7 @@
      inkscape:cx="200"
      inkscape:cy="200"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="textext-5464613c-5"
      showgrid="false"
      inkscape:window-width="1366"
      inkscape:window-height="744"
@@ -574,17 +574,6 @@
       <g
          id="textext-5464613c-5">
         <g
-           id="g5728"
-           style="fill:#000000;fill-opacity:1">
-          <use
-             id="use5730"
-             y="134.765"
-             x="223.43201"
-             xlink:href="#textext-5464613c-1"
-             width="400"
-             height="400" />
-        </g>
-        <g
            id="g5732"
            style="fill:#000000;fill-opacity:1">
           <use
@@ -606,6 +595,72 @@
              width="400"
              height="400" />
         </g>
+        <text
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+           x="51.681416"
+           y="186.19469"
+           id="text3085"
+           sodipodi:linespacing="125%"
+           transform="matrix(0.5,0,0,0.5,201.95168,41.180735)"><tspan
+             sodipodi:role="line"
+             id="tspan3087"
+             x="51.681416"
+             y="186.19469" /></text>
+        <text
+           xml:space="preserve"
+           style="font-size:16px;font-style:italic;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Italic"
+           x="46.725662"
+           y="183.36282"
+           id="text3089"
+           sodipodi:linespacing="125%"
+           transform="matrix(0.5,0,0,0.5,201.95168,41.180735)"><tspan
+             sodipodi:role="line"
+             id="tspan3091"
+             x="46.725662"
+             y="183.36282" /></text>
+        <text
+           xml:space="preserve"
+           style="font-size:14px;font-style:italic;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Italic"
+           x="51.681416"
+           y="183.36282"
+           id="text3097"
+           sodipodi:linespacing="125%"
+           transform="matrix(0.5,0,0,0.5,201.95168,41.180735)"><tspan
+             sodipodi:role="line"
+             id="tspan3099"></tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:14px;font-style:italic;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Italic"
+           x="48.84956"
+           y="188.31857"
+           id="text3101"
+           sodipodi:linespacing="125%"
+           transform="matrix(0.5,0,0,0.5,201.95168,41.180735)"><tspan
+             sodipodi:role="line"
+             id="tspan3103"></tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:14px;font-style:italic;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Italic"
+           x="36.106194"
+           y="183.36282"
+           id="text3105"
+           sodipodi:linespacing="125%"
+           transform="matrix(0.5,0,0,0.5,201.95168,41.180735)"><tspan
+             sodipodi:role="line"
+             id="tspan3107"></tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:14px;font-style:italic;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Italic"
+           x="48.141594"
+           y="183.36282"
+           id="text3109"
+           sodipodi:linespacing="125%"
+           transform="matrix(0.5,0,0,0.5,201.95168,41.180735)"><tspan
+             sodipodi:role="line"
+             id="tspan3111"
+             x="48.141594"
+             y="183.36282">y</tspan></text>
       </g>
     </g>
   </g>
