@@ -277,6 +277,8 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         _camera.name = camera.simulation_id;
         _camera["object-info"] = camera;
         self._scene.add(_camera);
+        self.currentCamera = _camera;
+
 
     },
 
