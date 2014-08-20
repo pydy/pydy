@@ -103,6 +103,7 @@ dependencies needed to build the various packages::
    $ mkvirtualenv pydy-dev
    (pydy-dev)$ pip install numpy scipy cython nose theano sympy
    (pydy-dev)$ pip install matplotlib # make sure to do this after numpy
+   (pydy-dev)$ pip install -e git+https://github.com/ipython/ipython.git
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
    (pydy-dev)$ python setup.py develop
