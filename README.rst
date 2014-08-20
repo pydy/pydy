@@ -46,7 +46,7 @@ provided on the SciPy website.
 
 **Note:** The pydy.viz has patched IPython(3.0.0-dev) as the dependency. It can be installed by::
 
-    $ pip install -e git+https://github.com/ipython/ipython.git@f0d869dfabef4f39628ba6a50fd409e52101ebfc#egg=ipython-tarzzz/fix-requirejs
+    $ pip install -e git+https://github.com/ipython/ipython.git
 
 
 Once the dependencies are installed, the package can be installed from PyPi
@@ -113,6 +113,12 @@ Or with conda_::
 
    $ conda create -n pydy-dev numpy scipy cython nose theano sympy matplotlib
    $ source activate pydy-dev
+   (pydy-dev)$ conda remove ipython  # conda automatically installs ipython into envs
+   (pydy-dev)$ git clone https://github.com/ipython/ipython
+   (pydy-dev)$ cd ipython
+   (pydy-dev)$ git submodule update
+   (pydy-dev)$ pip install -e ".[notebook]"
+   (pydy-dev)$ cd ..
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
    (pydy-dev)$ python setup.py develop
