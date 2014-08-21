@@ -38,7 +38,7 @@ Tutorials
 .. toctree::
     :maxdepth: 2
 
-    tutorials/beginner.rst
+    tutorials/beginners.rst
     tutorials/advanced.rst
 
 Questions
