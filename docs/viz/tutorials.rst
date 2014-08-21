@@ -1,14 +1,6 @@
 Tutorials
 ------------
 
-.. toctree::
-    :maxdepth: 2
-    
-    `Mass Spring Damper example`_
-    `N Pendulum example`_
-
-
-
 These tutorials are in the form of IPython notebooks:
 
 
