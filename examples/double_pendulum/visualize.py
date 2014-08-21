@@ -61,4 +61,7 @@ scene = Scene(world_frame, O,
 scene.generate_visualization_json_system(sys)
 
 if __name__ == "__main__":
-    scene.display()
+    try: #If called from inside notebook,
+        scene.display_ipython()
+    except:#If called from interpreter
+        scene.display()
