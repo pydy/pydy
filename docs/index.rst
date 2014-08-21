@@ -30,6 +30,7 @@ viz package
 
     viz/introduction.rst
     viz/api.rst
+    viz/tutorials.rst
 
 Questions
 =========
