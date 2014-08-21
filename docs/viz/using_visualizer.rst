@@ -31,6 +31,7 @@ Here is a screenshot of the visualizer, when it is called from outside the noteb
 3. **Time Slider**: It is used to traverse to the particular frame in animation, by sliding the slider forward and backward. In case the animation is running, it will continue from the point where the slider is "*slided to*".
 
 4. **Canvas**: Where animation is drawn. It supports mouse controls:
+
   - Mouse wheel to zoom in, zoom out.
   - click and drag to rotate camera.
 
