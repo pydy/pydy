@@ -306,16 +306,16 @@ Release Notes
 
 - Added a new System class and module to more seamlessly manage integrating the
   equations of motion.
-- updated UI for pydy.viz's Visualizer.
-- pydy.viz generates two JSONs now(instead of one in earlier versions). The JSON generated from earlier versions
+- Updated UI for pydy.viz's Visualizer.
+- pydy.viz generates two JSONs now (instead of one in earlier versions). The JSON generated from earlier versions
   will not work in the new version.
 - Upgraded IPython version dependency to '3.0.0-dev'.
-- Added new method `Scene.display_ipython` to allow visualizations to run in IPython notebooks(requires IPython dev for this to work)
-- Added new material attribute for Shape
+- Added new method `Scene.display_ipython` to allow visualizations to run in IPython notebooks (requires IPython dev for this to work)
+- Added new material attribute for Shape.
 - Added IPython widgets, to change simulation parameters from the GUI itself.
-- Now eoms can be re-integrated by changing simulation parameters from GUI(by hitting `rerun simulation` button)
-- switched from socket based server to python's core SimpleHTTPServer
-- automated javascript testing on travis
+- Now eoms can be re-integrated by changing simulation parameters from GUI (by hitting `rerun simulation` button)
+- Switched from socket based server to python's core SimpleHTTPServer
+- Automated javascript testing on travis
 
 
 0.2.1
