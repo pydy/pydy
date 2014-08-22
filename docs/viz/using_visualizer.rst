@@ -20,8 +20,8 @@ Here is a screenshot of the visualizer, when it is called
 from outside the notebook(from a terminal/interpreter):
 
 .. image:: images/screenshot1.png
-    :height: 400px
-    :width:  600px
+    :height: 450px
+    :width:  900px
 
 1. **Play Button**: Plays an animation. On Clicking play 
 button, two buttons *appear*, "Pause" and "Stop", to pause 
@@ -33,8 +33,8 @@ as well as downloaded. On clicking `Show Model`,
 following dialog is created:
 
 .. image:: images/screenshot2.png
-    :height: 400px
-    :width:  600px
+    :height: 425px
+    :width:  650px
 
 3. **Time Slider**: It is used to traverse to the particular 
 frame in animation, by sliding the slider forward and backward. 
@@ -90,8 +90,8 @@ from the GUI itself. This is how the Visualizer looks,
 when called from inside an IPython notebook:
 
 .. image:: images/screenshot5.png
-    :height: 300px
-    :width:  400px
+    :height: 320px
+    :width:  600px
 
 Here, we can add custom values in text-boxes(1, 2, 3 etc.) 
 and on clicking `Re-run simulation` button(4), the simulations 
