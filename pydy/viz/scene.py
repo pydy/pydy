@@ -490,7 +490,7 @@ class Scene(object):
             self.constant_values = []    
             for i in self._widget_dict.values():
                 self.constant_values.append(i.value)
-            if self.system is not None:
+            if self.system:
                 #update system constants
                 self.system.constants = dict(zip(self.system.constants, self.constant_values))
                 self.generate_visualization_json_system(self.system)
@@ -509,7 +509,6 @@ class Scene(object):
 
         
         self.button.on_click(button_click)
-        #components.append(button)
         html_file = open("static/index_ipython.html")
         self.html_widget = widgets.HTMLWidget(value=html_file.read().format(load_url='static/' + self.scene_json_file))
         self.container.children = components
@@ -521,6 +520,9 @@ class Scene(object):
                                   "float":"left"
                                   })
         display(self.container)
-        display(self.button)
+
+        if self.system: #Rerun enabled only if System used
+            display(self.button)
+
         display(self.html_widget)
         self.button.add_class('btn-info')
