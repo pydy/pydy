@@ -523,7 +523,7 @@ class Scene(object):
 
         if not self.system: #Rerun enabled only if System used
             self.button.add_class('disabled')
-        display(self.button)
-        
+
+        display(self.button)        
         display(self.html_widget)
         self.button.add_class('btn-info')
