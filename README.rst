@@ -118,7 +118,7 @@ Run the tests::
 
    (pydy-dev)$ nosetests
 
-For the Javascript tests the Jasmine and blanket.js libraries are used.  Both
+For the Javascript tests the Jasmine and blanket.js libraries are used. Both
 of these libraries are included in pydy.viz with the source. To run the
 Javascript tests::
 
@@ -314,8 +314,8 @@ Release Notes
 Citation
 ========
 
-If you make use of the PyDy toolchain in you work or research please cite us in
-your publications or on the web. This citation can be used:
+If you make use of the PyDy toolchain in your work or research, please cite us
+in your publications or on the web. This citation can be used:
 
    Gilbert Gede, Dale L Peterson, Angadh S Nanjangud, Jason K Moore, and Mont
    Hubbard, "Constrained Multibody Dynamics With Python: From Symbolic Equation
