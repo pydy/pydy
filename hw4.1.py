@@ -32,7 +32,7 @@ pA_hat.v2pt_theory(pA_star, N, A) # pA* and pA^ are both fixed in frame A
 pB_hat.v2pt_theory(pB_star, N, B) # pB* and pB^ are both fixed in frame B
 
 
-I_rod = inertia(C, 0, m0*L/12, m0*L/12, 0, 0, 0)
+I_rod = inertia(C, 0, m0*L**2/12, m0*L**2/12, 0, 0, 0)
 rbC = RigidBody('rod_C', pC_star, C, m0, (I_rod, pC_star))
 
 I_discA = inertia(A, m*r**2/2, m*r**2/4, m*r**2/4, 0, 0, 0)
