@@ -48,6 +48,15 @@ rb_disc = RigidBody('Disc', pB, B, m, (I_disc, pB))
 T = rb_disc.kinetic_energy(N).subs({theta: theta_val, q2d: q2d_val})
 print('T = {}'.format(msprint(simplify(T))))
 
+from sympy import S
+#T2 = q1d**2*(m*r**2/4*(S(5)/8 - (2*R + r)/(2*r) + (2*R + r)**2/(2*r)**2) + m*R**2/2)
+T2 = m*q1d**2*R**2/2 + m*r**2/2 * (
+        (2*R + r)**2/(2*r)**2 * q1d**2 / 2 -
+        (2*R + r)**2/(2*r) * q1d**2 / 2 +
+        5*q1d**2/16)
+from sympy import expand
+print('T - T2 = {}'.format(msprint(expand(T - T2).simplify())))
+
 t = symbols('t')
 dT = T.diff(symbols('t'))
 print('dT/dt = {} = 0'.format(msprint(simplify(dT))))

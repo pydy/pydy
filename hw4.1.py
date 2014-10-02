@@ -51,10 +51,11 @@ print(msprint(qd_val))
 print('T_A = {}'.format(msprint(simplify(rbA.kinetic_energy(N).subs(qd_val)))))
 print('T_B = {}'.format(msprint(simplify(rbB.kinetic_energy(N).subs(qd_val)))))
 
-print('T = {}'.format(msprint(expand(simplify(
+T = expand(simplify(
     rbA.kinetic_energy(N).subs(qd_val) +
     rbB.kinetic_energy(N).subs(qd_val) +
-    rbC.kinetic_energy(N))))))
+    rbC.kinetic_energy(N)))
+print('T = {}'.format(msprint(T)))
 
 #T = rb_disc.kinetic_energy(N).subs({theta: theta_val, q2d: q2d_val})
 #print('T = {}'.format(msprint(simplify(T))))
@@ -62,3 +63,8 @@ print('T = {}'.format(msprint(expand(simplify(
 #t = symbols('t')
 #dT = T.diff(symbols('t'))
 #print('dT/dt = {} = 0'.format(msprint(simplify(dT))))
+T2 = (m0*v**2/2 + m/2*((v + L*q1d/2)**2 + (v - L*q1d/2)**2) +
+    m0*L**2*q1d**2/24 + m*r**2*q1d**2/4 +
+    m*r**2/4*((v + L*q1d/2)**2/r**2 + (v - L*q1d/2)**2/r**2))
+
+print(expand(T - T2))
