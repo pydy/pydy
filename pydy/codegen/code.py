@@ -27,7 +27,8 @@ else:
     cython_installed = True
 
 # internal libraries
-from templates import c_template, h_template, pyx_template, setup_template
+from pydy.codegen.templates import (c_template, h_template,
+        pyx_template, setup_template)
 
 # Python 2 vs 3 importing
 try:
