@@ -27,8 +27,8 @@ else:
     cython_installed = True
 
 # internal libraries
-from pydy.codegen.templates import (c_template, h_template,
-        pyx_template, setup_template)
+from .templates import (c_template, h_template, pyx_template,
+                        setup_template)
 
 # Python 2 vs 3 importing
 try:
@@ -480,7 +480,7 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
             if isinstance(args['specified'], dict):
 
                 specified_values = np.zeros(len(specified))
-    
+
                 for k, v in args['specified'].items():
                     # TODO : Not sure if this is the best check here.
                     if isinstance(type(k), UndefinedFunction):

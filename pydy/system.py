@@ -50,7 +50,6 @@ you must call ``generate_ode_function`` on your own::
 """
 
 import sympy as sym
-
 from scipy.integrate import odeint
 
 from .codegen.code import generate_ode_function
@@ -79,8 +78,8 @@ class System(object):
     initial_conditions : dict, optional (default: all zero)
         This dictionary maps SymPy Functions of time objects to floats.
 
-    times : dict, optional 
-        An array_like object, which contains time values over which 
+    times : dict, optional
+        An array_like object, which contains time values over which
         equations are integrated. It has to be supplied before
         System.integrate can be called.
 
@@ -116,7 +115,7 @@ class System(object):
         if times is None:
             self._times = []
         else:
-            self._times = times        
+            self._times = times
 
         self._evaluate_ode_function = None
 
@@ -309,7 +308,7 @@ class System(object):
         return dict(self.specifieds.items() + {s: 0.0 for s in
             self.specifieds_symbols if not
             self._symbol_is_in_specifieds_dict(s, self.specifieds)}.items())
-    
+
     @property
     def times(self):
         """ An array_like object,
@@ -319,7 +318,7 @@ class System(object):
         The object should be in a format
         which the integration module to be used
         can accept. Since this attribute is not
-        checked for compatibility, User becomes 
+        checked for compatibility, User becomes
         responsible to supply it correctly.
         """
         return self._times
@@ -330,7 +329,7 @@ class System(object):
 
     def _check_times(self, times):
         """
-        Very basic checking. 
+        Very basic checking.
         TODO: add more checking
         """
         if len(times) == 0:
