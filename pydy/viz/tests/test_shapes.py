@@ -11,7 +11,7 @@ from ..shapes import *
 
 def test_shape():
     shape = Shape(name='shape', color='blue', material="DIRT")
-    
+
     assert shape.name == 'shape'
     assert shape.__str__() == 'Shape shape color:blue material:DIRT'
     assert shape.__repr__() == 'Shape'
@@ -23,13 +23,13 @@ def test_shape():
 
     shape.color = 'red'
     assert shape.color == 'red'
-    
+
     shape.material = "WATER"
     assert shape.material == "WATER"
 
     assert shape.generate_dict() == {"color": "red",
                                      "type": "Shape",
-                                     "name": "shape1", 
+                                     "name": "shape1",
                                      "material": "WATER"}
 
     assert isinstance(shape, Shape)
@@ -60,7 +60,7 @@ def test_shape_geometry_with_expressions():
     expected = {"color": "grey",
                 "type": "Shape",
                 "name": "unnamed",
-                "length": 20.0, 
+                "length": 20.0,
                 "material": "default"}
     actual = shape.generate_dict(constant_map={symbols('l1'): 4.0,
                                                symbols('l2'): 4.0})
@@ -88,7 +88,7 @@ def test_cube():
     assert cube.generate_dict() == {"color": "red",
                                     "type": "Cube",
                                     "name": "cube1",
-                                    "length": 16.0, 
+                                    "length": 16.0,
                                     "material": "WATER"}
 
     assert isinstance(cube, Shape)
@@ -105,7 +105,7 @@ def test_cube():
     assert actual == {"color": "grey",
                       "type": "Cube",
                       "name": "unnamed",
-                      "length": 3.0, 
+                      "length": 3.0,
                       "material": "default"}
 
 
@@ -137,7 +137,7 @@ def test_cylinder():
                                         "type": "Cylinder",
                                         "name": "cylinder1",
                                         "length": 14.0,
-                                        "radius": 7.0, 
+                                        "radius": 7.0,
                                         "material": "FOIL"}
 
     assert isinstance(cylinder, Shape)
@@ -176,7 +176,7 @@ def test_cone():
                                     "type": "Cone",
                                     "name": "cone1",
                                     "length": 16.0,
-                                    "radius": 3.0, 
+                                    "radius": 3.0,
                                     "material": "CHECKERBOARD"}
     assert isinstance(cone, Shape)
 
@@ -208,7 +208,7 @@ def test_sphere():
     assert sphere.generate_dict() == {"color":  "aqua",
                                       "type": "Sphere",
                                       "name": "sphere1",
-                                      "radius": 14.0, 
+                                      "radius": 14.0,
                                       "material": "default"}
     assert isinstance(sphere, Shape)
 
@@ -264,7 +264,7 @@ def test_mesh():
     #TODO Handle these long strings
     assert mesh_shape.__str__() == \
         'Mesh mesh color:green material:default points:[[ 2.  3.  1.]\n [ 4.  6.  2.]\n [ 5.  3.  1.]\n [ 5.  3.  6.]\n [ 2.  8.  4.]\n [ 7.  4.  1.]]'
-                    
+
     assert mesh_shape.__repr__() == 'Mesh'
     assert_allclose(mesh_shape.points, point_list)
     assert mesh_shape.color == 'green'

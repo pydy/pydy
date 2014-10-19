@@ -1,3 +1,10 @@
+# pydy
+
+*data.json
+*desc.json
+
+# python
+
 *.py[cod]
 
 # Editor's default saves

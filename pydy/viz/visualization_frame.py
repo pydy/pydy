@@ -296,10 +296,10 @@ class VisualizationFrame(object):
         self._visualization_matrix = new.reshape(n, 16).tolist()
         return self._visualization_matrix
 
-    
+
     def generate_scene_dict(self, constant_map={}):
         """
-        This method generates information for a static 
+        This method generates information for a static
         visualization in the initial conditions, in the form
         of dictionary. This contains shape information
         from `Shape.generate_dict()` followed by an
@@ -313,20 +313,20 @@ class VisualizationFrame(object):
         constant_map : dictionary
             Constant map is required when Shape contains sympy expressions.This
             dictionary maps sympy expressions/symbols to numerical values(floats)
-        
+
         Returns
         =======
-        A dictionary built with a call to `Shape.generate_dict`. 
+        A dictionary built with a call to `Shape.generate_dict`.
         Additional keys included in the dict are following:
-        
-        1. init_orientation: Specifies the initial orientation 
+
+        1. init_orientation: Specifies the initial orientation
            of the `VisualizationFrame`.
         2. reference_frame_name: Name(str) of the reference_frame
            attached to this VisualizationFrame.
         3. simulation_id: an arbitrary integer to map scene description
            with the simulation data.
 
-        
+
         """
         scene_dict = { id(self): {} }
         scene_dict[id(self)] = self.shape.generate_dict(constant_map=constant_map)
@@ -344,13 +344,13 @@ class VisualizationFrame(object):
 
         Before calling this method, all the transformation matrix
         generation methods should be called, or it will give an error.
-        
+
         Returns
         =======
 
-        A dictionary containing list of 4x4 matrices mapped to 
+        A dictionary containing list of 4x4 matrices mapped to
         the unique id as the key.
-        
+
         """
         simulation_dict = {}
         try:
@@ -366,6 +366,6 @@ class VisualizationFrame(object):
 
 
         return simulation_dict
-        
+
 
 

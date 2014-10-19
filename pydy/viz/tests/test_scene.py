@@ -7,9 +7,11 @@ from scipy.integrate import odeint
 from sympy import symbols
 import sympy.physics.mechanics as me
 
-from pydy.system import System
-from pydy.codegen.code import generate_ode_function
-from pydy.viz import Sphere, VisualizationFrame, Scene
+from ...system import System
+from ...codegen.code import generate_ode_function
+from ..shapes import Sphere
+from ..visualization_frame import VisualizationFrame
+from ..scene import Scene
 
 
 def test_create_static_html():
