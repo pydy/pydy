@@ -863,7 +863,8 @@ These equations give the following initial conditions:
 Taking $s_Y(t_0) = 0.2$, the initial condition of $\dot{s}_Y(t_0)$ can be found
 using the constraint equation:
 \begin{equation*}
-    \dot{s}_X sin(\theta) - \dot{s}_Y cos(\theta) + \frac{1}{2}l\omega = 0
+    \phi = \dot{s}_X sin(\theta) - \dot{s}_Y cos(\theta) + \frac{1}{2}l\omega
+        = 0
 \end{equation*}
 As this constraint is always satisfied, substituting values at $t = t_0$ gives:
 \begin{equation*}
@@ -1012,25 +1013,56 @@ wheels), and assuming a friction coefficient of $\mu=0.7$ and acceleration of
 gravity $g=\unit[9.81]{m/s^2}$ pointing in negative $Z$ direction, do you think
 the assumption of no slip at the rear wheels was valid? } \\
 
+Including the constraint equation and adding a lagrange multiplier results in
+the following equations of motions:
+\begin{equation*}
+    \begin{pmatrix}
+        \ddot{s}_X \\ \ddot{s}_Y \\ \dot{\omega} \\ \lambda
+    \end{pmatrix}
+    =
+    \frac{2}{4I_s + l^2m} \omega
+    \begin{pmatrix}
+        -I_s(sin(2\omega)\dot{s}_X - cos(2\omega)\dot{s}_Y + \dot{s}_Y) \\
+        I_s(cos(2\omega)\dot{s}_X + sin(2\omega)\dot{s}_Y + \dot{s}_X) \\
+        -lm(cos(\omega)\dot{s}_X + sin(\omega)\dot{s}_Y) \\
+        -2I_sm(cos(\omega)\dot{s}_X + sin(\omega)\dot{s}_Y) \\
+    \end{pmatrix}
+\end{equation*}
+
+With a closed form solution of $\lambda$, we can calculate the constraint
+forces in the $x$ and $y$ directions:
+\begin{equation*}
+    F_x = \lambda \frac{\partial{\phi}}{\partial{\dot{s}_X}} \qquad
+    F_y = \lambda \frac{\partial{\phi}}{\partial{\dot{y}_Y}}
+\end{equation*}
+\begin{equation*}
+    F_x = \lambda sin(\theta) \qquad F_y = -\lambda cos(\theta)
+\end{equation*}
+The constraint forces are then calculated in \autoref{lst:simcart}. \\
+
 Assuming half the mass is distributed above the rear axle, we find the static
 friction force to be:
 \begin{equation*}
     F_{fr} = \mu \frac{1}{2}mg = (0.7)\frac{1}{2}(20)(9.81) = \unit[68.67]{N}
 \end{equation*}
-Plotting the calculated constraint force $F_C$ with the static friction force
-$F_{fr}$ in \autoref{fig:axleforce}, we see that no slip of the rear
-wheels is not a good assumption.
+Plotting the calculated constraint force $F_C = \sqrt{F_x^2 + F_y^2}$ with the
+static friction force $F_{fr}$ in \autoref{fig:axleforce}, we see that no slip
+of the rear wheels is not a good assumption.
 
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{figures/axle_force.eps}
-    \caption{Constraint Force on Cart Axle}
+    \caption{Total Constraint Force on Cart Axle}
     \label{fig:axleforce}
 \end{figure}
 
 \vspace{.5cm}
 
-\begin{lstlisting}[caption={simulate\_cart.m}, label={lst:simcart}]
+\begin{lstlisting}[
+    caption={simulate\_cart.m},
+    label={lst:simcart},
+    escapechar=!
+]
 %This script simulates a three-wheeled cart,
 %as treated in week 7 of the course "Advanced
 %Dynamics" at TUD.
@@ -1089,6 +1121,41 @@ options = odeset('AbsTol',1e-10,'RelTol',1e-8);
 %extract the generalized coordinates as time series:
 qmatrix=y(:,1:3);
 
+!\colorbox{light-red}{x0 = y0(end,1:3);}!
+!\colorbox{light-red}{x\_sim = y(end, 1);}!
+!\colorbox{light-red}{x\_mdl = -v0*(N-1)*dt;}!
+!\colorbox{light-red}{disp(sprintf('error in sX: \%g - \%g = \%g', x\_sim, x\_mdl, x\_sim - x\_mdl))}!
+
+% calculate constraint force:
+% given the Lagrange equations:
+% q1'' = -2*Is*(sin(2*q3)*q1' - cos(2*q3)*q2' + q2')*q3'/(4*Is + l**2*m)
+% q2'' = 2*Is*(sin(2*q3)*q2' + cos(2*q3)*q1' + q1')*q3'/(4*Is + l**2*m)
+% q3'' = -2*l*m*(sin(q3)*q2' + cos(q3)*q1')*q3'/(4*Is + l**2*m)
+% lambda = -4*Is*m*(sin(q3)*q2' + cos(q3)*q1')*q3'/(4*Is + l**2*m)
+
+!\colorbox{light-red}{dy = zeros(size(y));}!
+!\colorbox{light-red}{for i = 1:length(y) - 1}!
+!\colorbox{light-red}{    dy(i, :) = cart\_equationsofmotion(t(i), y(i, :), par);}!
+!\colorbox{light-red}{end}!
+
+!\colorbox{light-red}{theta\_t = y(:, 3);}!
+!\colorbox{light-red}{ds\_X\_t = dy(:, 1);}!
+!\colorbox{light-red}{ds\_Y\_t = dy(:, 2);}!
+!\colorbox{light-red}{omega\_t = dy(:, 3);}!
+!\colorbox{light-red}{lambda\_t = -4*par.Is*par.m*omega\_t/(4*par.Is + l\^2*par.m) .*...}!
+!\colorbox{light-red}{    (sin(theta\_t).*ds\_Y\_t + cos(theta\_t).*ds\_X\_t);}!
+
+!\colorbox{light-red}{F\_x = lambda\_t .* sin(theta\_t);}!
+!\colorbox{light-red}{F\_y = -lambda\_t .* cos(theta\_t);}!
+
+!\colorbox{light-red}{F\_C = sqrt(F\_x.\^2 + F\_y.\^2);}!
+!\colorbox{light-red}{F\_fr = 0.7*par.m/2*9.81;}!
+
+!\colorbox{light-red}{disp(sprintf('static friction force = mu*m/2*g = \%g', F\_fr));}!
+!\colorbox{light-red}{xlabel('time [s]')}!
+!\colorbox{light-red}{ylabel('force [N]')}!
+!\colorbox{light-red}{legend({'F\_C', 'F\_{fr}'})}!
+
 %----------------------------
 %animate the result:
 %----------------------------
@@ -1101,7 +1168,11 @@ cartanimation(qmatrix,par);
 %welke krachten en momenten nodig om sinusvormige beweging te maken, dan deze
 %week
 
-\begin{lstlisting}[caption={cart\_equationsofmotion.m}, label={lst:carteom}]
+\begin{lstlisting}[
+    caption={cart\_equationsofmotion.m},
+    label={lst:carteom},
+    escapechar=!
+]
 function dx=cart_equationsofmotion(t,x,par)
 %function dx=cart_equationsofmotion(t,x,par)
 %This function contains the 2D equations of motion of a three-wheeled cart
@@ -1143,21 +1214,14 @@ dsX=x(4);
 dsY=x(5);
 omega=x(6);
 
+!\colorbox{light-red}{dt = 0.01;}!
+!\colorbox{light-red}{n = round(t/dt) + 1;}!
+!\colorbox{light-red}{Fx = par.F(n, 1);}!
+!\colorbox{light-red}{Fy = par.F(n, 2);}!
+
 %----------------------------
 %Lagrange:
 %----------------------------
-
-Fx=-50;%[N], forward force
-Fy=0;%[N], steering force
-
-%for steering movie:
-%Fx=0;%forward force
-%Fy=-50;%steering force
-
-%for backward movie:
-%Fx=-50;%forward force
-%Fy=0;%steering force
-
 
 A=[m 0 -2*Is/l*sin(theta);
     0 m 2*Is/l*cos(theta);
