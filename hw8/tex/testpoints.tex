@@ -1,0 +1,143 @@
+
+
+%------------------------------------------------------------------
+% PROBLEM, PART, AND POINT COUNTING...
+
+% Create the problem number counter.  Initialize to zero.
+\newcounter{problemnum}
+
+% Specify that problems should be labeled with arabic numerals.
+\renewcommand{\theproblemnum}{\arabic{problemnum}}
+
+
+% Create the part-within-a-problem counter, "within" the problem counter.
+% This counter resets to zero automatically every time the PROBLEMNUM counter
+% is incremented.
+\newcounter{partnum}[problemnum]
+
+% Specify that parts should be labeled with lowercase letters.
+\renewcommand{\thepartnum}{\alph{partnum}}
+
+% Make a counter to keep track of total points assigned to problems...
+\newcounter{totalpoints}
+
+% Make counters to keep track of points for parts...
+\newcounter{curprobpts}		% Points assigned for the problem as a whole.
+\newcounter{totalparts}		% Total points assigned to the various parts.
+
+% Make a counter to keep track of the number of points on each page...
+\newcounter{pagepoints}
+% This counter is reset each time a page is printed.
+
+% This "program" keeps track of how many points appear on each page, so that
+% the total can be printed on the page itself.  Points are added to the total
+% for a page when the PART (not the problem) they are assigned to is specified.
+% When a problem without parts appears, the PAGEPOINTS are incremented directly
+% from the problem as a whole (CURPROBPTS).
+
+
+%---------------------------------------------------------------------------
+
+
+% The \problem environment first checks the information about the previous
+% problem.  If no parts appeared (or if they were all assigned zero points,
+% then it increments TOTALPOINTS directly from CURPROBPTS, the points assigned
+% to the last problem as a whole.  If the last problem did contain parts, it
+% checks to make sure that their point values total up to the correct sum.
+% It then puts the problem number on the page, along with the points assigned
+% to it.
+
+\newenvironment{problem}[1]{
+% STATEMENTS TO BE EXECUTED WHEN A NEW PROBLEM IS BEGUN:
+%
+% Increment the problem number counter, and set the current \ref value to that
+% number.
+\refstepcounter{problemnum}
+%
+% Add some vspace to separate from the last problem.
+\vspace{0.15in} \par
+%
+\setcounter{curprobpts}{#1} \setcounter{totalparts}{0}	% Reset counters.
+%
+% Now put in the "announcement" on the page.
+{\Large \bf \theproblemnum. \normalsize ({\it \arabic{curprobpts} point\null\ifnum \value{curprobpts} = 1\else s\fi}\/)}
+}{
+% STATEMENTS TO BE EXECUTED WHEN AN OLD PROBLEM IS ENDED:
+%
+% If no parts to problem, then increment TOTALPOINTS and PAGEPOINTS for the
+% entire problem at once.
+\ifnum \value{totalparts} = 0
+	\addtocounter{totalpoints}{\value{curprobpts}}	% Add pts to total.
+	\addtocounter{pagepoints}{\value{curprobpts}}	% Add pts to page total.
+%
+% If there were parts for the problem, then check to make sure they total up
+% to the same number of points that the problem is worth. Issue a warning
+% if not.
+\else \ifnum \value{totalparts} = \value{curprobpts}
+	\else \typeout{}
+	\typeout{!!!!!!!   POINT ACCOUNTING ERROR   !!!!!!!!}
+	\typeout{PROBLEM [\theproblemnum] WAS ALLOCATED \arabic{curprobpts} POINTS,}
+	\typeout{BUT CONTAINS PARTS TOTALLING \arabic{totalparts} POINTS!}
+	\typeout{}
+	\fi
+\fi
+}
+
+
+%---------------------------------------------------------------------------
+
+
+% The \newpart command increments the part counter and displays an appropriate
+% lowercase letter to mark the part.  It adds points to the point counter
+% immediately.  If 0 points are specified, no point announcement is made.
+% Otherwise, the announcement is in scriptsize italics.
+
+\newcommand{\newpart}[1]
+{
+\refstepcounter{partnum}	% Set the current \ref value to the part number.
+\hspace{0.25in}		% Indent the part by a quarter inch.
+%
+% If points are to be printed for this problem (signaled by point value > 0),
+% then put them in in scriptsize italics.
+\ifnum #1 > 0
+	\makebox[0.5in][l]{{\bf \thepartnum.} {\bf ({\it #1 pt\ifnum #1 = 1\else s\fi\/}) \,\,}}
+\else
+	\makebox[0.25in][l]{({\bf \thepartnum})}
+\fi
+%
+\hspace{0.1in}		% Lead the material away from the part "number".
+%
+\addtocounter{totalparts}{#1}	% Add points to totalparts for this problem.
+\addtocounter{pagepoints}{#1}	% Add points to total for this page.
+\addtocounter{totalpoints}{#1}	% Add points to total for entire test.
+}
+
+
+%---------------------------------------------------------------------------
+
+
+
+% Just in case you want to skip some numbers in your test...
+
+\newcommand{\skipproblem}[1]{\addtocounter{problemnum}{#1}}
+
+
+
+%---------------------------------------------------------------------------
+
+
+% The \showpoints command simply gives a count of the total points read in up to
+% the location at which the command is placed.  Typically, one places one
+% \showpoints command at the end of the latex file, just prior to the
+% \end{document} command.  It can appear elsewhere, however.
+
+\newcommand{\showpoints}
+{
+\typeout{}  
+\typeout{====> A TOTAL OF \arabic{totalpoints} POINTS WERE READ.}
+\typeout{}
+}
+
+
+%---------------------------------------------------------------------------
+
