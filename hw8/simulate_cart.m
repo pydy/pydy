@@ -88,22 +88,32 @@ disp(sprintf('error in sX: %g - %g = %g', x_sim, x_mdl, x_sim - x_mdl))
 
 % calculate constraint force:
 % given the Lagrange equations:
-%  m*ddsX = Fx*cos(theta) - Fy*sin(theta) + sin(theta)*lambda
-%  m*ddsY = Fx*sin(theta) + Fy*cos(theta) - cos(theta)*lambda
-%  Is*ddtheta = Fy*l/2*lambda
+% q1'' = -2*Is*(sin(2*q3)*q1' - cos(2*q3)*q2' + q2')*q3'/(4*Is + l**2*m)
+% q2'' = 2*Is*(sin(2*q3)*q2' + cos(2*q3)*q1' + q1')*q3'/(4*Is + l**2*m)
+% q3'' = -2*l*m*(sin(q3)*q2' + cos(q3)*q1')*q3'/(4*Is + l**2*m)
+% λ = -4*Is*m*(sin(q3)*q2' + cos(q3)*q1')*q3'/(4*Is + l**2*m)
+
 
 dy = zeros(size(y));
 for i = 1:length(y) - 1
     dy(i, :) = cart_equationsofmotion(t(i), y(i, :), par);
 end
-Cx = par.m*dy(:, 4) - par.F(:, 1).*cos(y(:, 3)) + par.F(:, 2).*sin(y(:, 3));
-Cy = -1*(par.m*dy(:, 5) - par.F(:, 1).*sin(y(:, 3)) -...
-         par.F(:, 2).*cos(y(:, 3)));
 
-C_force = sqrt(Cx.^2 + Cy.^2);
+theta_t = y(:, 3);
+ds_X_t = dy(:, 1);
+ds_Y_t = dy(:, 2);
+omega_t = dy(:, 3);
+lambda_t = -4*par.Is*par.m*omega_t/(4*par.Is + l^2*par.m) .*...
+    (sin(theta_t).*ds_Y_t + cos(theta_t).*ds_X_t);
+
+F_x = lambda_t .* sin(theta_t);
+F_y = -lambda_t .* cos(theta_t);
+
+F_C = sqrt(F_x.^2 + F_y.^2);
 F_fr = 0.7*par.m/2*9.81;
+
 disp(sprintf('static friction force = μ*m/2*g = %g', F_fr));
-figure(); plot(t, C_force, 'b', [t(1), t(end)], F_fr*[1, 1], 'r-');
+figure(); plot(t, F_C, 'b', [t(1), t(end)], F_fr*[1, 1], 'r-');
 xlabel('time [s]')
 ylabel('force [N]')
 legend({'F_C', 'F_{fr}'})
