@@ -103,7 +103,10 @@ Cy = -1*(par.m*dy(:, 5) - par.F(:, 1).*sin(y(:, 3)) -...
 C_force = sqrt(Cx.^2 + Cy.^2);
 F_fr = 0.7*par.m/2*9.81;
 disp(sprintf('static friction force = μ*m/2*g = %g', F_fr));
-figure(); plot(t, C_force, 'b', [t(1), t(end)], F_fr*[1, 1], 'r-'); pause
+figure(); plot(t, C_force, 'b', [t(1), t(end)], F_fr*[1, 1], 'r-');
+xlabel('time [s]')
+ylabel('force [N]')
+legend({'F_C', 'F_{fr}'})
 
 %----------------------------
 %animate the result:
