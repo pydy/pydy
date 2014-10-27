@@ -196,10 +196,10 @@ The potential energy is defined using the resting position as reference ($\phi
     V_e = mg\Delta x , V_0 = 0
 \end{equation}
 \begin{equation}
-    \Delta x =\dfrac{ l^2\dot{\phi}^2}{2g} = 12.1026\text{m}
+    \Delta x =\dfrac{ l^2\dot{\phi}^2}{2g} = \unit[12.1026]{m}
 \end{equation}
 \begin{equation}
-    x = l - \Delta x =  -2.2926\text{m}
+    x = l - \Delta x =  \unit[-2.2926]{m}
 \end{equation}
 
 \newpart{5} \textit{Derive the equations of motion for this system and solve
@@ -384,11 +384,11 @@ conditions $\V{y}_0=\begin{pmatrix}2& 0\end{pmatrix}^T$, using this command:
 Report the final value of the state vector $\V{y}$ for the three different
 solvers.
 
-Using the given function {\tt Integrate\_ModifiedEuler.m} to integrate the "van
-der Pol" oscillator, gives the final result
+Using the given function {\tt Integrate\_ModifiedEuler.m} to integrate the
+``van der Pol'' oscillator, gives the final result
 
 \begin{align}
-    \V{y} &= \left[ 0.8300   -1.3138\right].
+    \V{y} &= \begin{pmatrix}0.8300 & -1.3138\end{pmatrix}^T
 \end{align}
 
 The function {\tt Integrate\_Euler.m}, should look like this
@@ -404,10 +404,10 @@ to include the euler's integration method.
     y_{n+1} &= y_{n} + h\dot{y}_n
 \end{align}
 
-The final result using the "van der Pol" oscillator is
+The final result using the ``van der Pol'' oscillator is
 
 \begin{align}
-\V{y} &= \begin{bmatrix}0.9600 & -1.1969\end{bmatrix}
+    \V{y} &= \begin{pmatrix}0.9600 & -1.1969\end{pmatrix}^T
 \end{align}
 
 Analogously, the function {\tt Integrate\_RungeKutta4.m}, should look like this
@@ -435,10 +435,10 @@ to include the 4th order Runge-Kutta's integration method.
         \tilde{\dot{y}}_{n+1} \right)
 \end{align}
 
-The final result using the "van der Pol" oscillator is
+The final result using the ``van der Pol'' oscillator is
 
 \begin{align}
-    \V{y} &= \left[ 0.8304   -1.3134 \right]
+    \V{y} &= \begin{pmatrix}0.8304 & -1.3134\end{pmatrix}^T
 \end{align}
 
 
