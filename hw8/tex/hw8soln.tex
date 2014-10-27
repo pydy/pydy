@@ -19,6 +19,14 @@
 \usepackage{fancyhdr} % to create nice headers
 \usepackage[framed,numbered]{mcode}
 \usepackage{lastpage}
+\usepackage[
+    colorlinks=true,
+    pdfencoding=auto,
+    pdfauthor={Daniel Lemus, Oliver Lee},
+    pdftitle={Advanced Dyanmics (wb2630-T1) Q1 2014 Homework Solution No. 8},
+    pdftex
+]{hyperref}
+
 
 
 
@@ -92,7 +100,7 @@
 Q1 2014
 \vspace{.5cm}
 
-Solution Homework No. 8
+Homework Solution No. 8
 \vspace{.5cm}}
 
 \end{center}
@@ -227,13 +235,14 @@ Using the $\V{e}_{\phi}$ component
     \label{1b.ddphi}
 \end{equation}
 
+
 \newpart{5} \textit{Make a small-angle assumption and solve for $\phi(t)$
     analytically. Given the values $m=\unit[2]{kg}$, $l=\unit[9.81]{m}$,
     $g=\unit[9.81]{m/s^2}$, find $\phi(t_e)$ for $t_e=\unit[0.2]{s}$, with the
     above initial conditions.
 }
 \\
-Using small angle (i.e. $\sin(\phi) = \phi$ eq. \ref{1b.ddphi} can be written
+Using small angle (i.e. $\sin(\phi) = \phi$) eq. \ref{1b.ddphi} can be written
 as
 
 \begin{align}
@@ -290,7 +299,7 @@ differential equations (ODE) as
 where $y = \phi$ and $v=\dot{\phi}$
 \\
 
-\newpart{15}\textit{ Numerically integrate this ODE system by hand with the
+\newpart{15} \textit{ Numerically integrate this ODE system by hand with the
 same initial conditions, using a single step of Euler's method with step size
 $h=t_e-t_0=\unit[0.2]{s}$. Compare your result for $\phi(t_e)$ to the solution
 you found in the previous part of this problem. Which of the two results do you
@@ -339,7 +348,6 @@ combination) to obtain a more accurate result by numerical integration.}
         high accuracy and convergence can be achieved with low computational
         power (time step is not necessarily small).
 \end{itemize}
-
 
 \end{problem}
 
@@ -830,61 +838,199 @@ lecture. Within this exercise, you will modify the code to investigate a
 different movement.
 
 \newpart{5}
-Assume the cart now moves backwards in such a way that $s_X=-v_0 t$ and
-$\theta=\pi/8\sin(2\pi f t)$, with the constant parameters $v_0=\unit[20]{m/s}$
-and $f=\unit[2]{Hz}$. The initial $Y$-position $s_Y(t_0)$ of the center of mass
-$S$ at $t_0=0$ is 0. Find the initial velocity $\dot{s}_Y(t_0)$ of the cart at
-$t_0=0$ such that the constraint equation (as derived in the lecture) is
-fulfilled. You should do this by replacing the code in the definition of
-initial conditions in {\tt simulate\_cart.m}.
+\textit{Assume the cart now moves backwards in such a way that
+$s_X=-v_0 t$ and $\theta=\pi/8\sin(2\pi f t)$, with the constant parameters
+$v_0=\unit[20]{m/s}$ and $f=\unit[2]{Hz}$. The initial $Y$-position $s_Y(t_0)$
+of the center of mass $S$ at $t_0=0$ is 0. Find the initial velocity
+$\dot{s}_Y(t_0)$ of the cart at $t_0=0$ such that the constraint equation (as
+derived in the lecture) is fulfilled. You should do this by replacing the code
+in the definition of initial conditions in {\tt simulate\_cart.m}.}
+\\
+
+Given the analytic form for the expressions of $s_X(t)$ and $\theta(t)$, we can
+take the time derivatives to find expression for $\dot{s}_X(t)$ and $\omega(t)$
+which are:
+\begin{equation*}
+    \dot{s}_X(t) = -v_0 \qquad \omega(t) = \frac{\pi}{8} 2\pi f cos(2\pi ft)
+\end{equation*}
+These equations give the following initial conditions:
+\begin{align*}
+    s_X(t_0) &= 0 \\
+    \theta(t_0) &= 0 \\
+    \dot{s}_X(t_0) &= -v0 \\
+    \omega(t_0) &= \frac{\pi^2 f}{4} = \frac{\pi^2}{2}
+\end{align*}
+Taking $s_Y(t_0) = 0.2$, the initial condition of $\dot{s}_Y(t_0)$ can be found
+using the constraint equation:
+\begin{equation*}
+    \dot{s}_X sin(\theta) - \dot{s}_Y cos(\theta) + \frac{1}{2}l\omega = 0
+\end{equation*}
+As this constraint is always satisfied, substituting values at $t = t_0$ gives:
+\begin{equation*}
+    \dot{s}_Y(t_0) = \frac{l\pi^2f}{8} = \frac{\pi^2}{2}
+\end{equation*}
+
+The modifications to {\tt simulate\_cart.m} are presented in
+\autoref{lst:simcart}.
+\\
 
 \newpart{15}
-Write a new function {\tt inversedynamics\_cart.m} that is called by {\tt
-simulate\_cart.m} and use it to calculate the applied forces $F_x$ and $F_y$ in
-the body-fixed frame that are needed to generate the above movement, for
-$N=500$ samples of time (with a sampling rate of $Ts=\unit[0.01]{s}$). What are
-the final values for $F_x$ and $F_y$ (so at $t_e=(N-1)\cdot Ts$)?
+\textit{Write a new function {\tt inversedynamics\_cart.m} that is called by
+{\tt simulate\_cart.m} and use it to calculate the applied forces $F_x$ and
+$F_y$ in the body-fixed frame that are needed to generate the above movement,
+for $N=500$ samples of time (with a sampling rate of $Ts=\unit[0.01]{s}$). What
+are the final values for $F_x$ and $F_y$ (so at $t_e=(N-1)\cdot Ts$)? }
+\\
 
-\vspace{.3cm}
-\emph{Hint:} Your function should have a header like this, and it should return
-scalar values for forces when provided scalar values of kinematic data:
-\begin{lstlisting}
-function [Fx,Fy]=inversedynamics_cart(theta,ddsX,ddsY,domega,par)
-%This function calculates forces Fx and Fy as functions of given motion
-%(not checking for violation of constraints!)
-%par: parameter struct containing length and mass properties of the cart
+In order to determine the inverse dynamics of the cart, the equations of motion
+must be re-arranged so that the forces $F_x$ and $F_y$ are on the left hand
+side. Starting with the cart equations of motion:
+\begin{equation*}
+    \begin{pmatrix}
+        m & 0 & \frac{-2 I_s}{l}sin(\theta) \\
+        0 & m & \frac{2 I_s}{l}cos(\theta) \\
+        sin(\theta) & -cos(\theta) & \frac{l}{2} \\
+    \end{pmatrix}
+    \begin{pmatrix}
+        \ddot{s}_X \\ \ddot{s}_Y \\ \dot{\omega}
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        F_x cos(\theta) - 2 F_y sin(\theta) \\
+        F_x sin(\theta) + 2 F_y cos(\theta) \\
+        -\dot{s}_X \omega cos(\theta) - \dot{s}_Y \omega sin(\theta)
+    \end{pmatrix}
+\end{equation*}
+We can ignore the equation of motion for $\dot{\omega}$ and separate the $F_x$
+and $F_y$ terms from the forcing vector:
+\begin{align*}
+    \begin{pmatrix}
+        m & 0 & \frac{-2 I_s}{l}sin(\theta) \\
+        0 & m & \frac{2 I_s}{l}cos(\theta) \\
+    \end{pmatrix}
+    \begin{pmatrix}
+        \ddot{s}_X \\ \ddot{s}_Y \\ \dot{\omega}
+    \end{pmatrix}
+    &=
+    \begin{pmatrix}
+        F_x cos(\theta) - 2 F_y sin(\theta) \\
+        F_x sin(\theta) + 2 F_y cos(\theta) \\
+    \end{pmatrix} \\
+    &=
+    \begin{pmatrix}
+        cos(\theta) & -2 sin(\theta) \\
+        sin(\theta)  & 2 cos(\theta) \\
+    \end{pmatrix}
+    \begin{pmatrix}
+        Fx \\ Fy
+    \end{pmatrix}
+\end{align*}
+As the force coefficient matrix is clearly full rank, we can left multiply by
+its inverse to obtain an expression for $F_x$ and $F_y$:
+\begin{equation*}
+    \begin{pmatrix}
+        Fx \\ Fy
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        cos(\theta) & -2 sin(\theta) \\
+        sin(\theta)  & 2 cos(\theta) \\
+    \end{pmatrix}^{-1}
+    \begin{pmatrix}
+        m & 0 & \frac{-2 I_s}{l}sin(\theta) \\
+        0 & m & \frac{2 I_s}{l}cos(\theta) \\
+    \end{pmatrix}
+    \begin{pmatrix}
+        \ddot{s}_X \\ \ddot{s}_Y \\ \dot{\omega}
+    \end{pmatrix}
+\end{equation*}
+A Matlab implementation is provided in \autoref{lst:invdcart}. See
+\autoref{lst:simcart} to see how it is called in {\tt simulate\_cart.m}. \\
+The final values of $F_x$ and $F_y$ are:
+\begin{equation*}
+    \begin{pmatrix} F_x(t_e) \\ F_y(t_e) \end{pmatrix} =
+        \begin{pmatrix} 90.0863 \\ -882.048 \end{pmatrix} \unit{N}
+\end{equation*}
+
+\begin{lstlisting}[caption={inversedynamics\_cart.m}, label={lst:invdcart}]
+function [Fx, Fy] = inversedynamics_cart(theta, ddsX, ddsY, domega, par)
+
+if length(theta) > 1
+    theta = reshape(theta, [1, 1, length(theta)]);
+    ddsX = reshape(ddsX, [1, 1, length(ddsX)]);
+    ddsY = reshape(ddsY, [1, 1, length(ddsY)]);
+    domega = reshape(domega, [1, 1, length(domega)]);
+end
+
+m = par.m*ones(size(theta));
+a = 2*par.Is/par.length_cart;
+
+A = [  m, 0*m, -a*sin(theta);
+     0*m,   m,  a*cos(theta)];
+B = [cos(theta), -2*sin(theta);
+     sin(theta),  2*cos(theta)];
+q = [ddsX; ddsY; domega];
+
+Fx = zeros(length(theta), 1);
+Fy = zeros(length(theta), 1);
+for i = 1:length(theta)
+    F = B(:, :, i)\A(:, :, i)*q(:, :, i);
+    Fx(i) = F(1);
+    Fy(i) = F(2);
+end
 \end{lstlisting}
-Call it within a loop in {\tt simulate\_cart.m}.
+
 
 \newpart{15}
-Add the calculated forces as a matrix with $N$ rows and 2 columns (containing
-the components $F_x$ and $F_y$) as another parameter in the Matlab structure
-{\tt par}.
+\textit{Add the calculated forces as a matrix with $N$ rows and 2 columns
+    (containing the components $F_x$ and $F_y$) as another parameter in the
+    Matlab structure {\tt par}.\\\\ Then, with the same initial conditions (also
+including the velocity component $\dot{s}_Y(t_0)$ you found in the first part
+of this problem), apply these forces again in the forward simulation (by
+reading out the matrix entries from {\tt par} in the equations of motion),
+using the Modified Euler Method for the $N$ samples of time. Finally, calculate
+the absolute error between the final center of mass $X$-component
+$\hat{s}_{X}(t_e)$ of the cart, as calculated in the forward simulation, and
+the true value $s_X(t_e)=-v_0 t_e$, with $t_e=(N-1)\cdot Ts$.}
+\\
 
-Then, with the same initial conditions (also including the velocity component
-$\dot{s}_Y(t_0)$ you found in the first part of this problem), apply these
-forces again in the forward simulation (by reading out the matrix entries from
-{\tt par} in the equations of motion), using the Modified Euler Method for the
-$N$ samples of time. Finally, calculate the absolute error between the final
-center of mass $X$-component $\hat{s}_{X}(t_e)$ of the cart, as calculated in
-the forward simulation, and the true value $s_X(t_e)=-v_0 t_e$, with
-$t_e=(N-1)\cdot Ts$.
+Refer to \autoref{lst:simcart} and \autoref{lst:carteom} to see how the force
+components are added to {\tt par} and applied in the forward simulation. The
+absolute error of $s_X(t_e)$ is found to be:
+\begin{equation*}
+    |\text{error}| = |s_{X,sim}(t_e) - s_{X,model}(t_e)| =
+        |(\unit[-100.631]{m}) - (\unit[-99.8]{m})| = \unit[0.83095]{m}
+\end{equation*}
 
 \newpart{15}
-Calculate the constraint force acting on the rear axle of the cart for the $N$
-samples of your forward simulation. What is the maximum absolute value of this
-constraint force?
-
+\textit{Calculate the constraint force acting on the rear axle of the cart for
+    the $N$ samples of your forward simulation. What is the maximum absolute
+    value of this constraint force?\\\\
 Assuming a constant vertical contact force at each contact point due to weight
 of the cart (so neglecting the dynamic shifting of weight between the three
 wheels), and assuming a friction coefficient of $\mu=0.7$ and acceleration of
 gravity $g=\unit[9.81]{m/s^2}$ pointing in negative $Z$ direction, do you think
-the assumption of no slip at the rear wheels was valid?
+the assumption of no slip at the rear wheels was valid? } \\
+
+Assuming half the mass is distributed above the rear axle, we find the static
+friction force to be:
+\begin{equation*}
+    F_{fr} = \mu \frac{1}{2}mg = (0.7)\frac{1}{2}(20)(9.81) = \unit[68.67]{N}
+\end{equation*}
+Plotting the calculated constraint force $F_C$ with the static friction force
+$F_{fr}$ in \autoref{fig:axleforce}, we see that no slip of the rear
+wheels is not a good assumption.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{figures/axle_force.eps}
+    \caption{Constraint Force on Cart Axle}
+    \label{fig:axleforce}
+\end{figure}
 
 \vspace{.5cm}
 
-Content of the file {\tt simulate\_cart.m}:
-\begin{lstlisting}
+\begin{lstlisting}[caption={simulate\_cart.m}, label={lst:simcart}]
 %This script simulates a three-wheeled cart,
 %as treated in week 7 of the course "Advanced
 %Dynamics" at TUD.
@@ -955,8 +1101,7 @@ cartanimation(qmatrix,par);
 %welke krachten en momenten nodig om sinusvormige beweging te maken, dan deze
 %week
 
-Content of the file {\tt cart\_equationsofmotion.m}:
-\begin{lstlisting}
+\begin{lstlisting}[caption={cart\_equationsofmotion.m}, label={lst:carteom}]
 function dx=cart_equationsofmotion(t,x,par)
 %function dx=cart_equationsofmotion(t,x,par)
 %This function contains the 2D equations of motion of a three-wheeled cart
@@ -1039,7 +1184,8 @@ dx=[dsX;dsY;omega;ddsX;ddsY;domega];
 \end{lstlisting}
 
 
-\newpage
+
+%\newpage
 
 %\vfill
 
