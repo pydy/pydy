@@ -340,17 +340,42 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
             forcing_vector_func = lambdify(arguments, forcing_vector)
 
         elif generator == 'theano':
+            # This affect compilation and remove input check at each step.
+            theano.config.check_input = False
 
-            mass_matrix_func = theano_function(arguments, [mass_matrix],
-                                            on_unused_input='ignore')
-            forcing_vector_func = theano_function(arguments,
-                                                [forcing_vector],
-                                                on_unused_input='ignore')
+            # Disable Theano gc, to lower the number of alloc.
+            theano.config.allow_gc = False
+
+            mass_matrix_func_fn = theano_function(arguments, [mass_matrix],
+                                                  on_unused_input='ignore',
+                                                  mode=theano.Mode(linker='c'))
+            forcing_vector_func_fn = theano_function(arguments,
+                                                     [forcing_vector],
+                                                     on_unused_input='ignore',
+                                                     mode=theano.Mode(linker='c'))
+            # The next two code lines are lower Theano overhead, but the
+            # defined fct later do it even more.
             # Theano will run faster if you trust the input. I'm not sure
             # what the implications of this are. See:
             # http://deeplearning.net/software/theano/tutorial/faq.html#faster-small-theano-function
-            mass_matrix_func.trust_input = True
-            forcing_vector_func.trust_input = True
+            # mass_matrix_func_fn.trust_input = True
+            # forcing_vector_func_fn.trust_input = True
+
+
+            # We bypass even more Theano overhead to see Theano
+            # potential
+            def mass_matrix_func(*args):
+                for i in range(len(args)):
+                    mass_matrix_func_fn.input_storage[i].storage[0] = args[i]
+                mass_matrix_func_fn.fn()
+                return mass_matrix_func_fn.output_storage[0].data
+
+            def forcing_vector_func(*args):
+                for i in range(len(args)):
+                    forcing_vector_func_fn.input_storage[i].storage[0] = args[i]
+                forcing_vector_func_fn.fn()
+                return forcing_vector_func_fn.output_storage[0].data
+
         else:
             raise ImportError('Theano is not installed, choose another method.')
 
