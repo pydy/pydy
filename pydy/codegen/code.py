@@ -302,7 +302,8 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
     Parameters
     ----------
     mass_matrix : sympy.Matrix, shape(n,n)
-        The symbolic mass matrix of the system.
+        The symbolic mass matrix of the system. The rows should correspond
+        to the coordinates and speeds.
     forcing_vector : sympy.Matrix, shape(n,1)
         The symbolic forcing vector of the system.
     constants : list of sympy.Symbol
@@ -322,6 +323,11 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
         A function which evaluates the derivaties of the states.
 
     """
+
+    # TODO : The System class uses an empty list when there are no
+    # specifieds. It would be nice if this function handled empty lists for
+    # specifieds correctly.
+
     if generator == 'theano' and not theano_installed:
         raise ValueError('Theano is not installed.')
 
