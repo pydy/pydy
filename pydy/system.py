@@ -31,8 +31,8 @@ arguments or via the attributes::
     sys.constants = {symbol('m'): 5.0}
     sys.integrate()
 
-To double-check the constants, specifieds, states and times in your problem, look
-at these properties::
+To double-check the constants, specifieds, states and times in your problem,
+look at these properties::
 
     sys.constants_symbols
     sys.specifieds_symbols
@@ -49,10 +49,17 @@ you must call ``generate_ode_function`` on your own::
 
 """
 
-import sympy as sym
+import sympy as sm
+from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
 
 from .codegen.code import generate_ode_function
+from .utils import sympy_equal_to_or_newer_than
+
+SYMPY_VERSION = sm.__version__
+
+if sympy_equal_to_or_newer_than('0.7.6'):
+    from sympy.physics.mechanics.functions import find_dynamicsymbols
 
 
 class System(object):
@@ -77,11 +84,10 @@ class System(object):
         This function computes the derivatives of the states.
     initial_conditions : dict, optional (default: all zero)
         This dictionary maps SymPy Functions of time objects to floats.
-
-    times : dict, optional
+    times : array_like, shape(n,), optional
         An array_like object, which contains time values over which
         equations are integrated. It has to be supplied before
-        System.integrate can be called.
+        System.integrate() can be called.
 
     """
     def __init__(self, eom_method, constants=None, specifieds=None,
@@ -123,13 +129,19 @@ class System(object):
     def coordinates(self):
         """Returns a list of the symbolic functions of time representing the
         system's generalized coordinates."""
-        return self.eom_method._q
+        if sympy_equal_to_or_newer_than('0.7.6'):
+            return self.eom_method.q[:]
+        else:
+            return self.eom_method._q
 
     @property
     def speeds(self):
         """Returns a list of the symbolic functions of time representing the
         system's generalized speeds."""
-        return self.eom_method._u
+        if sympy_equal_to_or_newer_than('0.7.6'):
+            return self.eom_method.u[:]
+        else:
+            return self.eom_method._u
 
     @property
     def states(self):
@@ -177,8 +189,9 @@ class System(object):
                 raise ValueError("Symbol {} is not a constant.".format(k))
 
     def _constants_padded_with_defaults(self):
-        return dict(self.constants.items() + {s: 1.0 for s in
-            self.constants_symbols if s not in self.constants}.items())
+        return dict(self.constants.items() + {
+            s: 1.0 for s in self.constants_symbols if s not in
+            self.constants}.items())
 
     @property
     def specifieds(self):
@@ -235,7 +248,7 @@ class System(object):
     @property
     def specifieds_symbols(self):
         """The dynamicsymbols you must specify."""
-        # TODO eventually use a method in the KanesMethod class.
+        # TODO : Eventually use a method in the KanesMethod class.
         return self._specifieds_symbols
 
     def _assert_is_specified_symbol(self, symbol, all_symbols):
@@ -275,7 +288,7 @@ class System(object):
             for sym in self.specifieds_symbols:
                 if sym not in specifieds['symbols']:
                     raise ValueError(
-                            "Specified symbol {} is not provided.".format(sym))
+                        "Specified symbol {} is not provided.".format(sym))
 
         else:
 
@@ -291,11 +304,12 @@ class System(object):
                 # Each specified symbol can appear only once.
                 if isinstance(k, tuple):
                     for ki in k:
-                        self._assert_symbol_appears_multiple_times(ki,
-                                symbols_so_far)
+                        self._assert_symbol_appears_multiple_times(
+                            ki, symbols_so_far)
                         symbols_so_far.append(ki)
                 else:
-                    self._assert_symbol_appears_multiple_times(k, symbols_so_far)
+                    self._assert_symbol_appears_multiple_times(
+                        k, symbols_so_far)
                     symbols_so_far.append(k)
 
     def _symbol_is_in_specifieds_dict(self, symbol, specifieds_dict):
@@ -305,21 +319,18 @@ class System(object):
         return False
 
     def _specifieds_padded_with_defaults(self):
-        return dict(self.specifieds.items() + {s: 0.0 for s in
-            self.specifieds_symbols if not
+        return dict(self.specifieds.items() + {
+            s: 0.0 for s in self.specifieds_symbols if not
             self._symbol_is_in_specifieds_dict(s, self.specifieds)}.items())
 
     @property
     def times(self):
-        """ An array_like object,
-        containing time values over which the
-        eoms are integrated, numerically.
+        """An array-like object, containing time values over which the
+        equations of motion are integrated, numerically.
 
-        The object should be in a format
-        which the integration module to be used
-        can accept. Since this attribute is not
-        checked for compatibility, User becomes
-        responsible to supply it correctly.
+        The object should be in a format which the integration module to be
+        used can accept. Since this attribute is not checked for
+        compatibility, the user becomes responsible to supply it correctly.
         """
         return self._times
 
@@ -333,12 +344,13 @@ class System(object):
         TODO: add more checking
         """
         if len(times) == 0:
-            raise TypeError("times supplied should be in an array_like format")
+            raise TypeError("Times supplied should be in an array_like format.")
         return True
+
     @property
     def ode_solver(self):
-        """A function that performs forward integration. It must have the same
-        signature as scipy.integrate.odeint, which is::
+        """A function that performs forward integration. It must have the
+        same signature as scipy.integrate.odeint, which is::
 
             x_history = ode_solver(f, x0, t, args=(args,))
 
@@ -384,8 +396,8 @@ class System(object):
 
     @property
     def evaluate_ode_function(self):
-        """A function generated by ``generate_ode_function`` that computes the
-        state derivatives:
+        """A function generated by ``generate_ode_function`` that computes
+        the state derivatives:
 
             x' = evaluate_ode_function(x, t, args=(...))
 
@@ -490,12 +502,13 @@ class System(object):
         self._check_specifieds(self.specifieds)
         self._check_initial_conditions(self.initial_conditions)
         self._check_times(self.times)
-        if self.evaluate_ode_function == None:
+
+        if self.evaluate_ode_function is None:
             self.generate_ode_function()
 
         init_conds_dict = self._initial_conditions_padded_with_defaults()
         initial_conditions_in_proper_order = \
-                [init_conds_dict[k] for k in self.states]
+            [init_conds_dict[k] for k in self.states]
 
         if self._specifieds_are_in_format_2(self.specifieds):
             specified_value = self.specifieds['values']
@@ -503,38 +516,56 @@ class System(object):
             specified_value = self._specifieds_padded_with_defaults()
 
         return self.ode_solver(
-                self.evaluate_ode_function,
-                initial_conditions_in_proper_order,
-                self.times,
-                args=({
-                    'constants': self._constants_padded_with_defaults(),
-                    'specified': specified_value,
-                    },)
-                )
+            self.evaluate_ode_function,
+            initial_conditions_in_proper_order,
+            self.times,
+            args=({'constants': self._constants_padded_with_defaults(),
+                   'specified': specified_value,
+                   },))
 
     def _Kane_inlist_insyms(self):
         """TODO temporary."""
-        uaux = self.eom_method._uaux
-        uauxdot = [diff(i, t) for i in uaux]
+
+        uaux = self.eom_method._uaux[:]
+        uauxdot = [sm.diff(i, dynamicsymbols._t) for i in uaux]
 
         # Checking for dynamic symbols outside the dynamic differential
         # equations; throws error if there is.
-        insyms = set(self.eom_method._q + self.eom_method._qdot +
-                self.eom_method._u + self.eom_method._udot + uaux + uauxdot)
+
+        if sympy_equal_to_or_newer_than('0.7.6'):
+            # TODO : KanesMethod should provide public attributes for qdot,
+            # udot, uaux, and uauxdot.
+            insyms = set(self.eom_method.q[:] + self.eom_method._qdot[:] +
+                         self.eom_method.u[:] + self.eom_method._udot[:] +
+                         uaux + uauxdot)
+        else:
+            insyms = set(self.eom_method._q + self.eom_method._qdot +
+                         self.eom_method._u + self.eom_method._udot + uaux +
+                         uauxdot)
+
         inlist = (self.eom_method.forcing_full[:] +
-                self.eom_method.mass_matrix_full[:])
+                  self.eom_method.mass_matrix_full[:])
+
         return inlist, insyms
 
     def _Kane_undefined_dynamicsymbols(self):
-        """Similar to ``_find_dynamicsymbols()``, except that it checks all syms
-        used in the system. Code is copied from ``linearize()``.
+        """Similar to ``_find_dynamicsymbols()``, except that it checks all
+        syms used in the system. Code is copied from ``linearize()``.
 
         TODO temporarily here until KanesMethod and Lagranges method have an
         interface for obtaining these quantities.
 
         """
-        return list(self.eom_method._find_dynamicsymbols(
-            *self._Kane_inlist_insyms()))
+        from_eoms, from_sym_lists = self._Kane_inlist_insyms()
+        if sympy_equal_to_or_newer_than('0.7.6'):
+            functions_of_time = set()
+            for expr in from_eoms:
+                functions_of_time = functions_of_time.union(
+                    find_dynamicsymbols(expr))
+            return list(functions_of_time.difference(from_sym_lists))
+        else:
+            return list(self.eom_method._find_dynamicsymbols(
+                *self._Kane_inlist_insyms()))
 
     def _Kane_constant_symbols(self):
         """Similar to ``_find_othersymbols()``, except it checks all syms used in
@@ -545,7 +576,14 @@ class System(object):
         TODO temporary.
 
         """
-        constants = list(self.eom_method._find_othersymbols(
-            *self._Kane_inlist_insyms()))
-        constants.remove(sym.symbols('t'))
+        from_eoms, from_sym_lists = self._Kane_inlist_insyms()
+        if sympy_equal_to_or_newer_than('0.7.6'):
+            unique_symbols = set()
+            for expr in from_eoms:
+                unique_symbols = unique_symbols.union(expr.free_symbols)
+            constants = list(unique_symbols)
+        else:
+            constants = list(self.eom_method._find_othersymbols(
+                *self._Kane_inlist_insyms()))
+        constants.remove(dynamicsymbols._t)
         return constants

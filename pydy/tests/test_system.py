@@ -1,13 +1,18 @@
+#!/usr/bin/env python
+
+from collections import Counter
 
 import numpy as np
 from numpy import testing
-from sympy import symbols
+import sympy as sm
 from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
 
 from ..system import System
 from ..models import multi_mass_spring_damper, n_link_pendulum_on_cart
+from ..utils import sympy_equal_to_or_newer_than
 
+SYMPY_VERSION = sm.__version__
 
 class TestSystem():
 
@@ -15,7 +20,7 @@ class TestSystem():
 
         self.kane = multi_mass_spring_damper(1, True, True).eom_method
         self.specified_symbol = dynamicsymbols('f0')
-        self.constant_map = dict(zip(symbols('m0, k0, c0, g'),
+        self.constant_map = dict(zip(sm.symbols('m0, k0, c0, g'),
                                      [2.0, 1.5, 0.5, 9.8]))
         self.sys = System(self.kane,
                           specifieds={self.specified_symbol: np.ones(1)},
@@ -30,7 +35,7 @@ class TestSystem():
         # -----------------------------------
         sys = System(self.kane)
 
-        assert sys.constants_symbols == list(symbols('k0, m0, g, c0'))
+        assert Counter(sys.constants_symbols) == Counter(list(sm.symbols('k0, m0, g, c0')))
         assert sys.specifieds_symbols == [self.specified_symbol]
         assert sys.states == dynamicsymbols('x0, v0')
         assert sys.evaluate_ode_function is None
@@ -68,18 +73,27 @@ class TestSystem():
                      constants=self.constant_map)
 
     def test_coordinates(self):
-        assert self.sys.coordinates == self.kane._q
+        if sympy_equal_to_or_newer_than('0.7.6'):
+            assert self.sys.coordinates == self.kane.q[:]
+        else:
+            assert self.sys.coordinates == self.kane._q
 
     def test_speeds(self):
-        assert self.sys.speeds == self.kane._u
+        if sympy_equal_to_or_newer_than('0.7.6'):
+            assert self.sys.speeds == self.kane.u[:]
+        else:
+            assert self.sys.speeds == self.kane._u
 
     def test_states(self):
-        assert self.sys.states == self.kane._q + self.kane._u
+        if sympy_equal_to_or_newer_than('0.7.6'):
+            assert self.sys.states == self.kane.q[:] + self.kane.u[:]
+        else:
+            assert self.sys.states == self.kane._q + self.kane._u
 
     def test_constants(self):
 
         # User-specified numerical values for constants.
-        constants = {symbols('m0'): 3.0, symbols('c0'): 4.5}
+        constants = {sm.symbols('m0'): 3.0, sm.symbols('c0'): 4.5}
 
         # The System should fill in the remaining constants with the defaults.
 
@@ -105,8 +119,8 @@ class TestSystem():
         # -----------------------------
         sys = System(self.kane)
         # Modifying the dict directly does change the dict.
-        sys.constants[symbols('m0')] = 9.3
-        assert sys.constants.keys() == [symbols('m0')]
+        sys.constants[sm.symbols('m0')] = 9.3
+        assert sys.constants.keys() == [sm.symbols('m0')]
         testing.assert_allclose(sys.constants.values(), [9.3])
 
         # Putting in a non-constant key does not raise exception.
@@ -157,7 +171,7 @@ class TestSystem():
         # ------------------------------------------------------------------
         sys = System(self.kane)
         with testing.assert_raises(ValueError):
-            sys.specifieds = {symbols('m0'): 5.4}
+            sys.specifieds = {sm.symbols('m0'): 5.4}
         with testing.assert_raises(ValueError):
             sys.specifieds = {dynamicsymbols('x0'): 5.1}
 
@@ -208,9 +222,9 @@ class TestSystem():
         # Error checks for the new way.
         # -----------------------------
         with testing.assert_raises(ValueError):
-            sys.specifieds = {'symbols': [symbols('m1')], 'values': [1.0]}
+            sys.specifieds = {'symbols': [sm.symbols('m1')], 'values': [1.0]}
         with testing.assert_raises(ValueError):
-            sys.specifieds = {'symbols': [symbols('T2, T2')], 'values': [1, 2]}
+            sys.specifieds = {'symbols': [sm.symbols('T2, T2')], 'values': [1, 2]}
         with testing.assert_raises(ValueError):
             sys.specifieds = {'symbols': [dynamicsymbols('T2')],
                               'values': [1.0]}
@@ -265,7 +279,7 @@ class TestSystem():
         assert sys.initial_conditions.keys() == [dynamicsymbols('x0')]
         testing.assert_allclose(sys.initial_conditions.values(), [5.8])
         # Putting in a non-state key does not raise exception.
-        sys.initial_conditions[symbols('m0')] = 7.9
+        sys.initial_conditions[sm.symbols('m0')] = 7.9
         # Then, if we integrate, we do error-checking and we get an exception.
 
         with testing.assert_raises(ValueError):
@@ -274,9 +288,9 @@ class TestSystem():
         # Keys must be coords or speeds.
         # ------------------------------
         with testing.assert_raises(ValueError):
-                self.sys.initial_conditions = {symbols('k0'): 0.4}
+                self.sys.initial_conditions = {sm.symbols('k0'): 0.4}
         with testing.assert_raises(ValueError):
-                self.sys.initial_conditions = {symbols('f0'): 7.3}
+                self.sys.initial_conditions = {sm.symbols('f0'): 7.3}
 
     def test_generate_ode_function(self):
 
@@ -330,7 +344,7 @@ class TestSystem():
 
         # Ensure that the defaults are as expected.
         # -----------------------------------------
-        constants_dict = dict(zip(symbols('m0, k0, c0, g'),
+        constants_dict = dict(zip(sm.symbols('m0, k0, c0, g'),
                                   [1.0, 1.0, 1.0, 1.0]))
         specified_dict = {dynamicsymbols('f0'): 0.0}
         x_03 = sys.ode_solver(sys.evaluate_ode_function, [0, 0], sys.times,
