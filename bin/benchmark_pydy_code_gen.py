@@ -10,9 +10,8 @@ import glob
 from scipy.integrate import odeint
 from numpy import hstack, ones, pi, linspace, array, zeros, zeros_like
 import matplotlib.pyplot as plt
+from pydy.models import n_link_pendulum_on_cart
 from pydy.codegen.code import generate_ode_function
-from pydy.codegen.tests.models import \
-    generate_n_link_pendulum_on_cart_equations_of_motion
 
 
 def run_benchmark(max_num_links, num_time_steps=1000):
@@ -35,8 +34,7 @@ def run_benchmark(max_num_links, num_time_steps=1000):
         print('=' * len(title))
 
         start = time.time()
-        results = \
-            generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=False)
+        sys = n_link_pendulum_on_cart(n, cart_force=False)
         derivation_times[j] = time.time() - start
         print('The derivation took {:1.5f} seconds.\n'.format(derivation_times[j]))
 

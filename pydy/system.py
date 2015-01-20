@@ -394,10 +394,44 @@ class System(object):
         """
         return self._evaluate_ode_function
 
+    def _args_for_gen_ode_func(self):
+        """Returns a tuple of arguments in the form required by
+        ``pydy.codegen.code.generage_ode_function``.
+
+        """
+
+        args = (self.eom_method.mass_matrix_full,
+                self.eom_method.forcing_full,
+                self.constants_symbols,
+                self.coordinates,
+                self.speeds)
+
+        return args
+
+    def _kwargs_for_gen_ode_func(self):
+        """Returns a dictrionary of arguments in the form required by
+        ``pydy.codegen.code.generage_ode_function``.
+
+        """
+
+        if self._specifieds_are_in_format_2(self.specifieds):
+            specifieds = self.specifieds['symbols']
+        else:
+            specifieds = self.specifieds_symbols
+
+        # generate_ode_func does not accept an empty tuple for the
+        # specifieds, so set it to None
+        if not specifieds:
+            specifieds = None
+
+        kwargs = {'specified': specifieds}
+
+        return kwargs
+
     def generate_ode_function(self, generator='lambdify', **kwargs):
         """Calls ``pydy.codegen.code.generate_ode_function`` with the
-        appropriate arguments, and sets the ``evaluate_ode_function`` attribute
-        to the resulting function.
+        appropriate arguments, and sets the ``evaluate_ode_function``
+        attribute to the resulting function.
 
         Parameters
         ----------
@@ -415,21 +449,18 @@ class System(object):
             A function which evaluates the derivaties of the states.
 
         """
-        if self._specifieds_are_in_format_2(self.specifieds):
-            specified_value = self.specifieds['symbols']
-        else:
-            specified_value = self.specifieds_symbols
+
+        if 'specified' in kwargs:
+            kwargs.pop('specified')
+            print("User supplied 'specified' kwarg was disregarded.")
+
+        kwargs.update(self._kwargs_for_gen_ode_func())
+        kwargs['generator'] = generator
+
         self._evaluate_ode_function = generate_ode_function(
-                # args:
-                self.eom_method.mass_matrix_full,
-                self.eom_method.forcing_full,
-                self.constants_symbols,
-                self.coordinates, self.speeds,
-                # kwargs:
-                specified=specified_value,
-                generator=generator,
-                **kwargs
-                )
+            *self._args_for_gen_ode_func(),
+            **kwargs)
+
         return self.evaluate_ode_function
 
     def integrate(self):

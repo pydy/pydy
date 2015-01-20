@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # standard libary
 import os
@@ -7,13 +8,13 @@ import glob
 import filecmp
 
 # external libraries
+import sympy as sm
 import numpy as np
 from numpy import testing
 
 # local libraries
 from ..code import generate_ode_function, CythonGenerator
-from .models import (generate_mass_spring_damper_equations_of_motion,
-                     generate_n_link_pendulum_on_cart_equations_of_motion)
+from ...models import multi_mass_spring_damper, n_link_pendulum_on_cart
 
 
 class TestCythonGenerator():
@@ -22,9 +23,11 @@ class TestCythonGenerator():
 
     def test_write_cython_code(self):
 
-        results = generate_mass_spring_damper_equations_of_motion()
+        sys = multi_mass_spring_damper(1, True, True)
+        args = sys._args_for_gen_ode_func()
+        kwargs = sys._kwargs_for_gen_ode_func()
 
-        generator = CythonGenerator(self.prefix, *results)
+        generator = CythonGenerator(self.prefix, *args, **kwargs)
         generator._write_cython_code()
 
         file_dir = os.path.split(__file__)[0]
@@ -54,81 +57,90 @@ class TestCodeRHSArgs():
 
     def test_rhs_args(self):
 
-        sys = generate_n_link_pendulum_on_cart_equations_of_motion(3,
-                                                                   True,
-                                                                   True)
-        constants = sys[2]
-        coordinates = sys[3]
-        speeds = sys[4]
-        specified = sys[5]
+        sys = n_link_pendulum_on_cart(3, True, True)
 
-        rhs = generate_ode_function(*sys)
+        args = sys._args_for_gen_ode_func()
+        kwargs = sys._kwargs_for_gen_ode_func()
+
+        mass_matrix, forcing_vector, constants, coordinates, speeds = args
+        specifieds = kwargs['specified']
+
+        rhs = generate_ode_function(*args, **kwargs)
 
         x = np.array(np.random.random(len(coordinates + speeds)))
 
-        args = {'constants': {k: 1.0 for k in constants}}
+        rhs_args = {'constants': {k: 1.0 for k in constants}}
 
-        args['specified'] = dict(zip(specified, [1.0, 2.0, 3.0, 4.0]))
+        rhs_args['specified'] = dict(zip(specifieds, [1.0, 2.0, 3.0, 4.0]))
 
-        xd_01 = rhs(x, 0.0, args)
+        xd_01 = rhs(x, 0.0, rhs_args)
 
-        args['specified'] = {
-                tuple(specified): lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])}
+        rhs_args['specified'] = {
+            tuple(specifieds): lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])}
 
-        xd_02 = rhs(x, 0.0, args)
+        xd_02 = rhs(x, 0.0, rhs_args)
 
         # There are four specified inputs available.
-        args['specified'] = {specified[0]: lambda x, t: np.ones(1),
-                (specified[3], specified[1]): lambda x, t: np.array([4.0, 2.0]),
-                specified[2]: 3.0 * np.ones(1)}
+        rhs_args['specified'] = {
+            specifieds[0]: lambda x, t: np.ones(1),
+            (specifieds[3], specifieds[1]): lambda x, t: np.array([4.0, 2.0]),
+            specifieds[2]: 3.0 * np.ones(1)}
 
-        xd_03 = rhs(x, 0.0, args)
+        xd_03 = rhs(x, 0.0, rhs_args)
 
         testing.assert_allclose(xd_01, xd_02)
         testing.assert_allclose(xd_01, xd_03)
 
         # Test old and efficient RHS args.
-        args['specified'] = np.array([1.0, 2.0, 3.0, 4.0])
-        xd_04 = rhs(x, 0.0, args)
+        rhs_args['specified'] = np.array([1.0, 2.0, 3.0, 4.0])
+        xd_04 = rhs(x, 0.0, rhs_args)
         testing.assert_allclose(xd_01, xd_04)
 
-        args['specified'] = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
-        xd_05 = rhs(x, 0.0, args)
+        rhs_args['specified'] = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
+        xd_05 = rhs(x, 0.0, rhs_args)
         testing.assert_allclose(xd_01, xd_05)
+
 
 class TestCode():
 
     def test_generate_ode_function(self):
 
-        system = generate_mass_spring_damper_equations_of_motion()
-        mass_matrix = system[0]
-        forcing_vector = system[1]
-        constants = system[2]
-        coordinates = system[3]
-        speeds = system[4]
-        specified = system[5]
+        system = multi_mass_spring_damper(1, True, True)
 
-        m, k, c, g, F, x, v = np.random.random(7)
+        args = system._args_for_gen_ode_func()
+        kwargs = system._kwargs_for_gen_ode_func()
 
-        args = {'constants': dict(zip(constants, [m, k, c, g])),
-                'specified': {specified[0]: F}}
+        mass_matrix, forcing_vector, constants, coordinates, speeds = args
+        specifieds = kwargs['specified']
+
+        F, x, v = np.random.random(3)
 
         states = np.array([x, v])
 
+        constants_map = dict(zip(constants, np.random.random(len(constants))))
+
+        m = constants_map[sm.symbols('m0')]
+        k = constants_map[sm.symbols('k0')]
+        c = constants_map[sm.symbols('c0')]
+        g = constants_map[sm.symbols('g')]
+
         expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x + F)])
+
+        rhs_args = {'constants': constants_map,
+                    'specified': {specifieds[0]: F}}
 
         backends = ['lambdify', 'theano', 'cython']
 
         for backend in backends:
             rhs = generate_ode_function(mass_matrix, forcing_vector,
                                         constants, coordinates, speeds,
-                                        specified, generator=backend)
-            dx = rhs(states, 0.0, args)
+                                        specifieds, generator=backend)
+            dx = rhs(states, 0.0, rhs_args)
 
             testing.assert_allclose(dx, expected_dx)
 
         # Now try it with a function defining the specified quantities.
-        args['specified'] = {specified[0]: lambda x, t: np.sin(t)}
+        rhs_args['specified'] = {specifieds[0]: lambda x, t: np.sin(t)}
 
         t = 14.345
 
@@ -138,22 +150,27 @@ class TestCode():
         for backend in backends:
             rhs = generate_ode_function(mass_matrix, forcing_vector,
                                         constants, coordinates, speeds,
-                                        specified, generator=backend)
-            dx = rhs(states, t, args)
+                                        specifieds, generator=backend)
+            dx = rhs(states, t, rhs_args)
 
             testing.assert_allclose(dx, expected_dx)
 
         # Now try it without specified values.
-        mass_matrix, forcing_vector, constants, coordinates, speeds, specified = \
-            generate_mass_spring_damper_equations_of_motion(external_force=False)
+        system = multi_mass_spring_damper(1, True)
+
+        args = system._args_for_gen_ode_func()
+        kwargs = system._kwargs_for_gen_ode_func()
+
+        mass_matrix, forcing_vector, constants, coordinates, speeds = args
+        specifieds = kwargs['specified']
 
         expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x)])
 
         for backend in backends:
             rhs = generate_ode_function(mass_matrix, forcing_vector,
                                         constants, coordinates, speeds,
-                                        specified, generator=backend)
-            dx = rhs(states, 0.0, args)
+                                        specifieds, generator=backend)
+            dx = rhs(states, 0.0, rhs_args)
 
             testing.assert_allclose(dx, expected_dx)
 
