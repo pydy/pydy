@@ -1,11 +1,16 @@
 language: python
-python:
-  - 2.7
+matrix:
+  include:
+    - python: 2.7
+      env: SYMPY_MASTER="false"
+    - python: 2.7
+      env: SYMPY_MASTER="true"
 virtualenv:
   system_site_packages: true
 before_install:
-  # On Ubuntu 12.04 numpy is at 1.6.1, SciPy is at 0.9.0 and Cython is at
-  # 0.15.1.
+  # On Ubuntu 12.04 (Travis's testing machines) numpy is at 1.6.1, SciPy is at
+  # 0.9.0 and Cython is at 0.15.1.
+  - sudo apt-get update
   - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy cython
   - sudo apt-get install -y -qq python-coverage
   - sudo apt-get install phantomjs
@@ -13,7 +18,11 @@ before_install:
   # that we test with the system installed version.
   - pip uninstall -y numpy
   - pip install --no-deps Theano==0.6.0
-  - pip install sympy==0.7.4.1
+  - if [[ $SYMPY_MASTER == "false" ]]; then
+      pip install sympy==0.7.4.1;
+    elif [[ $SYMPY_MASTER == "true" ]]; then
+      pip install https://github.com/sympy/sympy/archive/master.zip;
+    fi
   # Note that the `make html` command that runs 'build-sphinx' does not work if
   # Sphinx is installed with 'apt-get install sphinx'. It can't find the
   # numpydoc extension if it is. It must be bypassing virtualenv to the system

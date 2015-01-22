@@ -1,4 +1,4 @@
-void mass_forcing(double constants[4], // constants = [k0, m0, g, c0]
+void mass_forcing(double constants[4], // constants = [c0, g, k0, m0]
                   double coordinates[1], // coordinates = [x0]
                   double speeds[1], // speeds = [v0]
                   double specified[1], // specified = [f0]

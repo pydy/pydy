@@ -1,7 +1,7 @@
 #include <math.h>
 #include "desired_mass_forcing_c.h"
 
-void mass_forcing(double constants[4], // constants = [k0, m0, g, c0]
+void mass_forcing(double constants[4], // constants = [c0, g, k0, m0]
                   double coordinates[1], // coordinates = [x0]
                   double speeds[1], // speeds = [v0]
                   double specified[1], // specified = [f0]
@@ -15,9 +15,9 @@ void mass_forcing(double constants[4], // constants = [k0, m0, g, c0]
     mass_matrix[0] = 1;
     mass_matrix[1] = 0;
     mass_matrix[2] = 0;
-    mass_matrix[3] = constants[1];
+    mass_matrix[3] = constants[3];
 
     // forcing vector
     forcing_vector[0] = z_0;
-    forcing_vector[1] = -constants[3]*z_0 + constants[2]*constants[1] - constants[0]*coordinates[0] + specified[0];
+    forcing_vector[1] = -constants[0]*z_0 + constants[1]*constants[3] - constants[2]*coordinates[0] + specified[0];
 }

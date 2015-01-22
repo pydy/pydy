@@ -24,7 +24,11 @@ class TestCythonGenerator():
     def test_write_cython_code(self):
 
         sys = multi_mass_spring_damper(1, True, True)
-        args = sys._args_for_gen_ode_func()
+        args = list(sys._args_for_gen_ode_func())
+        # Depending on the SymPy version, the list of constants may be
+        # ordered differently. This makes it hard to test against the
+        # pregenerated files. So order the list symbols.
+        args[2] = list(sm.ordered(args[2]))
         kwargs = sys._kwargs_for_gen_ode_func()
 
         generator = CythonGenerator(self.prefix, *args, **kwargs)
