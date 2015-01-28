@@ -2,33 +2,6 @@
 
 """This module contains templates for any files that have to be generated."""
 
-matrix_c_header = """\
-void evaluate(
-{input_args}
-{output_args}
-             );
-/*
-
-{input_docstring}
-
-*/"""
-
-matrix_c_source = """\
-#include <math.h>{header_include}
-
-void evaluate(
-{input_args}
-{output_args}
-             )
-{{
-
-{subexprs}
-
-{outputs}
-
-}}\
-"""
-
 c_template = \
 """\
 #include <math.h>

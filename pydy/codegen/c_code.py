@@ -3,14 +3,14 @@
 """This module contains source code dedicated to generating C code from
 matrices generated from sympy.physics.mechanics."""
 
+import os
 import itertools
-import textwrap
 
 import sympy as sm
 import sympy.physics.mechanics as me
 from sympy.printing.ccode import CCodePrinter
 
-from .templates import matrix_c_header, matrix_c_source
+from ..utils import wrap_and_indent
 
 
 class CMatrixGenerator(object):
@@ -18,6 +18,33 @@ class CMatrixGenerator(object):
     evaluate any number of SymPy matrices.
 
     """
+
+    _c_header_template = """\
+void evaluate(
+{input_args}
+{output_args}
+             );
+/*
+
+{input_docstring}
+
+*/"""
+
+    _c_source_template = """\
+#include <math.h>{header_include}
+
+void evaluate(
+{input_args}
+{output_args}
+             )
+{{
+
+{subexprs}
+
+{outputs}
+
+}}\
+"""
 
     def __init__(self, matrices, arguments):
         """
@@ -53,6 +80,9 @@ class CMatrixGenerator(object):
 
         self.matrices = matrices
         self.arguments = arguments
+
+        self._generate_cse()
+        self._generate_code_blocks()
 
     def _generate_cse(self):
 
@@ -126,6 +156,8 @@ class CMatrixGenerator(object):
         return PyDyCCodePrinter
 
     def comma_lists(self):
+        """Returns a string output for each of the sequences of SymPy
+        arguments."""
 
         comma_lists = []
 
@@ -136,19 +168,6 @@ class CMatrixGenerator(object):
 
     def _generate_code_blocks(self):
         """Writes the blocks of code for the C file."""
-
-        def wrap_and_indent(lines, indentation=4):
-            # TODO : This will indent any lines that only contain a new
-            # line. Which may not be preferable.
-            new_lines = []
-            for line in lines:
-                if line != '\n':
-                    wrapped = textwrap.wrap(line, width=79-indentation)
-                else:
-                    wrapped = [line]
-                new_lines += wrapped
-            spacer = '\n' + ' ' * indentation
-            return ' ' * indentation + spacer.join(new_lines)
 
         printer = self._generate_pydy_c_printer()()
 
@@ -206,11 +225,15 @@ class CMatrixGenerator(object):
             filling = {'header_include': '\n#include "{}.h"'.format(prefix)}
         else:
             filling = {'header_include': ''}
-        filling.update(self.code_blocks)
-        return (matrix_c_header.format(**filling),
-                matrix_c_source.format(**filling))
 
-    def write(self, prefix):
+        filling.update(self.code_blocks)
+
+        c_header = self._c_header_template.format(**filling)
+        c_source = self._c_source_template.format(**filling)
+
+        return c_header, c_source
+
+    def write(self, prefix, path=None):
         """Writes a header and source file to disk.
 
         Parameters
@@ -221,10 +244,13 @@ class CMatrixGenerator(object):
 
         """
 
+        if path is None:
+            path = os.getcwd()
+
         header, source = self.doprint(prefix=prefix)
 
-        with open(prefix + '.h', 'w') as f:
+        with open(os.path.join(path, prefix + '.h'), 'w') as f:
             f.write(header)
 
-        with open(prefix + '.c', 'w') as f:
+        with open(os.path.join(path, prefix + '.c'), 'w') as f:
             f.write(source)

@@ -325,8 +325,6 @@ void evaluate(
 
 }\
 """
-        self.generator._generate_cse()
-        self.generator._generate_code_blocks()
 
         header, source = self.generator.doprint()
 
@@ -340,9 +338,6 @@ void evaluate(
         assert source == expected_source
 
     def test_write(self):
-
-        self.generator._generate_cse()
-        self.generator._generate_code_blocks()
 
         header, source = self.generator.doprint(prefix=self.prefix)
 
