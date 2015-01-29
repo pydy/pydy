@@ -3,6 +3,8 @@
 import numpy as np
 import numpy.linalg
 import scipy.linalg
+import sympy as sm
+import sympy.physics.mechanics as me
 
 from .cython_code import CythonMatrixGenerator
 
@@ -65,7 +67,7 @@ class MinMassMatrixMixin(object):
             q = x[:self.num_coordinates]
             u = x[self.num_coordinates:]
             M, F, qdot = self.eval_arrays(q, u, p)
-            if len(F) == 1:
+            if F.shape is tuple() or F.shape[0]:
                 udot = F / M
             else:
                 udot = self.solve_linear_system(M, F)
@@ -267,11 +269,13 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
         mass_matrix_result = np.empty(self.num_states ** 2, dtype=float)
         rhs_result = np.empty(self.num_states, dtype=float)
 
-        self.eval_arrays = lambda q, u, p: f(q, u, p, mass_matrix_result, rhs_result)
+        self.eval_arrays = lambda q, u, p: f(q, u, p, mass_matrix_result,
+                                             rhs_result)
 
     def generate_min_mass_matrix_function(self):
 
-        outputs = [self.mass_matrix, self.right_hand_side, self.coordinate_derivatives]
+        outputs = [self.mass_matrix, self.right_hand_side,
+                   self.coordinate_derivatives]
         inputs = [self.coordinates, self.speeds, self.constants]
 
         f = self._cythonize(outputs, inputs)
@@ -280,4 +284,53 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
         rhs_result = np.empty(self.num_speeds, dtype=float)
         kin_diffs_result = np.empty(self.num_coordinates, dtype=float)
 
-        self.eval_arrays = lambda q, u, p: f(q, u, p, mass_matrix_result, rhs_result, kin_diffs_result)
+        self.eval_arrays = lambda q, u, p: f(q, u, p, mass_matrix_result,
+                                             rhs_result, kin_diffs_result)
+
+
+class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
+
+    @staticmethod
+    def _lambdify(inputs, outputs):
+        # TODO : We could forgo this substitution for speed purposes and
+        # have lots of args for lambdify (like it used to be done) but there
+        # may be some limitiations on number of args.
+        subs = {}
+        vec_inputs = []
+        for syms, vec_name in zip(inputs, ['q', 'u', 'p']):
+            v = sm.DeferredVector(vec_name)
+            for i, sym in enumerate(syms):
+                subs[sym] = v[i]
+            vec_inputs.append(v)
+        outputs = [me.msubs(output, subs) for output in outputs]
+
+        modules = [{'ImmutableMatrix': np.array}, 'numpy']
+
+        return sm.lambdify(vec_inputs, outputs, modules=modules)
+
+    def generate_full_rhs_function(self):
+
+        inputs = [self.coordinates, self.speeds, self.constants]
+        outputs = [self.right_hand_side]
+
+        f = self._lambdify(inputs, outputs)
+        self.eval_arrays = lambda q, u, p: np.squeeze(f(q, u, p))
+
+    def generate_full_mass_matrix_function(self):
+
+        inputs = [self.coordinates, self.speeds, self.constants]
+        outputs = [self.mass_matrix, self.right_hand_side]
+
+        f = self._lambdify(inputs, outputs)
+        self.eval_arrays = lambda q, u, p: tuple([np.squeeze(o) for o in
+                                                  f(q, u, p)])
+
+    def generate_min_mass_matrix_function(self):
+
+        inputs = [self.coordinates, self.speeds, self.constants]
+        outputs = [self.mass_matrix, self.right_hand_side,
+                   self.coordinate_derivatives]
+
+        f = self._lambdify(inputs, outputs)
+        self.eval_arrays = lambda q, u, p: tuple([np.squeeze(o) for o in
+                                                  f(q, u, p)])

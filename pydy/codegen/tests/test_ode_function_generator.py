@@ -6,7 +6,8 @@ import sympy as sm
 
 from ...models import multi_mass_spring_damper
 from ..ode_function_generator import (ODEFunctionGenerator,
-                                      CythonODEFunctionGenerator)
+                                      CythonODEFunctionGenerator,
+                                      LambdifyODEFunctionGenerator)
 
 
 class TestODEFunctionGenerator(object):
@@ -100,7 +101,10 @@ class TestODEFunctionGenerator(object):
         assert g.solve_linear_system == solver
 
 
-class TestCythonODEFunctionGenerator(object):
+class TestODEFunctionGeneratorSubclasses(object):
+
+    ode_function_subclasses = [CythonODEFunctionGenerator,
+                               LambdifyODEFunctionGenerator]
 
     def setup(self):
 
@@ -116,26 +120,32 @@ class TestCythonODEFunctionGenerator(object):
 
     def test_generate_full_rhs(self):
 
-        g = CythonODEFunctionGenerator(self.sys.eom_method.rhs(),
-                                       self.sys.coordinates,
-                                       self.sys.speeds,
-                                       self.sys.constants_symbols)
+        rhs = self.sys.eom_method.rhs()
 
-        rhs_func = g.generate()
+        for Subclass in self.ode_function_subclasses:
 
-        self.eval_rhs(rhs_func)
+            g = Subclass(rhs,
+                         self.sys.coordinates,
+                         self.sys.speeds,
+                         self.sys.constants_symbols)
+
+            rhs_func = g.generate()
+
+            self.eval_rhs(rhs_func)
 
     def test_generate_full_mass_matrix(self):
 
-        g = CythonODEFunctionGenerator(self.sys.eom_method.forcing_full,
-                                       self.sys.coordinates,
-                                       self.sys.speeds,
-                                       self.sys.constants_symbols,
-                                       mass_matrix=self.sys.eom_method.mass_matrix_full)
+        for Subclass in self.ode_function_subclasses:
 
-        rhs_func = g.generate()
+            g = Subclass(self.sys.eom_method.forcing_full,
+                         self.sys.coordinates,
+                         self.sys.speeds,
+                         self.sys.constants_symbols,
+                         mass_matrix=self.sys.eom_method.mass_matrix_full)
 
-        self.eval_rhs(rhs_func)
+            rhs_func = g.generate()
+
+            self.eval_rhs(rhs_func)
 
     def test_generate_min_mass_matrix(self):
 
@@ -143,13 +153,15 @@ class TestCythonODEFunctionGenerator(object):
         coord_derivs = sm.Matrix([kin_diff_eqs[c.diff()] for c in
                                   self.sys.coordinates])
 
-        g = CythonODEFunctionGenerator(self.sys.eom_method.forcing,
-                                       self.sys.coordinates,
-                                       self.sys.speeds,
-                                       self.sys.constants_symbols,
-                                       mass_matrix=self.sys.eom_method.mass_matrix,
-                                       coordinate_derivatives=coord_derivs)
+        for Subclass in self.ode_function_subclasses:
 
-        rhs_func = g.generate()
+            g = Subclass(self.sys.eom_method.forcing,
+                         self.sys.coordinates,
+                         self.sys.speeds,
+                         self.sys.constants_symbols,
+                         mass_matrix=self.sys.eom_method.mass_matrix,
+                         coordinate_derivatives=coord_derivs)
 
-        self.eval_rhs(rhs_func)
+            rhs_func = g.generate()
+
+            self.eval_rhs(rhs_func)
