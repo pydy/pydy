@@ -66,7 +66,10 @@ void evaluate(
         required_args = set()
 
         for matrix in matrices:
-            required_args |= matrix.free_symbols
+            # TODO : SymPy 0.7.4 does not have Matrix.free_symbols so we
+            # manually compute them instead of calling:
+            # required_args |= matrix.free_symbols
+            required_args |= set().union(*[i.free_symbols for i in matrix])
             required_args |= me.find_dynamicsymbols(matrix)
 
         required_args.remove(me.dynamicsymbols._t)
