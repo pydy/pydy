@@ -10,7 +10,6 @@ from .cython_code import CythonMatrixGenerator
 
 # Required to replace current code.
 # TODO : Support specifieds!
-# TODO : Create Generator class for lambdify.
 # TODO : Create Generator class for Theano.
 
 # Enhancements
@@ -67,7 +66,7 @@ class MinMassMatrixMixin(object):
             q = x[:self.num_coordinates]
             u = x[self.num_coordinates:]
             M, F, qdot = self.eval_arrays(q, u, p)
-            if F.shape is tuple() or F.shape[0]:
+            if self.num_speeds == 1:
                 udot = F / M
             else:
                 udot = self.solve_linear_system(M, F)
