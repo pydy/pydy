@@ -99,6 +99,7 @@ setup(name="{prefix}",
         py = "np.ndarray[np.double_t, ndim=1, mode='c'] {}_{},"
         c = '<double*> {}_{}.data,'
         out = 'output_{}.reshape({}, {}),'
+        out_vec = 'output_{},'
 
         for i in range(self.num_arguments):
             lines['header_args'].append(hd.format('input', i))
@@ -110,7 +111,10 @@ setup(name="{prefix}",
             lines['python_args'].append(py.format('output', i))
             lines['c_args'].append(c.format('output', i))
             nr, nc = matrix.shape
-            lines['output'].append(out.format(i, nr, nc))
+            if nc == 1:
+                lines['output'].append(out_vec.format(i))
+            else:
+                lines['output'].append(out.format(i, nr, nc))
 
         indents = {'header_args': 18,
                    'python_args': 9,

@@ -65,7 +65,7 @@ class TestCythonMatrixGenerator(object):
         expected['output'] = \
 """\
             output_0.reshape(6, 6),
-            output_1.reshape(6, 1)\
+            output_1\
 """
 
         self.generator._generate_code_blocks()
@@ -113,7 +113,7 @@ def eval(
 
     return (
             output_0.reshape(6, 6),
-            output_1.reshape(6, 1)
+            output_1
            )\
 """
 
@@ -182,8 +182,8 @@ setup(name="boogly_bee",
                                       dtype=float))
 
         np.testing.assert_allclose(
-            output_1, sm.matrix2numpy(self.matrices[1].subs(subs),
-                                      dtype=float))
+            output_1, np.squeeze(sm.matrix2numpy(self.matrices[1].subs(subs),
+                                 dtype=float)))
 
     def teardown(self):
 
