@@ -10,7 +10,7 @@ import sympy as sm
 import sympy.physics.mechanics as me
 from sympy.printing.ccode import CCodePrinter
 
-from ..utils import wrap_and_indent
+from ..utils import wrap_and_indent, find_dynamicsymbols
 
 
 class CMatrixGenerator(object):
@@ -70,7 +70,7 @@ void evaluate(
             # manually compute them instead of calling:
             # required_args |= matrix.free_symbols
             required_args |= set().union(*[i.free_symbols for i in matrix])
-            required_args |= me.find_dynamicsymbols(matrix)
+            required_args |= find_dynamicsymbols(matrix)
 
         required_args.remove(me.dynamicsymbols._t)
 
@@ -205,6 +205,7 @@ void evaluate(
         outputs = ''
         for i, output in enumerate(self.simplified_matrices):
             nr, nc = output.shape
+            # FIXME : This fails in SymPy 0.7.4.1.
             lhs = sm.MatrixSymbol('output_{}'.format(i), nr, nc)
             code_str = printer.doprint(output, lhs)
             outputs += wrap_and_indent(code_str.split('\n'))
