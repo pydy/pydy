@@ -1,20 +1,5 @@
 #!/usr/bin/env python
-"""
-Write a C file plus header to evaluate one or more matrices/vectors.
 
-needs to optionally cse all the items
-
-Mass matrix + forcing: a matrix and vector of expressions
-
-rhs: vector of expressions
-
-Mass matrix + forcing + output vector
-
-rhs + output vector
-
-kinematic equation vector
-
-"""
 import os
 
 import sympy as sm
