@@ -70,6 +70,8 @@ class FullRHSMixin(MixinBase):
 
             return xdot
 
+        rhs.__doc__ = self._generate_rhs_docstring()
+
         return rhs
 
 
@@ -92,6 +94,8 @@ class FullMassMatrixMixin(MixinBase):
             xdot = self.solve_linear_system(M, F)
 
             return xdot
+
+        rhs.__doc__ = self._generate_rhs_docstring()
 
         return rhs
 
@@ -124,10 +128,69 @@ class MinMassMatrixMixin(MixinBase):
 
             return xdot
 
+        rhs.__doc__ = self._generate_rhs_docstring()
+
         return rhs
 
 
 class ODEFunctionGenerator(object):
+
+    _rhs_doc_template = \
+"""\
+Returns the derivatives of the states, i.e. numerically evaluates the right
+hand side of the first order differential equation.
+
+x' = f(x, t,{specified_call_sig} p)
+
+Parameters
+==========
+x : ndarray, shape({num_states},)
+    The state vector is ordered as such:
+{state_list}
+t : float
+    The current time.{specified_explanation}
+p : dictionary len({num_constants}) or ndarray shape({num_constants},)
+    The dictionary maps the constant symbols to floats. The constants are,
+    in order:
+{constant_list}
+
+Returns
+=======
+dx : ndarray, shape({num_states},)
+    The derivative of the state vector.
+
+"""
+
+    _specifieds_doc_template = \
+"""
+r : dictionary; ndarray, shape({num_specified},); function
+
+    There are three options for this dictionary. (1) is more flexible but
+    (2) and (3) are much more efficient.
+
+    (1) A dictionary that maps the specified functions of time to floats,
+    ndarrays, or functions that produce ndarrays. The keys can be a single
+    specified symbolic function of time or a tuple of symbols. The total
+    number of symbols must be equal to {num_specified}. If the value is a
+    function it must be of the form g(x, t), where x is the current state
+    vector ndarray and t is the current time float and it must return an
+    ndarray of the correct shape. For example::
+
+      r = {{a: 1.0,
+           (d, b) : np.array([1.0, 2.0]),
+           (e, f) : lambda x, t: np.array(x[0], x[1]),
+           c: lambda x, t: np.array(x[2])}}
+
+    (2) A ndarray with the specified values in the correct order and of the
+    correct shape.
+
+    (3) A function that must be of the form g(x, t), where x is the current
+    state vector and t is the current time and it must return an ndarray of
+    the correct shape.
+
+    The specified inputs are, in order:
+{specified_list}\
+"""
 
     @staticmethod
     def _deduce_system_type(**kwargs):
@@ -141,15 +204,9 @@ class ODEFunctionGenerator(object):
 
         return system_type
 
-    def __new__(cls,
-                right_hand_side,
-                coordinates,
-                speeds,
-                constants,
-                mass_matrix=None,
-                coordinate_derivatives=None,
-                specifieds=None,
-                linear_sys_solver='numpy'):
+    def __new__(cls, right_hand_side, coordinates, speeds, constants,
+                mass_matrix=None, coordinate_derivatives=None,
+                specifieds=None, linear_sys_solver='numpy'):
         """Returns an instance of the class with the appropriate mixin class
         based on what type of system was provided."""
 
@@ -166,15 +223,9 @@ class ODEFunctionGenerator(object):
 
         return object.__new__(type(cls.__name__, bases, dict(cls.__dict__)))
 
-    def __init__(self,
-                 right_hand_side,
-                 coordinates,
-                 speeds,
-                 constants,
-                 mass_matrix=None,
-                 coordinate_derivatives=None,
-                 specifieds=None,
-                 linear_sys_solver='numpy'):
+    def __init__(self, right_hand_side, coordinates, speeds, constants,
+                 mass_matrix=None, coordinate_derivatives=None,
+                 specifieds=None, linear_sys_solver='numpy'):
         """
 
         Parameters
@@ -205,7 +256,9 @@ class ODEFunctionGenerator(object):
         linear_sys_solver : string or function
             Specify either `numpy` or `scipy` to use the linear solvers
             provided in each package or supply a function that solves a
-            linear system Ax=b with the call signature x = solve(A, b).
+            linear system Ax=b with the call signature x = solve(A, b). If
+            you need to use custom kwargs for the scipy solver, pass in a
+            lambda function that wraps the solver and sets them.
 
         """
 
@@ -268,6 +321,32 @@ class ODEFunctionGenerator(object):
             assert self.num_states == self.right_hand_side.shape[0]
             assert self.mass_matrix is None
             assert self.coordinate_derivatives is None
+
+    @staticmethod
+    def list_syms(indent, syms):
+        indentation = ' ' * indent
+        lst = '- ' + ('\n' + indentation + '- ').join([str(s) for s in syms])
+        return indentation + lst
+
+    def _generate_rhs_docstring(self):
+
+        template_values = {'num_states': self.num_states,
+                           'state_list': self.list_syms(8, self.coordinates
+                                                        + self.speeds),
+                           'num_constants': self.num_constants,
+                           'constant_list': self.list_syms(8, self.constants),
+                           'specified_call_sig': '',
+                           'specified_explanation': ''}
+
+        if self.specifieds is not None:
+            template_values['specified_call_sig'] = ' r,'
+            specified_template_values = {
+                'num_specified': self.num_specifieds,
+                'specified_list': self.list_syms(8, self.specifieds)}
+            template_values['specified_explanation'] = \
+                self._specifieds_doc_template.format(**specified_template_values)
+
+        return self._rhs_doc_template.format(**template_values)
 
     def _define_inputs(self):
 
