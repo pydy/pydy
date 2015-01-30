@@ -8,16 +8,6 @@ import sympy.physics.mechanics as me
 
 from .cython_code import CythonMatrixGenerator
 
-# Required to replace current code.
-# TODO : Support specifieds!
-# TODO : Create Generator class for Theano.
-
-# Enhancements
-# TODO : Support creating a function for the Jacobian of the rhs.
-# TODO : Support functions of time in the ODEs.
-# TODO : Create Generator class for Octave.
-# TODO : Support output equations.
-
 
 class FullRHSMixin(object):
 
@@ -25,12 +15,14 @@ class FullRHSMixin(object):
         """Returns a function in the form expected by scipy.integrate.odeint
         that computes the derivatives of the states."""
 
-        def rhs(x, t, p):
+        def rhs(*args):
+            # args: x, t, p
+            # args: x, t, r, p
 
-            q = x[:self.num_coordinates]
-            u = x[self.num_coordinates:]
+            q = args[0][:self.num_coordinates]
+            u = args[0][self.num_coordinates:]
 
-            xdot = self.eval_arrays(q, u, p)
+            xdot = self.eval_arrays(q, u, *args[2:])
 
             return xdot
 
@@ -41,12 +33,14 @@ class FullMassMatrixMixin(object):
 
     def create_rhs_function(self):
 
-        def rhs(x, t, p):
+        def rhs(*args):
+            # args: x, t, p
+            # args: x, t, r, p
 
-            q = x[:self.num_coordinates]
-            u = x[self.num_coordinates:]
+            q = args[0][:self.num_coordinates]
+            u = args[0][self.num_coordinates:]
 
-            M, F = self.eval_arrays(q, u, p)
+            M, F = self.eval_arrays(q, u, *args[2:])
 
             xdot = self.solve_linear_system(M, F)
 
@@ -61,11 +55,13 @@ class MinMassMatrixMixin(object):
 
         xdot = np.empty(self.num_states, dtype=float)
 
-        def rhs(x, t, p):
+        def rhs(*args):
+            # args: x, t, p
+            # args: x, t, r, p
 
-            q = x[:self.num_coordinates]
-            u = x[self.num_coordinates:]
-            M, F, qdot = self.eval_arrays(q, u, p)
+            q = args[0][:self.num_coordinates]
+            u = args[0][self.num_coordinates:]
+            M, F, qdot = self.eval_arrays(q, u, *args[2:])
             if self.num_speeds == 1:
                 udot = F / M
             else:
@@ -150,8 +146,9 @@ class ODEFunctionGenerator(object):
         coordinate_derivatives : sympy.Matrix, shape(m, 1), optional
             If the "minimal" mass matrix is supplied, then this matrix
             represents the right hand side of q' = g(q, t, p).
-        specifieds : ssequence of SymPy Functions
-            The specified exogneous inputs to the ODEs.
+        specifieds : sequence of SymPy Functions
+            The specified exogenous inputs to the ODEs. These should be
+            functions of time.
         linear_sys_solver : string or function
             Specify either `numpy` or `scipy` to use the linear solvers
             provided in each package or supply a function that solves a
@@ -187,10 +184,7 @@ class ODEFunctionGenerator(object):
 
     def _set_linear_sys_solver(self):
 
-        def f():
-            pass
-
-        if isinstance(self.linear_sys_solver, type(f)):
+        if isinstance(self.linear_sys_solver, type(lambda x: x)):
             self.solve_linear_system = self.linear_sys_solver
         elif self.linear_sys_solver == 'numpy':
             self.solve_linear_system = numpy.linalg.solve
@@ -222,11 +216,22 @@ class ODEFunctionGenerator(object):
             assert self.mass_matrix is None
             assert self.coordinate_derivatives is None
 
+    def _define_inputs(self):
+
+        self.inputs = [self.coordinates, self.speeds, self.constants]
+
+        if self.specifieds is not None:
+            self.inputs.insert(2, self.specifieds)
+
     def generate(self):
         """Returns a function that evaluates the right hand side of the
-        first order odes.
+        first order ordinary differential equations in one of two forms:
 
         x' = f(x, t, p)
+
+        or
+
+        x' = f(x, t, r, p)
 
         """
         if self.system_type == 'full rhs':
@@ -247,56 +252,62 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
         # The module counter must not be advancing.
         return CythonMatrixGenerator(outputs, inputs).compile(tmp_dir='booger')
 
+    def _set_eval_array(self, f):
+
+        if self.specifieds is None:
+            self.eval_arrays = lambda q, u, p: f(q, u, p, *self.empties)
+        else:
+            self.eval_arrays = lambda q, u, r, p: f(q, u, r, p, *self.empties)
+
     def generate_full_rhs_function(self):
 
+        self._define_inputs()
         outputs = [self.right_hand_side]
-        inputs = [self.coordinates, self.speeds, self.constants]
 
-        rhs_result = np.empty(self.num_states, dtype=float)
+        self.empties = (np.empty(self.num_states, dtype=float),)
 
-        f = self._cythonize(outputs, inputs)
-
-        self.eval_arrays = lambda q, u, p: f(q, u, p, rhs_result)
+        self._set_eval_array(self._cythonize(outputs, self.inputs))
 
     def generate_full_mass_matrix_function(self):
 
+        self._define_inputs()
         outputs = [self.mass_matrix, self.right_hand_side]
-        inputs = [self.coordinates, self.speeds, self.constants]
-
-        f = self._cythonize(outputs, inputs)
 
         mass_matrix_result = np.empty(self.num_states ** 2, dtype=float)
         rhs_result = np.empty(self.num_states, dtype=float)
 
-        self.eval_arrays = lambda q, u, p: f(q, u, p, mass_matrix_result,
-                                             rhs_result)
+        self.empties = (mass_matrix_result, rhs_result)
+
+        self._set_eval_array(self._cythonize(outputs, self.inputs))
 
     def generate_min_mass_matrix_function(self):
 
+        self._define_inputs()
         outputs = [self.mass_matrix, self.right_hand_side,
                    self.coordinate_derivatives]
-        inputs = [self.coordinates, self.speeds, self.constants]
-
-        f = self._cythonize(outputs, inputs)
 
         mass_matrix_result = np.empty(self.num_speeds ** 2, dtype=float)
         rhs_result = np.empty(self.num_speeds, dtype=float)
         kin_diffs_result = np.empty(self.num_coordinates, dtype=float)
+        self.empties = (mass_matrix_result, rhs_result, kin_diffs_result)
 
-        self.eval_arrays = lambda q, u, p: f(q, u, p, mass_matrix_result,
-                                             rhs_result, kin_diffs_result)
+        self._set_eval_array(self._cythonize(outputs, self.inputs))
 
 
 class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
 
-    @staticmethod
-    def _lambdify(inputs, outputs):
+    def _lambdify(self, outputs):
         # TODO : We could forgo this substitution for speed purposes and
         # have lots of args for lambdify (like it used to be done) but there
-        # may be some limitiations on number of args.
+        # may be some limitations on number of args.
         subs = {}
         vec_inputs = []
-        for syms, vec_name in zip(inputs, ['q', 'u', 'p']):
+        if self.specifieds is None:
+            def_vecs = ['q', 'u', 'p']
+        else:
+            def_vecs = ['q', 'u', 'r', 'p']
+
+        for syms, vec_name in zip(self.inputs, def_vecs):
             v = sm.DeferredVector(vec_name)
             for i, sym in enumerate(syms):
                 subs[sym] = v[i]
@@ -309,27 +320,41 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
 
     def generate_full_rhs_function(self):
 
-        inputs = [self.coordinates, self.speeds, self.constants]
+        self._define_inputs()
         outputs = [self.right_hand_side]
 
-        f = self._lambdify(inputs, outputs)
-        self.eval_arrays = lambda q, u, p: np.squeeze(f(q, u, p))
+        f = self._lambdify(outputs)
+
+        if self.specifieds is None:
+            self.eval_arrays = lambda q, u, p: np.squeeze(f(q, u, p))
+        else:
+            self.eval_arrays = lambda q, u, r, p: np.squeeze(f(q, u, r, p))
 
     def generate_full_mass_matrix_function(self):
 
-        inputs = [self.coordinates, self.speeds, self.constants]
+        self._define_inputs()
         outputs = [self.mass_matrix, self.right_hand_side]
 
-        f = self._lambdify(inputs, outputs)
-        self.eval_arrays = lambda q, u, p: tuple([np.squeeze(o) for o in
-                                                  f(q, u, p)])
+        f = self._lambdify(outputs)
+
+        if self.specifieds is None:
+            self.eval_arrays = lambda q, u, p: tuple([np.squeeze(o) for o in
+                                                      f(q, u, p)])
+        else:
+            self.eval_arrays = lambda q, u, r, p: tuple([np.squeeze(o) for o
+                                                         in f(q, u, r, p)])
 
     def generate_min_mass_matrix_function(self):
 
-        inputs = [self.coordinates, self.speeds, self.constants]
+        self._define_inputs()
         outputs = [self.mass_matrix, self.right_hand_side,
                    self.coordinate_derivatives]
 
-        f = self._lambdify(inputs, outputs)
-        self.eval_arrays = lambda q, u, p: tuple([np.squeeze(o) for o in
-                                                  f(q, u, p)])
+        f = self._lambdify(outputs)
+
+        if self.specifieds is None:
+            self.eval_arrays = lambda q, u, p: tuple([np.squeeze(o) for o in
+                                                      f(q, u, p)])
+        else:
+            self.eval_arrays = lambda q, u, r, p: tuple([np.squeeze(o) for o
+                                                         in f(q, u, r, p)])

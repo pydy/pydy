@@ -4,7 +4,7 @@ import numpy as np
 import scipy as sp
 import sympy as sm
 
-from ...models import multi_mass_spring_damper
+from ... import models
 from ..ode_function_generator import (ODEFunctionGenerator,
                                       CythonODEFunctionGenerator,
                                       LambdifyODEFunctionGenerator)
@@ -14,7 +14,7 @@ class TestODEFunctionGenerator(object):
 
     def setup(self):
 
-        self.sys = multi_mass_spring_damper(2)
+        self.sys = models.multi_mass_spring_damper(2)
 
     def test_init(self):
 
@@ -89,7 +89,7 @@ class TestODEFunctionGenerator(object):
 
         assert g.solve_linear_system == sp.linalg.solve
 
-        solver = lambda A, b: np.dot(np.inv(A),b)
+        solver = lambda A, b: np.dot(np.inv(A), b)
 
         g = ODEFunctionGenerator(self.sys.eom_method.forcing_full,
                                  self.sys.coordinates,
@@ -108,7 +108,7 @@ class TestODEFunctionGeneratorSubclasses(object):
 
     def setup(self):
 
-        self.sys = multi_mass_spring_damper()
+        self.sys = models.multi_mass_spring_damper()
 
     def eval_rhs(self, rhs):
 
@@ -165,3 +165,55 @@ class TestODEFunctionGeneratorSubclasses(object):
             rhs_func = g.generate()
 
             self.eval_rhs(rhs_func)
+
+    def test_generate_with_specifieds(self):
+
+        # This model has three specifieds.
+        sys = models.n_link_pendulum_on_cart(2, True, True)
+
+        kin_diff_eqs = sys.eom_method.kindiffdict()
+        coord_derivs = sm.Matrix([kin_diff_eqs[c.diff()] for c in
+                                  sys.coordinates])
+
+        rhs = sys.eom_method.rhs()
+
+        common_args = [sys.coordinates, sys.speeds, sys.constants_symbols]
+        args_dct = {}
+        args_dct['full rhs'] = [rhs] + common_args
+        args_dct['full mass matrix'] = [sys.eom_method.forcing_full] + common_args
+        args_dct['min mass matrix'] = [sys.eom_method.forcing] + common_args
+
+        kwargs_dct = {}
+        kwargs_dct['full rhs'] = {}
+        kwargs_dct['full mass matrix'] = \
+            {'mass_matrix': sys.eom_method.mass_matrix_full}
+        kwargs_dct['min mass matrix'] = \
+            {'mass_matrix': sys.eom_method.mass_matrix,
+             'coordinate_derivatives': coord_derivs}
+
+        for Subclass in self.ode_function_subclasses:
+            for system_type, args in args_dct.items():
+
+                g = Subclass(*args, specifieds=sys.specifieds_symbols,
+                             **kwargs_dct[system_type])
+
+                f = g.generate()
+
+                rand = np.random.random
+
+                x = rand(g.num_states)
+                r = rand(g.num_specifieds)
+                p = rand(g.num_constants)
+
+                subs = {}
+                for arr, syms in zip([x, r, p], [sys.states,
+                                                 sys.specifieds_symbols,
+                                                 sys.constants_symbols]):
+                    for val, sym in zip(arr, syms):
+                        subs[sym] = val
+
+                expected = sm.matrix2numpy(rhs.subs(subs), dtype=float).squeeze()
+
+                xdot = f(x, 0.0, r, p)
+
+                np.testing.assert_allclose(xdot, expected)
