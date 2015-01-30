@@ -17,6 +17,15 @@ from .cython_code import CythonMatrixGenerator
 
 class MixinBase(object):
 
+    def _parse_constants(self, *args):
+
+        p = args[-1]
+        try:
+            p = np.array([p[c] for c in self.constants])
+            return args[:-1] + (p,)
+        except IndexError:
+            return args
+
     def _parse_specifieds(self, x, t, r, p):
 
         if isinstance(r, dict):
@@ -60,11 +69,13 @@ class FullRHSMixin(MixinBase):
             # args: x, t, p
             # args: x, t, r, p
 
-            q = args[0][:self.num_coordinates]
-            u = args[0][self.num_coordinates:]
+            args = self._parse_constants(*args)
 
             if self.specifieds is not None:
                 args = self._parse_specifieds(*args)
+
+            q = args[0][:self.num_coordinates]
+            u = args[0][self.num_coordinates:]
 
             xdot = self.eval_arrays(q, u, *args[2:])
 
@@ -83,11 +94,13 @@ class FullMassMatrixMixin(MixinBase):
             # args: x, t, p
             # args: x, t, r, p
 
-            q = args[0][:self.num_coordinates]
-            u = args[0][self.num_coordinates:]
+            args = self._parse_constants(*args)
 
             if self.specifieds is not None:
                 args = self._parse_specifieds(*args)
+
+            q = args[0][:self.num_coordinates]
+            u = args[0][self.num_coordinates:]
 
             M, F = self.eval_arrays(q, u, *args[2:])
 
@@ -110,11 +123,13 @@ class MinMassMatrixMixin(MixinBase):
             # args: x, t, p
             # args: x, t, r, p
 
-            q = args[0][:self.num_coordinates]
-            u = args[0][self.num_coordinates:]
+            args = self._parse_constants(*args)
 
             if self.specifieds is not None:
                 args = self._parse_specifieds(*args)
+
+            q = args[0][:self.num_coordinates]
+            u = args[0][self.num_coordinates:]
 
             M, F, qdot = self.eval_arrays(q, u, *args[2:])
 

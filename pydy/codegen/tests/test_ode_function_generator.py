@@ -257,6 +257,9 @@ class TestODEFunctionGeneratorSubclasses(object):
             xd_03 = rhs(x, 0.0, r, p)
             np.testing.assert_allclose(xd_01, xd_03)
 
+            # Check that rhs can accept dicts of constants.
+            p = {sym: val for sym, val in zip(g.constants, p)}
+
             r = np.array([1.0, 2.0, 3.0, 4.0])
             xd_04 = rhs(x, 0.0, r, p)
             np.testing.assert_allclose(xd_01, xd_04)
