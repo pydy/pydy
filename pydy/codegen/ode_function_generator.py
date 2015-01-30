@@ -28,6 +28,26 @@ class MixinBase(object):
         except IndexError:
             return args
 
+    def _parse_old_style_extra_args(self, *args):
+
+        # DEPRECATED : Remove before 0.4.0 release.
+        try:
+            # old style always has three args: x, t, args and the last one
+            # is a dictionary which at least contains the key 'constants'.
+            # So if the last arg is so, then extract.
+            args[-1]['constants']
+        except (KeyError, IndexError):
+            return args
+        else:
+            new_args = list(args[:-1])  # gets x and t
+
+            if self.specifieds is not None:
+                new_args.append(args[-1]['specified'])
+
+            new_args.append(args[-1]['constants'])
+
+            return tuple(new_args)
+
     def _parse_specifieds(self, x, t, r, p):
 
         if isinstance(r, dict):
@@ -71,6 +91,8 @@ class FullRHSMixin(MixinBase):
             # args: x, t, p
             # args: x, t, r, p
 
+            args = self._parse_old_style_extra_args(*args)
+
             args = self._parse_constants(*args)
 
             if self.specifieds is not None:
@@ -95,6 +117,8 @@ class FullMassMatrixMixin(MixinBase):
         def rhs(*args):
             # args: x, t, p
             # args: x, t, r, p
+
+            args = self._parse_old_style_extra_args(*args)
 
             args = self._parse_constants(*args)
 
@@ -124,6 +148,8 @@ class MinMassMatrixMixin(MixinBase):
         def rhs(*args):
             # args: x, t, p
             # args: x, t, r, p
+
+            args = self._parse_old_style_extra_args(*args)
 
             args = self._parse_constants(*args)
 

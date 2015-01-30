@@ -267,3 +267,10 @@ class TestODEFunctionGeneratorSubclasses(object):
             r = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
             xd_05 = rhs(x, 0.0, r, p)
             np.testing.assert_allclose(xd_01, xd_05)
+
+            # Check to see if old style extra args works.
+            args = {'specified' : r,
+                    'constants' : p}
+
+            xd_06 = rhs(x, 0.0, args)
+            np.testing.assert_allclose(xd_01, xd_06)
