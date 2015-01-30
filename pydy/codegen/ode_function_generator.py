@@ -7,12 +7,17 @@ import sympy as sm
 import sympy.physics.mechanics as me
 from sympy.core.function import UndefinedFunction
 
+Cython = sm.external.import_module('Cython')
+theano = sm.external.import_module('theano')
+if theano:
+    from sympy.printing.theanocode import theano_function
+
 from .cython_code import CythonMatrixGenerator
 
 
 class MixinBase(object):
 
-    def parse_specifieds(self, x, t, r, p):
+    def _parse_specifieds(self, x, t, r, p):
 
         if isinstance(r, dict):
             # TODO : This should be instatiated outside of the RHS function.
@@ -59,7 +64,7 @@ class FullRHSMixin(MixinBase):
             u = args[0][self.num_coordinates:]
 
             if self.specifieds is not None:
-                args = self.parse_specifieds(*args)
+                args = self._parse_specifieds(*args)
 
             xdot = self.eval_arrays(q, u, *args[2:])
 
@@ -80,7 +85,7 @@ class FullMassMatrixMixin(MixinBase):
             u = args[0][self.num_coordinates:]
 
             if self.specifieds is not None:
-                args = self.parse_specifieds(*args)
+                args = self._parse_specifieds(*args)
 
             M, F = self.eval_arrays(q, u, *args[2:])
 
@@ -105,7 +110,7 @@ class MinMassMatrixMixin(MixinBase):
             u = args[0][self.num_coordinates:]
 
             if self.specifieds is not None:
-                args = self.parse_specifieds(*args)
+                args = self._parse_specifieds(*args)
 
             M, F, qdot = self.eval_arrays(q, u, *args[2:])
 
@@ -294,6 +299,13 @@ class ODEFunctionGenerator(object):
 
 class CythonODEFunctionGenerator(ODEFunctionGenerator):
 
+    def __init__(self, *args, **kwargs):
+
+        if Cython is None:
+            raise Exception('Cython must be installed to use this class.')
+        else:
+            super(CythonODEFunctionGenerator, self).__init__(*args, **kwargs)
+
     @staticmethod
     def _cythonize(outputs, inputs):
         # TODO : This fails for multiple calls if the tmp_dir is not set.
@@ -406,3 +418,74 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
         else:
             self.eval_arrays = lambda q, u, r, p: tuple([np.squeeze(o) for o
                                                          in f(q, u, r, p)])
+
+
+class TheanoODEFunctionGenerator(ODEFunctionGenerator):
+
+    def __init__(self, *args, **kwargs):
+
+        if theano is None:
+            raise Exception('Theano must be installed to use this class.')
+        else:
+            super(TheanoODEFunctionGenerator, self).__init__(*args, **kwargs)
+
+    def _define_inputs(self):
+
+        if self.specifieds is None:
+            self.inputs = self.coordinates + self.speeds + self.constants
+        else:
+            self.inputs = (self.coordinates + self.speeds + self.specifieds
+                           + self.constants)
+
+    def _theanoize(self, outputs):
+
+        self._define_inputs()
+
+        f = theano_function(self.inputs, outputs, on_unused_input='ignore')
+
+        # Theano will run faster if you trust the input. I'm not sure
+        # what the implications of this are. See:
+        # http://deeplearning.net/software/theano/tutorial/faq.html#faster-small-theano-function
+        # Note that map(np.asarray, np.hstack(args)) is required if
+        # trust_input is True. If it is False, then it will sanitize the
+        # inputs. I'm not sure which one is faster.
+        f.trust_input = True
+
+        return f
+
+    def generate_full_rhs_function(self):
+
+        outputs = [self.right_hand_side]
+
+        f = self._theanoize(outputs)
+
+        def eval_arrays(*args):
+            vals = map(np.asarray, np.hstack(args))
+            return np.squeeze(f(*vals))
+
+        self.eval_arrays = eval_arrays
+
+    def generate_full_mass_matrix_function(self):
+
+        outputs = [self.mass_matrix, self.right_hand_side]
+
+        f = self._theanoize(outputs)
+
+        def eval_arrays(*args):
+            vals = map(np.asarray, np.hstack(args))
+            return tuple([np.squeeze(o) for o in f(*vals)])
+
+        self.eval_arrays = eval_arrays
+
+    def generate_min_mass_matrix_function(self):
+
+        outputs = [self.mass_matrix, self.right_hand_side,
+                   self.coordinate_derivatives]
+
+        f = self._theanoize(outputs)
+
+        def eval_arrays(*args):
+            vals = map(np.asarray, np.hstack(args))
+            return tuple([np.squeeze(o) for o in f(*vals)])
+
+        self.eval_arrays = eval_arrays

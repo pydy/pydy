@@ -4,10 +4,14 @@ import numpy as np
 import scipy as sp
 import sympy as sm
 
+Cython = sm.external.import_module('Cython')
+theano = sm.external.import_module('theano')
+
 from ... import models
 from ..ode_function_generator import (ODEFunctionGenerator,
+                                      LambdifyODEFunctionGenerator,
                                       CythonODEFunctionGenerator,
-                                      LambdifyODEFunctionGenerator)
+                                      TheanoODEFunctionGenerator)
 
 
 class TestODEFunctionGenerator(object):
@@ -103,8 +107,9 @@ class TestODEFunctionGenerator(object):
 
 class TestODEFunctionGeneratorSubclasses(object):
 
-    ode_function_subclasses = [CythonODEFunctionGenerator,
-                               LambdifyODEFunctionGenerator]
+    ode_function_subclasses = [LambdifyODEFunctionGenerator,
+                               CythonODEFunctionGenerator,
+                               TheanoODEFunctionGenerator]
 
     def setup(self):
 
