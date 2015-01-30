@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import warnings
+
 import numpy as np
 import numpy.linalg
 import scipy.linalg
@@ -581,3 +583,119 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
             return tuple([np.squeeze(o) for o in f(*vals)])
 
         self.eval_arrays = eval_arrays
+
+
+def generate_ode_function(*args, **kwargs):
+    """Returns a numerical function which can evaluate the right hand side
+    of the first order ordinary differential equations from a system
+    described by one of the following three forms:
+
+        [1] x' = F(x, t, r, p)
+
+        [2] M(x, p) x' = F(x, t, r, p)
+
+        [3] M(q, p) u' = F(q, u, t, r, p)
+            q' = G(q, u, t, r, p)
+
+    where
+
+        x : states
+        t : time
+        r : specified inputs
+        p : constants
+        q : generalized coordinates
+        u : generalized speeds
+        M : mass matrix (full or minimum)
+        F : right hand side (full or minimum)
+        G : right hand side of the kinematical differential equations
+
+    The generated function is of the form F(x, t, p) or F(x, t, r, p)
+    depending on whether the system has specified inputs or not.
+
+    Parameters
+    ==========
+    right_hand_side : SymPy Matrix, shape(n, 1)
+        A column vector containing the symbolic expressions for the
+        right hand side of the ordinary differential equations. If the
+        right hand side has been solved for symbolically then x' = f(x,
+        t, r, p), if it hasn't then you must supply the accompanying
+        mass matrix M(x) * x' = f(x, t, r, p).
+    coordinates : sequence of SymPy Functions
+        The generalized coordinates.
+    speeds : sequence of SymPy Functions
+        The generalized speeds.
+    constants : sequence of SymPy Symbols
+        All of the constants present in the right hand side and mass
+        matrix.
+    mass_matrix : sympy.Matrix, shape(n, n), optional
+        This can be either the "full" mass matrix in M(x) * x' = f(x, t,
+        r, p) or the minimal mass matrix in M(q) * u' = f(u, q, t, r,
+        p).
+    coordinate_derivatives : sympy.Matrix, shape(m, 1), optional
+        If the "minimal" mass matrix is supplied, then this matrix
+        represents the right hand side of q' = g(q, t, p).
+    specifieds : sequence of SymPy Functions
+        The specified exogenous inputs to the ODEs. These should be
+        functions of time.
+    linear_sys_solver : string or function
+        Specify either `numpy` or `scipy` to use the linear solvers
+        provided in each package or supply a function that solves a
+        linear system Ax=b with the call signature x = solve(A, b). If
+        you need to use custom kwargs for the scipy solver, pass in a
+        lambda function that wraps the solver and sets them.
+    generator : string, {'lambdify'|'theano'|'cython'}, optional
+        The method used for generating the numeric right hand side.
+
+    Returns
+    -------
+    rhs_func : function
+        A function which evaluates the derivaties of the states. See the
+        function's docstring for more details after generation.
+
+    Notes
+    -----
+
+    This function also supports the pre-0.3.0 arguments for backwards
+    compatibility which was strictly form [2] above:
+
+    mass_matrix : sympy.Matrix, shape(n,n)
+        The symbolic mass matrix of the system. The rows should correspond
+        to the coordinates and speeds.
+    forcing_vector : sympy.Matrix, shape(n,1)
+        The symbolic forcing vector of the system.
+    constants : list of sympy.Symbol
+        The constants in the equations of motion.
+    coordinates : list of sympy.Function
+        The generalized coordinates of the system.
+    speeds : list of sympy.Function
+        The generalized speeds of the system.
+    specified : list of sympy.Function
+        The specifed quantities of the system.
+    generator : string, {'lambdify'|'theano'|'cython'}, optional
+        The method used for generating the numeric right hand side.
+
+
+    """
+    if len(args) == 5:
+        warnings.warn("The pre-0.3.0 arguments for generate_ode_function are "
+                      "deprecated. Please check the documentation for the new "
+                      "style arguments.", DeprecationWarning)
+        # These are the old style args, so we rearrange into the new style
+        # args for backwards compatibility.
+        mass_matrix, forcing_vector, constants, coordinates, speeds = args
+        args = (forcing_vector, coordinates, speeds, constants)
+        kwargs['mass_matrix'] = mass_matrix
+        kwargs['specifieds'] = kwargs.pop('specified')
+
+    generators = {'lambdify': LambdifyODEFunctionGenerator,
+                  'cython': CythonODEGenerator,
+                  'theano': TheanoODEGenerator}
+
+    generator_type = kwargs.pop('generator')
+    try:
+        g = generators[generator_type](*args, **kwargs)
+    except KeyError:
+        msg = '{} is not a valid generator.'.format(generator_type)
+        raise ValueError(msg)
+
+    return g.generate()
