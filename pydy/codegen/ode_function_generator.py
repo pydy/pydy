@@ -5,11 +5,47 @@ import numpy.linalg
 import scipy.linalg
 import sympy as sm
 import sympy.physics.mechanics as me
+from sympy.core.function import UndefinedFunction
 
 from .cython_code import CythonMatrixGenerator
 
 
-class FullRHSMixin(object):
+class MixinBase(object):
+
+    def parse_specifieds(self, x, t, r, p):
+
+        if isinstance(r, dict):
+            # TODO : This should be instatiated outside of the RHS function.
+            specified_values = np.zeros(self.num_specifieds)
+
+            for k, v in r.items():
+                # TODO : Not sure if this is the best check here.
+                if isinstance(type(k), UndefinedFunction):
+                    k = (k,)
+                idx = [self.specifieds.index(symmy) for symmy in k]
+                try:
+                    specified_values[idx] = v(x, t)
+                except TypeError:  # not callable
+                    # If not callable, then it should be a float, ndarray,
+                    # or indexable.
+                    specified_values[idx] = v
+        else:
+            # More efficient.
+            try:
+                specified_values = r(x, t)
+            except TypeError:  # not callable.
+                # If not callable, then it should be a float or ndarray.
+                specified_values = r
+            # If the value is just a float, then convert to a 1D array.
+            try:
+                len(specified_values)
+            except TypeError:
+                specified_values = np.asarray([specified_values])
+
+        return x, t, specified_values, p
+
+
+class FullRHSMixin(MixinBase):
 
     def create_rhs_function(self):
         """Returns a function in the form expected by scipy.integrate.odeint
@@ -22,6 +58,9 @@ class FullRHSMixin(object):
             q = args[0][:self.num_coordinates]
             u = args[0][self.num_coordinates:]
 
+            if self.specifieds is not None:
+                args = self.parse_specifieds(*args)
+
             xdot = self.eval_arrays(q, u, *args[2:])
 
             return xdot
@@ -29,7 +68,7 @@ class FullRHSMixin(object):
         return rhs
 
 
-class FullMassMatrixMixin(object):
+class FullMassMatrixMixin(MixinBase):
 
     def create_rhs_function(self):
 
@@ -40,6 +79,9 @@ class FullMassMatrixMixin(object):
             q = args[0][:self.num_coordinates]
             u = args[0][self.num_coordinates:]
 
+            if self.specifieds is not None:
+                args = self.parse_specifieds(*args)
+
             M, F = self.eval_arrays(q, u, *args[2:])
 
             xdot = self.solve_linear_system(M, F)
@@ -49,7 +91,7 @@ class FullMassMatrixMixin(object):
         return rhs
 
 
-class MinMassMatrixMixin(object):
+class MinMassMatrixMixin(MixinBase):
 
     def create_rhs_function(self):
 
@@ -61,11 +103,17 @@ class MinMassMatrixMixin(object):
 
             q = args[0][:self.num_coordinates]
             u = args[0][self.num_coordinates:]
+
+            if self.specifieds is not None:
+                args = self.parse_specifieds(*args)
+
             M, F, qdot = self.eval_arrays(q, u, *args[2:])
+
             if self.num_speeds == 1:
                 udot = F / M
             else:
                 udot = self.solve_linear_system(M, F)
+
             xdot[:self.num_coordinates] = qdot
             xdot[self.num_coordinates:] = udot
 

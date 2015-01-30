@@ -217,3 +217,45 @@ class TestODEFunctionGeneratorSubclasses(object):
                 xdot = f(x, 0.0, r, p)
 
                 np.testing.assert_allclose(xdot, expected)
+
+    def test_rhs_args(self):
+
+        # There are four specified inputs available.
+        sys = models.n_link_pendulum_on_cart(3, True, True)
+        right_hand_side = sys.eom_method.rhs()
+
+        for Subclass in self.ode_function_subclasses:
+
+            g = Subclass(right_hand_side,
+                         sys.coordinates, sys.speeds,
+                         sys.constants_symbols,
+                         specifieds=sys.specifieds_symbols)
+
+            rhs = g.generate()
+
+            x = np.random.random(g.num_states)
+            p = np.random.random(g.num_constants)
+
+            r = dict(zip(g.specifieds, [1.0, 2.0, 3.0, 4.0]))
+
+            xd_01 = rhs(x, 0.0, r, p)
+
+            r = {tuple(g.specifieds):
+                 lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])}
+            xd_02 = rhs(x, 0.0, r, p)
+            np.testing.assert_allclose(xd_01, xd_02)
+
+            r = {g.specifieds[0]: lambda x, t: np.ones(1),
+                 (g.specifieds[3], g.specifieds[1]):
+                 lambda x, t: np.array([4.0, 2.0]),
+                 g.specifieds[2]: 3.0 * np.ones(1)}
+            xd_03 = rhs(x, 0.0, r, p)
+            np.testing.assert_allclose(xd_01, xd_03)
+
+            r = np.array([1.0, 2.0, 3.0, 4.0])
+            xd_04 = rhs(x, 0.0, r, p)
+            np.testing.assert_allclose(xd_01, xd_04)
+
+            r = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
+            xd_05 = rhs(x, 0.0, r, p)
+            np.testing.assert_allclose(xd_01, xd_05)
