@@ -611,7 +611,10 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
         self.eval_arrays = eval_arrays
 
 
-def generate_ode_function(*args, **kwargs):
+def generate_ode_function(right_hand_side, coordinates, speeds, constants,
+                          mass_matrix=None, coordinate_derivatives=None,
+                          specifieds=None, linear_sys_solver='numpy',
+                          generator='lambdify'):
     """Returns a numerical function which can evaluate the right hand side
     of the first order ordinary differential equations from a system
     described by one of the following three forms:
@@ -678,50 +681,19 @@ def generate_ode_function(*args, **kwargs):
         A function which evaluates the derivaties of the states. See the
         function's docstring for more details after generation.
 
-    Notes
-    -----
-
-    This function also supports the pre-0.3.0 arguments for backwards
-    compatibility which was strictly form [2] above:
-
-    mass_matrix : sympy.Matrix, shape(n,n)
-        The symbolic mass matrix of the system. The rows should correspond
-        to the coordinates and speeds.
-    forcing_vector : sympy.Matrix, shape(n,1)
-        The symbolic forcing vector of the system.
-    constants : list of sympy.Symbol
-        The constants in the equations of motion.
-    coordinates : list of sympy.Function
-        The generalized coordinates of the system.
-    speeds : list of sympy.Function
-        The generalized speeds of the system.
-    specified : list of sympy.Function
-        The specifed quantities of the system.
-    generator : string, {'lambdify'|'theano'|'cython'}, optional
-        The method used for generating the numeric right hand side.
-
-
     """
-    if len(args) == 5:
-        warnings.warn("The pre-0.3.0 arguments for generate_ode_function are "
-                      "deprecated. Please check the documentation for the new "
-                      "style arguments.", DeprecationWarning)
-        # These are the old style args, so we rearrange into the new style
-        # args for backwards compatibility.
-        mass_matrix, forcing_vector, constants, coordinates, speeds = args
-        args = (forcing_vector, coordinates, speeds, constants)
-        kwargs['mass_matrix'] = mass_matrix
-        kwargs['specifieds'] = kwargs.pop('specified')
-
     generators = {'lambdify': LambdifyODEFunctionGenerator,
-                  'cython': CythonODEGenerator,
-                  'theano': TheanoODEGenerator}
+                  'cython': CythonODEFunctionGenerator,
+                  'theano': TheanoODEFunctionGenerator}
 
-    generator_type = kwargs.pop('generator')
     try:
-        g = generators[generator_type](*args, **kwargs)
+        g = generators[generator](right_hand_side, coordinates, speeds,
+                                  constants, mass_matrix=mass_matrix,
+                                  coordinate_derivatives=coordinate_derivatives,
+                                  specifieds=specifieds,
+                                  linear_sys_solver='numpy')
     except KeyError:
-        msg = '{} is not a valid generator.'.format(generator_type)
-        raise ValueError(msg)
+        msg = '{} is not a valid generator.'.format(generator)
+        raise NotImplementedError(msg)
 
     return g.generate()
