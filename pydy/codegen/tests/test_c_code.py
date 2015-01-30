@@ -25,7 +25,7 @@ class TestCMatrixGenerator():
                           sys.speeds,
                           sys.specifieds_symbols)
 
-        self.generator = CMatrixGenerator(self.matrices, self.arguments)
+        self.generator = CMatrixGenerator(self.arguments, self.matrices)
 
     def test_init(self):
 
@@ -35,7 +35,7 @@ class TestCMatrixGenerator():
         # Make sure an error is risen if not enough arguments are provided.
         arguments = self.arguments[:-1]
 
-        assert_raises(ValueError, CMatrixGenerator, self.matrices, arguments)
+        assert_raises(ValueError, CMatrixGenerator, arguments, self.matrices)
 
     def test_generate_cse(self):
 

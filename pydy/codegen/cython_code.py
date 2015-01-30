@@ -62,21 +62,21 @@ setup(name="{prefix}",
 
     _module_counter = 0
 
-    def __init__(self, matrices, arguments, prefix='pydy_codegen'):
+    def __init__(self, arguments, matrices, prefix='pydy_codegen'):
         """
 
         Parameters
         ==========
-        matrices : sequence of SymPy.Matrix
-            A sequence of the matrices that should be evaluated in the
-            function. The expressions should contain only sympy.Symbol or
-            sympy.Function that are functions of me.dynamicsymbols._t.
         arguments : sequences of sequences of SymPy Symbol or Function.
             Each of the sequences will be converted to input arrays in the
             Cython function. All of the symbols/functions contained in
             ``matrices`` need to be in the sequences, but the sequences can
             also contain extra symbols/functions that are not contained in
             the matrices.
+        matrices : sequence of SymPy.Matrix
+            A sequence of the matrices that should be evaluated in the
+            function. The expressions should contain only sympy.Symbol or
+            sympy.Function that are functions of me.dynamicsymbols._t.
         prefix : string, optional
             The desired prefix for the generated files.
 
@@ -87,7 +87,7 @@ setup(name="{prefix}",
         self.arguments = arguments
         self.num_matrices = len(matrices)
         self.num_arguments = len(arguments)
-        self.c_matrix_generator = CMatrixGenerator(matrices, arguments)
+        self.c_matrix_generator = CMatrixGenerator(arguments, matrices)
 
         self._generate_code_blocks()
 

@@ -46,20 +46,20 @@ void evaluate(
 }}\
 """
 
-    def __init__(self, matrices, arguments):
+    def __init__(self, arguments, matrices):
         """
 
         Parameters
         ==========
-        matrices : sequence of SymPy.Matrix
-            A sequence of the matrices that should be evaluated in the
-            function. The expressions should contain only sympy.Symbol or
-            sympy.Function that are functions of me.dynamicsymbols._t.
         arguments : sequences of sequences of SymPy Symbol or Function.
             Each of the sequences will be converted to input arrays in the C
             function. All of the symbols/functions contained in ``matrices``
             need to be in the sequences, but the sequences can also contain
             extra symbols/functions that are not contained in the matrices.
+        matrices : sequence of SymPy.Matrix
+            A sequence of the matrices that should be evaluated in the
+            function. The expressions should contain only sympy.Symbol or
+            sympy.Function that are functions of me.dynamicsymbols._t.
 
         """
 

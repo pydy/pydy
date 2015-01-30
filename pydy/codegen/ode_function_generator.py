@@ -310,7 +310,7 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
     def _cythonize(outputs, inputs):
         # TODO : This fails for multiple calls if the tmp_dir is not set.
         # The module counter must not be advancing.
-        return CythonMatrixGenerator(outputs, inputs).compile(tmp_dir='booger')
+        return CythonMatrixGenerator(inputs, outputs).compile(tmp_dir='booger')
 
     def _set_eval_array(self, f):
 

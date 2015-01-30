@@ -25,8 +25,8 @@ class TestCythonMatrixGenerator(object):
                           sys.speeds,
                           sys.specifieds_symbols)
 
-        self.generator = CythonMatrixGenerator(self.matrices,
-                                               self.arguments, self.prefix)
+        self.generator = CythonMatrixGenerator(self.arguments,
+                                               self.matrices, self.prefix)
 
     def test_generate_code_blocks(self):
 
