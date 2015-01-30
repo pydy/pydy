@@ -36,7 +36,8 @@ class MixinBase(object):
             # is a dictionary which at least contains the key 'constants'.
             # So if the last arg is so, then extract.
             args[-1]['constants']
-        except (KeyError, IndexError):
+        # ValueError is needed for older NumPy versions.
+        except (KeyError, IndexError, ValueError):
             return args
         else:
             new_args = list(args[:-1])  # gets x and t
