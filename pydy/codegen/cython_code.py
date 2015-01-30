@@ -202,17 +202,8 @@ setup(name="{prefix}",
         if not os.path.exists(codedir):
             os.makedirs(codedir)
 
-        taken = False
-
-        while not taken:
-            try:
-                open(os.path.join(codedir, self.prefix + '.pyx'), 'r')
-            except IOError:
-                taken = True
-            else:
-                self.prefix = '{}_{}'.format(base_prefix,
-                                             self._module_counter)
-                self._module_counter += 1
+        self.prefix = '{}_{}'.format(base_prefix,
+                                     CythonMatrixGenerator._module_counter)
 
         workingdir = os.getcwd()
         os.chdir(codedir)
@@ -229,6 +220,7 @@ setup(name="{prefix}",
             raise Exception('Failed to compile and import Cython module.')
         finally:
             sys.path.remove(codedir)
+            CythonMatrixGenerator._module_counter += 1
             os.chdir(workingdir)
             if tmp_dir is None:
                 shutil.rmtree(codedir)
