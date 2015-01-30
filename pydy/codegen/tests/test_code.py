@@ -1,60 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# standard libary
-import os
-import shutil
-import glob
-import filecmp
-
 # external libraries
 import sympy as sm
 import numpy as np
 from numpy import testing
 
 # local libraries
-from ..code import generate_ode_function, CythonGenerator
+from ..code import generate_ode_function
 from ...models import multi_mass_spring_damper, n_link_pendulum_on_cart
 
-
-class TestCythonGenerator():
-
-    prefix = 'desired_mass_forcing'
-
-    def test_write_cython_code(self):
-
-        sys = multi_mass_spring_damper(1, True, True)
-        args = list(sys._args_for_gen_ode_func())
-        # Depending on the SymPy version, the list of constants may be
-        # ordered differently. This makes it hard to test against the
-        # pregenerated files. So order the list symbols.
-        args[2] = list(sm.ordered(args[2]))
-        kwargs = sys._kwargs_for_gen_ode_func()
-
-        generator = CythonGenerator(self.prefix, *args, **kwargs)
-        generator._write_cython_code()
-
-        file_dir = os.path.split(__file__)[0]
-
-        expected_files = ['desired_mass_forcing_c.c',
-                          'desired_mass_forcing_c.h',
-                          'desired_mass_forcing.pyx',
-                          'desired_mass_forcing_setup.py']
-
-        endings = ['_c.c', '_c.h', '.pyx', '_setup.py']
-
-        for ending, expected_file in zip(endings, expected_files):
-            created = self.prefix + ending
-            expected = os.path.join(file_dir, 'expected_cython',
-                                    expected_file)
-            assert filecmp.cmp(created, expected)
-
-    def teardown(self):
-
-        # clean up the cython crud
-        files = glob.glob(self.prefix + '*')
-        for f in files:
-            os.remove(f)
+# TODO : Remove these tests before PyDy 0.4.0. They are just here to make
+# sure old stuff still runs.
 
 
 class TestCodeRHSArgs():
@@ -177,11 +134,3 @@ class TestCode():
             dx = rhs(states, 0.0, rhs_args)
 
             testing.assert_allclose(dx, expected_dx)
-
-    def teardown(self):
-
-        # clean up the cython crud
-        files = glob.glob('multibody_system*')
-        for f in files:
-            os.remove(f)
-        shutil.rmtree('build')
