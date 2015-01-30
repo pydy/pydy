@@ -7,19 +7,24 @@ import warnings
 
 from .ode_function_generator import generate_ode_function as new_gen_ode_func
 
-warnings.warn("This module, 'pydy.codgen.code', is deprecated. The function "
-              "'generate_ode_function' can be found in the "
-              "'pydy.codegen.ode_function_generator' module. "
-              "'CythonGenerator' has been removed, use "
-              "'pydy.codegen.cython_code.CythonMatrixGenerator' instead.",
-              DeprecationWarning)
+with warnings.catch_warnings():
+    warnings.simplefilter('once')
+    warnings.warn("This module, 'pydy.codgen.code', is deprecated. The "
+                  "function 'generate_ode_function' can be found in the "
+                  "'pydy.codegen.ode_function_generator' module. "
+                  "'CythonGenerator' has been removed, use "
+                  "'pydy.codegen.cython_code.CythonMatrixGenerator' "
+                  "instead.",
+                  DeprecationWarning)
 
 
 class CythonGenerator(object):
     def __init__(self, *args, **kwargs):
-        warnings.warn("'CythonGenerator' has been removed, use "
-                      "'pydy.codegen.cython_code.CythonMatrixGenerator' "
-                      "instead.", DeprecationWarning)
+        with warnings.catch_warnings():
+            warnings.simplefilter('once')
+            warnings.warn("'CythonGenerator' has been removed, use "
+                          "'pydy.codegen.cython_code.CythonMatrixGenerator' "
+                          "instead.", DeprecationWarning)
 
 
 def generate_ode_function(mass_matrix, forcing_vector, constants,
@@ -55,9 +60,12 @@ def generate_ode_function(mass_matrix, forcing_vector, constants,
         A function which evaluates the derivaties of the states.
 
     """
-    warnings.warn("This function is deprecated and will be removed in PyDy "
-                  "0.4.0. Use the the new 'generate_ode_function' in "
-                  "'pydy.codegen.ode_function_generator'", DeprecationWarning)
+    with warnings.catch_warnings():
+        warnings.simplefilter('once')
+        warnings.warn("This function is deprecated and will be removed in "
+                      "PyDy 0.4.0. Use the the new 'generate_ode_function' "
+                      "in 'pydy.codegen.ode_function_generator'",
+                      DeprecationWarning)
 
     return new_gen_ode_func(forcing_vector, coordinates, speeds, constants,
                             mass_matrix=mass_matrix, specifieds=specified,
