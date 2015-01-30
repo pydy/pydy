@@ -114,12 +114,23 @@ class TestODEFunctionGeneratorSubclasses(object):
     def setup(self):
 
         self.sys = models.multi_mass_spring_damper()
+        # Best keep these in order, otherwise it may change between SymPy
+        # versions.
+        self.constants = list(sm.ordered(self.sys.constants_symbols))
 
     def eval_rhs(self, rhs):
 
-        xdot = rhs(np.array([1.0, 2.0]), 0.0, np.array([1.0, 2.0, 3.0]))
+        # In order:
+        c0 = 1.0
+        k0 = 2.0
+        m0 = 3.0
 
-        expected_xdot = np.array([2.0, (-2.0 * 2.0 - 3.0 * 1.0) / 1.0])
+        x0 = 1.0
+        v0 = 2.0
+
+        xdot = rhs(np.array([x0, v0]), 0.0, np.array([c0, k0, m0]))
+
+        expected_xdot = np.array([v0, (-c0 * v0 - k0 * x0) / m0])
 
         np.testing.assert_allclose(xdot, expected_xdot)
 
@@ -132,7 +143,7 @@ class TestODEFunctionGeneratorSubclasses(object):
             g = Subclass(rhs,
                          self.sys.coordinates,
                          self.sys.speeds,
-                         self.sys.constants_symbols)
+                         self.constants)
 
             rhs_func = g.generate()
 
@@ -145,7 +156,7 @@ class TestODEFunctionGeneratorSubclasses(object):
             g = Subclass(self.sys.eom_method.forcing_full,
                          self.sys.coordinates,
                          self.sys.speeds,
-                         self.sys.constants_symbols,
+                         self.constants,
                          mass_matrix=self.sys.eom_method.mass_matrix_full)
 
             rhs_func = g.generate()
@@ -163,7 +174,7 @@ class TestODEFunctionGeneratorSubclasses(object):
             g = Subclass(self.sys.eom_method.forcing,
                          self.sys.coordinates,
                          self.sys.speeds,
-                         self.sys.constants_symbols,
+                         self.constants,
                          mass_matrix=self.sys.eom_method.mass_matrix,
                          coordinate_derivatives=coord_derivs)
 
@@ -217,7 +228,13 @@ class TestODEFunctionGeneratorSubclasses(object):
                     for val, sym in zip(arr, syms):
                         subs[sym] = val
 
-                expected = sm.matrix2numpy(rhs.subs(subs), dtype=float).squeeze()
+                try:
+                    expected = sm.matrix2numpy(rhs.subs(subs),
+                                               dtype=float).squeeze()
+                except TypeError:
+                    # Earlier SymPy versions don't support the dtype kwarg.
+                    expected = np.asarray(sm.matrix2numpy(rhs.subs(subs)),
+                                          dtype=float).squeeze()
 
                 xdot = f(x, 0.0, r, p)
 
@@ -229,48 +246,46 @@ class TestODEFunctionGeneratorSubclasses(object):
         sys = models.n_link_pendulum_on_cart(3, True, True)
         right_hand_side = sys.eom_method.rhs()
 
-        for Subclass in self.ode_function_subclasses:
+        # It is only necessary to check one Generator because all of the
+        # arg handling is shared among them.
+        g = LambdifyODEFunctionGenerator(right_hand_side, sys.coordinates,
+                                         sys.speeds, sys.constants_symbols,
+                                         specifieds=sys.specifieds_symbols)
 
-            g = Subclass(right_hand_side,
-                         sys.coordinates, sys.speeds,
-                         sys.constants_symbols,
-                         specifieds=sys.specifieds_symbols)
+        rhs = g.generate()
 
-            rhs = g.generate()
+        x = np.random.random(g.num_states)
+        p = np.random.random(g.num_constants)
 
-            x = np.random.random(g.num_states)
-            p = np.random.random(g.num_constants)
+        r = dict(zip(g.specifieds, [1.0, 2.0, 3.0, 4.0]))
 
-            r = dict(zip(g.specifieds, [1.0, 2.0, 3.0, 4.0]))
+        xd_01 = rhs(x, 0.0, r, p)
 
-            xd_01 = rhs(x, 0.0, r, p)
+        r = {tuple(g.specifieds):
+             lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])}
+        xd_02 = rhs(x, 0.0, r, p)
+        np.testing.assert_allclose(xd_01, xd_02)
 
-            r = {tuple(g.specifieds):
-                 lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])}
-            xd_02 = rhs(x, 0.0, r, p)
-            np.testing.assert_allclose(xd_01, xd_02)
+        r = {g.specifieds[0]: lambda x, t: np.ones(1),
+             (g.specifieds[3], g.specifieds[1]):
+             lambda x, t: np.array([4.0, 2.0]),
+             g.specifieds[2]: 3.0 * np.ones(1)}
+        xd_03 = rhs(x, 0.0, r, p)
+        np.testing.assert_allclose(xd_01, xd_03)
 
-            r = {g.specifieds[0]: lambda x, t: np.ones(1),
-                 (g.specifieds[3], g.specifieds[1]):
-                 lambda x, t: np.array([4.0, 2.0]),
-                 g.specifieds[2]: 3.0 * np.ones(1)}
-            xd_03 = rhs(x, 0.0, r, p)
-            np.testing.assert_allclose(xd_01, xd_03)
+        # Check that rhs can accept dicts of constants.
+        p = {sym: val for sym, val in zip(g.constants, p)}
 
-            # Check that rhs can accept dicts of constants.
-            p = {sym: val for sym, val in zip(g.constants, p)}
+        r = np.array([1.0, 2.0, 3.0, 4.0])
+        xd_04 = rhs(x, 0.0, r, p)
+        np.testing.assert_allclose(xd_01, xd_04)
 
-            r = np.array([1.0, 2.0, 3.0, 4.0])
-            xd_04 = rhs(x, 0.0, r, p)
-            np.testing.assert_allclose(xd_01, xd_04)
+        r = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
+        xd_05 = rhs(x, 0.0, r, p)
+        np.testing.assert_allclose(xd_01, xd_05)
 
-            r = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
-            xd_05 = rhs(x, 0.0, r, p)
-            np.testing.assert_allclose(xd_01, xd_05)
+        # Check to see if old style extra args works.
+        args = {'specified': r, 'constants': p}
 
-            # Check to see if old style extra args works.
-            args = {'specified' : r,
-                    'constants' : p}
-
-            xd_06 = rhs(x, 0.0, args)
-            np.testing.assert_allclose(xd_01, xd_06)
+        xd_06 = rhs(x, 0.0, args)
+        np.testing.assert_allclose(xd_01, xd_06)

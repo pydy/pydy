@@ -160,7 +160,7 @@ setup(name="boogly_bee",
 
     def test_compile(self):
 
-        f = self.generator.compile()
+        f = self.generator.compile(tmp_dir='booger')
 
         subs = {}
 
@@ -175,15 +175,16 @@ setup(name="boogly_bee",
             nr, nc = matrix.shape
             args.append(np.empty(nr * nc, dtype=float))
 
-        output_0, output_1 = f(*args)
+        for output, expected in zip(f(*args), self.matrices):
+            try:
+                expected = sm.matrix2numpy(expected.subs(subs),
+                                           dtype=float).squeeze()
+            except TypeError:
+                # dtype kwarg in not supported in earlier SymPy versions
+                expected = np.asarray(sm.matrix2numpy(expected.subs(subs)),
+                                      dtype=float).squeeze()
 
-        np.testing.assert_allclose(
-            output_0, sm.matrix2numpy(self.matrices[0].subs(subs),
-                                      dtype=float))
-
-        np.testing.assert_allclose(
-            output_1, np.squeeze(sm.matrix2numpy(self.matrices[1].subs(subs),
-                                 dtype=float)))
+            np.testing.assert_allclose(output, expected)
 
     def teardown(self):
 

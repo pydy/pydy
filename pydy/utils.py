@@ -6,7 +6,7 @@ from pkg_resources import parse_version
 import sympy as sm
 from sympy.core.function import AppliedUndef
 from sympy.utilities.iterables import iterable
-from sympy.physics.vector import dynamicsymbols
+from sympy.physics.mechanics import dynamicsymbols
 
 SYMPY_VERSION = sm.__version__
 

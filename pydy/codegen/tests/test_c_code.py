@@ -20,7 +20,9 @@ class TestCMatrixGenerator():
         self.matrices = (sys.eom_method.mass_matrix,
                          sys.eom_method.forcing)
 
-        self.arguments = (sys.constants_symbols,
+        # NOTE : ordered is used here because this order is different in
+        # different versions of SymPy.
+        self.arguments = (list(sm.ordered(sys.constants_symbols)),
                           sys.coordinates,
                           sys.speeds,
                           sys.specifieds_symbols)
@@ -41,8 +43,8 @@ class TestCMatrixGenerator():
 
         pd = sm.symbols('pydy_:13')
 
-        (c1, c2, k5, m1, k0, c3, c5, k1, c4, m4, k2, k3, m5, m2, m3, k4, c0,
-         g, m0) = self.arguments[0]
+        (c0, c1, c2, c3, c4, c5, g, k0, k1, k2, k3, k4, k5, m0, m1, m2, m3,
+         m4, m5) = self.arguments[0]
         x0, x1, x2, x3, x4, x5 = self.arguments[1]
         v0, v1, v2, v3, v4, v5 = self.arguments[2]
         f5, f2, f3, f0, f4, f1 = self.arguments[3]
@@ -97,8 +99,8 @@ class TestCMatrixGenerator():
 
     def test_generate_comma_lists(self):
 
-        expected = (('c1, c2, k5, m1, k0, c3, c5, k1, c4, m4, k2, k3, m5, '
-                     'm2, m3, k4, c0, g, m0'),
+        expected = (('c0, c1, c2, c3, c4, c5, g, k0, k1, k2, k3, k4, k5, '
+                     'm0, m1, m2, m3, m4, m5'),
                     'x0(t), x1(t), x2(t), x3(t), x4(t), x5(t)',
                     'v0(t), v1(t), v2(t), v3(t), v4(t), v5(t)',
                     'f5(t), f2(t), f3(t), f0(t), f4(t), f1(t)')
@@ -125,8 +127,8 @@ class TestCMatrixGenerator():
 
         expected['input_docstring'] = \
 """\
-input_0[19] : [c1, c2, k5, m1, k0, c3, c5, k1, c4, m4, k2, k3, m5, m2, m3, k4,
-c0, g, m0]
+input_0[19] : [c0, c1, c2, c3, c4, c5, g, k0, k1, k2, k3, k4, k5, m0, m1, m2,
+m3, m4, m5]
 input_1[6] : [x0(t), x1(t), x2(t), x3(t), x4(t), x5(t)]
 input_2[6] : [v0(t), v1(t), v2(t), v3(t), v4(t), v5(t)]
 input_3[6] : [f5(t), f2(t), f3(t), f0(t), f4(t), f1(t)]\
@@ -134,71 +136,72 @@ input_3[6] : [f5(t), f2(t), f3(t), f0(t), f4(t), f1(t)]\
 
         expected['subexprs'] = \
 """\
-    double pydy_0 = input_0[9] + input_0[12];
-    double pydy_1 = input_0[14] + pydy_0;
-    double pydy_2 = input_0[13] + pydy_1;
-    double pydy_3 = input_0[3] + pydy_2;
+    double pydy_0 = input_0[17] + input_0[18];
+    double pydy_1 = input_0[16] + pydy_0;
+    double pydy_2 = input_0[15] + pydy_1;
+    double pydy_3 = input_0[14] + pydy_2;
     double pydy_4 = input_3[1];
     double pydy_5 = input_3[2];
     double pydy_6 = input_3[4];
     double pydy_7 = input_3[0];
-    double pydy_8 = input_0[17]*input_0[13];
-    double pydy_9 = input_0[17]*input_0[14];
-    double pydy_10 = input_0[17]*input_0[9];
-    double pydy_11 = input_0[17]*input_0[12];
-    double pydy_12 = input_0[17]*input_0[3] + pydy_10 + pydy_11 + pydy_4 +
+    double pydy_8 = input_0[6]*input_0[15];
+    double pydy_9 = input_0[6]*input_0[16];
+    double pydy_10 = input_0[6]*input_0[17];
+    double pydy_11 = input_0[6]*input_0[18];
+    double pydy_12 = input_0[6]*input_0[14] + pydy_10 + pydy_11 + pydy_4 +
     pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9 + input_3[5];\
 """
 
+
         expected['outputs'] = \
 """\
-    output_0[0] = input_0[18] + pydy_3;
+    output_0[0] = input_0[13] + pydy_3;
     output_0[1] = pydy_3;
     output_0[2] = pydy_2;
     output_0[3] = pydy_1;
     output_0[4] = pydy_0;
-    output_0[5] = input_0[12];
+    output_0[5] = input_0[18];
     output_0[6] = pydy_3;
     output_0[7] = pydy_3;
     output_0[8] = pydy_2;
     output_0[9] = pydy_1;
     output_0[10] = pydy_0;
-    output_0[11] = input_0[12];
+    output_0[11] = input_0[18];
     output_0[12] = pydy_2;
     output_0[13] = pydy_2;
     output_0[14] = pydy_2;
     output_0[15] = pydy_1;
     output_0[16] = pydy_0;
-    output_0[17] = input_0[12];
+    output_0[17] = input_0[18];
     output_0[18] = pydy_1;
     output_0[19] = pydy_1;
     output_0[20] = pydy_1;
     output_0[21] = pydy_1;
     output_0[22] = pydy_0;
-    output_0[23] = input_0[12];
+    output_0[23] = input_0[18];
     output_0[24] = pydy_0;
     output_0[25] = pydy_0;
     output_0[26] = pydy_0;
     output_0[27] = pydy_0;
     output_0[28] = pydy_0;
-    output_0[29] = input_0[12];
-    output_0[30] = input_0[12];
-    output_0[31] = input_0[12];
-    output_0[32] = input_0[12];
-    output_0[33] = input_0[12];
-    output_0[34] = input_0[12];
-    output_0[35] = input_0[12];
+    output_0[29] = input_0[18];
+    output_0[30] = input_0[18];
+    output_0[31] = input_0[18];
+    output_0[32] = input_0[18];
+    output_0[33] = input_0[18];
+    output_0[34] = input_0[18];
+    output_0[35] = input_0[18];
 
-    output_1[0] = -input_0[16]*input_2[0] + input_0[17]*input_0[18] -
-    input_0[4]*input_1[0] + pydy_12 + input_3[3];
-    output_1[1] = -input_0[0]*input_2[1] - input_0[7]*input_1[1] + pydy_12;
-    output_1[2] = -input_0[1]*input_2[2] - input_0[10]*input_1[2] + pydy_10 +
+    output_1[0] = -input_0[0]*input_2[0] + input_0[6]*input_0[13] -
+    input_0[7]*input_1[0] + pydy_12 + input_3[3];
+    output_1[1] = -input_0[1]*input_2[1] - input_0[8]*input_1[1] + pydy_12;
+    output_1[2] = -input_0[2]*input_2[2] - input_0[9]*input_1[2] + pydy_10 +
     pydy_11 + pydy_4 + pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9;
-    output_1[3] = -input_0[5]*input_2[3] - input_0[11]*input_1[3] + pydy_10 +
+    output_1[3] = -input_0[3]*input_2[3] - input_0[10]*input_1[3] + pydy_10 +
     pydy_11 + pydy_5 + pydy_6 + pydy_7 + pydy_9;
-    output_1[4] = -input_0[8]*input_2[4] - input_0[15]*input_1[4] + pydy_10 +
+    output_1[4] = -input_0[4]*input_2[4] - input_0[11]*input_1[4] + pydy_10 +
     pydy_11 + pydy_6 + pydy_7;
-    output_1[5] = -input_0[6]*input_2[5] - input_0[2]*input_1[5] + pydy_11 +
+    output_1[5] = -input_0[5]*input_2[5] - input_0[12]*input_1[5] + pydy_11 +
     pydy_7;\
 """
 
@@ -221,8 +224,8 @@ void evaluate(
              );
 /*
 
-input_0[19] : [c1, c2, k5, m1, k0, c3, c5, k1, c4, m4, k2, k3, m5, m2, m3, k4,
-c0, g, m0]
+input_0[19] : [c0, c1, c2, c3, c4, c5, g, k0, k1, k2, k3, k4, k5, m0, m1, m2,
+m3, m4, m5]
 input_1[6] : [x0(t), x1(t), x2(t), x3(t), x4(t), x5(t)]
 input_2[6] : [v0(t), v1(t), v2(t), v3(t), v4(t), v5(t)]
 input_3[6] : [f5(t), f2(t), f3(t), f0(t), f4(t), f1(t)]
@@ -244,68 +247,68 @@ void evaluate(
              )
 {
 
-    double pydy_0 = input_0[9] + input_0[12];
-    double pydy_1 = input_0[14] + pydy_0;
-    double pydy_2 = input_0[13] + pydy_1;
-    double pydy_3 = input_0[3] + pydy_2;
+    double pydy_0 = input_0[17] + input_0[18];
+    double pydy_1 = input_0[16] + pydy_0;
+    double pydy_2 = input_0[15] + pydy_1;
+    double pydy_3 = input_0[14] + pydy_2;
     double pydy_4 = input_3[1];
     double pydy_5 = input_3[2];
     double pydy_6 = input_3[4];
     double pydy_7 = input_3[0];
-    double pydy_8 = input_0[17]*input_0[13];
-    double pydy_9 = input_0[17]*input_0[14];
-    double pydy_10 = input_0[17]*input_0[9];
-    double pydy_11 = input_0[17]*input_0[12];
-    double pydy_12 = input_0[17]*input_0[3] + pydy_10 + pydy_11 + pydy_4 +
+    double pydy_8 = input_0[6]*input_0[15];
+    double pydy_9 = input_0[6]*input_0[16];
+    double pydy_10 = input_0[6]*input_0[17];
+    double pydy_11 = input_0[6]*input_0[18];
+    double pydy_12 = input_0[6]*input_0[14] + pydy_10 + pydy_11 + pydy_4 +
     pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9 + input_3[5];
 
-    output_0[0] = input_0[18] + pydy_3;
+    output_0[0] = input_0[13] + pydy_3;
     output_0[1] = pydy_3;
     output_0[2] = pydy_2;
     output_0[3] = pydy_1;
     output_0[4] = pydy_0;
-    output_0[5] = input_0[12];
+    output_0[5] = input_0[18];
     output_0[6] = pydy_3;
     output_0[7] = pydy_3;
     output_0[8] = pydy_2;
     output_0[9] = pydy_1;
     output_0[10] = pydy_0;
-    output_0[11] = input_0[12];
+    output_0[11] = input_0[18];
     output_0[12] = pydy_2;
     output_0[13] = pydy_2;
     output_0[14] = pydy_2;
     output_0[15] = pydy_1;
     output_0[16] = pydy_0;
-    output_0[17] = input_0[12];
+    output_0[17] = input_0[18];
     output_0[18] = pydy_1;
     output_0[19] = pydy_1;
     output_0[20] = pydy_1;
     output_0[21] = pydy_1;
     output_0[22] = pydy_0;
-    output_0[23] = input_0[12];
+    output_0[23] = input_0[18];
     output_0[24] = pydy_0;
     output_0[25] = pydy_0;
     output_0[26] = pydy_0;
     output_0[27] = pydy_0;
     output_0[28] = pydy_0;
-    output_0[29] = input_0[12];
-    output_0[30] = input_0[12];
-    output_0[31] = input_0[12];
-    output_0[32] = input_0[12];
-    output_0[33] = input_0[12];
-    output_0[34] = input_0[12];
-    output_0[35] = input_0[12];
+    output_0[29] = input_0[18];
+    output_0[30] = input_0[18];
+    output_0[31] = input_0[18];
+    output_0[32] = input_0[18];
+    output_0[33] = input_0[18];
+    output_0[34] = input_0[18];
+    output_0[35] = input_0[18];
 
-    output_1[0] = -input_0[16]*input_2[0] + input_0[17]*input_0[18] -
-    input_0[4]*input_1[0] + pydy_12 + input_3[3];
-    output_1[1] = -input_0[0]*input_2[1] - input_0[7]*input_1[1] + pydy_12;
-    output_1[2] = -input_0[1]*input_2[2] - input_0[10]*input_1[2] + pydy_10 +
+    output_1[0] = -input_0[0]*input_2[0] + input_0[6]*input_0[13] -
+    input_0[7]*input_1[0] + pydy_12 + input_3[3];
+    output_1[1] = -input_0[1]*input_2[1] - input_0[8]*input_1[1] + pydy_12;
+    output_1[2] = -input_0[2]*input_2[2] - input_0[9]*input_1[2] + pydy_10 +
     pydy_11 + pydy_4 + pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9;
-    output_1[3] = -input_0[5]*input_2[3] - input_0[11]*input_1[3] + pydy_10 +
+    output_1[3] = -input_0[3]*input_2[3] - input_0[10]*input_1[3] + pydy_10 +
     pydy_11 + pydy_5 + pydy_6 + pydy_7 + pydy_9;
-    output_1[4] = -input_0[8]*input_2[4] - input_0[15]*input_1[4] + pydy_10 +
+    output_1[4] = -input_0[4]*input_2[4] - input_0[11]*input_1[4] + pydy_10 +
     pydy_11 + pydy_6 + pydy_7;
-    output_1[5] = -input_0[6]*input_2[5] - input_0[2]*input_1[5] + pydy_11 +
+    output_1[5] = -input_0[5]*input_2[5] - input_0[12]*input_1[5] + pydy_11 +
     pydy_7;
 
 }\

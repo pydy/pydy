@@ -493,7 +493,12 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
             for i, sym in enumerate(syms):
                 subs[sym] = v[i]
             vec_inputs.append(v)
-        outputs = [me.msubs(output, subs) for output in outputs]
+
+        try:
+            outputs = [me.msubs(output, subs) for output in outputs]
+        except AttributeError:
+            # msubs doesn't exist in SymPy < 0.7.6.
+            outputs = [output.subs(subs) for output in outputs]
 
         modules = [{'ImmutableMatrix': np.array}, 'numpy']
 
