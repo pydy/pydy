@@ -33,11 +33,7 @@ x : ndarray, shape({num_states},)
     The state vector is ordered as such:
 {state_list}
 t : float
-    The current time.{specified_explanation}
-p : dictionary len({num_constants}) or ndarray shape({num_constants},)
-    The dictionary maps the constant symbols to floats. The constants are,
-    in order:
-{constant_list}
+    The current time.{specifieds_explanation}{constants_explanation}
 
 Returns
 =======
@@ -46,11 +42,39 @@ dx : ndarray, shape({num_states},)
 
 """
 
-    _specifieds_doc_template = \
+    _constants_doc_templates = {}
+
+    _constants_doc_templates[None] = \
+"""
+p : dictionary len({num_constants}) or ndarray shape({num_constants},)
+    Either a dictionary that maps the constants symbols to their numerical
+    values or an array with the constants in the following order:
+{constant_list}\
+"""
+
+    _constants_doc_templates['array'] = \
+"""
+p : ndarray shape({num_constants},)
+    A ndarray of floats that give the numerical values of the constants in
+    this order:
+    {constant_list}\
+"""
+
+    _constants_doc_templates['dictionary'] = \
+"""
+p : dictionary len({num_constants})
+    A dictionary that maps the constants symbols to their numerical values
+    with at least these keys:
+{constant_list}\
+"""
+
+    _specifieds_doc_templates = {}
+
+    _specifieds_doc_templates[None] = \
 """
 r : dictionary; ndarray, shape({num_specified},); function
 
-    There are three options for this dictionary. (1) is more flexible but
+    There are three options for this argument. (1) is more flexible but
     (2) and (3) are much more efficient.
 
     (1) A dictionary that maps the specified functions of time to floats,
@@ -72,6 +96,49 @@ r : dictionary; ndarray, shape({num_specified},); function
     (3) A function that must be of the form g(x, t), where x is the current
     state vector and t is the current time and it must return an ndarray of
     the correct shape.
+
+    The specified inputs are, in order:
+{specified_list}\
+"""
+
+    _specifieds_doc_templates['array'] = \
+"""
+r : ndarray, shape({num_specified},)
+
+    A ndarray with the specified values in the correct order and of the
+    correct shape.
+
+    The specified inputs are, in order:
+{specified_list}\
+"""
+
+    _specifieds_doc_templates['function'] = \
+"""
+r : function
+
+    A function that must be of the form g(x, t), where x is the current
+    state vector and t is the current time and it must return an ndarray of
+    shape({num_specified},).
+
+    The specified inputs are, in order:
+{specified_list}\
+"""
+
+    _specifieds_doc_templates['dictionary'] = \
+"""
+r : dictionary
+    A dictionary that maps the specified functions of time to floats,
+    ndarrays, or functions that produce ndarrays. The keys can be a single
+    specified symbolic function of time or a tuple of symbols. The total
+    number of symbols must be equal to {num_specified}. If the value is a
+    function it must be of the form g(x, t), where x is the current state
+    vector ndarray and t is the current time float and it must return an
+    ndarray of the correct shape. For example::
+
+      r = {{a: 1.0,
+           (d, b) : np.array([1.0, 2.0]),
+           (e, f) : lambda x, t: np.array(x[0], x[1]),
+           c: lambda x, t: np.array(x[2])}}
 
     The specified inputs are, in order:
 {specified_list}\
@@ -351,18 +418,22 @@ r : dictionary; ndarray, shape({num_specified},); function
         template_values = {'num_states': self.num_states,
                            'state_list': self.list_syms(8, self.coordinates
                                                         + self.speeds),
-                           'num_constants': self.num_constants,
-                           'constant_list': self.list_syms(8, self.constants),
                            'specified_call_sig': '',
-                           'specified_explanation': ''}
+                           'constants_explanation':
+                               self._constants_doc_templates[
+                                   self.constants_arg_type].format(**{
+                                       'num_constants': self.num_constants,
+                                       'constant_list': self.list_syms(
+                                           8, self.constants)}),
+                           'specifieds_explanation': ''}
 
         if self.specifieds is not None:
             template_values['specified_call_sig'] = ' r,'
             specified_template_values = {
                 'num_specified': self.num_specifieds,
                 'specified_list': self.list_syms(8, self.specifieds)}
-            template_values['specified_explanation'] = \
-                self._specifieds_doc_template.format(
+            template_values['specifieds_explanation'] = \
+                self._specifieds_doc_templates[self.constants_arg_type].format(
                     **specified_template_values)
 
         return self._rhs_doc_template.format(**template_values)
@@ -555,20 +626,13 @@ r : dictionary; ndarray, shape({num_specified},); function
 
                 return self._base_rhs(q, u, r, p)
 
-        # TODO : This should generate the appropriate docstring based on the
-        # above if statements.
         rhs.__doc__ = self._generate_rhs_docstring()
 
         return rhs
 
-    def _define_inputs(self):
-
-        self.inputs = [self.coordinates, self.speeds, self.constants]
-
-        if self.specifieds is not None:
-            self.inputs.insert(2, self.specifieds)
-
     def _create_base_rhs_function(self):
+        """Sets the self._base_rhs function. This functin accepts arguments
+        in this form: (q, u, p) or (q, u, r, p)."""
 
         if self.system_type == 'full rhs':
 
@@ -599,6 +663,13 @@ r : dictionary; ndarray, shape({num_specified},); function
 
             self._base_rhs = base_rhs
 
+    def _define_inputs(self):
+
+        self.inputs = [self.coordinates, self.speeds, self.constants]
+
+        if self.specifieds is not None:
+            self.inputs.insert(2, self.specifieds)
+
     def generate(self):
         """Returns a function that evaluates the right hand side of the
         first order ordinary differential equations in one of two forms:
@@ -628,7 +699,7 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
     def __init__(self, *args, **kwargs):
 
         if Cython is None:
-            raise Exception('Cython must be installed to use this class.')
+            raise ImportError('Cython must be installed to use this class.')
         else:
             super(CythonODEFunctionGenerator, self).__init__(*args, **kwargs)
 
@@ -754,7 +825,7 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
     def __init__(self, *args, **kwargs):
 
         if theano is None:
-            raise Exception('Theano must be installed to use this class.')
+            raise ImportError('Theano must be installed to use this class.')
         else:
             super(TheanoODEFunctionGenerator, self).__init__(*args, **kwargs)
 
@@ -820,11 +891,7 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
         self.eval_arrays = eval_arrays
 
 
-def generate_ode_function(right_hand_side, coordinates, speeds, constants,
-                          mass_matrix=None, coordinate_derivatives=None,
-                          specifieds=None, linear_sys_solver='numpy',
-                          constants_arg_type=None,
-                          specifieds_arg_type=None,generator='lambdify'):
+def generate_ode_function(*args, **kwargs):
     """Returns a numerical function which can evaluate the right hand side
     of the first order ordinary differential equations from a system
     described by one of the following three forms:
@@ -928,25 +995,15 @@ def generate_ode_function(right_hand_side, coordinates, speeds, constants,
                   'cython': CythonODEFunctionGenerator,
                   'theano': TheanoODEFunctionGenerator}
 
+    generator = kwargs.pop('generator', 'lambdify')
+
     try:
         # See if user passed in a custom class.
-        g = generator(right_hand_side, coordinates, speeds, constants,
-                      mass_matrix=mass_matrix,
-                      coordinate_derivatives=coordinate_derivatives,
-                      specifieds=specifieds,
-                      linear_sys_solver=linear_sys_solver,
-                      constants_arg_type=constants_arg_type,
-                      specifieds_arg_type=specifieds_arg_type)
+        g = generator(*args, **kwargs)
     except TypeError:
         # See if user passed in a string.
         try:
-            g = generators[generator](right_hand_side, coordinates, speeds,
-                                      constants, mass_matrix=mass_matrix,
-                                      coordinate_derivatives=coordinate_derivatives,
-                                      specifieds=specifieds,
-                                      linear_sys_solver=linear_sys_solver,
-                                      constants_arg_type=constants_arg_type,
-                                      specifieds_arg_type=specifieds_arg_type)
+            g = generators[generator](*args, **kwargs)
         except KeyError:
             msg = '{} is not a valid generator.'.format(generator)
             raise NotImplementedError(msg)
