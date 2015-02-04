@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 
-import warnings
-
 import numpy as np
 import numpy.linalg
 import scipy.linalg
 import sympy as sm
 import sympy.physics.mechanics as me
 from sympy.core.function import UndefinedFunction
-
 Cython = sm.external.import_module('Cython')
 theano = sm.external.import_module('theano')
 if theano:
@@ -17,167 +14,11 @@ if theano:
 from .cython_code import CythonMatrixGenerator
 
 
-class MixinBase(object):
-
-    def _parse_constants(self, *args):
-
-        p = args[-1]
-        try:
-            p = np.array([p[c] for c in self.constants])
-            return args[:-1] + (p,)
-        except IndexError:
-            return args
-
-    def _parse_old_style_extra_args(self, *args):
-
-        # DEPRECATED : Remove before 0.4.0 release.
-        try:
-            # old style always has three args: x, t, args and the last one
-            # is a dictionary which at least contains the key 'constants'.
-            # So if the last arg is so, then extract.
-            args[-1]['constants']
-        # ValueError is needed for older NumPy versions.
-        except (KeyError, IndexError, ValueError):
-            return args
-        else:
-            new_args = list(args[:-1])  # gets x and t
-
-            if self.specifieds is not None:
-                new_args.append(args[-1]['specified'])
-
-            new_args.append(args[-1]['constants'])
-
-            return tuple(new_args)
-
-    def _parse_specifieds(self, x, t, r, p):
-
-        if isinstance(r, dict):
-            # TODO : This should be instatiated outside of the RHS function.
-            specified_values = np.zeros(self.num_specifieds)
-
-            for k, v in r.items():
-                # TODO : Not sure if this is the best check here.
-                if isinstance(type(k), UndefinedFunction):
-                    k = (k,)
-                idx = [self.specifieds.index(symmy) for symmy in k]
-                try:
-                    specified_values[idx] = v(x, t)
-                except TypeError:  # not callable
-                    # If not callable, then it should be a float, ndarray,
-                    # or indexable.
-                    specified_values[idx] = v
-        else:
-            # More efficient.
-            try:
-                specified_values = r(x, t)
-            except TypeError:  # not callable.
-                # If not callable, then it should be a float or ndarray.
-                specified_values = r
-            # If the value is just a float, then convert to a 1D array.
-            try:
-                len(specified_values)
-            except TypeError:
-                specified_values = np.asarray([specified_values])
-
-        return x, t, specified_values, p
-
-
-class FullRHSMixin(MixinBase):
-
-    def create_rhs_function(self):
-        """Returns a function in the form expected by scipy.integrate.odeint
-        that computes the derivatives of the states."""
-
-        def rhs(*args):
-            # args: x, t, p
-            # args: x, t, r, p
-
-            args = self._parse_old_style_extra_args(*args)
-
-            args = self._parse_constants(*args)
-
-            if self.specifieds is not None:
-                args = self._parse_specifieds(*args)
-
-            q = args[0][:self.num_coordinates]
-            u = args[0][self.num_coordinates:]
-
-            xdot = self.eval_arrays(q, u, *args[2:])
-
-            return xdot
-
-        rhs.__doc__ = self._generate_rhs_docstring()
-
-        return rhs
-
-
-class FullMassMatrixMixin(MixinBase):
-
-    def create_rhs_function(self):
-
-        def rhs(*args):
-            # args: x, t, p
-            # args: x, t, r, p
-
-            args = self._parse_old_style_extra_args(*args)
-
-            args = self._parse_constants(*args)
-
-            if self.specifieds is not None:
-                args = self._parse_specifieds(*args)
-
-            q = args[0][:self.num_coordinates]
-            u = args[0][self.num_coordinates:]
-
-            M, F = self.eval_arrays(q, u, *args[2:])
-
-            xdot = self.solve_linear_system(M, F)
-
-            return xdot
-
-        rhs.__doc__ = self._generate_rhs_docstring()
-
-        return rhs
-
-
-class MinMassMatrixMixin(MixinBase):
-
-    def create_rhs_function(self):
-
-        xdot = np.empty(self.num_states, dtype=float)
-
-        def rhs(*args):
-            # args: x, t, p
-            # args: x, t, r, p
-
-            args = self._parse_old_style_extra_args(*args)
-
-            args = self._parse_constants(*args)
-
-            if self.specifieds is not None:
-                args = self._parse_specifieds(*args)
-
-            q = args[0][:self.num_coordinates]
-            u = args[0][self.num_coordinates:]
-
-            M, F, qdot = self.eval_arrays(q, u, *args[2:])
-
-            if self.num_speeds == 1:
-                udot = F / M
-            else:
-                udot = self.solve_linear_system(M, F)
-
-            xdot[:self.num_coordinates] = qdot
-            xdot[self.num_coordinates:] = udot
-
-            return xdot
-
-        rhs.__doc__ = self._generate_rhs_docstring()
-
-        return rhs
-
-
 class ODEFunctionGenerator(object):
+    """This is an abstract base class for all of the generators. A subclass
+    is expected to implement the methods necessary to evaluate the arrays
+    needed to compute xdot for the three different system specification
+    types."""
 
     _rhs_doc_template = \
 """\
@@ -238,6 +79,18 @@ r : dictionary; ndarray, shape({num_specified},); function
 
     @staticmethod
     def _deduce_system_type(**kwargs):
+        """Based on the combination of arguments this returns which ODE
+        description has been provided.
+
+        full rhs
+            x' = f(x, t, r, p)
+        full mass matrix
+            M(x, p) * x' = f(x, t, r, p)
+        min mass matrix
+            M(q, p) * u' = f(q, u, t, r, p)
+            q' = g(q, u, t)
+
+        """
 
         if kwargs.pop('coordinate_derivatives') is not None:
             system_type = 'min mass matrix'
@@ -248,28 +101,10 @@ r : dictionary; ndarray, shape({num_specified},); function
 
         return system_type
 
-    def __new__(cls, right_hand_side, coordinates, speeds, constants,
-                mass_matrix=None, coordinate_derivatives=None,
-                specifieds=None, linear_sys_solver='numpy'):
-        """Returns an instance of the class with the appropriate mixin class
-        based on what type of system was provided."""
-
-        system_type = cls._deduce_system_type(
-            mass_matrix=mass_matrix,
-            coordinate_derivatives=coordinate_derivatives)
-
-        if system_type == 'min mass matrix':
-            bases = (MinMassMatrixMixin, cls)
-        elif system_type == 'full mass matrix':
-            bases = (FullMassMatrixMixin, cls)
-        elif system_type == 'full rhs':
-            bases = (FullRHSMixin, cls)
-
-        return object.__new__(type(cls.__name__, bases, dict(cls.__dict__)))
-
     def __init__(self, right_hand_side, coordinates, speeds, constants,
                  mass_matrix=None, coordinate_derivatives=None,
-                 specifieds=None, linear_sys_solver='numpy'):
+                 specifieds=None, linear_sys_solver='numpy',
+                 constants_arg_type=None, specifieds_arg_type=None):
         """
 
         Parameters
@@ -303,6 +138,37 @@ r : dictionary; ndarray, shape({num_specified},); function
             linear system Ax=b with the call signature x = solve(A, b). If
             you need to use custom kwargs for the scipy solver, pass in a
             lambda function that wraps the solver and sets them.
+        constants_arg_type : string
+            The generated function accepts two different types of arguments
+            for the numerical values of the constants: an ndarray of the
+            constants values in the correct order or a dictionary mapping
+            the constants sysmbols to the numerical values. If None, this is
+            determined inside of the generated function and can cause a
+            significant slow down for performance critical code. If you know
+            apriori what arg types you need to support choose either
+            ``array`` or ``dictionary``. Note that ``array`` is faster than
+            ``dictionary``.
+        specifieds_arg_type : string
+            The generated function accepts three different types of arguments
+            for the numerical values of the specifieds: an ndarray of the
+            specifieds values in the correct order, a function that
+            generates the correct ndarray, a dictionary mapping the
+            specifieds symbols or tuples of thereof to floats, ndarrays, or
+            functions. If None, this is determined inside of the generated
+            function and can cause a significant slow down for performance
+            critical code. If you know apriori what arg types you want to
+            support choose either ``array``, ``function``, or
+            ``dictionary``. The speed of each, from fast to slow, are
+            ``array``, ``function``, ``dictionary``.
+
+        Notes
+        =====
+        The generated function still supports the pre-0.3.0 extra argument
+        style, i.e. args = {'constants': ..., 'specified': ...}, but only if
+        ``constants_arg_type`` and ``specifieds_arg_type`` are both set to
+        None. This functionality is deprecated and will be removed in 0.4.0,
+        so it's best to adjust your code to support the new argument types.
+        See the docstring for the generated function for more info.
 
         """
 
@@ -314,6 +180,8 @@ r : dictionary; ndarray, shape({num_specified},); function
         self.coordinate_derivatives = coordinate_derivatives
         self.specifieds = specifieds
         self.linear_sys_solver = linear_sys_solver
+        self.constants_arg_type = constants_arg_type
+        self.specifieds_arg_type = specifieds_arg_type
 
         self.system_type = self._deduce_system_type(
             mass_matrix=mass_matrix,
@@ -324,10 +192,16 @@ r : dictionary; ndarray, shape({num_specified},); function
         self.num_states = self.num_coordinates + self.num_speeds
         self.num_constants = len(constants)
 
-        if self.specifieds is not None:
-            self.num_specifieds = len(specifieds)
-        else:
+        if self.specifieds is None:
             self.num_specifieds = 0
+            self.specifieds_arg_type = None
+        else:
+            self.num_specifieds = len(specifieds)
+
+        # These are pre-allocated storage for the numerical values used in
+        # some of the rhs() evaluations.
+        self._constants_values = np.empty(self.num_constants)
+        self._specifieds_values = np.empty(self.num_specifieds)
 
         self._check_system_consitency()
         self._set_linear_sys_solver()
@@ -372,6 +246,106 @@ r : dictionary; ndarray, shape({num_specified},); function
         lst = '- ' + ('\n' + indentation + '- ').join([str(s) for s in syms])
         return indentation + lst
 
+    def _parse_old_style_extra_args(self, *args):
+        """Returns the post-0.3.0 style args if the pre-0.3.0 style args are
+        passed in. The pre-0.3.0 style args always have three args: (x, t,
+        d) where d is is a dictionary which should always at least contain
+        the key 'constants'. It may also contain a key 'specified'."""
+
+        # DEPRECATED : Remove before 0.4.0 release.
+
+        last_arg = args[-1]
+        try:
+            constants = last_arg['constants']
+        # ValueError is needed for older NumPy versions.
+        except (KeyError, IndexError, ValueError):
+            return args
+        else:
+            new_args = list(args[:-1])  # gets x and t
+
+            if self.specifieds is not None:
+                new_args.append(last_arg['specified'])
+
+            new_args.append(constants)
+
+            return tuple(new_args)
+
+    def _convert_constants_dict_to_array(self, p):
+        """Returns an array of numerical values from the constants
+        dictionary in the correct order."""
+
+        # NOTE : It's unfortunate that this has to be run at every rhs eval,
+        # because subsequent calls to rhs() doesn't require different
+        # constants. I suppose you can sub out all the constants in the EoMs
+        # before passing them into the generator. That would beg for the
+        # capability to support self.constants=None to skip all of this
+        # stuff in the rhs eval.
+        for i, c in enumerate(self.constants):
+            self._constants_values[i] = p[c]
+
+        return self._constants_values
+
+    def _parse_constants(self, *args):
+        """Returns an ndarray containing the numerical values of the
+        constants in the correct order. If the constants are already an
+        array, that array is returned."""
+
+        p = args[-1]
+        try:
+            p = self._convert_constants_dict_to_array(p)
+        except IndexError:
+            # p is an array so just return the args
+            return args
+        else:
+            return args[:-1] + (p,)
+
+    def _convert_specifieds_dict_to_array(self, x, t, r):
+
+        for k, v in r.items():
+            # TODO : Not sure if this is the best check here.
+            if isinstance(type(k), UndefinedFunction):
+                k = (k,)
+            idx = [self.specifieds.index(symmy) for symmy in k]
+            try:
+                self._specifieds_values[idx] = v(x, t)
+            except TypeError:  # not callable
+                # If not callable, then it should be a float, ndarray,
+                # or indexable.
+                self._specifieds_values[idx] = v
+
+        return self._specifieds_values
+
+    def _parse_specifieds(self, x, t, r, p):
+
+        if isinstance(r, dict):
+            # NOTE : This function sets self._specifieds_values, so here we
+            # return nothing.
+            self._convert_specifieds_dict_to_array(x, t, r)
+        else:
+            # More efficient.
+            try:
+                self._specifieds_values[:] = r(x, t)
+            except TypeError:  # not callable.
+                # If not callable, then it should be a float or ndarray.
+                self._specifieds_values[:] = r
+
+        return x, t, self._specifieds_values, p
+
+    def _parse_all_args(self, *args):
+        """Returns args formatted for the post 0.3.0 generators using all of
+        the parsers. This is the slowest method and is used by default if no
+        information is provided by the user on which type of args will be
+        passed in."""
+
+        args = self._parse_old_style_extra_args(*args)
+
+        args = self._parse_constants(*args)
+
+        if self.specifieds is not None:
+            args = self._parse_specifieds(*args)
+
+        return args
+
     def _generate_rhs_docstring(self):
 
         template_values = {'num_states': self.num_states,
@@ -388,9 +362,204 @@ r : dictionary; ndarray, shape({num_specified},); function
                 'num_specified': self.num_specifieds,
                 'specified_list': self.list_syms(8, self.specifieds)}
             template_values['specified_explanation'] = \
-                self._specifieds_doc_template.format(**specified_template_values)
+                self._specifieds_doc_template.format(
+                    **specified_template_values)
 
         return self._rhs_doc_template.format(**template_values)
+
+    def _create_rhs_function(self):
+        """Returns a function in the form expected by scipy.integrate.odeint
+        that computes the derivatives of the states."""
+
+        # This god awful mess below exists because of the need to optimize
+        # the speed of the rhs evaluation. We unfortunately support way too
+        # many ways to pass in extra arguments to the generated rhs
+        # function. The default behavior is to parse the arguments passed
+        # into the rhs function which can add a lot of computational
+        # overhead. So we allow the user to specify what type the extra args
+        # should be for both the constants and the specifieds. The constants
+        # can be None, 'array', or 'dictionary'. The specifieds can be None,
+        # 'array', 'function', or 'dictionary'. Thus we have 12 permutations
+        # of this "switch".
+
+        p_arg_type = self.constants_arg_type
+        r_arg_type = self.specifieds_arg_type
+
+        def slice_x(x):
+            q = x[:self.num_coordinates]
+            u = x[self.num_coordinates:]
+            return q, u
+
+        if p_arg_type is None and r_arg_type is None:
+
+            # This is the only rhs that will properly check for the
+            # pre-0.3.0 rhs args for backwards compatibility.
+
+            def rhs(*args):
+                # args: x, t, p
+                # or
+                # args: x, t, r, p
+
+                args = self._parse_all_args(*args)
+
+                q, u = slice_x(args[0])
+
+                xdot = self._base_rhs(q, u, *args[2:])
+
+                return xdot
+
+        elif p_arg_type == 'array' and r_arg_type is None:
+
+            # This could be combined with:
+            # elif p_arg_type == 'array' and r_arg_type == 'array':
+
+            def rhs(*args):
+                # args: x, t, p
+                # or
+                # args: x, t, r, p
+
+                if self.specifieds is not None:
+                    args = self._parse_specifieds(*args)
+
+                q, u = slice_x(args[0])
+
+                return self._base_rhs(q, u, *args[2:])
+
+        elif p_arg_type == 'dictionary' and r_arg_type is None:
+
+            # This could be combined with:
+            # elif p_arg_type == 'dictionary' and r_arg_type == 'array':
+
+            def rhs(*args):
+                # args: x, t, p
+                # or
+                # args: x, t, r, p
+
+                if self.specifieds is not None:
+                    args = self._parse_specifieds(*args)
+
+                p = self._convert_constants_dict_to_array(args[-1])
+
+                q, u = slice_x(args[0])
+
+                xdot = self._base_rhs(q, u, *(args[2:-1] + (p,)))
+
+                return xdot
+
+        # All of the cases below must have specifieds, so the number of args
+        # is known. r_arg_type is forces to be None if self.specifieds is
+        # None.
+
+        elif p_arg_type is None and r_arg_type == 'array':
+
+            def rhs(*args):
+                # args: x, t, r, p
+
+                args = self._parse_constants(*args)
+
+                q, u = slice_x(args[0])
+
+                return self._base_rhs(q, u, *args[2:])
+
+        elif p_arg_type == 'array' and r_arg_type == 'array':
+
+            def rhs(*args):
+                # args: x, t, r, p
+
+                q, u = slice_x(args[0])
+
+                return self._base_rhs(q, u, *args[2:])
+
+        elif p_arg_type == 'dictionary' and r_arg_type == 'array':
+
+            def rhs(*args):
+                # args: x, t, r, p
+
+                p = self._convert_constants_dict_to_array(args[-1])
+
+                q, u = slice_x(args[0])
+
+                return self._base_rhs(q, u, *(args[2:-1] + (p,)))
+
+        elif p_arg_type is None and r_arg_type == 'dictionary':
+
+            def rhs(*args):
+                # args: x, t, r, p
+
+                args = self._parse_constants(*args)
+
+                q, u = slice_x(args[0])
+
+                r = self._convert_specifieds_dict_to_array(*args[:3])
+
+                return self._base_rhs(q, u, r, args[-1])
+
+        elif p_arg_type == 'array' and r_arg_type == 'dictionary':
+
+            def rhs(*args):
+                # args: x, t, r, p
+
+                q, u = slice_x(args[0])
+
+                r = self._convert_specifieds_dict_to_array(*args[:3])
+
+                return self._base_rhs(q, u, r, args[-1])
+
+        elif p_arg_type == 'dictionary' and r_arg_type == 'dictionary':
+
+            def rhs(*args):
+                # args: x, t, r, p
+
+                q, u = slice_x(args[0])
+
+                p = self._convert_constants_dict_to_array(args[-1])
+
+                r = self._convert_specifieds_dict_to_array(*args[:3])
+
+                return self._base_rhs(q, u, r, p)
+
+        elif p_arg_type is None and r_arg_type == 'function':
+
+            def rhs(*args):
+                # args: x, t, r, p
+
+                q, u = slice_x(args[0])
+
+                args = self._parse_constants(*args)
+
+                r = args[2](*args[:2])
+
+                return self._base_rhs(q, u, r, args[-1])
+
+        elif p_arg_type == 'array' and r_arg_type == 'function':
+
+            def rhs(*args):
+                # args: x, t, r, p
+
+                q, u = slice_x(args[0])
+
+                r = args[2](*args[:2])
+
+                return self._base_rhs(q, u, r, args[-1])
+
+        elif p_arg_type == 'dictionary' and r_arg_type == 'function':
+
+            def rhs(*args):
+                # args: x, t, r, p
+
+                q, u = slice_x(args[0])
+
+                p = self._convert_constants_dict_to_array(args[-1])
+
+                r = args[2](*args[:2])
+
+                return self._base_rhs(q, u, r, p)
+
+        # TODO : This should generate the appropriate docstring based on the
+        # above if statements.
+        rhs.__doc__ = self._generate_rhs_docstring()
+
+        return rhs
 
     def _define_inputs(self):
 
@@ -398,6 +567,37 @@ r : dictionary; ndarray, shape({num_specified},); function
 
         if self.specifieds is not None:
             self.inputs.insert(2, self.specifieds)
+
+    def _create_base_rhs_function(self):
+
+        if self.system_type == 'full rhs':
+
+            self._base_rhs = self.eval_arrays
+
+        elif self.system_type == 'full mass matrix':
+
+            def base_rhs(*args):
+
+                M, F = self.eval_arrays(*args)
+                return self.solve_linear_system(M, F)
+
+            self._base_rhs = base_rhs
+
+        elif self.system_type == 'min mass matrix':
+
+            xdot = np.empty(self.num_states, dtype=float)
+
+            def base_rhs(*args):
+                M, F, qdot = self.eval_arrays(*args)
+                if self.num_speeds == 1:
+                    udot = F / M
+                else:
+                    udot = self.solve_linear_system(M, F)
+                xdot[:self.num_coordinates] = qdot
+                xdot[self.num_coordinates:] = udot
+                return xdot
+
+            self._base_rhs = base_rhs
 
     def generate(self):
         """Returns a function that evaluates the right hand side of the
@@ -410,6 +610,7 @@ r : dictionary; ndarray, shape({num_specified},); function
         x' = f(x, t, r, p)
 
         """
+
         if self.system_type == 'full rhs':
             self.generate_full_rhs_function()
         elif self.system_type == 'full mass matrix':
@@ -417,7 +618,9 @@ r : dictionary; ndarray, shape({num_specified},); function
         elif self.system_type == 'min mass matrix':
             self.generate_min_mass_matrix_function()
 
-        return self.create_rhs_function()
+        self._create_base_rhs_function()
+
+        return self._create_rhs_function()
 
 
 class CythonODEFunctionGenerator(ODEFunctionGenerator):
@@ -620,7 +823,8 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
 def generate_ode_function(right_hand_side, coordinates, speeds, constants,
                           mass_matrix=None, coordinate_derivatives=None,
                           specifieds=None, linear_sys_solver='numpy',
-                          generator='lambdify'):
+                          constants_arg_type=None,
+                          specifieds_arg_type=None,generator='lambdify'):
     """Returns a numerical function which can evaluate the right hand side
     of the first order ordinary differential equations from a system
     described by one of the following three forms:
@@ -678,14 +882,46 @@ def generate_ode_function(right_hand_side, coordinates, speeds, constants,
         linear system Ax=b with the call signature x = solve(A, b). If
         you need to use custom kwargs for the scipy solver, pass in a
         lambda function that wraps the solver and sets them.
-    generator : string, {'lambdify'|'theano'|'cython'}, optional
-        The method used for generating the numeric right hand side.
+    constants_arg_type : string
+        The generated function accepts two different types of arguments for
+        the numerical values of the constants: an ndarray of the constants
+        values in the correct order or a dictionary mapping the constants
+        sysmbols to the numerical values. If None, this is determined inside
+        of the generated function and can cause a significant slow down for
+        performance critical code. If you know apriori what arg types you
+        need to support choose either ``array`` or ``dictionary``. Note that
+        ``array`` is faster than ``dictionary``.
+    specifieds_arg_type : string
+        The generated function accepts three different types of arguments
+        for the numerical values of the specifieds: an ndarray of the
+        specifieds values in the correct order, a function that generates
+        the correct ndarray, a dictionary mapping the specifieds symbols or
+        tuples of thereof to floats, ndarrays, or functions. If None, this
+        is determined inside of the generated function and can cause a
+        significant slow down for performance critical code. If you know
+        apriori what arg types you want to support choose either ``array``,
+        ``function``, or ``dictionary``. The speed of each, from fast to
+        slow, are ``array``, ``function``, ``dictionary``.
+    generator : string or and ODEFunctionGenerator, optional
+        The method used for generating the numeric right hand
+        side. The string options are {'lambdify'|'theano'|'cython'} with
+        'lambdify' being the default. You can also pass in a custom subclass
+        of ODEFunctionGenerator.
 
     Returns
-    -------
+    =======
     rhs_func : function
         A function which evaluates the derivaties of the states. See the
         function's docstring for more details after generation.
+
+    Notes
+    =====
+    The generated function still supports the pre-0.3.0 extra argument
+    style, i.e. args = {'constants': ..., 'specified': ...}, but only if
+    ``constants_arg_type`` and ``specifieds_arg_type`` are both set to None.
+    This functionality is deprecated and will be removed in 0.4.0, so it's
+    best to adjust your code to support the new argument types.  See the
+    docstring for the generated function for more info.
 
     """
     generators = {'lambdify': LambdifyODEFunctionGenerator,
@@ -693,13 +929,28 @@ def generate_ode_function(right_hand_side, coordinates, speeds, constants,
                   'theano': TheanoODEFunctionGenerator}
 
     try:
-        g = generators[generator](right_hand_side, coordinates, speeds,
-                                  constants, mass_matrix=mass_matrix,
-                                  coordinate_derivatives=coordinate_derivatives,
-                                  specifieds=specifieds,
-                                  linear_sys_solver='numpy')
-    except KeyError:
-        msg = '{} is not a valid generator.'.format(generator)
-        raise NotImplementedError(msg)
-
-    return g.generate()
+        # See if user passed in a custom class.
+        g = generator(right_hand_side, coordinates, speeds, constants,
+                      mass_matrix=mass_matrix,
+                      coordinate_derivatives=coordinate_derivatives,
+                      specifieds=specifieds,
+                      linear_sys_solver=linear_sys_solver,
+                      constants_arg_type=constants_arg_type,
+                      specifieds_arg_type=specifieds_arg_type)
+    except TypeError:
+        # See if user passed in a string.
+        try:
+            g = generators[generator](right_hand_side, coordinates, speeds,
+                                      constants, mass_matrix=mass_matrix,
+                                      coordinate_derivatives=coordinate_derivatives,
+                                      specifieds=specifieds,
+                                      linear_sys_solver=linear_sys_solver,
+                                      constants_arg_type=constants_arg_type,
+                                      specifieds_arg_type=specifieds_arg_type)
+        except KeyError:
+            msg = '{} is not a valid generator.'.format(generator)
+            raise NotImplementedError(msg)
+        else:
+            return g.generate()
+    else:
+        return g.generate()

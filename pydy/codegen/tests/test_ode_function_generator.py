@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from random import choice
+
 import numpy as np
 import scipy as sp
 import sympy as sm
@@ -19,10 +21,15 @@ class TestODEFunctionGenerator(object):
     def setup(self):
 
         self.sys = models.multi_mass_spring_damper(2)
+        self.rhs = self.sys.eom_method.rhs()
+        self.generator = ODEFunctionGenerator(self.rhs,
+                                              self.sys.coordinates,
+                                              self.sys.speeds,
+                                              self.sys.constants_symbols)
 
-    def test_init(self):
+    def test_init_full_rhs(self):
 
-        g = ODEFunctionGenerator(self.sys.eom_method.rhs(),
+        g = ODEFunctionGenerator(self.rhs,
                                  self.sys.coordinates,
                                  self.sys.speeds,
                                  self.sys.constants_symbols)
@@ -30,15 +37,8 @@ class TestODEFunctionGenerator(object):
         assert g.num_coordinates == 2
         assert g.num_speeds == 2
         assert g.num_states == 4
-
-    def test_init_full_rhs(self):
-
-        g = ODEFunctionGenerator(self.sys.eom_method.rhs(),
-                                 self.sys.coordinates,
-                                 self.sys.speeds,
-                                 self.sys.constants_symbols)
-
         assert g.system_type == 'full rhs'
+
 
     def test_init_full_mass_matrix(self):
 
@@ -48,6 +48,9 @@ class TestODEFunctionGenerator(object):
                                  self.sys.constants_symbols,
                                  mass_matrix=self.sys.eom_method.mass_matrix_full)
 
+        assert g.num_coordinates == 2
+        assert g.num_speeds == 2
+        assert g.num_states == 4
         assert g.system_type == 'full mass matrix'
 
     def test_init_min_mass_matrix(self):
@@ -63,6 +66,9 @@ class TestODEFunctionGenerator(object):
                                  mass_matrix=self.sys.eom_method.mass_matrix,
                                  coordinate_derivatives=coord_derivs)
 
+        assert g.num_coordinates == 2
+        assert g.num_speeds == 2
+        assert g.num_states == 4
         assert g.system_type == 'min mass matrix'
 
     def test_set_linear_system_solver(self):
@@ -240,7 +246,7 @@ class TestODEFunctionGeneratorSubclasses(object):
 
                 np.testing.assert_allclose(xdot, expected)
 
-    def test_rhs_args(self):
+    def test_old_rhs_args(self):
 
         # There are four specified inputs available.
         sys = models.n_link_pendulum_on_cart(3, True, True)
@@ -255,37 +261,102 @@ class TestODEFunctionGeneratorSubclasses(object):
         rhs = g.generate()
 
         x = np.random.random(g.num_states)
+        r = dict(zip(g.specifieds, [1.0, 2.0, 3.0, 4.0]))
         p = np.random.random(g.num_constants)
 
-        r = dict(zip(g.specifieds, [1.0, 2.0, 3.0, 4.0]))
-
+        # Compute with new style args.
         xd_01 = rhs(x, 0.0, r, p)
 
-        r = {tuple(g.specifieds):
-             lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])}
-        xd_02 = rhs(x, 0.0, r, p)
-        np.testing.assert_allclose(xd_01, xd_02)
-
-        r = {g.specifieds[0]: lambda x, t: np.ones(1),
-             (g.specifieds[3], g.specifieds[1]):
-             lambda x, t: np.array([4.0, 2.0]),
-             g.specifieds[2]: 3.0 * np.ones(1)}
-        xd_03 = rhs(x, 0.0, r, p)
-        np.testing.assert_allclose(xd_01, xd_03)
-
-        # Check that rhs can accept dicts of constants.
-        p = {sym: val for sym, val in zip(g.constants, p)}
-
-        r = np.array([1.0, 2.0, 3.0, 4.0])
-        xd_04 = rhs(x, 0.0, r, p)
-        np.testing.assert_allclose(xd_01, xd_04)
-
-        r = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
-        xd_05 = rhs(x, 0.0, r, p)
-        np.testing.assert_allclose(xd_01, xd_05)
-
-        # Check to see if old style extra args works.
+        # Noew check to see if old style extra args works.
         args = {'specified': r, 'constants': p}
 
-        xd_06 = rhs(x, 0.0, args)
-        np.testing.assert_allclose(xd_01, xd_06)
+        xd_02 = rhs(x, 0.0, args)
+        np.testing.assert_allclose(xd_01, xd_02)
+
+    def test_rhs_args(self):
+
+        # There are eight constants and four specified inputs available.
+        sys = models.n_link_pendulum_on_cart(3, True, True)
+        right_hand_side = sys.eom_method.rhs()
+        constants = sys.constants_symbols
+        specifieds = sys.specifieds_symbols
+
+        constants_arg_types = [None, 'array', 'dictionary']
+        specifieds_arg_types = [None, 'array', 'function', 'dictionary']
+
+        p_array = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
+        p_dct = dict(zip(constants, p_array))
+
+        p = {}
+        p[None] = choice([p_array, p_dct])
+        p['array'] = p_array
+        p['dictionary'] = p_dct
+
+        r_array = np.array([1.0, 2.0, 3.0, 4.0])
+        r_dct_1 = dict(zip(specifieds, r_array))
+        r_dct_2 = {tuple(specifieds):
+                   lambda x, t: r_array}
+        r_dct_3 = {specifieds[0]: lambda x, t: np.ones(1),
+                   (specifieds[3], specifieds[1]):
+                   lambda x, t: np.array([4.0, 2.0]),
+                   specifieds[2]: 3.0 * np.ones(1)}
+        r_func = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
+
+        r = {}
+        r[None] = choice([r_array, r_dct_1, r_dct_2, r_dct_3, r_func])
+        r['array'] = r_array
+        r['dictionary'] = choice([r_dct_1, r_dct_2, r_dct_3])
+        r['function'] = r_func
+
+        x = np.random.random(len(sys.states))
+
+        for p_arg_type in constants_arg_types:
+            for r_arg_type in specifieds_arg_types:
+
+                g = LambdifyODEFunctionGenerator(right_hand_side,
+                                                 sys.coordinates,
+                                                 sys.speeds,
+                                                 sys.constants_symbols,
+                                                 specifieds=specifieds,
+                                                 constants_arg_type=p_arg_type,
+                                                 specifieds_arg_type=r_arg_type)
+                rhs = g.generate()
+
+                xdot = rhs(x, 0.0, r[r_arg_type], p[p_arg_type])
+
+                try:
+                    np.testing.assert_allclose(xdot, last_xdot)
+                except NameError:
+                    pass
+
+                last_xdot = xdot
+
+        # Now make sure it all works with specifieds=None
+        sys = models.n_link_pendulum_on_cart(3, False, False)
+        right_hand_side = sys.eom_method.rhs()
+        constants = sys.constants_symbols
+
+        del last_xdot
+
+        for p_arg_type in constants_arg_types:
+            for r_arg_type in specifieds_arg_types:
+
+                g = LambdifyODEFunctionGenerator(right_hand_side,
+                                                 sys.coordinates,
+                                                 sys.speeds,
+                                                 sys.constants_symbols,
+                                                 constants_arg_type=p_arg_type,
+                                                 specifieds_arg_type=r_arg_type)
+
+                assert g.specifieds_arg_type is None
+
+                rhs = g.generate()
+
+                xdot = rhs(x, 0.0, p[p_arg_type])
+
+                try:
+                    np.testing.assert_allclose(xdot, last_xdot)
+                except NameError:
+                    pass
+
+                last_xdot = xdot
