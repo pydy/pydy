@@ -79,7 +79,7 @@ class TestODEFunctionGenerator(object):
                                  self.sys.constants_symbols,
                                  mass_matrix=self.sys.eom_method.mass_matrix_full)
 
-        assert g.solve_linear_system == np.linalg.solve
+        assert g._solve_linear_system == np.linalg.solve
 
         g = ODEFunctionGenerator(self.sys.eom_method.forcing_full,
                                  self.sys.coordinates,
@@ -88,7 +88,7 @@ class TestODEFunctionGenerator(object):
                                  mass_matrix=self.sys.eom_method.mass_matrix_full,
                                  linear_sys_solver='numpy')
 
-        assert g.solve_linear_system == np.linalg.solve
+        assert g._solve_linear_system == np.linalg.solve
 
         g = ODEFunctionGenerator(self.sys.eom_method.forcing_full,
                                  self.sys.coordinates,
@@ -97,7 +97,7 @@ class TestODEFunctionGenerator(object):
                                  mass_matrix=self.sys.eom_method.mass_matrix_full,
                                  linear_sys_solver='scipy')
 
-        assert g.solve_linear_system == sp.linalg.solve
+        assert g._solve_linear_system == sp.linalg.solve
 
         solver = lambda A, b: np.dot(np.inv(A), b)
 
@@ -108,7 +108,7 @@ class TestODEFunctionGenerator(object):
                                  mass_matrix=self.sys.eom_method.mass_matrix_full,
                                  linear_sys_solver=solver)
 
-        assert g.solve_linear_system == solver
+        assert g._solve_linear_system == solver
 
 
 class TestODEFunctionGeneratorSubclasses(object):
@@ -248,6 +248,8 @@ class TestODEFunctionGeneratorSubclasses(object):
 
     def test_old_rhs_args(self):
 
+        # DEPRECATED : This should be removed before the 0.4.0 release.
+
         # There are four specified inputs available.
         sys = models.n_link_pendulum_on_cart(3, True, True)
         right_hand_side = sys.eom_method.rhs()
@@ -261,19 +263,21 @@ class TestODEFunctionGeneratorSubclasses(object):
         rhs = g.generate()
 
         x = np.random.random(g.num_states)
-        r = dict(zip(g.specifieds, [1.0, 2.0, 3.0, 4.0]))
+        t = 0.0
+        r = np.random.random(g.num_specifieds)
         p = np.random.random(g.num_constants)
 
         # Compute with new style args.
-        xd_01 = rhs(x, 0.0, r, p)
+        xd_01 = rhs(x, t, r, p)
 
-        # Noew check to see if old style extra args works.
+        # Now check to see if old style extra args works.
         args = {'specified': r, 'constants': p}
 
-        xd_02 = rhs(x, 0.0, args)
+        xd_02 = rhs(x, t, args)
         np.testing.assert_allclose(xd_01, xd_02)
 
     def test_rhs_args(self):
+        # This test takes a while to run but it checks all the combinations.
 
         # There are eight constants and four specified inputs available.
         sys = models.n_link_pendulum_on_cart(3, True, True)

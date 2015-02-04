@@ -172,61 +172,90 @@ r : dictionary
                  mass_matrix=None, coordinate_derivatives=None,
                  specifieds=None, linear_sys_solver='numpy',
                  constants_arg_type=None, specifieds_arg_type=None):
-        """
+        """Generates a numerical function which can evaluate the right hand
+        side of the first order ordinary differential equations from a
+        system described by one of the following three symbolic forms:
+
+            [1] x' = F(x, t, r, p)
+
+            [2] M(x, p) x' = F(x, t, r, p)
+
+            [3] M(q, p) u' = F(q, u, t, r, p)
+                q' = G(q, u, t, r, p)
+
+        where
+
+            x : states, i.e. [q, u]
+            t : time
+            r : specified (exogenous) inputs
+            p : constants
+            q : generalized coordinates
+            u : generalized speeds
+            M : mass matrix (full or minimum)
+            F : right hand side (full or minimum)
+            G : right hand side of the kinematical differential equations
+
+        The generated function is of the form F(x, t, p) or F(x, t, r, p)
+        depending on whether the system has specified inputs or not.
 
         Parameters
         ==========
         right_hand_side : SymPy Matrix, shape(n, 1)
             A column vector containing the symbolic expressions for the
             right hand side of the ordinary differential equations. If the
-            right hand side has been solved for symbolically then x' = f(x,
-            t, r, p), if it hasn't then you must supply the accompanying
-            mass matrix M(x) * x' = f(x, t, r, p).
+            right hand side has been solved for symbolically then only F is
+            required, see form [1]; if not then the mass matrix must also be
+            supplied, see forms [2, 3].
         coordinates : sequence of SymPy Functions
-            The generalized coordinates.
+            The generalized coordinates. These must be ordered in the same
+            order as the rows in M, F, and/or G and be functions of time.
         speeds : sequence of SymPy Functions
-            The generalized speeds.
+            The generalized speeds. These must be ordered in the same order
+            as the rows in M, F, and/or G and be functions of time.
         constants : sequence of SymPy Symbols
-            All of the constants present in the right hand side and mass
-            matrix.
+            All of the constants present in the equations of motion. The
+            order does not matter.
         mass_matrix : sympy.Matrix, shape(n, n), optional
-            This can be either the "full" mass matrix in M(x) * x' = f(x, t,
-            r, p) or the minimal mass matrix in M(q) * u' = f(u, q, t, r,
-            p).
+            This can be either the "full" mass matrix as in [2] or the
+            "minimal" mass matrix as in [3]. The rows and columns must be
+            ordered to match the order of the coordinates and speeds. In the
+            case of the full mass matrix, the speeds should always be
+            ordered before the speeds, i.e. x = [q, u].
         coordinate_derivatives : sympy.Matrix, shape(m, 1), optional
-            If the "minimal" mass matrix is supplied, then this matrix
-            represents the right hand side of q' = g(q, t, p).
+            If the "minimal" mass matrix, form [3], is supplied, then this
+            column vector represents the right hand side of the kinematical
+            differential equations.
         specifieds : sequence of SymPy Functions
-            The specified exogenous inputs to the ODEs. These should be
-            functions of time.
+            The specified exogenous inputs to the system. These should be
+            functions of time and the order does not matter.
         linear_sys_solver : string or function
             Specify either `numpy` or `scipy` to use the linear solvers
             provided in each package or supply a function that solves a
-            linear system Ax=b with the call signature x = solve(A, b). If
-            you need to use custom kwargs for the scipy solver, pass in a
-            lambda function that wraps the solver and sets them.
+            linear system Ax=b with the call signature x = solve(A, b). For
+            example, if you need to use custom kwargs for the SciPy solver,
+            pass in a lambda function that wraps the solver and sets them.
         constants_arg_type : string
             The generated function accepts two different types of arguments
-            for the numerical values of the constants: an ndarray of the
-            constants values in the correct order or a dictionary mapping
-            the constants sysmbols to the numerical values. If None, this is
-            determined inside of the generated function and can cause a
-            significant slow down for performance critical code. If you know
-            apriori what arg types you need to support choose either
-            ``array`` or ``dictionary``. Note that ``array`` is faster than
-            ``dictionary``.
+            for the numerical values of the constants: either a ndarray of
+            the constants values in the correct order or a dictionary
+            mapping the constants symbols to the numerical values. If None,
+            this is determined inside of the generated function and can
+            cause a significant slow down for performance critical code. If
+            you know apriori what arg types you need to support choose
+            either ``array`` or ``dictionary``. Note that ``array`` is
+            faster than ``dictionary``.
         specifieds_arg_type : string
-            The generated function accepts three different types of arguments
-            for the numerical values of the specifieds: an ndarray of the
-            specifieds values in the correct order, a function that
-            generates the correct ndarray, a dictionary mapping the
-            specifieds symbols or tuples of thereof to floats, ndarrays, or
-            functions. If None, this is determined inside of the generated
-            function and can cause a significant slow down for performance
-            critical code. If you know apriori what arg types you want to
-            support choose either ``array``, ``function``, or
-            ``dictionary``. The speed of each, from fast to slow, are
-            ``array``, ``function``, ``dictionary``.
+            The generated function accepts three different types of
+            arguments for the numerical values of the specifieds: either a
+            ndarray of the specifieds values in the correct order, a
+            function that generates the correctly ordered ndarray, or a
+            dictionary mapping the specifieds symbols or tuples of thereof
+            to floats, ndarrays, or functions. If None, this is determined
+            inside of the generated function and can cause a significant
+            slow down for performance critical code. If you know apriori
+            what arg types you want to support choose either ``array``,
+            ``function``, or ``dictionary``. The speed of each, from fast to
+            slow, are ``array``, ``function``, ``dictionary``, None.
 
         Notes
         =====
@@ -235,7 +264,8 @@ r : dictionary
         ``constants_arg_type`` and ``specifieds_arg_type`` are both set to
         None. This functionality is deprecated and will be removed in 0.4.0,
         so it's best to adjust your code to support the new argument types.
-        See the docstring for the generated function for more info.
+        See the docstring for the generated function for more info on the
+        new style of arguments.
 
         """
 
@@ -271,18 +301,22 @@ r : dictionary
         self._specifieds_values = np.empty(self.num_specifieds)
 
         self._check_system_consitency()
-        self._set_linear_sys_solver()
 
-    def _set_linear_sys_solver(self):
+    @property
+    def linear_sys_solver(self):
+        return self._linear_sys_solver
 
-        if isinstance(self.linear_sys_solver, type(lambda x: x)):
-            self.solve_linear_system = self.linear_sys_solver
-        elif self.linear_sys_solver == 'numpy':
-            self.solve_linear_system = numpy.linalg.solve
-        elif self.linear_sys_solver == 'scipy':
-            self.solve_linear_system = scipy.linalg.solve
+    @linear_sys_solver.setter
+    def linear_sys_solver(self, v):
+
+        if isinstance(v, type(lambda x: x)):
+            self._solve_linear_system = v
+        elif v == 'numpy':
+            self._solve_linear_system = numpy.linalg.solve
+        elif v == 'scipy':
+            self._solve_linear_system = scipy.linalg.solve
         else:
-            msg = '{} is not a valid solver'
+            msg = '{} is not a valid solver.'
             raise ValueError(msg.format(self.linear_sys_solver))
 
     def _check_system_consitency(self):
@@ -309,6 +343,9 @@ r : dictionary
 
     @staticmethod
     def list_syms(indent, syms):
+        """Returns a string representation of a valid rst list of the
+        symbols in the sequence syms and indents the list given the integer
+        number of indentations."""
         indentation = ' ' * indent
         lst = '- ' + ('\n' + indentation + '- ').join([str(s) for s in syms])
         return indentation + lst
@@ -643,7 +680,7 @@ r : dictionary
             def base_rhs(*args):
 
                 M, F = self.eval_arrays(*args)
-                return self.solve_linear_system(M, F)
+                return self._solve_linear_system(M, F)
 
             self._base_rhs = base_rhs
 
@@ -656,14 +693,16 @@ r : dictionary
                 if self.num_speeds == 1:
                     udot = F / M
                 else:
-                    udot = self.solve_linear_system(M, F)
+                    udot = self._solve_linear_system(M, F)
                 xdot[:self.num_coordinates] = qdot
                 xdot[self.num_coordinates:] = udot
                 return xdot
 
             self._base_rhs = base_rhs
 
-    def _define_inputs(self):
+    def define_inputs(self):
+        """Sets self.inputs to the list of sequences [q, u, p] or [q, u, r,
+        p]."""
 
         self.inputs = [self.coordinates, self.speeds, self.constants]
 
@@ -674,11 +713,13 @@ r : dictionary
         """Returns a function that evaluates the right hand side of the
         first order ordinary differential equations in one of two forms:
 
-        x' = f(x, t, p)
+            x' = f(x, t, p)
 
-        or
+            or
 
-        x' = f(x, t, r, p)
+            x' = f(x, t, r, p)
+
+        See the docstring of the generated function for more details.
 
         """
 
@@ -710,41 +751,42 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
     def _set_eval_array(self, f):
 
         if self.specifieds is None:
-            self.eval_arrays = lambda q, u, p: f(q, u, p, *self.empties)
+            self.eval_arrays = lambda q, u, p: f(q, u, p, *self._empties)
         else:
-            self.eval_arrays = lambda q, u, r, p: f(q, u, r, p, *self.empties)
+            self.eval_arrays = lambda q, u, r, p: f(q, u, r, p,
+                                                    *self._empties)
 
     def generate_full_rhs_function(self):
 
-        self._define_inputs()
+        self.define_inputs()
         outputs = [self.right_hand_side]
 
-        self.empties = (np.empty(self.num_states, dtype=float),)
+        self._empties = (np.empty(self.num_states, dtype=float),)
 
         self._set_eval_array(self._cythonize(outputs, self.inputs))
 
     def generate_full_mass_matrix_function(self):
 
-        self._define_inputs()
+        self.define_inputs()
         outputs = [self.mass_matrix, self.right_hand_side]
 
         mass_matrix_result = np.empty(self.num_states ** 2, dtype=float)
         rhs_result = np.empty(self.num_states, dtype=float)
 
-        self.empties = (mass_matrix_result, rhs_result)
+        self._empties = (mass_matrix_result, rhs_result)
 
         self._set_eval_array(self._cythonize(outputs, self.inputs))
 
     def generate_min_mass_matrix_function(self):
 
-        self._define_inputs()
+        self.define_inputs()
         outputs = [self.mass_matrix, self.right_hand_side,
                    self.coordinate_derivatives]
 
         mass_matrix_result = np.empty(self.num_speeds ** 2, dtype=float)
         rhs_result = np.empty(self.num_speeds, dtype=float)
         kin_diffs_result = np.empty(self.num_coordinates, dtype=float)
-        self.empties = (mass_matrix_result, rhs_result, kin_diffs_result)
+        self._empties = (mass_matrix_result, rhs_result, kin_diffs_result)
 
         self._set_eval_array(self._cythonize(outputs, self.inputs))
 
@@ -752,9 +794,9 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
 class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
 
     def _lambdify(self, outputs):
-        # TODO : We could forgo this substitution for speed purposes and
-        # have lots of args for lambdify (like it used to be done) but there
-        # may be some limitations on number of args.
+        # TODO : We could forgo this substitution for generation speed
+        # purposes and have lots of args for lambdify (like it used to be
+        # done) but there may be some limitations on number of args.
         subs = {}
         vec_inputs = []
         if self.specifieds is None:
@@ -780,7 +822,7 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
 
     def generate_full_rhs_function(self):
 
-        self._define_inputs()
+        self.define_inputs()
         outputs = [self.right_hand_side]
 
         f = self._lambdify(outputs)
@@ -792,7 +834,7 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
 
     def generate_full_mass_matrix_function(self):
 
-        self._define_inputs()
+        self.define_inputs()
         outputs = [self.mass_matrix, self.right_hand_side]
 
         f = self._lambdify(outputs)
@@ -806,7 +848,7 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
 
     def generate_min_mass_matrix_function(self):
 
-        self._define_inputs()
+        self.define_inputs()
         outputs = [self.mass_matrix, self.right_hand_side,
                    self.coordinate_derivatives]
 
@@ -829,7 +871,7 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
         else:
             super(TheanoODEFunctionGenerator, self).__init__(*args, **kwargs)
 
-    def _define_inputs(self):
+    def define_inputs(self):
 
         if self.specifieds is None:
             self.inputs = self.coordinates + self.speeds + self.constants
@@ -839,7 +881,7 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
 
     def _theanoize(self, outputs):
 
-        self._define_inputs()
+        self.define_inputs()
 
         f = theano_function(self.inputs, outputs, on_unused_input='ignore')
 
@@ -892,105 +934,9 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
 
 
 def generate_ode_function(*args, **kwargs):
-    """Returns a numerical function which can evaluate the right hand side
-    of the first order ordinary differential equations from a system
-    described by one of the following three forms:
+    """This is a function wrapper to the above classes. The docstring is
+    automatically generated below."""
 
-        [1] x' = F(x, t, r, p)
-
-        [2] M(x, p) x' = F(x, t, r, p)
-
-        [3] M(q, p) u' = F(q, u, t, r, p)
-            q' = G(q, u, t, r, p)
-
-    where
-
-        x : states
-        t : time
-        r : specified inputs
-        p : constants
-        q : generalized coordinates
-        u : generalized speeds
-        M : mass matrix (full or minimum)
-        F : right hand side (full or minimum)
-        G : right hand side of the kinematical differential equations
-
-    The generated function is of the form F(x, t, p) or F(x, t, r, p)
-    depending on whether the system has specified inputs or not.
-
-    Parameters
-    ==========
-    right_hand_side : SymPy Matrix, shape(n, 1)
-        A column vector containing the symbolic expressions for the
-        right hand side of the ordinary differential equations. If the
-        right hand side has been solved for symbolically then x' = f(x,
-        t, r, p), if it hasn't then you must supply the accompanying
-        mass matrix M(x) * x' = f(x, t, r, p).
-    coordinates : sequence of SymPy Functions
-        The generalized coordinates.
-    speeds : sequence of SymPy Functions
-        The generalized speeds.
-    constants : sequence of SymPy Symbols
-        All of the constants present in the right hand side and mass
-        matrix.
-    mass_matrix : sympy.Matrix, shape(n, n), optional
-        This can be either the "full" mass matrix in M(x) * x' = f(x, t,
-        r, p) or the minimal mass matrix in M(q) * u' = f(u, q, t, r,
-        p).
-    coordinate_derivatives : sympy.Matrix, shape(m, 1), optional
-        If the "minimal" mass matrix is supplied, then this matrix
-        represents the right hand side of q' = g(q, t, p).
-    specifieds : sequence of SymPy Functions
-        The specified exogenous inputs to the ODEs. These should be
-        functions of time.
-    linear_sys_solver : string or function
-        Specify either `numpy` or `scipy` to use the linear solvers
-        provided in each package or supply a function that solves a
-        linear system Ax=b with the call signature x = solve(A, b). If
-        you need to use custom kwargs for the scipy solver, pass in a
-        lambda function that wraps the solver and sets them.
-    constants_arg_type : string
-        The generated function accepts two different types of arguments for
-        the numerical values of the constants: an ndarray of the constants
-        values in the correct order or a dictionary mapping the constants
-        sysmbols to the numerical values. If None, this is determined inside
-        of the generated function and can cause a significant slow down for
-        performance critical code. If you know apriori what arg types you
-        need to support choose either ``array`` or ``dictionary``. Note that
-        ``array`` is faster than ``dictionary``.
-    specifieds_arg_type : string
-        The generated function accepts three different types of arguments
-        for the numerical values of the specifieds: an ndarray of the
-        specifieds values in the correct order, a function that generates
-        the correct ndarray, a dictionary mapping the specifieds symbols or
-        tuples of thereof to floats, ndarrays, or functions. If None, this
-        is determined inside of the generated function and can cause a
-        significant slow down for performance critical code. If you know
-        apriori what arg types you want to support choose either ``array``,
-        ``function``, or ``dictionary``. The speed of each, from fast to
-        slow, are ``array``, ``function``, ``dictionary``.
-    generator : string or and ODEFunctionGenerator, optional
-        The method used for generating the numeric right hand
-        side. The string options are {'lambdify'|'theano'|'cython'} with
-        'lambdify' being the default. You can also pass in a custom subclass
-        of ODEFunctionGenerator.
-
-    Returns
-    =======
-    rhs_func : function
-        A function which evaluates the derivaties of the states. See the
-        function's docstring for more details after generation.
-
-    Notes
-    =====
-    The generated function still supports the pre-0.3.0 extra argument
-    style, i.e. args = {'constants': ..., 'specified': ...}, but only if
-    ``constants_arg_type`` and ``specifieds_arg_type`` are both set to None.
-    This functionality is deprecated and will be removed in 0.4.0, so it's
-    best to adjust your code to support the new argument types.  See the
-    docstring for the generated function for more info.
-
-    """
     generators = {'lambdify': LambdifyODEFunctionGenerator,
                   'cython': CythonODEFunctionGenerator,
                   'theano': TheanoODEFunctionGenerator}
@@ -1003,7 +949,8 @@ def generate_ode_function(*args, **kwargs):
     except TypeError:
         # See if user passed in a string.
         try:
-            g = generators[generator](*args, **kwargs)
+            Generator = generators[generator]
+            g = Generator(*args, **kwargs)
         except KeyError:
             msg = '{} is not a valid generator.'.format(generator)
             raise NotImplementedError(msg)
@@ -1011,3 +958,25 @@ def generate_ode_function(*args, **kwargs):
             return g.generate()
     else:
         return g.generate()
+
+
+_divider = '\n        Notes\n        ====='
+_docstr = ODEFunctionGenerator.__init__.__doc__
+_before_notes, _after_notes = _docstr.split(_divider)
+_extra_parameters_doc = \
+"""\
+        generator : string or and ODEFunctionGenerator, optional
+            The method used for generating the numeric right hand side. The
+            string options are {'lambdify'|'theano'|'cython'} with
+            'lambdify' being the default. You can also pass in a custom
+            subclass of ODEFunctionGenerator.
+
+        Returns
+        =======
+        rhs : function
+            A function which evaluates the derivaties of the states. See the
+            function's docstring for more details after generation.
+"""
+generate_ode_function.__doc__ = ('' * 4 + _before_notes +
+                                 _extra_parameters_doc + _divider +
+                                 _after_notes)
