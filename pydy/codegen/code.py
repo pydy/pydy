@@ -5,7 +5,7 @@ removed in PyDy 0.4.0."""
 
 import warnings
 
-from .ode_function_generator import generate_ode_function as new_gen_ode_func
+from .ode_function_generators import generate_ode_function as new_gen_ode_func
 
 with warnings.catch_warnings():
     warnings.simplefilter('once')

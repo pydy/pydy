@@ -10,10 +10,10 @@ Cython = sm.external.import_module('Cython')
 theano = sm.external.import_module('theano')
 
 from ... import models
-from ..ode_function_generator import (ODEFunctionGenerator,
-                                      LambdifyODEFunctionGenerator,
-                                      CythonODEFunctionGenerator,
-                                      TheanoODEFunctionGenerator)
+from ..ode_function_generators import (ODEFunctionGenerator,
+                                       LambdifyODEFunctionGenerator,
+                                       CythonODEFunctionGenerator,
+                                       TheanoODEFunctionGenerator)
 
 
 class TestODEFunctionGenerator(object):
