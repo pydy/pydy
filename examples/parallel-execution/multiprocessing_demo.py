@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
 """This example shows how you can parallelize ODE integration of a generated
-rhs function using the multiprocessing module. For example, this could be
-useful in genetic algorithm optimization routines to parallelize the
-evaluation of the cost function at each iteration."""
+ODE function using the multiprocessing module. The example shows how you can
+both evaluate the right hand side function and integrate the equations of
+motion with different model parameters while spreading the independent
+computations over the number of CPUs on the computer. For example, this
+could be useful in genetic algorithm optimization routines to parallelize
+the evaluation of the cost function at each iteration."""
 
 from multiprocessing import Pool
 
@@ -11,34 +14,35 @@ import numpy as np
 from scipy.integrate import odeint
 from pydy.models import multi_mass_spring_damper
 
-print('Generating EoMs')
+print('Generating equations of motion')
 sys = multi_mass_spring_damper(10)
 
 print('Defining numerical values')
 x = np.random.random(len(sys.states))
 t = np.linspace(0.0, 10.0, 100000)
-pp = np.random.random((16, len(sys.constants_symbols)))
+# 16 different parameter sets to evaluate in parallel.
+p_set = np.random.random((16, len(sys.constants_symbols)))
 
-print('Generating rhs function')
+print('Generating the ODE function')
 rhs = sys.generate_ode_function(generator='cython')
 
-print('Defining wrapper functions.')
+print('Defining wrapper functions')
 # These wrappers are used to provide a single argmument to the function in
-# the Pool.map call. There doesn't seem to be an easy way to pass in
+# the Pool.map() call. There doesn't seem to be an easy way to pass in
 # multiple arguments to the function that is being mapped.
 
 
-def rhs2(p):
+def rhs_wrapper(p):
     return rhs(x, t[0], p)
 
 
-def odeint2(p):
+def odeint_wrapper(p):
     return odeint(rhs, x, t, args=(p,))
 
-p = Pool(4)
+pool = Pool()
 
-print('Running parallel rhs')
-res1 = p.map(rhs2, [p_i for p_i in pp])
+print('Running rhs evalutions in parallel')
+res1 = pool.map(rhs_wrapper, [p for p in p_set])
 
-print('Running parallel odeint.')
-res2 = p.map(odeint2, [p_i for p_i in pp])
+print('Running odeint evaluations in parallel')
+res2 = pool.map(odeint_wrapper, [p for p in p_set])
