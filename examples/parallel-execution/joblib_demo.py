@@ -19,7 +19,7 @@ sys = n_link_pendulum_on_cart(10, False, False)
 print('Defining numerical values')
 x = np.random.random(len(sys.states))
 t = np.linspace(0.0, 10.0, 100000)
-pp = np.random.random((16, len(sys.constants_symbols)))
+p_set = np.random.random((16, len(sys.constants_symbols)))
 
 print('Generating the ODE function')
 rhs = sys.generate_ode_function(generator='cython')
@@ -42,7 +42,7 @@ def odeint_wrapper(p):
 # documentation. See the documentation for more information.
 
 print('Running rhs evalutions in parallel')
-res1 = Parallel(n_jobs=-1)(delayed(rhs_wrapper)(p_i) for p_i in pp)
+res1 = Parallel(n_jobs=-1)(delayed(rhs_wrapper)(p) for p in p_set)
 
 print('Running odeint evaluations in parallel')
-res2 = Parallel(n_jobs=-1)(delayed(odeint_wrapper)(p_i) for p_i in pp)
+res2 = Parallel(n_jobs=-1)(delayed(odeint_wrapper)(p) for p in p_set)
