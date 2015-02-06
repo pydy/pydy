@@ -11,10 +11,14 @@ from sympy.physics.mechanics import dynamicsymbols
 SYMPY_VERSION = sm.__version__
 
 
-def sympy_equal_to_or_newer_than(version):
+def sympy_equal_to_or_newer_than(version, installed_version=None):
     """Returns true if the installed version of SymPy is equal to or newer
     than the provided version string."""
-    return cmp(parse_version(SYMPY_VERSION), parse_version(version)) > -1
+    if installed_version is None:
+        v = SYMPY_VERSION
+    else:
+        v = installed_version
+    return cmp(parse_version(v), parse_version(version)) > -1
 
 
 def wrap_and_indent(lines, indentation=4, width=79):

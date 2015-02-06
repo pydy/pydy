@@ -8,29 +8,42 @@ matrix:
 virtualenv:
   system_site_packages: true
 before_install:
-  # On Ubuntu 12.04 (Travis's testing machines) numpy is at 1.6.1, SciPy is at
-  # 0.9.0 and Cython is at 0.15.1.
   - sudo apt-get update
-  - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy cython
-  - sudo apt-get install -y -qq python-coverage
-  - sudo apt-get install phantomjs
   # Remove the version of NumPy pre-installed into the Travis virtualenv so
   # that we test with the system installed version.
   - pip uninstall -y numpy
+install:
+  # On Ubuntu 12.04 (Travis's testing machines) numpy is at 1.6.1, SciPy is at
+  # 0.9.0 and Cython is at 0.15.1.
+  - sudo apt-get install -y -qq python-numpy python-scipy cython
+  - sudo apt-get install -y -qq python-coverage
+  - sudo apt-get install -y -qq phantomjs
+  # SymPy's development version identifiers are not PEP 440 compliant and
+  # Travis now uses pip>6 setuptools>8, so we roll these back.
+  - pip install "pip<6" "setuptools<8"
+  # Theano may try to install SciPy from source if the --no-deps flags isn't
+  # there.
   - pip install --no-deps Theano==0.6.0
   - if [[ $SYMPY_MASTER == "false" ]]; then
       pip install sympy==0.7.4.1;
     elif [[ $SYMPY_MASTER == "true" ]]; then
       pip install https://github.com/sympy/sympy/archive/master.zip;
     fi
+  - pip install -U nose
   # Note that the `make html` command that runs 'build-sphinx' does not work if
   # Sphinx is installed with 'apt-get install sphinx'. It can't find the
   # numpydoc extension if it is. It must be bypassing virtualenv to the system
   # Python.
   - pip install sphinx numpydoc
+before_script:
+  - python -c "import setuptools; print(setuptools.__version__)"
+  - pip --version
   - pip freeze
 script:
+  # Run Python and Javascript tests.
   - nosetests -v --with-coverage --cover-package=pydy
-  - cd docs && make html && cd ..
-  - python setup.py install
   - cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html && cd ../../../../../
+  # Make sure the docs build.
+  - cd docs && make html && cd ..
+  # Make sure the library installs.
+  - python setup.py install
