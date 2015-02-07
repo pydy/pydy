@@ -24,7 +24,8 @@ import pydy
 
 # This allows readthedocs to use autodoc.
 if os.environ.get('READTHEDOCS', None) == 'True':
-    print('Made it in here')
+    print('docs/conf.py: on READTHEDOCS')
+    print os.path
 
     # This allows the Sphinx docs to build without the required modules.
     # http://docs.readthedocs.org/en/latest/faq.html#my-project-isn-t-building-with-autodoc
@@ -35,7 +36,9 @@ if os.environ.get('READTHEDOCS', None) == 'True':
         def __getattr__(cls, name):
                 return Mock()
 
-    MOCK_MODULES = ['numpy', 'numpy.linalg', 'numpy.testing', 'matplotlib',
+    MOCK_MODULES = ['numpy', 'numpy.linalg', 'numpy.testing', 
+                    'scipy.linalg',
+                    'matplotlib',
                     'sympy', 'sympy.physics.mechanics',
                     'sympy.matrices.expressions']
 
