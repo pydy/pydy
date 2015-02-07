@@ -2,7 +2,7 @@
 PyDy
 ====
 
-.. image:: https://pypip.in/version/pydy/badge.svg
+.. image:: https://img.shields.io/pypi/dm/pydy.svg
     :target: https://pypi.python.org/pypi/pydy/
     :alt: Latest Version
 
