@@ -5,6 +5,10 @@ PyDy
 .. image:: https://img.shields.io/pypi/dm/pydy.svg
     :target: https://pypi.python.org/pypi/pydy/
     :alt: Latest Version
+    
+.. image:: https://readthedocs.org/projects/pydy/badge/?version=latest
+    :target: https://readthedocs.org/projects/pydy/?badge=latest
+    :alt: Latest documentation
 
 .. image:: https://travis-ci.org/pydy/pydy.png?branch=master
    :target: https://travis-ci.org/pydy/pydy
