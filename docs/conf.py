@@ -27,12 +27,13 @@ if os.environ.get('READTHEDOCS', None) == 'True':
     print('Made it in here')
 
     # This allows the Sphinx docs to build without the required modules.
+    # http://docs.readthedocs.org/en/latest/faq.html#my-project-isn-t-building-with-autodoc
     from mock import Mock as MagicMock
 
     class Mock(MagicMock):
         @classmethod
         def __getattr__(cls, name):
-            return Mock()
+                return Mock()
 
     MOCK_MODULES = ['numpy', 'numpy.linalg', 'numpy.testing', 'matplotlib',
                     'sympy', 'sympy.physics.mechanics',
