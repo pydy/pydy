@@ -26,14 +26,20 @@ import pydy
 if os.environ.get('READTHEDOCS', None) == 'True':
     print('Made it in here')
 
-    import mock
+    # This allows the Sphinx docs to build without the required modules.
+    from mock import Mock as MagicMock
+
+    class Mock(MagicMock):
+        @classmethod
+        def __getattr__(cls, name):
+            return Mock()
 
     MOCK_MODULES = ['numpy', 'numpy.testing', 'matplotlib',
                     'sympy', 'sympy.physics.mechanics',
                     'sympy.matrices.expressions']
 
     for mod_name in MOCK_MODULES:
-        sys.modules[mod_name] = mock.Mock()
+        sys.modules[mod_name] = Mock()
 
 # -- General configuration ------------------------------------------------
 
