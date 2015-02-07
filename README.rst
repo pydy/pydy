@@ -313,6 +313,20 @@ publications or on the web. This citation can be used:
    Conference, 2013, `10.1115/DETC2013-13470
    <http://dx.doi.org/10.1115/DETC2013-13470>`_.
 
+Questions, Bugs, Feature Requests
+=================================
+
+If you have any question about installation, usage, etc, feel free send a
+message to our public `mailing list`_ or visit our `Gitter chatroom`_.
+
+.. _mailing list: http://groups.google.com/group/pydy
+.. _Gitter chatroom: https://gitter.im/pydy/pydy
+
+If you think there’s a bug or you would like to request a feature, please open
+an `issue`_ on Github.
+
+.. _issue: https://github.com/PythonDynamics/pydy-viz/issues
+
 Release Notes
 =============
 
