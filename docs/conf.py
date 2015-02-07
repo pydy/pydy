@@ -38,8 +38,7 @@ if os.environ.get('READTHEDOCS', None) == 'True':
                     'sympy', 'sympy.physics.mechanics',
                     'sympy.matrices.expressions']
 
-    for mod_name in MOCK_MODULES:
-        sys.modules[mod_name] = Mock()
+    sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # -- General configuration ------------------------------------------------
 
