@@ -2,6 +2,13 @@
 PyDy
 ====
 
+.. image:: https://pypip.in/version/pydy/badge.svg
+    :target: https://pypi.python.org/pypi/pydy/
+    :alt: Latest Version
+
+.. image:: https://travis-ci.org/pydy/pydy.png?branch=master
+   :target: https://travis-ci.org/pydy/pydy
+
 PyDy_, short for Python Dynamics, is a tool kit written in the Python
 programming language that utilizes an array of scientific programs to enable
 the study of multibody dynamics. The goal is to have a modular framework and
@@ -31,13 +38,6 @@ and visualization.
 .. _SciPy: http://www.scipy.org/scipylib/index.html
 .. _IPython: http://ipython.org
 .. _matplotlib: http://matplotlib.org
-
-.. image:: https://pypip.in/version/pydy/badge.svg
-    :target: https://pypi.python.org/pypi/pydy/
-    :alt: Latest Version
-
-.. image:: https://travis-ci.org/pydy/pydy.png?branch=master
-   :target: https://travis-ci.org/pydy/pydy
 
 Installation
 ============
@@ -71,9 +71,12 @@ Anaconda_ distribution for easy cross platform installation.
 .. _conda: http://conda.pydata.org/
 .. _Anaconda: http://docs.continuum.io/anaconda/
 
-Once the dependencies are installed, the package can be installed from PyPi::
+Once the dependencies are installed, the package can be downloaed from PyPi::
 
    $ wget https://pypi.python.org/packages/source/p/pydy/pydy-0.2.1.tar.gz
+
+and extracted and installed\ [#]::
+
    $ tar -zxvf pydy-0.2.1.tar.gz
    $ cd pydy-0.2.1
    $ python setup.py install
