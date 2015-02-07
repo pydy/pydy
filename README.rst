@@ -39,10 +39,15 @@ SciPy Stack
 - SymPy_ >= 0.7.4.1
 - NumPy_ >= 1.6.1
 - SciPy_ >= 0.9.0
-- IPython_ >= 0.13.0
+- IPython_ (3.0.0-dev)
 
 It's best to install the SciPy Stack dependencies using the instructions_
 provided on the SciPy website.
+
+**Note:** The pydy.viz has patched IPython(3.0.0-dev) as the dependency. It can be installed by::
+
+    $ pip install -e git+https://github.com/ipython/ipython.git
+
 
 Once the dependencies are installed, the package can be installed from PyPi
 using::
@@ -98,6 +103,7 @@ dependencies needed to build the various packages::
    $ mkvirtualenv pydy-dev
    (pydy-dev)$ pip install numpy scipy cython nose theano sympy
    (pydy-dev)$ pip install matplotlib # make sure to do this after numpy
+   (pydy-dev)$ pip install -e git+https://github.com/ipython/ipython.git
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
    (pydy-dev)$ python setup.py develop
@@ -108,6 +114,12 @@ Or with conda_::
 
    $ conda create -n pydy-dev numpy scipy cython nose theano sympy matplotlib
    $ source activate pydy-dev
+   (pydy-dev)$ conda remove ipython  # conda automatically installs ipython into envs
+   (pydy-dev)$ git clone https://github.com/ipython/ipython
+   (pydy-dev)$ cd ipython
+   (pydy-dev)$ git submodule update
+   (pydy-dev)$ pip install -e ".[notebook]"
+   (pydy-dev)$ cd ..
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
    (pydy-dev)$ python setup.py develop
@@ -294,6 +306,17 @@ Release Notes
 
 - Added a new System class and module to more seamlessly manage integrating the
   equations of motion.
+- Updated UI for pydy.viz's Visualizer.
+- pydy.viz generates two JSONs now (instead of one in earlier versions). The JSON generated from earlier versions
+  will **not** work in the new version.
+- Upgraded IPython version dependency to '3.0.0-dev'. 
+- Added new method `Scene.display_ipython` to allow visualizations to run in IPython notebooks (requires IPython 3.0.0-dev for this to work)
+- Added new material attribute for Shape.
+- Added IPython widgets, to change simulation parameters from the GUI itself.
+- Now EoMs can be re-integrated by changing simulation parameters from GUI (by hitting `rerun simulation` button).
+- Switched from socket based server to python's core SimpleHTTPServer.
+- Automated javascript testing on travis.
+
 
 0.2.1
 -----

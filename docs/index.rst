@@ -30,6 +30,16 @@ viz package
 
     viz/introduction.rst
     viz/api.rst
+    viz/using_visualizer.rst
+
+Tutorials
+-----------
+
+.. toctree::
+    :maxdepth: 2
+
+    tutorials/beginners.rst
+    tutorials/advanced.rst
 
 Questions
 =========

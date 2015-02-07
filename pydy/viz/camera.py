@@ -25,19 +25,19 @@ class PerspectiveCamera(VisualizationFrame):
     ==========
 
     name : str
-    a name for the PerspectiveCamera(optional). Default is 'unnamed'
+        A name for the PerspectiveCamera(optional). Default is 'unnamed'
 
     fov : int or float
-    Field Of View, It determines the angle between the top and bottom
-    of the viewable area(in degrees). Default is 45 (degrees)
+        Field Of View, It determines the angle between the top and bottom
+        of the viewable area(in degrees). Default is 45 (degrees)
 
     near : int or float
-    The distance of near plane of the PerspectiveCamera.
-    All objects closer to this distance are not displayed.
+        The distance of near plane of the PerspectiveCamera.
+        All objects closer to this distance are not displayed.
 
     far : int or float
-    The distance of far plane of the PerspectiveCamera
-    All objects farther than this distance are not displayed.
+        The distance of far plane of the PerspectiveCamera
+        All objects farther than this distance are not displayed.
 
     """
 
@@ -129,8 +129,8 @@ class PerspectiveCamera(VisualizationFrame):
     @property
     def fov(self):
         """
-        attribute for Field Of view of a PerspectiveCamera
-        Default is 45 degrees
+        attribute for Field Of view of a PerspectiveCamera.
+        Default value is 45 degrees
         """
         return self._fov
     @fov.setter
@@ -144,8 +144,8 @@ class PerspectiveCamera(VisualizationFrame):
     @property
     def near(self):
         """
-        attribute for Near Plane distance of a PerspectiveCamera
-        Default is 1
+        attribute for Near Plane distance of a PerspectiveCamera.
+        Default value is 1
         """
         return self._near
     @near.setter
@@ -159,8 +159,8 @@ class PerspectiveCamera(VisualizationFrame):
     @property
     def far(self):
         """
-        attribute for Far Plane distance of a PerspectiveCamera
-        Default is 1000
+        Attribute for Far Plane distance of a PerspectiveCamera
+        Default value is 1000
         """
         return self._far
     @far.setter
@@ -254,15 +254,15 @@ class OrthoGraphicCamera(VisualizationFrame):
     ==========
 
     name : str
-    a name for the PerspectiveCamera(optional). Default is 'unnamed'
+        a name for the PerspectiveCamera(optional). Default is 'unnamed'
 
     near : int or float
-    The distance of near plane of the PerspectiveCamera.
-    All objects closer to this distance are not displayed.
+        The distance of near plane of the PerspectiveCamera.
+        All objects closer to this distance are not displayed.
 
     far : int or float
-    The distance of far plane of the PerspectiveCamera
-    All objects farther than this distance are not displayed.
+        The distance of far plane of the PerspectiveCamera
+        All objects farther than this distance are not displayed.
 
     """
 
@@ -344,8 +344,8 @@ class OrthoGraphicCamera(VisualizationFrame):
     @property
     def near(self):
         """
-        attribute for Near Plane distance of an OrthoGraphicCamera
-        Default is 1
+        Attribute for Near Plane distance of an OrthoGraphicCamera.
+        Default value is 1
         """
         return self._near
     @near.setter
@@ -359,8 +359,8 @@ class OrthoGraphicCamera(VisualizationFrame):
     @property
     def far(self):
         """
-        attribute for Far Plane distance of an OrthoGraphicCamera
-        Default is 1000
+        Attribute for Far Plane distance of an OrthoGraphicCamera.
+        Default value is 1000
         """
         return self._far
     @far.setter

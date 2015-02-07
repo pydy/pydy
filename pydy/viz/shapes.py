@@ -79,9 +79,10 @@ class Shape(object):
 
     Parameters
     ==========
+
     name : str, optional
         A name assigned to the shape.
-    color: str, optional
+    color : str, optional
         A color string from list of colors in Three_ColorKeywords
 
     Examples
@@ -106,7 +107,7 @@ class Shape(object):
     'red'
 
     """
-    #TODO Need to modify the default material
+    
     def __init__(self, name='unnamed', color='grey', material="default"):
         self.name = name
         if not isinstance(color, str) \
@@ -224,7 +225,7 @@ class Cube(Shape):
 
     Parameters
     ==========
-    length: float or SymPy expression
+    length : float or SymPy expression
         The length of the cube.
 
     Examples
@@ -268,9 +269,9 @@ class Cylinder(Shape):
 
     Parameters
     ==========
-    length: float or SymPy expression
+    length : float or SymPy expression
         The length of the cylinder.
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the cylinder.
 
     Examples
@@ -321,9 +322,9 @@ class Cone(Shape):
 
     Parameters
     ==========
-    length: float or SymPy expression
+    length : float or SymPy expression
         The length of the cone.
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The base radius of the cone.
 
     Examples
@@ -374,7 +375,7 @@ class Sphere(Shape):
 
     Parameters
     ==========
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the sphere.
 
     Examples
@@ -418,7 +419,7 @@ class Circle(Sphere):
 
     Parameters
     ==========
-    radius: float or SymPy Expression
+    radius : float or SymPy Expression
         The radius of the circle.
 
     Examples
@@ -457,9 +458,9 @@ class Plane(Shape):
 
     Parameters
     ==========
-    length: float or SymPy expression
+    length : float or SymPy expression
         The length of the plane.
-    width: float or SymPy expression
+    width : float or SymPy expression
         The width of the plane.
 
     Examples
@@ -510,7 +511,7 @@ class Tetrahedron(Sphere):
 
     Parameters
     ==========
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the circum-scribing sphere of around the tetrahedron.
 
     Examples
@@ -550,7 +551,7 @@ class Octahedron(Sphere):
 
     Parameters
     ==========
-    radius: float or SymPy expression.
+    radius : float or SymPy expression.
         The radius of the circum-scribing sphere around the octahedron.
 
     Examples
@@ -590,7 +591,7 @@ class Icosahedron(Sphere):
 
     Parameters
     ==========
-    radius: float or a SymPy expression
+    radius : float or a SymPy expression
         Radius of the circum-scribing sphere for Icosahedron
 
     Examples
@@ -630,9 +631,9 @@ class Torus(Shape):
 
     Parameters
     ==========
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the torus.
-    tube_radius: float or SymPy expression
+    tube_radius : float or SymPy expression
         The radius of the torus tube.
 
     Examples
@@ -700,9 +701,9 @@ class TorusKnot(Torus):
 
     Parameters
     ==========
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the torus knot.
-    tube_radius: float or SymPy expression
+    tube_radius : float or SymPy expression
         The radius of the torus knot tube.
 
     Examples
