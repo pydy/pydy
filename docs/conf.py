@@ -25,7 +25,6 @@ import pydy
 # This allows readthedocs to use autodoc.
 if os.environ.get('READTHEDOCS', None) == 'True':
     print('docs/conf.py: on READTHEDOCS')
-    print os.path
 
     # This allows the Sphinx docs to build without the required modules.
     # http://docs.readthedocs.org/en/latest/faq.html#my-project-isn-t-building-with-autodoc
