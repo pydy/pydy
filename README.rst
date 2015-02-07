@@ -2,9 +2,6 @@
 PyDy
 ====
 
-.. image:: https://travis-ci.org/pydy/pydy.png?branch=master
-   :target: https://travis-ci.org/pydy/pydy
-
 PyDy_, short for Python Dynamics, is a tool kit written in the Python
 programming language that utilizes an array of scientific programs to enable
 the study of multibody dynamics. The goal is to have a modular framework and
@@ -29,10 +26,18 @@ SciPy stack) which provide additional code for numerical analyses, simulation,
 and visualization.
 
 .. _SymPy: http://sympy.org
+.. _mechanics package: http://docs.sympy.org/latest/modules/physics/mechanics/index.html
 .. _NumPy: http://numpy.scipy.org
 .. _SciPy: http://www.scipy.org/scipylib/index.html
 .. _IPython: http://ipython.org
 .. _matplotlib: http://matplotlib.org
+
+.. image:: https://pypip.in/version/pydy/badge.svg
+    :target: https://pypi.python.org/pypi/pydy/
+    :alt: Latest Version
+
+.. image:: https://travis-ci.org/pydy/pydy.png?branch=master
+   :target: https://travis-ci.org/pydy/pydy
 
 Installation
 ============
@@ -235,7 +240,7 @@ You should then install the dependencies for running the tests:
 .. _phantomjs: http://phantomjs.org
 
 Isolated Environments
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 It is typically advantageous to setup a virtual environment to isolate the
 development code from other versions on your system. There are two popular
