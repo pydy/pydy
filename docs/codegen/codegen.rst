@@ -11,14 +11,14 @@ that you can use just the raw code or the wrapper versions.
 We currently support three backends:
 
 `lambdify`
-   This uses the `sympy.utilities.lambdify` module to generate NumPy aware
-   Python code which is defined in a Python `lambda` function.
+   This generates NumPy-aware Python code which is defined in a Python `lambda`
+   function, using the `sympy.utilities.lambdify` module.
 `Theano`
-   This uses the `sympy.printers.theano_code` module to generate Theano trees
-   that are compiled into low level code.
+   This generates Theano trees that are compiled into low level code, using the
+   `sympy.printers.theano_code` module.
 `Cython`
-   The uses SymPy's C code printer utilities and Cython to wrap the code for
-   use in Python.
+   This generates C code that can be called from Python, using
+   SymPy's C code printer utilities and Cython.
 
 Example Use
 -----------
@@ -33,7 +33,7 @@ class.
    >>> type(sys)
    <class 'pydy.system.System'>
    >>> rhs = sys.generate_ode_function()
-   >>> help(rhs)
+   >>> help(rhs) # rhs is a function:
    Returns the derivatives of the states, i.e. numerically evaluates the right
    hand side of the first order differential equation.
 
@@ -90,7 +90,8 @@ argument, e.g.:
    >>> rhs(array([1.0, 2.0]), 0.0, array([1.0, 2.0, 3.0]))
    array([ 2., -7.])
 
-You can also make use of the `ODEFunctionGenerator` classes directly:
+The backends are implemented as subclasses of `ODEFunctionGenerator`. You can
+make use of the `ODEFunctionGenerator` classes directly:
 
 .. code:: pycon
 

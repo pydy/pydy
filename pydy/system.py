@@ -8,7 +8,7 @@ Here is the procedure for using this class.
     1. specify your options either via the constructor or via the
        attributes.
     2. optionally, call ``generate_ode_function()`` if you want to customize
-       how this function is generated.
+       how the ODE function is generated.
     3. call ``integrate()`` to simulate your system.
 
 Examples

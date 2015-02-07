@@ -25,12 +25,13 @@ that can provide the user with their desired workflow, including:
 
 We started by building the SymPy_ `mechanics package`_ which provides an API
 for building models and generating the symbolic equations of motion for complex
-multibody systems and have more recently developed two packages, `pydy.codegen`
+multibody systems. More recently we developed two packages, `pydy.codegen`
 and `pydy.viz`, for simulation and visualization of the models, respectively.
-The remaining tools currently used in the PyDy workflow are popular scientific
-Python packages such as NumPy_, SciPy_, IPython_, and matplotlib_ (i.e. the
-SciPy stack) which provide additional code for numerical analyses, simulation,
-and visualization.
+This Python package contains these two packages and other tools for working
+with SymPy mechanics. The remaining tools currently used in the PyDy workflow
+are popular scientific Python packages such as NumPy_, SciPy_, IPython_, and
+matplotlib_ (i.e. the SciPy stack) which provide additional code for numerical
+analyses, simulation, and visualization.
 
 .. _SymPy: http://sympy.org
 .. _mechanics package: http://docs.sympy.org/latest/modules/physics/mechanics/index.html
