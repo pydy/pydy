@@ -16,32 +16,32 @@ def multi_mass_spring_damper(n=1, apply_gravity=False,
                              apply_external_forces=False):
     """Returns a system containing the symbolic equations of motion and
     associated variables for a simple mutli-degree of freedom point mass,
-    spring, damper system with optional gravitational and an external
+    spring, damper system with optional gravitational and external
     specified forces. For example, a two mass system under the influence of
     gravity and external forces looks like:
 
+    ::
 
-       / / / / / / / /
-      ----------------
-       |     |     |   | g
-       \    | |    |   V
-    k0 /    --- c0 |
-       |     |     | x0, v0
-      ---------    V
-      |  m0   | -----
-      ---------    |
-       | |   |     |
-       \ v  | |    |
-    k1 / f0 --- c1 |
-       |     |     | x1, v1
-      ---------    V
-      |  m1   | -----
-      ---------
-         | f1
-         V
+        ----------------
+         |     |     |   | g
+         \    | |    |   V
+      k0 /    --- c0 |
+         |     |     | x0, v0
+        ---------    V
+        |  m0   | -----
+        ---------    |
+         | |   |     |
+         \ v  | |    |
+      k1 / f0 --- c1 |
+         |     |     | x1, v1
+        ---------    V
+        |  m1   | -----
+        ---------
+           | f1
+           V
 
     Parameters
-    ==========
+    ----------
     n : integer
         The number of masses in the serial chain.
     apply_gravity : boolean
@@ -50,7 +50,7 @@ def multi_mass_spring_damper(n=1, apply_gravity=False,
         If true, a time varying external force will be applied to each mass.
 
     Returns
-    =======
+    -------
     system : pydy.system.System
         A system constructed from the KanesMethod object.
 
@@ -117,16 +117,18 @@ def n_link_pendulum_on_cart(n=1, cart_force=True, joint_torques=False):
     motion for a 2D n-link pendulum on a sliding cart under the influence of
     gravity.
 
-        |
-        v   y    o
-        g   ^   /
-            |  /
-        ----|-/--  theta0
-        |   |/  |
-    F-> |   o --|---> x
-        |       |
-        ---------
-         o     o
+    ::
+
+          |
+          v   y    o
+          g   ^   /
+              |  /
+          ----|-/--  theta0
+          |   |/  |
+      F-> |   o --|---> x
+          |       |
+          ---------
+           o     o
 
     Parameters
     ----------

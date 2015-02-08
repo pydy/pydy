@@ -29,12 +29,13 @@ that can provide the user with their desired workflow, including:
 
 We started by building the SymPy_ `mechanics package`_ which provides an API
 for building models and generating the symbolic equations of motion for complex
-multibody systems and have more recently developed two packages, `pydy.codegen`
+multibody systems. More recently we developed two packages, `pydy.codegen`
 and `pydy.viz`, for simulation and visualization of the models, respectively.
-The remaining tools currently used in the PyDy workflow are popular scientific
-Python packages such as NumPy_, SciPy_, IPython_, and matplotlib_ (i.e. the
-SciPy stack) which provide additional code for numerical analyses, simulation,
-and visualization.
+This Python package contains these two packages and other tools for working
+with SymPy mechanics. The remaining tools currently used in the PyDy workflow
+are popular scientific Python packages such as NumPy_, SciPy_, IPython_, and
+matplotlib_ (i.e. the SciPy stack) which provide additional code for numerical
+analyses, simulation, and visualization.
 
 .. _SymPy: http://sympy.org
 .. _mechanics package: http://docs.sympy.org/latest/modules/physics/mechanics/index.html
@@ -316,6 +317,20 @@ publications or on the web. This citation can be used:
    Technical Conferences and Computers and Information in Engineering
    Conference, 2013, `10.1115/DETC2013-13470
    <http://dx.doi.org/10.1115/DETC2013-13470>`_.
+
+Questions, Bugs, Feature Requests
+=================================
+
+If you have any question about installation, usage, etc, feel free send a
+message to our public `mailing list`_ or visit our `Gitter chatroom`_.
+
+.. _mailing list: http://groups.google.com/group/pydy
+.. _Gitter chatroom: https://gitter.im/pydy/pydy
+
+If you think there’s a bug or you would like to request a feature, please open
+an `issue`_ on Github.
+
+.. _issue: https://github.com/pydy/issues
 
 Release Notes
 =============
