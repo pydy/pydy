@@ -11,8 +11,8 @@ two models:
    force.
 `n_link_pendulum_on_a_cart`
    This is an extension to the classic two dimensional inverted pendulum on a
-   cart with multi-links. You can option apply an arbitrary lateral force to
-   the cart and/or apply arbitrary torques between each link.
+   cart to multiple links. You can optionally apply an arbitrary lateral
+   force to the cart and/or apply arbitrary torques between each link.
 
 Example Use
 -----------
