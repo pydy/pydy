@@ -326,7 +326,7 @@ message to our public `mailing list`_ or visit our `Gitter chatroom`_.
 If you think there’s a bug or you would like to request a feature, please open
 an `issue`_ on Github.
 
-.. _issue: https://github.com/PythonDynamics/pydy-viz/issues
+.. _issue: https://github.com/pydy/issues
 
 Release Notes
 =============

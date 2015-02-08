@@ -12,7 +12,8 @@ We currently support three backends:
 
 `lambdify`
    This generates NumPy-aware Python code which is defined in a Python `lambda`
-   function, using the `sympy.utilities.lambdify` module.
+   function, using the `sympy.utilities.lambdify` module and is the default
+   generator.
 `Theano`
    This generates Theano trees that are compiled into low level code, using the
    `sympy.printers.theano_code` module.
