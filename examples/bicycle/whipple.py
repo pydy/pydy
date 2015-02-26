@@ -1,18 +1,14 @@
 #!usr/bin/env python
 
-# This file derives the non-linear equations of motion of the Whipple bicycle
-# model.
+# This file derives the non-linear equations of motion of the Whipple
+# bicycle model.
+
+from collections import OrderedDict
 
 import sympy as sym
 import sympy.physics.mechanics as mec
-
-# debugging
-try:
-    from IPython.core.debugger import Tracer
-except ImportError:
-    pass
-else:
-    set_trace = Tracer()
+import numpy as np
+from dtk import bicycle
 
 mec.Vector.simp = False
 
@@ -22,27 +18,38 @@ mec.Vector.simp = False
 
 print('Defining reference frames.')
 
+
+class ReferenceFrame(mec.ReferenceFrame):
+
+    def __init__(self, *args, **kwargs):
+
+        kwargs.pop('indices', None)
+        kwargs.pop('latexs', None)
+
+        lab = args[0].lower()
+        tex = '\hat{{{}}}_{}'
+
+        super(ReferenceFrame, self).__init__(*args,
+                                             indices=('1', '2', '3'),
+                                             latexs=(tex.format(lab, '1'),
+                                                     tex.format(lab, '2'),
+                                                     tex.format(lab, '3')),
+                                             **kwargs)
+
 # Newtonian Frame
-N = mec.ReferenceFrame('N', indices=('1', '2', '3'),
-        latexs=('\hat{n}_1', '\hat{n}_2', '\hat{n}_3'))
+N = ReferenceFrame('N')
 # Yaw Frame
-A = mec.ReferenceFrame('A', indices=('1', '2', '3'),
-        latexs=('\hat{a}_1', '\hat{a}_2', '\hat{a}_3'))
+A = ReferenceFrame('A')
 # Roll Frame
-B = mec.ReferenceFrame('B', indices=('1', '2', '3'),
-        latexs=('\hat{b}_1', '\hat{b}_2', '\hat{b}_3'))
+B = ReferenceFrame('B')
 # Rear Frame
-C = mec.ReferenceFrame('C', indices=('1', '2', '3'),
-        latexs=('\hat{c}_1', '\hat{c}_2', '\hat{c}_3'))
+C = ReferenceFrame('C')
 # Rear Wheel Frame
-D = mec.ReferenceFrame('D', indices=('1', '2', '3'),
-        latexs=('\hat{d}_1', '\hat{d}_2', '\hat{d}_3'))
+D = ReferenceFrame('D')
 # Front Frame
-E = mec.ReferenceFrame('E', indices=('1', '2', '3'),
-        latexs=('\hat{e}_1', '\hat{e}_2', '\hat{e}_3'))
+E = ReferenceFrame('E')
 # Front Wheel Frame
-F = mec.ReferenceFrame('F', indices=('1', '2', '3'),
-        latexs=('\hat{f}_1', '\hat{f}_2', '\hat{f}_3'))
+F = ReferenceFrame('F')
 
 ####################################
 # Generalized Coordinates and Speeds
@@ -199,6 +206,7 @@ print('Defining holonomic constraints.')
 
 # this constraint is enforced so that the front wheel contacts the ground
 holonomic = fn.pos_from(dn).dot(A['3'])
+#holonomic = sym.trigsimp(holonomic)
 
 ####################################
 # Kinematical Differential Equations
@@ -206,10 +214,10 @@ holonomic = fn.pos_from(dn).dot(A['3'])
 
 print('Defining kinematical differential equations.')
 
-kinematical = [q3d - u3, # yaw
-               q4d - u4, # roll
-               q5d - u5, # pitch
-               q7d - u7] # steer
+kinematical = [q3.diff(t) - u3,  # yaw
+               q4.diff(t) - u4,  # roll
+               q5.diff(t) - u5,  # pitch
+               q7.diff(t) - u7]  # steer
 
 ####################
 # Angular Velocities
@@ -217,12 +225,12 @@ kinematical = [q3d - u3, # yaw
 
 print('Defining angular velocities.')
 
-A.set_ang_vel(N, u3 * N['3']) # yaw rate
-B.set_ang_vel(A, u4 * A['1']) # roll rate
-C.set_ang_vel(B, u5 * B['2']) # pitch rate
-D.set_ang_vel(C, u6 * C['2']) # rear wheel rate
-E.set_ang_vel(C, u7 * C['3']) # steer rate
-F.set_ang_vel(E, u8 * E['2']) # front wheel rate
+A.set_ang_vel(N, u3 * N['3'])  # yaw rate
+B.set_ang_vel(A, u4 * A['1'])  # roll rate
+C.set_ang_vel(B, u5 * B['2'])  # pitch rate
+D.set_ang_vel(C, u6 * C['2'])  # rear wheel rate
+E.set_ang_vel(C, u7 * C['3'])  # steer rate
+F.set_ang_vel(E, u8 * E['2'])  # front wheel rate
 
 ###################
 # Linear Velocities
@@ -253,6 +261,8 @@ print('Defining nonholonomic constraints.')
 nonholonomic = [fn.vel(N).dot(A['1']),
                 fn.vel(N).dot(A['2']),
                 fn.vel(N).dot(A['3'])]
+# The following is pretty slow.
+#nonholonomic = [sym.trigsimp(expr) for expr in nonholonomic]
 
 #########
 # Inertia
@@ -310,20 +320,18 @@ forces = [Fco, Fdo, Feo, Ffo, Tc, Td, Te]
 print("Generating Kane's equations.")
 
 kane = mec.KanesMethod(N,
-                       [q3, q4, q7], # yaw, roll, steer
-                       [u4, u6, u7], # roll rate, rear wheel rate, steer rate
+                       [q3, q4, q7],  # yaw, roll, steer
+                       [u4, u6, u7],  # roll rate, rear wheel rate, steer rate
                        kd_eqs=kinematical,
-                       q_dependent=[q5], # pitch angle
+                       q_dependent=[q5],  # pitch angle
                        configuration_constraints=[holonomic],
-                       u_dependent=[u3, u5, u8], # yaw rate, pitch rate, front wheel rate
+                       u_dependent=[u3, u5, u8],  # yaw rate, pitch rate, front wheel rate
                        velocity_constraints=nonholonomic)
 fr, frstar = kane.kanes_equations(forces, bodies)
 
 # Validation of non-linear equations
 
 print('Loading numerical input parameters.')
-
-from dtk import bicycle
 
 bp = bicycle.benchmark_parameters()
 mp = bicycle.benchmark_to_moore(bp)
@@ -332,13 +340,13 @@ mp = bicycle.benchmark_to_moore(bp)
 basu_input = bicycle.basu_table_one_input()
 
 # convert the values to my coordinates and speeds
-moore_input = bicycle.basu_to_moore_input(basu_input, bp['rR'],
-        bp['lam'])
+moore_input = bicycle.basu_to_moore_input(basu_input, bp['rR'], bp['lam'])
 
-constant_substitutions = {}
+constant_substitutions = OrderedDict()
 for k, v in mp.items():
     try:
         exec('constant_substitutions[{}] = v'.format(k))
+        #constant_substitutions[sym.Symbol(k)] = v
     except NameError:
         pass
 dynamic_substitutions = {}
@@ -348,24 +356,56 @@ for k, v in moore_input.items():
     except NameError:
         pass
 
-substitutions = {T4: 0.0, T6: 0.0, T7: 0.0}
+specified_subs = {T4: 0.0, T6: 0.0, T7: 0.0}
+substitutions = specified_subs.copy()
 substitutions.update(constant_substitutions)
 substitutions.update(dynamic_substitutions)
+
+# BUGS to report:
+# 1. find_dynamicsymbols should deal with Vectors and lists of
+# exprs/vectors/etc.
+
+from pydy.codegen.ode_function_generators import CythonODEFunctionGenerator
+
+g = CythonODEFunctionGenerator(mec.msubs(kane.forcing, kane.kindiffdict()),
+                               kane._q[:],
+                               kane._u[:],
+                               constant_substitutions.keys(),
+                               mass_matrix=mec.msubs(kane.mass_matrix,
+                                                     kane.kindiffdict()),
+                               coordinate_derivatives=sym.Matrix(
+                                   [kane.kindiffdict()[k] for k in
+                                    kane._q.diff(t)]),
+                               specifieds=[T4, T6, T7],
+                               constants_arg_type='array',
+                               specifieds_arg_type='array')
+rhs = g.generate()
+
+state_vals = []
+for d in  kane._q[:] + kane._u[:]:
+    sym_str = str(d)[:-3]
+    state_vals.append(moore_input[sym_str])
+state_vals = np.array(state_vals)
+
+xd = rhs(state_vals, 0.0, np.array(constant_substitutions.values()),
+         np.array([0.0, 0.0, 0.0]))
+
+pause
 
 print('Substituting numerical parameters.')
 mass_matrix = kane.mass_matrix_full.subs(substitutions)
 forcing_vector = kane.forcing_full.subs(kane.kindiffdict()).subs(substitutions)
 
 print("Solving for x'.")
-xd = mass_matrix.inv() * forcing_vector
+xd = mass_matrix.LUsolve(forcing_vector)
 
 print("Generating output dictionary.")
 # convert the outputs from my model to the Basu-Mandal coordinates
 # TODO : raise an issue about not knowing which order the x vector is in with
 # reference to M * x' = F
-states = kane._q + kane._u
+states = kane._q[:] + kane._u[:]
 state_names = [str(state)[:-3] + 'p' for state in states]
-moore_output = {k : v for k, v in zip(state_names, list(xd))}
+moore_output = {k: v for k, v in zip(state_names, list(xd))}
 u1 = -rr * u6 * sym.cos(q3)
 u1p = u1.diff(t)
 u2 = -rr * u6 * sym.sin(q3)
@@ -386,6 +426,8 @@ for k, bv in basu_output.items():
         testing.assert_allclose(bv, mv)
     except AssertionError:
         print('Failed: {} is supposed to be {} but is {}'.format(k, bv, mv))
+
+pause
 
 # Try with lambdify
 
