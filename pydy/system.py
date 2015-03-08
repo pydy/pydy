@@ -48,12 +48,13 @@ you must call ``generate_ode_function`` on your own::
     sys.integrate()
 
 """
-
+import warnings
 import sympy as sm
 from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
 
-from .codegen.code import generate_ode_function
+from .codegen.code import generate_ode_function as old
+from .codegen.ode_function_generators import generate_ode_function
 from .utils import sympy_equal_to_or_newer_than
 
 SYMPY_VERSION = sm.__version__
@@ -465,6 +466,15 @@ class System(object):
         if 'specified' in kwargs:
             kwargs.pop('specified')
             print("User supplied 'specified' kwarg was disregarded.")
+
+            with warnings.catch_warnings():
+                warnings.simplefilter('once')
+                warnings.warn("specified is deprecated and will not work in future versions.",
+                    DeprecationWarning)
+
+        if 'specifieds' in kwargs:
+            kwargs.pop('specifieds')
+            print("User supplied 'specifieds' kwarg was disregarded.")
 
         kwargs.update(self._kwargs_for_gen_ode_func())
         kwargs['generator'] = generator
