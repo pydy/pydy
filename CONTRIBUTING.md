@@ -18,7 +18,7 @@ should always be stable). The checklist is as follows:
   - [ ] Did you add an explanation to the online documentation?
 - [ ] Does it follow PEP8 guidelines? (use a linter, e.g. [pylint], to check
   your code)
-- [ ] Is this change documented in the Release Notes?
+- [ ] Is this change documented in the [Release Notes]?
 - [ ] Have all reviewer comments been addressed?
 
 It should be pasted in the top most comment block of the pull request and any
@@ -26,3 +26,4 @@ non-relevant questions can be removed.
 
 [pylint]: http://www.pylint.org
 [numpydoc format]: https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt
+[Release Notes]: https://github.com/pydy/pydy/tree/contributing#release-notes
