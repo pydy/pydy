@@ -21,8 +21,10 @@ should always be stable). The checklist is as follows:
 - [ ] Is this change documented in the [Release Notes]?
 - [ ] Have all reviewer comments been addressed?
 
-It should be pasted in the top most comment block of the pull request and any
-non-relevant questions can be removed.
+This checklist should be pasted in the top most comment block of the pull
+request. It is then the duty of reviewers to check off the items as they are
+completed. If any questions are not relevant to your particular pull request, a
+reviewer will simply check it off as done.
 
 [pylint]: http://www.pylint.org
 [numpydoc format]: https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt
