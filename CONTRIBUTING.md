@@ -7,7 +7,8 @@ https://github.com/sympy/sympy/wiki/introduction-to-contributing
 
 We do have some differences though. In particular, we use a checklist to make
 sure each pull request is ready to be merged into the master branch (which
-should always be stable). The checklist is as follows:
+should always be stable). In particular, every pull request into this
+repository must satisfy a checklist:
 
 - [ ] Are there no merge conflicts?
 - [ ] Did it pass the tests? Locally? Travis CI? (run ``nosetests``)
