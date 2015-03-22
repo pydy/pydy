@@ -1,26 +1,43 @@
-These are examples of using the various tools in PyDy to simulate and study the
-motion of classical dynamic systems. The equations of motion for the systems
-are typically derived with SymPy Mechanics and the numerical work done with a
-variety of other packages, such as:
+These are examples of using PyDy to derive, simulate, and study the motion of
+classical dynamic systems. The equations of motion for the systems are
+typically derived with SymPy Mechanics in symbolic form and then numerical
+analyses is done with PyDy and various other tools in the SciPy Stack. Although
+some examples also show cross language support for numerical analyses.
 
-- NumPy/SciPy
-- python-control
-- Matlab
-- GSL
-- IPython
+Each folder contains the files for one example. To contribute an example, make
+a pull request with a new directory. The new folder should include, at the
+minimum, a README explaining the problem, a figure (preferably SVG), and the
+source code for the example either in script form or as an IPython notebook.
+There should also be a file named `run.py` that executes the example.
 
-Each folder contains the files for one example. To contribute, make a pull
-request. The new folder should include a readme explaining the problem, a
-figure, and the source code for the example. Code written in python should
-roughly adhere to PEP8: http://www.python.org/dev/peps/pep-0008/. There are
-some exceptions, such as naming of variables. Use your best judgment.
+Script Format
+=============
 
-Commit Guidelines:
+There should be a REAMDE that explains the example, what each file is, and how
+to run the example. Use as many files as needed to organize the example. Python
+files should be PEP8 compliant. The `run.py` file should execute the entire
+example.
 
-When submitting, please follow the commit guidelines used for Git: 
-http://git-scm.com/book/ch5-2.html#Commit-Guidelines.
-The first line should have a soft limit of 50 characters, and subsequent lines
-limitted to 72 characters. The commit messages should be written in the
-imperative present tense.
+IPython Notebook Format
+=======================
 
-Visit www.pydy.org to learn more or contribute.
+Title
+  Please provide some informative title for the example.
+Problem Setup
+  This should include a vector drawing of the system as well as a basic
+  description of said drawing and what the premise of the example.
+Equations of Motion
+  This should lead the reader through the derivation of the symbolic equations
+  of motion (non-linear and/or linear).
+Numerical Analyses
+  If the example includes numerical analyses it should be explained here.
+Visualization
+  If the example includes a visualization of the motion include it here.
+
+Style Guidelines:
+
+  - The code cells should be PEP8 compliant.
+  - Continuous sections of prose should be merged into the same cell (don't
+    have two adjacent text cells).
+  - The title should be heading 1 (single #) and in its own cell.
+  - Use the "heading" cell type of proper level for organizing the sections.
