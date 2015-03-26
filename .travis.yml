@@ -35,6 +35,8 @@ install:
   # numpydoc extension if it is. It must be bypassing virtualenv to the system
   # Python.
   - pip install sphinx numpydoc
+  # Install PEP 8 linters (flake8 is like pep8 but also reports unused imports)
+  - pip install flake8
 before_script:
   - python -c "import setuptools; print(setuptools.__version__)"
   - pip --version
@@ -43,6 +45,9 @@ script:
   # Run Python and Javascript tests.
   - nosetests -v --with-coverage --cover-package=pydy
   - cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html && cd ../../../../../
+  # Check Python and Javascript syntax (trailing whitespaces/newlines, unused imports).
+  - flake8 --first --select W29,W39,F40 '--filename=*.js,*.py' . ||
+    (echo "Please run a linter and fix errors, e.g. pylint, flake8, pep8, etc."; false)
   # Make sure the docs build.
   - cd docs && make html && cd ..
   # Make sure the library installs.
