@@ -9,7 +9,6 @@ results from KanesMethod are correct.
 """
 
 from sympy import symbols, Matrix, solve, Poly, sin, cos, zeros
-from sympy.physics.mechanics import *
 
 # Symbols for time and constant parameters
 t, r, m, g, I, J = symbols('t r m g I J')

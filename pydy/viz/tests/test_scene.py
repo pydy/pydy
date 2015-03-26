@@ -2,14 +2,11 @@
 
 import os
 
-from numpy import array, linspace
-from scipy.integrate import odeint
+from numpy import linspace
 from sympy import symbols
 import sympy.physics.mechanics as me
 
 from ...system import System
-from ...codegen.code import generate_ode_function
-from ..shapes import Sphere
 from ..visualization_frame import VisualizationFrame
 from ..scene import Scene
 

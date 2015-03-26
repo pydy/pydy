@@ -7,8 +7,8 @@ from sympy import S, Matrix
 from sympy import pi, acos
 from sympy import simplify, sqrt, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
-from sympy.physics.mechanics import inertia, inertia_of_point_mass
-from sympy.physics.mechanics import cross, dot
+from sympy.physics.mechanics import inertia_of_point_mass
+from sympy.physics.mechanics import dot
 import numpy as np
 
 

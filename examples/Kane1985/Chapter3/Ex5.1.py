@@ -3,10 +3,10 @@
 """Exercise 5.1 from Kane 1985."""
 
 from __future__ import division
-from sympy.physics.mechanics import ReferenceFrame, Point
+from sympy.physics.mechanics import ReferenceFrame
 from sympy.physics.mechanics import dot
-from sympy import solve, sqrt, symbols, integrate
-from sympy import sin, cos, tan, pi, acos
+from sympy import symbols, integrate
+from sympy import pi, acos
 from sympy import Matrix, S, simplify
 import scipy.integrate
 

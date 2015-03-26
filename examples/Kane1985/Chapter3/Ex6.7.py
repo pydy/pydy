@@ -5,10 +5,10 @@
 from __future__ import division
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import inertia, inertia_of_point_mass
-from sympy.physics.mechanics import cross, dot
-from sympy import solve, sqrt, symbols, integrate, diff
-from sympy import sin, cos, tan, pi, S, Matrix
-from sympy import simplify, Abs
+from sympy.physics.mechanics import dot
+from sympy import solve, sqrt, symbols, diff
+from sympy import sin, cos, pi, Matrix
+from sympy import simplify
 
 b, m, k_a = symbols('b m k_a', real=True, nonnegative=True)
 theta = symbols('theta', real=True)

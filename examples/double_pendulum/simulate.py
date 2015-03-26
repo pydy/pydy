@@ -3,11 +3,8 @@ This file will use pydy.codegen to simulate the double pendulum.
 
 """
 
-from numpy import concatenate, array, linspace
+from numpy import linspace
 from pydy.system import System
-from scipy.integrate import odeint
-
-from double_pendulum import *
 
 constants = {l: 10.0, m: 10.0, g: 9.81}
 

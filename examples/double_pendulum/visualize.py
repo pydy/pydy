@@ -12,7 +12,6 @@ from pydy.viz.shapes import Cylinder, Sphere
 from pydy.viz.scene import Scene
 from pydy.viz.visualization_frame import VisualizationFrame
 
-from simulate import *
 
 
 # Create geometry

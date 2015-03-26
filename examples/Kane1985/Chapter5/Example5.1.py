@@ -3,7 +3,6 @@
 """Example 5.1 from Kane 1985."""
 
 from __future__ import division
-from sympy import Dummy, Matrix
 from sympy import expand, solve, symbols, trigsimp
 from sympy.physics.mechanics import ReferenceFrame, Point, dot, dynamicsymbols
 from util import msprint, subs, partial_velocities

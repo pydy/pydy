@@ -6,7 +6,7 @@ from __future__ import division
 from sympy import sin, cos, pi, solve, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import dynamicsymbols
-from util import msprint, subs, partial_velocities, potential_energy
+from util import msprint, partial_velocities, potential_energy
 from util import generalized_active_forces, generalized_active_forces_V
 
 

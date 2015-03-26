@@ -3,7 +3,7 @@
 """Exercise 9.7 from Kane 1985."""
 
 from __future__ import division
-from sympy import cos, pi, solve, trigsimp, symbols, S
+from sympy import cos, pi, solve, symbols, S
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import dynamicsymbols
 from util import msprint, partial_velocities, generalized_active_forces

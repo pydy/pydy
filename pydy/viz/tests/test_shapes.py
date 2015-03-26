@@ -6,7 +6,6 @@ from sympy import symbols
 from numpy.testing import assert_allclose
 
 # local
-from ..shapes import *
 
 
 def test_shape():

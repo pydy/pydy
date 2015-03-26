@@ -5,7 +5,7 @@
 from __future__ import division
 from sympy import Dummy, Matrix
 from sympy import diff, expand, expand_trig, integrate, solve, symbols
-from sympy import sin, cos, tan, trigsimp
+from sympy import trigsimp
 from sympy.physics.mechanics import ReferenceFrame, Point, Particle, RigidBody
 from sympy.physics.mechanics import cross, dot, Vector
 from sympy.physics.mechanics import MechanicsStrPrinter

@@ -9,7 +9,7 @@ from sympy import Dummy
 from sympy import expand, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import dynamicsymbols
-from util import msprint, subs, partial_velocities
+from util import msprint, partial_velocities
 from util import generalized_active_forces, potential_energy
 
 

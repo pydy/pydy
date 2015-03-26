@@ -45,7 +45,6 @@ if os.environ.get('READTHEDOCS', None) == 'True':
 
 # -- General configuration ------------------------------------------------
 
-import numpydoc
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'

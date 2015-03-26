@@ -4,11 +4,9 @@
 from __future__ import division
 import os
 import json
-import shutil
 import distutils
 import distutils.dir_util
 import webbrowser
-import datetime
 from collections import OrderedDict
 # external
 from sympy.physics.mechanics import ReferenceFrame, Point
@@ -27,7 +25,6 @@ try:
     from IPython.html import widgets
     from IPython.display import clear_output, display, Javascript
 
-except ImportError:
     IPython = None
 
 

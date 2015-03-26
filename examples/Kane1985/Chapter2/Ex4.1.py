@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """Exercise 4.1 from Kane 1985"""
 
-from sympy.physics.mechanics import dot, dynamicsymbols, MechanicsStrPrinter
+from sympy.physics.mechanics import dot, MechanicsStrPrinter
 from sympy.physics.mechanics import ReferenceFrame, Point
-from sympy import solve, symbols, pi, sin, cos
+from sympy import symbols, sin, cos
 from sympy.simplify.simplify import trigsimp
 
 
