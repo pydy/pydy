@@ -1,11 +1,11 @@
 
 DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
-    
+
     create: function(){
-        /** 
+        /**
           * This method creates the scene from the self.model
           * and renders it onto the canvas.
-        **/ 
+        **/
         var self = this;
         self._createRenderer();
         self._createEmptyScene();
@@ -14,45 +14,45 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self._addAxes();
         self._addTrackBallControls();
         self.animationPaused = false;
-        
-    
+
+
     },
 
     _createRenderer: function(){
         /**
           * Creates a webGL Renderer
           * with a default background color.
-        **/ 
+        **/
         var self = this;
         self.webgl_renderer = new THREE.WebGLRenderer();
         var width = jQuery(window).width() * 0.4;
         self.webgl_renderer.setSize(width, 480);
-        
+
         var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
         self.webgl_renderer.setClearColor(backgroundColor);
         var container = jQuery('#renderer');
-        container.append(self.webgl_renderer.domElement);   
-    
+        container.append(self.webgl_renderer.domElement);
+
     },
 
     _createEmptyScene: function(){
         /**
           * Creates a THREE Scene
-          * 
-        **/ 
+          *
+        **/
         var self = this;
         // new Scene..
         self._scene  = new THREE.Scene();
     },
 
     _addDefaultCamera: function(){
-        /** 
+        /**
           * This method adds
           * a Perspective camera to the
           * initial visualization
-        **/  
+        **/
         var self = this;
-        
+
         self.primaryCamera = new THREE.PerspectiveCamera();
         self.primaryCamera.position.set(0,0,100);
         self._scene.add(self.primaryCamera);
@@ -60,44 +60,44 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
     },
     _addDefaultLight: function(){
-        /** 
+        /**
           * This method adds a default light
           * initial visualization
-        **/  
+        **/
         var self = this;
         var light = new THREE.PointLight(0xffffff);
         light.position.set(10,10,-10);
         self._scene.add(light);
     },
-    
+
 
     _addAxes: function(){
         /**
           * Adds a default system of axes
           * to the initial visualization.
-        **/ 
+        **/
         var self = this;
 
         var axes = new THREE.AxisHelper(100);
         self._scene.add(axes);
-        
+
     },
 
     _addTrackBallControls: function(){
         /**
-          * Adds Mouse controls 
+          * Adds Mouse controls
           * to the initial visualization
           * using TrackballControls Library.
-        **/ 
+        **/
         var self = this;
         self.primaryControls = new THREE.TrackballControls(self.currentCamera,
                                             self.webgl_renderer.domElement);
-    
+
     },
 
     _resetControls: function(){
         /**
-          * Resets the scene camera to 
+          * Resets the scene camera to
           * the initial values(zoom, displacement etc.)
         **/
         var self = this;
@@ -106,26 +106,26 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
     addObjects: function(){
         /**
-          * Adds the geometries 
+          * Adds the geometries
           * loaded from the JSON file
-          * onto the scene. The file is 
+          * onto the scene. The file is
           * saved as an object in self.model
           * and then rendered to canvas with this
           * function.
         **/
         var self = this;
-        
+
 
         self._removeAll(); // Removes old objects first!
-        
+
         var objects = self.model.objects;
-        for(var i in objects) self._addIndividualObject(objects[i]); 
-        
+        for(var i in objects) self._addIndividualObject(objects[i]);
+
     },
 
     addCameras: function(){
-        /** 
-          * Adds the cameras 
+        /**
+          * Adds the cameras
           * loaded from the JSON file
           * onto the scene.
         **/
@@ -137,10 +137,10 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
     addLights: function(){
         /**
-          * Adds the Lights 
+          * Adds the Lights
           * loaded from the JSON file
           * onto the scene.
-        **/  
+        **/
         var self = this;
         var lights = this.model.lights;
         for(var i in lights)  self._addIndividualLight(lights[i]);
@@ -151,10 +151,10 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * Adds a single geometry object
           * which is taken as an argument
           * to this function.
-        **/  
+        **/
         var self = this;
         var type = object.type;
-        
+
         switch(type) {
 
             case "Mesh":
@@ -165,7 +165,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 var geometry = new THREE.CubeGeometry(
                                   object.length,
                                   object.length,
-                                  object.length, 
+                                  object.length,
                                   50, 50, 50);
                 break;
 
@@ -181,56 +181,56 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
                 break;
 
-            case "Cone":        
+            case "Cone":
                 var geometry = new THREE.CylinderGeometry(
                                           object.radius,
                                           object.radius/100,
                                           object.length,
-                                          50,50, openEnded=true);        
+                                          50,50, openEnded=true);
                 break;
 
-            case "Circle":        
+            case "Circle":
                 var geometry = new THREE.CylinderGeometry(object.radius,
                                                           object.radius,
                                                           0.5,100);
                 break;
 
-            case "Plane":        
+            case "Plane":
                 var geometry = new THREE.PlaneGeometry(
                                           object.length,
-                                          object.width,                                      
+                                          object.width,
                                           100);
-                break;                        
-                
+                break;
+
             case "Tetrahedron":
                 var geometry = new THREE.TetrahedronGeometry(
                                           object.radius);
-                break;                                    
-                
+                break;
+
             case "Octahedron":
                 var geometry = new THREE.OctahedronGeometry(
                                           object.radius);
-                break;                                    
-                            
+                break;
+
             case "Icosahedron":
                 var geometry = new THREE.IcosahedronGeometry(
                                           object.radius);
-                break;                                                
-                
+                break;
+
             case "Torus":
                 var geometry = new THREE.TorusGeometry(
                                           object.radius,
                                           object.tube_radius,100
                                           );
-                break;                                                            
-                
+                break;
+
             case "TorusKnot":
                 var geometry = new THREE.TorusKnotGeometry(
                                           object.radius,
                                           object.tube_radius,100
                                           );
-                break;                
-           
+                break;
+
         }
 
         var material = self.Materials[object.material];
@@ -251,7 +251,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * Adds a single camera object
           * which is taken as an argument
           * to this function.
-        **/          
+        **/
         var self = this;
         switch(camera.type){
             case "PerspectiveCamera":
@@ -262,17 +262,17 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 initMatrix.elements = element;
                 _camera.applyMatrix(initMatrix);
                 break;
-            
+
             case "OrthoGraphicCamera":
                 var _camera = new THREE.OrthographicCamera(
-                                                -320, 320, 
+                                                -320, 320,
                                                 240, -240,
                                                 camera.near, camera.far );
                 var _element = new Float32Array(camera.init_orientation);
                 var initMatrix = new THREE.Matrix4();
                 initMatrix.elements = _element;
                 _camera.applyMatrix(initMatrix);
-            
+
         }
         _camera.name = camera.simulation_id;
         _camera["object-info"] = camera;
@@ -287,11 +287,11 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * Adds a single light object
           * which is taken as an argument
           * to this function.
-        **/  
-        
+        **/
+
         var self = this;
         var type = light.type;
-        switch(light.type) { 
+        switch(light.type) {
 
             case "PointLight":
                 var color = new THREE.Color(light.color);
@@ -302,8 +302,8 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 _light.applyMatrix(initMatrix);
                 break;
             //TODO some other Light implementations
-        } 
-        
+        }
+
         _light.name = light.simulation_id;
         _light["object-info"] = light;
         self._scene.add(_light);
@@ -314,21 +314,21 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * This function iterates over the
           * the simulation data to render them
           * on the canvas.
-        **/ 
+        **/
         var self = this;
         // toggle buttons..
         jQuery("#play-animation").css("display","none");
         jQuery("#pause-animation").css("display","block");
         jQuery("#stop-animation").css("display","block");
-        
+
         if(!self.animationPaused){
           self.currentTime = 0;
         };
 
         self.animationPaused = false;
         var timeDelta = self.model.timeDelta;
-        
-        self.animationID = window.setInterval(function(){ 
+
+        self.animationID = window.setInterval(function(){
                 self.setAnimationTime(self.currentTime);
                 self.currentTime+=timeDelta;
                 if(self.currentTime>=self._finalTime && jQuery("#play-looped").is(":checked")){
@@ -338,14 +338,14 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                   self.stopAnimation();
                   self.currenTime = 0;
                 }
-            }, 
+            },
         timeDelta*1000);
     },
 
     setAnimationTime: function(currentTime){
         /**
           * Takes a time value as the argument
-          * and renders the simulation data 
+          * and renders the simulation data
           * corresponding to that time value.
         **/
         var self = this;
@@ -366,12 +366,12 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         }
         jQuery("#time-slider").slider("setValue",percent);
         jQuery("#time").html(" " + currentTime.toFixed(3) + " s");
-        
+
     },
 
     pauseAnimation: function(){
        /**
-         * Pauses the animation at the 
+         * Pauses the animation at the
          * current frame.
        **/
        var self = this;
@@ -381,7 +381,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
        jQuery("#play-animation").css("display","block");
        window.clearInterval(self.animationID);
        self.animationPaused = true;
-       
+
     },
     stopAnimation: function(){
         /**
@@ -392,7 +392,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         console.log("[PyDy INFO]: Stopping Animation");
         if(!self.animationPaused){
           window.clearInterval(self.animationID);
-        }  
+        }
         self.currentTime = 0;
         self.setAnimationTime(0);
         jQuery("#stop-animation").css("display","none");
@@ -411,7 +411,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var self = this;
         var _children = self._scene.children;
 
-        for(var i=_children.length-1;i>=0;i--) { 
+        for(var i=_children.length-1;i>=0;i--) {
             if(_children[i].name){
                 self._scene.remove(_children[i]);
             }
@@ -421,7 +421,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
     _blink: function(id){
         /**
           * Blinks the geometry element.
-          * takes the element simulation_id as the 
+          * takes the element simulation_id as the
           * argument and blinks it until some event is
           * triggered(UI button press)
         **/
@@ -429,11 +429,11 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self._blinker = self._scene.getObjectByName(id);
         console.log("BLinker: " + self._blinker.name)
         self._blinker.visible = false;
-        self.blinkId = window.setInterval(function(){ 
+        self.blinkId = window.setInterval(function(){
             if(self._blinker.visible == false){
-                self._blinker.visible = true;  
+                self._blinker.visible = true;
             } else{
-                self._blinker.visible = false;  
+                self._blinker.visible = false;
             }
         }, 500);
     }

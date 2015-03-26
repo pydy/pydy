@@ -35,7 +35,7 @@ if os.environ.get('READTHEDOCS', None) == 'True':
         def __getattr__(cls, name):
                 return Mock()
 
-    MOCK_MODULES = ['numpy', 'numpy.linalg', 'numpy.testing', 
+    MOCK_MODULES = ['numpy', 'numpy.linalg', 'numpy.testing',
                     'scipy.linalg',
                     'matplotlib',
                     'sympy', 'sympy.physics.mechanics',

@@ -148,4 +148,3 @@ for x, y in zip(Fr, Fr_expected):
     assert expand(x - y) == 0
 for x, y in zip(Fr_star, Fr_star_expected):
     assert trigsimp(expand(expand_trig((x - y).subs(vc_map)))) == 0
-

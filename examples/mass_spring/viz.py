@@ -7,16 +7,16 @@ import os
 path = os.path.dirname(os.path.realpath(__file__))
 
 #Loading basic Js libraries
-display(HTML("""<script src="files/js/three.min.js"></script></script> 
+display(HTML("""<script src="files/js/three.min.js"></script></script>
                 <script src="files/js/TrackballControls.js"></script>
                 """))
 
 display(Javascript('console.log("Imported JS libraries");'))
 
 #opening the Js file
-filename  = 'js/bob.js'      
+filename  = 'js/bob.js'
 js  = open(os.path.join(path, filename)).read()
-      
+
 
 
 

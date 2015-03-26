@@ -30,7 +30,3 @@ I_2 = calc_inertia_vec(density, pP.pos_from(pO).subs(h_theta_val),
                        N.y, N, (l, 0, L))
 print('I_1 = {0}'.format(I_1))
 print('I_2 = {0}'.format(I_2))
-
-
-
-

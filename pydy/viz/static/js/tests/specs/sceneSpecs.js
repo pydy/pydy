@@ -1,9 +1,9 @@
 /* These are the methods, which cannot be tested on console
  * Due to absence of a renderer in the bash:
- * 
+ *
  *  - DynamicsVisualizer.Scene._createRendere();
  *  - DynamicsVisualizer.Scene._addTrackBallControls();
-*/ 
+*/
 
 describe("DynamicsVisualizer's Scene class should  ", function() {
 
@@ -27,7 +27,7 @@ describe("DynamicsVisualizer's Scene class should  ", function() {
     	DynamicsVisualizer._addDefaultLight();
         expect(DynamicsVisualizer._scene.children[0]).toEqual(jasmine.any(THREE.PointLight));;
     });
-    
+
 
 
 });

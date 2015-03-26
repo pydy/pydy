@@ -58,4 +58,3 @@ print('Generalized active force contributions from Vγ.')
 Fr_V = generalized_active_forces_V(V, [q1, q2, q3], [u1, u2, u3], kde_map)
 print('Frγ = {0}'.format(msprint(Fr_V)))
 print('Fr = {0}'.format(msprint(Fr)))
-

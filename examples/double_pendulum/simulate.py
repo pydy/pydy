@@ -22,4 +22,3 @@ final_time = 5.0
 times = linspace(0.0, final_time, final_time * frames_per_sec)
 sys.times = times
 x = sys.integrate()
-

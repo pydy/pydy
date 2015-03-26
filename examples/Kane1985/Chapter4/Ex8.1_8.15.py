@@ -71,4 +71,3 @@ for uset in [u_s1, u_s2, u_s3]:
             if i == 1 or i == 3:
                 sub_map = solve([u1 - u_s1[0]], [omega*q1*sin(omega*t)])
         print("F{0}* = {1}".format(i, msprint(simplify(f.subs(sub_map)))))
-

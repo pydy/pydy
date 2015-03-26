@@ -33,4 +33,3 @@ constraint_eqs = {x[0] : q*cos(theta[1])*cos(theta[2]),
 # B.z directions since point O is also on line L and B.x is parallel to L.
 assert(trigsimp(dot(P.pos_from(O), B.y).subs(constraint_eqs)) == 0)
 assert(trigsimp(dot(P.pos_from(O), B.z).subs(constraint_eqs)) == 0)
-

@@ -46,4 +46,4 @@ partials = partial_velocities([B, E], [u1], A, constraint_map = vc_map)
 Fr, _ = generalized_active_forces(partials, forces + torques)
 print("Generalized active forces:")
 for i, f in enumerate(Fr, 1):
-    print("F{0} = {1}".format(i, msprint(trigsimp(f)))) 
+    print("F{0} = {1}".format(i, msprint(trigsimp(f))))

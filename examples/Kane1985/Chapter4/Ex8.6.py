@@ -48,4 +48,3 @@ Fr, _ = generalized_active_forces(partials, forces)
 print("Generalized active forces:")
 for i, f in enumerate(Fr, 1):
     print("F{0}_tilde = {1}".format(i, msprint(simplify(f))))
-
