@@ -48,7 +48,7 @@ Bug Fix
    - [ ] The tests pass both locally (run `nosetests`) and on Travis CI.
    - [ ] The code follows PEP8 guidelines. (use a linter, e.g.
      [pylint](http://www.pylint.org), to check your code)
-   - [ ] The new feature is documented in the [Release
+   - [ ] The bug fix is documented in the [Release
      Notes](https://github.com/pydy/pydy/tree/contributing#release-notes).
    - [ ] The code is backwards compatible. (All public methods/classes must
      follow deprecation cycles.)
