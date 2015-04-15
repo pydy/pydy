@@ -46,7 +46,8 @@ script:
   - nosetests -v --with-coverage --cover-package=pydy
   - cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html && cd ../../../../../
   # Check Python and Javascript syntax (trailing whitespaces/newlines, unused imports).
-  - (flake8 --select W1,W2,W3,F401 --exclude booger,__init__.py . &&
+  - (flake8 --select W1,W2,W3 --exclude booger . &&
+    flake8 --select F401 --exclude booger,__init__.py,conf.py . &&
     flake8 --select W2,W3 --filename='*.js' examples/ pydy/viz/static/js/dyviz/) ||
     (echo "Please run a linter and fix errors, e.g. pylint, flake8, pep8, etc."; false)
   # Make sure the docs build.
