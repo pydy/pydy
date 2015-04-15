@@ -9,6 +9,7 @@ from sympy.physics.mechanics import dot
 from sympy.physics.mechanics import dynamicsymbols
 from util import msprint, partial_velocities, generalized_active_forces
 
+
 g, L, m1, m2, omega, t = symbols('g L m1 m2 omega t')
 C, X, Y, Z = symbols('C X Y Z')
 q1, q2, q3 = dynamicsymbols('q1:4')

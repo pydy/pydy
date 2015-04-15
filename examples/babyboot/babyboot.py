@@ -1,4 +1,5 @@
 from sympy import symbols
+from sympy.physics.mechanics import *
 
 # -- Declare symbols.
 

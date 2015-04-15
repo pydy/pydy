@@ -6,7 +6,7 @@ import os
 import json
 import distutils
 import distutils.dir_util
-import webbrowser
+import datetime
 from collections import OrderedDict
 # external
 from sympy.physics.mechanics import ReferenceFrame, Point
@@ -21,10 +21,10 @@ __all__ = ['Scene']
 
 try:
     import IPython
-    from IPython.lib import backgroundjobs as bg
     from IPython.html import widgets
-    from IPython.display import clear_output, display, Javascript
+    from IPython.display import display, Javascript
 
+except ImportError:
     IPython = None
 
 

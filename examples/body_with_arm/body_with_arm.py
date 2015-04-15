@@ -1,4 +1,5 @@
 from sympy import symbols
+from sympy.physics.mechanics import *
 
 q = dynamicsymbols('q:6')
 qd = dynamicsymbols('q:6', 1)

@@ -6,6 +6,8 @@ This file will use pydy.codegen to simulate the double pendulum.
 from numpy import linspace
 from pydy.system import System
 
+from double_pendulum import *
+
 constants = {l: 10.0, m: 10.0, g: 9.81}
 
 initial_conditions = {q1: 1.0, q2: 0.0, u1: 0.0, u2: 0.0}

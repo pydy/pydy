@@ -7,6 +7,7 @@ from sympy import symbols
 import sympy.physics.mechanics as me
 
 from ...system import System
+from ..shapes import Sphere
 from ..visualization_frame import VisualizationFrame
 from ..scene import Scene
 

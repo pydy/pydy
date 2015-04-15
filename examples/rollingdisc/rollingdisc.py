@@ -1,4 +1,5 @@
 from sympy import symbols, Matrix, solve, Poly
+from sympy.physics.mechanics import *
 
 # Symbols for time and constant parameters
 t, r, m, g, I, J = symbols('t r m g I J')
