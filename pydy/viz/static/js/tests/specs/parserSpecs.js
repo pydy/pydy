@@ -11,7 +11,7 @@ describe("DynamicsVisualizer's Parser class should have a loadScene method which
         //DynamicsVisualizer.Parser.loadScene();
         expect(DynamicsVisualizer.model).toBeDefined();
         done();
-
+        
     });
 
     it("should load camera to be rendered", function() {
@@ -19,7 +19,7 @@ describe("DynamicsVisualizer's Parser class should have a loadScene method which
     });
 
     it("should load light to be rendered", function() {
-
+        
         //expect(DynamicsVisualizer._scene[1]).toBe(THREE.PointLight});
     });
 
@@ -36,7 +36,7 @@ describe("DynamicsVisualizer's Parser class should have a loadScene method which
 
     it("should save simulation data in an object upon success", function() {
 //        expect(DynamicsVisualizer.simData).toBeDefined();
-
+        
     });
 
     it("should create a timeArray on succesful completion", function() {
