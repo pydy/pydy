@@ -5,7 +5,7 @@ PyDy
 .. image:: https://img.shields.io/pypi/dm/pydy.svg
     :target: https://pypi.python.org/pypi/pydy/
     :alt: Latest Version
-    
+
 .. image:: https://readthedocs.org/projects/pydy/badge/?version=latest
     :target: https://readthedocs.org/projects/pydy/?badge=latest
     :alt: Latest documentation
@@ -338,10 +338,26 @@ Release Notes
 0.3.0
 -----
 
+User Facing
+~~~~~~~~~~~
+
 - Overhauled the code generation package to make the generators more easily
-  extensible and to improve simluation speed.
+  extensible and to improve simluation speed. [PR `#113`_]
 - Added a new System class and module to more seamlessly manage integrating the
   equations of motion.
+
+.. _#113: https://github.com/pydy/pydy/pull/113
+
+Development
+~~~~~~~~~~~
+
+- Development version numbers are now PEP 440 compliant. [PR `#141`_]
+- Introduced pull request checklists and CONTRIBUTING file. [PR `#146`_]
+- Introduced light code linting into Travis. [PR `#148`_]
+
+.. _#141: https://github.com/pydy/pydy/pull/141
+.. _#146: https://github.com/pydy/pydy/pull/146
+.. _#148: https://github.com/pydy/pydy/pull/148
 
 0.2.1
 -----
