@@ -1,12 +1,12 @@
 DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
-    
+
     openDialog: function(id){
 
-        /** 
+        /**
           * This function takes object's id
           * as the argument, and populates the
           * edit objects dialog box.
-        **/ 
+        **/
         var self = this;
 
         var toLoad = self._scene.getObjectByName(parseInt(id));
@@ -16,20 +16,20 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
             self._blinker.visible = true;
         }
         self.Scene._blink(parseInt(id));
-        var mainDiv = jQuery('<div/>',{id: "object-"+ toLoad.simulation_id, style: 'display:none;'}); 
-        
+        var mainDiv = jQuery('<div/>',{id: "object-"+ toLoad.simulation_id, style: 'display:none;'});
+
         var div1 = jQuery('<div />',{class: 'input-group'});
         div1.append('<span class="input-group-addon">Name</span>');
         div1.append(jQuery('<input />',{ type:'text', id: "_name", class: 'form-control', value: toLoad.name}));
 
         div1.append('<span class="input-group-addon">Color</span>');
         div1.append(jQuery('<input />',{ type:'text', id: "_color", class: 'form-control', value: toLoad.color}));
-        
+
         var div_material = jQuery('<select />',{class: 'form-control', id:"_material"});
         for(var i in self.Materials){
             if(i == toLoad.type) {
                 div_material.append('<option value="' + i +  '" selected="selected" >' + i + '</option>');
-                
+
             }
             else {
                 div_material.append('<option value="' + i +  '">' + i + '</option>');
@@ -46,7 +46,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         }
 
         var div2 = jQuery('<div />',{class: 'input-group', id: "geom-params"});
-        
+
         mainDiv.append(div1);
         mainDiv.append('<hr/><span class="input-group-addon">Material</span>');
         mainDiv.append(div_material);
@@ -54,7 +54,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         mainDiv.append(div_geom);
         mainDiv.append("<hr />");
         mainDiv.append(div2);
-        
+
         mainDiv.append('<hr /><button id="apply-' + id +  '" class="btn btn-primary btn-small">Apply</button>');
         jQuery("#object-dialog").html(mainDiv);
 
@@ -65,7 +65,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 
         jQuery("#apply-" + id).click(function(){
             self.ParamEditor.applySceneInfo(jQuery(this).attr("id").split("-").slice(-1)[0]);
-            
+
         });
 
         self.ParamEditor._addGeometryFor(toLoad);
@@ -73,7 +73,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
     },
 
     applySceneInfo: function(id){
-        /** 
+        /**
           * This object applies the changes made in
           * the edit objects dialog box to self.model
           * and then renders the model onto canvas.
@@ -91,7 +91,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         updated_object.material = jQuery("#_material").val();
         updated_object.type = jQuery("#_geometry").val();
         updated_object.simulation_id = int_id;
-        
+
         switch(updated_object.type){
             case "Sphere":
             case "Circle":
@@ -108,7 +108,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
                 break;
 
             case "Torus":
-            case "TorusKnot":    
+            case "TorusKnot":
                 updated_object.radius = jQuery("#_radius").val()
                 updated_object.tube_radius = jQuery("#_tubeRadius").val()
                 break;
@@ -116,13 +116,13 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
             case "Plane":
                 updated_object.width = jQuery("#_width").val()
                 updated_object.length = jQuery("#_length").val()
-                break;    
+                break;
 
             case "Cube":
                 updated_object.length = jQuery("#_length").val()
-                break;        
+                break;
 
-            // TODO for Mesh..     
+            // TODO for Mesh..
 
 
         }
@@ -143,7 +143,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         var self = this;
         var div2 = jQuery("#geom-params");
         div2.html(" ");
-        
+
         switch(toLoad.type || toLoad){
             case "Sphere":
             case "Circle":
@@ -170,7 +170,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Tube Radius'));
                 div2.append(jQuery('<input />',{ type:'text', id: "_tubeRadius", class: 'form-control', value: toLoad.tube_radius || 1.0}));
-                break;    
+                break;
 
             case "Plane":
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Width'));
@@ -178,12 +178,12 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
                 div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 1.0}));
-                break;    
+                break;
 
             case "Cube":
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
                 div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 1.0}));
-                break;     
+                break;
 
         }
     },
@@ -193,7 +193,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
           * Updates the codemirror instance with
           * the updated model, and shows it in the
           * UI.
-         **/ 
+         **/
         self.editor.getDoc().setValue(JSON.stringify(self.model,null,4));
         jQuery("#model-loader-wrapper").slideIn();
 

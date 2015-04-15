@@ -366,6 +366,3 @@ class VisualizationFrame(object):
 
 
         return simulation_dict
-
-
-

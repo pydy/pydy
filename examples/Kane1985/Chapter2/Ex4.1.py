@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """Exercise 4.1 from Kane 1985"""
 
-from sympy.physics.mechanics import dot, dynamicsymbols, MechanicsStrPrinter
+from sympy.physics.mechanics import dot, MechanicsStrPrinter
 from sympy.physics.mechanics import ReferenceFrame, Point
-from sympy import solve, symbols, pi, sin, cos
+from sympy import symbols, sin, cos
 from sympy.simplify.simplify import trigsimp
 
 
@@ -33,4 +33,3 @@ constraint_eqs = {x[0] : q*cos(theta[1])*cos(theta[2]),
 # B.z directions since point O is also on line L and B.x is parallel to L.
 assert(trigsimp(dot(P.pos_from(O), B.y).subs(constraint_eqs)) == 0)
 assert(trigsimp(dot(P.pos_from(O), B.z).subs(constraint_eqs)) == 0)
-

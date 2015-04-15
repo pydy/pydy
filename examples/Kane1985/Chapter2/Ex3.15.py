@@ -24,7 +24,7 @@ We define:'q0d' = 'u1', 'q1d' = 'u2', 'q2d' = 'u3'.
 
 from sympy.physics.mechanics import dynamicsymbols, MechanicsStrPrinter
 from sympy.physics.mechanics import ReferenceFrame, Point
-from sympy import solve, symbols, pi
+from sympy import solve, symbols
 
 
 def msprint(expr):

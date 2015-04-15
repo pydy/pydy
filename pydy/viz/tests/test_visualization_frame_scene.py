@@ -402,4 +402,3 @@ class TestVisualizationFrameScene(object):
 
         self.scene2.reference_frame = self.A
         assert self.scene2.reference_frame == self.A
-

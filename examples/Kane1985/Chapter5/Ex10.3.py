@@ -6,7 +6,6 @@ from __future__ import division
 from sympy import collect, expand, sin, cos, pi, radsimp, solve, sqrt, symbols
 from sympy.physics.mechanics import ReferenceFrame, RigidBody, Point
 from sympy.physics.mechanics import dot, dynamicsymbols, inertia, msprint
-from util import subs
 
 
 q1, q2, q3, q4, q5, q6, q7 = q = dynamicsymbols('q1:8')

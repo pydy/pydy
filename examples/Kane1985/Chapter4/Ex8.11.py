@@ -57,4 +57,4 @@ Flist, _ = generalized_active_forces(partials, forces)
 
 print("Generalized active forces:")
 for f, i in zip(Flist, [2, 4]):
-    print("F{0} = {1}".format(i, msprint(simplify(f)))) 
+    print("F{0} = {1}".format(i, msprint(simplify(f))))

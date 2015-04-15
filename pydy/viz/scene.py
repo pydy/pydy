@@ -4,10 +4,8 @@
 from __future__ import division
 import os
 import json
-import shutil
 import distutils
 import distutils.dir_util
-import webbrowser
 import datetime
 from collections import OrderedDict
 # external
@@ -23,9 +21,8 @@ __all__ = ['Scene']
 
 try:
     import IPython
-    from IPython.lib import backgroundjobs as bg
     from IPython.html import widgets
-    from IPython.display import clear_output, display, Javascript
+    from IPython.display import display, Javascript
 
 except ImportError:
     IPython = None
@@ -173,7 +170,7 @@ class Scene(object):
 
     def generate_visualization_json(self, dynamic_variables,
                                     constant_variables, dynamic_values,
-                                    constant_values, fps=30, 
+                                    constant_values, fps=30,
                                     outfile_prefix=None):
         """
         generate_visualization_json() method generates a json str, which is
@@ -200,17 +197,17 @@ class Scene(object):
 
         fps : int
             fps at which animation should be displayed.
-            Please not that this fps should not exceed 
+            Please not that this fps should not exceed
             the hardware limit of the display device to
             be used. Default is 30fps.
 
         outfile_prefix : str
             A prefix to be put while saving the scene_desc
             and simulation_data files. Files will be named
-            as `outfile_prefix_scene_desc.json` and 
+            as `outfile_prefix_scene_desc.json` and
             `outfile_prefix_simulation_data.json`. If not specified
             a timestamp shall be used as the prefix.
-            
+
         Returns
         =======
 
@@ -227,7 +224,7 @@ class Scene(object):
         if outfile_prefix is None:
             outfile_prefix = "_".join(str(datetime.datetime.now()).\
                                   split(".")[0].split(" "))
-        
+
         #Saving the arguments for re-running simulations
         self.constant_variables = constant_variables
         self.dynamic_variables = dynamic_variables
@@ -247,7 +244,7 @@ class Scene(object):
                                                            constant_values)
         self._scene_data_dict = self.generate_scene_dict(constant_map=constant_map)
         self._scene_data_dict["simulationData"] = self.simulation_json_file
-        
+
         self._scene_data_dict["timeDelta"] = 1/fps
         self._scene_data_dict["timeSteps"] = len(dynamic_values)
 
@@ -265,11 +262,11 @@ class Scene(object):
 
     def generate_scene_dict(self, constant_map={}):
         """
-        This method is used to create the dictionary compatible with 
+        This method is used to create the dictionary compatible with
         PyDy visualizer. This JSON file contains all the relevant information
         required by PyDy visualizer to draw the scene on the canvas.
-        
-        
+
+
         """
 
         self._scene_info = {}
@@ -282,22 +279,22 @@ class Scene(object):
         self._scene_info["objects"] = {}
         self._scene_info["cameras"] = {}
         self._scene_info["lights"] = {}
-        
+
         for frame in self.visualization_frames:
             _object_info = frame.generate_scene_dict(constant_map=constant_map)
             self._scene_info["objects"].update(_object_info)
-        
-        
+
+
         for camera in self.cameras:
             _object_info = camera.generate_scene_dict()
-            self._scene_info["cameras"].update(_object_info)          
-            
+            self._scene_info["cameras"].update(_object_info)
+
         for light in self.lights:
             _object_info = light.generate_scene_dict()
-            self._scene_info["lights"].update(_object_info)          
-        
+            self._scene_info["lights"].update(_object_info)
+
         return self._scene_info
-            
+
     def generate_simulation_dict(self, dynamic_variables,
                                     constant_variables, dynamic_values,
                                     constant_values):
@@ -306,7 +303,7 @@ class Scene(object):
         PyDy visualizer. This JSON file consists of all the simulation data
         along with references to the objects, for allowing motion to the
         objects in the PyDy visualizer.
-        
+
         """
         self._simulation_info = {}
 
@@ -315,9 +312,9 @@ class Scene(object):
                                                  self._origin)
             frame.generate_numeric_transform_function(dynamic_variables,
                                                       constant_variables)
-            frame.evaluate_transformation_matrix(dynamic_values, 
+            frame.evaluate_transformation_matrix(dynamic_values,
                                                          constant_values)
-            
+
 
             self._simulation_info.update(frame.generate_simulation_dict())
 
@@ -326,23 +323,23 @@ class Scene(object):
                                                  self._origin)
             camera.generate_numeric_transform_function(dynamic_variables,
                                                       constant_variables)
-            camera.evaluate_transformation_matrix(dynamic_values, 
+            camera.evaluate_transformation_matrix(dynamic_values,
                                                          constant_values)
 
             self._simulation_info.update(camera.generate_simulation_dict())
-    
+
         for light in self.lights:
             light.generate_transformation_matrix(self._reference_frame,
                                                  self._origin)
             light.generate_numeric_transform_function(dynamic_variables,
                                                       constant_variables)
-            light.evaluate_transformation_matrix(dynamic_values, 
+            light.evaluate_transformation_matrix(dynamic_values,
                                                          constant_values)
 
             self._simulation_info.update(light.generate_simulation_dict())
 
-        return self._simulation_info    
-        
+        return self._simulation_info
+
     def generate_visualization_json_system(self, system, **kwargs):
         """ Alternative method compatible with System class
         for generating visualization JSON.
@@ -350,9 +347,9 @@ class Scene(object):
         Parameters
         ----------
         system: object, pydy.System
-        
+
         Keyword arguments are same as generate_visualization_json.
-   
+
         """
         if not isinstance(system, System):
             self.system = None
@@ -360,9 +357,9 @@ class Scene(object):
         else:
             #save system
             self.system = system
-        
+
         self.generate_visualization_json(system.states,
-                                          system.constants_symbols, 
+                                          system.constants_symbols,
                                           system.integrate(),
                                           system.constants.values(), **kwargs)
 
@@ -385,8 +382,8 @@ class Scene(object):
             If True, the directory named ``static`` in the current working
             directory will be overwritten.
         Silent : boolean, optional, default=False
-            If True, no messages will be displayed to 
-            STDOUT            
+            If True, no messages will be displayed to
+            STDOUT
         """
 
         dst = os.path.join(os.getcwd(), 'static')
@@ -399,7 +396,7 @@ class Scene(object):
             else:
                 if not silent: print "Aborted!"
                 return
-        
+
         src = os.path.join(os.path.dirname(__file__), 'static')
         if not silent: print("Copying static data.")
         distutils.dir_util.copy_tree(src, dst)
@@ -439,13 +436,13 @@ class Scene(object):
                                 "'static' directory? [y|n]\n")
             if ans == 'y':
                 force = True
-                
+
         if force:
             distutils.dir_util.remove_tree(os.path.join(os.getcwd(),
                                                             'static'))
             print "All Done!"
         else:
-            print "aborted!"    
+            print "aborted!"
 
     def display(self):
         """
@@ -464,13 +461,13 @@ class Scene(object):
         """
         self.create_static_html()
         run_server(scene_file=self.scene_json_file)
-        
+
     def display_ipython(self):
         """
-        Method to display the visualization inside the 
+        Method to display the visualization inside the
         Ipython notebook. It is only supported by IPython
         versions>=2.0.0
-        
+
         """
 
         self.create_static_html(silent=True)
@@ -479,35 +476,35 @@ class Scene(object):
         components = []
         for var, init_val in \
             zip(self.constant_variables, self.constant_values):
-            self._widget_dict[str(var)] = widgets.FloatTextWidget(value=init_val, 
+            self._widget_dict[str(var)] = widgets.FloatTextWidget(value=init_val,
                                                               description=str(var))
             components.append(self._widget_dict[str(var)])
-        
+
         self.button = widgets.ButtonWidget(description="Rerun Simulations")
         def button_click(clicked):
             self.button.add_class('disabled')
             self.button.description = 'Rerunning Simulation ...'
-            self.constant_values = []    
+            self.constant_values = []
             for i in self._widget_dict.values():
                 self.constant_values.append(i.value)
             if self.system is not None:
                 #update system constants
                 self.system.constants = dict(zip(self.system.constants, self.constant_values))
                 self.generate_visualization_json_system(self.system)
-            else:    
+            else:
                 self.generate_visualization_json(self.dynamic_variables,
                                     self.constant_variables, self.dynamic_values,
-                                    self.constant_values,fps=self.fps, 
+                                    self.constant_values,fps=self.fps,
                                     outfile_prefix=self.outfile_prefix)
             self.create_static_html(overwrite=True, silent=True)
             js = 'jQuery("#json-input").val("{}");'.format('static/' + self.scene_json_file)
             display(Javascript(js))
             display(Javascript('jQuery("#simulation-load").click()'));
             self.button.remove_class('disabled')
-             
+
             self.button.description = 'Rerun Simulation'
 
-        
+
         self.button.on_click(button_click)
         #components.append(button)
         html_file = open("static/index_ipython.html")

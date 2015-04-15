@@ -22,4 +22,3 @@ P.set_vel(B, x * B.y)
 
 P.v1pt_theory(O, N, B)
 P.a1pt_theory(O, N, B)
-

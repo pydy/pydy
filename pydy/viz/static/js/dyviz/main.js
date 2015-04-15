@@ -4,10 +4,10 @@ DynamicsVisualizer.activateUIControls();
 DynamicsVisualizer.Scene.create();
 
 //  Activate TrackBall Controls..
-function activateTrackballControls(){ 
+function activateTrackballControls(){
     DynamicsVisualizer.primaryControls.update()
     DynamicsVisualizer.Scene.webgl_renderer.render(DynamicsVisualizer.Scene._scene, DynamicsVisualizer.currentCamera);
-    requestAnimationFrame(activateTrackballControls); 
+    requestAnimationFrame(activateTrackballControls);
 };
 activateTrackballControls();
 
@@ -16,9 +16,9 @@ activateTrackballControls();
     var isBootstrapEvent = false;
     if (window.jQuery) {
         var all = jQuery('*');
-        jQuery.each(['hide.bs.dropdown', 
-            'hide.bs.collapse', 
-            'hide.bs.modal', 
+        jQuery.each(['hide.bs.dropdown',
+            'hide.bs.collapse',
+            'hide.bs.modal',
             'hide.bs.tooltip'], function(index, eventName) {
             all.on(eventName, function( event ) {
                 isBootstrapEvent = true;
@@ -36,4 +36,3 @@ activateTrackballControls();
         }
     });
 })();
-

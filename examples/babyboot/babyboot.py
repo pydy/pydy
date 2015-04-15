@@ -1,4 +1,4 @@
-from sympy import symbols, sin, cos, tan
+from sympy import symbols
 from sympy.physics.mechanics import *
 
 # -- Declare symbols.

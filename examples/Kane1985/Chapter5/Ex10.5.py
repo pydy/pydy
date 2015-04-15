@@ -7,7 +7,7 @@ Answer does not match text.
 from __future__ import division
 from sympy import expand, symbols, trigsimp, sin, cos, S
 from sympy.physics.mechanics import ReferenceFrame, RigidBody, Point
-from sympy.physics.mechanics import dot, dynamicsymbols, inertia, msprint
+from sympy.physics.mechanics import dynamicsymbols, inertia, msprint
 
 
 m, a, b = symbols('m a b')

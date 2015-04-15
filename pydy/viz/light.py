@@ -140,9 +140,9 @@ class PointLight(VisualizationFrame):
 
     def generate_scene_dict(self):
         """
-        This method generates information for a static 
+        This method generates information for a static
         visualization in the initial conditions, in the form
-        of dictionary. This contains light parameters followed 
+        of dictionary. This contains light parameters followed
         by an init_orientation Key.
 
         Before calling this method, all the transformation matrix
@@ -150,7 +150,7 @@ class PointLight(VisualizationFrame):
         Returns
         =======
         A dict with following Keys:
-        
+
         1. name: name for the camera
         2. color: Color of the light
         3. init_orientation: Initial orientation
@@ -168,19 +168,19 @@ class PointLight(VisualizationFrame):
 
     def generate_simulation_dict(self):
         """
-        Generates the simulation information for this Light object. 
+        Generates the simulation information for this Light object.
         It maps the simulation data information to the
         scene information via a unique id.
 
         Before calling this method, all the transformation matrix
         generation methods should be called, or it will give an error.
-        
+
         Returns
         =======
 
-        A dictionary containing list of 4x4 matrices mapped to 
+        A dictionary containing list of 4x4 matrices mapped to
         the unique id as the key.
-        
+
         """
         simulation_dict = {}
         try:

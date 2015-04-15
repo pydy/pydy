@@ -39,4 +39,3 @@ ax.set_ylabel('Qs and Us')
 ax.legend(['var1', 'var2', 'var3', etc.])
 # show plot
 plt.show()
-

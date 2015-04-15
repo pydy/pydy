@@ -3,7 +3,7 @@
 """Exercise 7.2 from Kane 1985."""
 
 from __future__ import division
-from sympy import acos, pi, solve, symbols
+from sympy import solve, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import cross, dot
 
