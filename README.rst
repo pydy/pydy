@@ -2,16 +2,21 @@
 PyDy
 ====
 
-.. image:: https://img.shields.io/pypi/dm/pydy.svg
+|pypi| |rtd-docs| |travis-build| |Gitter Badge|
+
+.. |pypi| image:: https://img.shields.io/pypi/dm/pydy.svg
     :target: https://pypi.python.org/pypi/pydy/
     :alt: Latest Version
 
-.. image:: https://readthedocs.org/projects/pydy/badge/?version=latest
+.. |rtd-docs| image:: https://readthedocs.org/projects/pydy/badge/?version=latest
     :target: https://readthedocs.org/projects/pydy/?badge=latest
     :alt: Latest documentation
 
-.. image:: https://travis-ci.org/pydy/pydy.png?branch=master
+.. |travis-build| image:: https://travis-ci.org/pydy/pydy.png?branch=master
    :target: https://travis-ci.org/pydy/pydy
+
+.. |Gitter Badge| image:: https://badges.gitter.im/Join%20Chat.svg
+   :target: https://gitter.im/pydy/pydy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 PyDy_, short for Python Dynamics, is a tool kit written in the Python
 programming language that utilizes an array of scientific programs to enable
