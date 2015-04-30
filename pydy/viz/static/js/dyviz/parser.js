@@ -27,7 +27,7 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
             onComplete: function(){
                 console.log("[PyDy INFO]: Ajax request completed, adding Objects to scene");
                 self.Scene.addObjects();
-                self.Scene.addCameras();
+                //self.Scene.addCameras();
                 self.Scene.addLights();
                 self.Parser.loadSimulation();
                 // Load UI elements relevant for animation stuff!
