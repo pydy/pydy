@@ -518,11 +518,18 @@ class System(object):
         else:
             specified_value = self._specifieds_padded_with_defaults()
 
+        # If there are no specifieds then specified_value will be an empty
+        # dict.
+        if isinstance(specified_value, dict) and not specified_value:
+            args = (self._constants_padded_with_defaults(),)
+        else:
+            args = (specified_value, self._constants_padded_with_defaults())
+
         x_history = self.ode_solver(
             self.evaluate_ode_function,
             initial_conditions_in_proper_order,
             self.times,
-            args=(specified_value, self._constants_padded_with_defaults()))
+            args=args)
 
         return x_history
 

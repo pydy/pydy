@@ -14,18 +14,22 @@ from ..utils import sympy_equal_to_or_newer_than
 
 SYMPY_VERSION = sm.__version__
 
+
 class TestSystem():
 
     def setup(self):
 
-        self.kane = multi_mass_spring_damper(1, True, True).eom_method
-        self.specified_symbol = dynamicsymbols('f0')
+        # Create a simple system with one specified quantity.
+        self.sys = multi_mass_spring_damper(1, apply_gravity=True,
+                                            apply_external_forces=True)
+        self.specified_symbol = self.sys.specifieds_symbols[0]
         self.constant_map = dict(zip(sm.symbols('m0, k0, c0, g'),
                                      [2.0, 1.5, 0.5, 9.8]))
-        self.sys = System(self.kane,
-                          specifieds={self.specified_symbol: np.ones(1)},
-                          constants=self.constant_map)
+        self.sys.specifieds = {self.specified_symbol: np.ones(1)}
+        self.sys.constants = self.constant_map
+        self.kane = self.sys.eom_method
 
+        # Create a system with multiple specified quantities.
         self.kane_nlink = n_link_pendulum_on_cart(3, cart_force=True,
                                                   joint_torques=True).eom_method
 
@@ -35,7 +39,8 @@ class TestSystem():
         # -----------------------------------
         sys = System(self.kane)
 
-        assert Counter(sys.constants_symbols) == Counter(list(sm.symbols('k0, m0, g, c0')))
+        assert (Counter(sys.constants_symbols) ==
+                Counter(list(sm.symbols('k0, m0, g, c0'))))
         assert sys.specifieds_symbols == [self.specified_symbol]
         assert sys.states == dynamicsymbols('x0, v0')
         assert sys.evaluate_ode_function is None
@@ -241,6 +246,13 @@ class TestSystem():
         sys.generate_ode_function()
         x_04 = sys.integrate()
         testing.assert_allclose(x_01, x_04)
+
+        # Test with no specifieds.
+        sys = multi_mass_spring_damper(1, apply_gravity=True)
+        sys.initial_conditions = {dynamicsymbols('x0'): 0.1,
+                                  dynamicsymbols('v0'): -1.0}
+        sys.times = times
+        sys.integrate()
 
     def test_ode_solver(self):
 
