@@ -518,13 +518,13 @@ class System(object):
         else:
             specified_value = self._specifieds_padded_with_defaults()
 
-        return self.ode_solver(
+        x_history = self.ode_solver(
             self.evaluate_ode_function,
             initial_conditions_in_proper_order,
             self.times,
-            args=({'constants': self._constants_padded_with_defaults(),
-                   'specified': specified_value,
-                   },))
+            args=(specified_value, self._constants_padded_with_defaults()))
+
+        return x_history
 
     def _Kane_inlist_insyms(self):
         """TODO temporary."""
