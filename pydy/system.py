@@ -27,7 +27,9 @@ specified quantities, initial conditions, etc. You probably won't like
 these defaults. You can also specify such values via constructor keyword
 arguments or via the attributes::
 
-    sys = System(km, initial_conditions={dynamicsymbol('q1'): 0.5}, times=times)
+    sys = System(km,
+                 initial_conditions={dynamicsymbol('q1'): 0.5},
+                 times=times)
     sys.constants = {symbol('m'): 5.0}
     sys.integrate()
 
@@ -53,7 +55,7 @@ import sympy as sm
 from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
 
-from .codegen.code import generate_ode_function
+from .codegen.ode_function_generators import generate_ode_function
 from .utils import sympy_equal_to_or_newer_than
 
 SYMPY_VERSION = sm.__version__
@@ -408,21 +410,20 @@ class System(object):
 
     def _args_for_gen_ode_func(self):
         """Returns a tuple of arguments in the form required by
-        ``pydy.codegen.code.generage_ode_function``.
+        ``pydy.codegen.ode_function_generators.generate_ode_function``.
 
         """
 
-        args = (self.eom_method.mass_matrix_full,
-                self.eom_method.forcing_full,
-                self.constants_symbols,
+        args = (self.eom_method.forcing_full,
                 self.coordinates,
-                self.speeds)
+                self.speeds,
+                self.constants_symbols)
 
         return args
 
     def _kwargs_for_gen_ode_func(self):
-        """Returns a dictrionary of arguments in the form required by
-        ``pydy.codegen.code.generage_ode_function``.
+        """Returns a dictionary of arguments in the form required by
+        ``pydy.codegen.ode_function_generators.generage_ode_function``.
 
         """
 
@@ -436,24 +437,23 @@ class System(object):
         if not specifieds:
             specifieds = None
 
-        kwargs = {'specified': specifieds}
+        kwargs = {'mass_matrix': self.eom_method.mass_matrix_full,
+                  'specifieds': specifieds}
 
         return kwargs
 
-    def generate_ode_function(self, generator='lambdify', **kwargs):
-        """Calls ``pydy.codegen.code.generate_ode_function`` with the
-        appropriate arguments, and sets the ``evaluate_ode_function``
-        attribute to the resulting function.
+    def generate_ode_function(self, **kwargs):
+        """Calls ``pydy.codegen.ode_function_generators.generate_ode_function``
+        with the appropriate arguments, and sets the
+        ``evaluate_ode_function`` attribute to the resulting function.
 
         Parameters
         ----------
-        generator : str, optional (default: 'lambdify')
-            See documentation for ``pydy.codegen.code.generate_ode_function()``
         kwargs
             All other kwargs are passed onto
-            ``pydy.codegen.code.generate_ode_function()``. Don't specify the
-            ``specified`` keyword argument though; the ``System`` class takes
-            care of those.
+            ``pydy.codegen.ode_function_generators.generate_ode_function()``.
+            Don't specify the ``specifieds`` keyword argument though; the
+            ``System`` class takes care of those.
 
         Returns
         -------
@@ -466,8 +466,11 @@ class System(object):
             kwargs.pop('specified')
             print("User supplied 'specified' kwarg was disregarded.")
 
+        if 'specifieds' in kwargs:
+            kwargs.pop('specifieds')
+            print("User supplied 'specifieds' kwarg was disregarded.")
+
         kwargs.update(self._kwargs_for_gen_ode_func())
-        kwargs['generator'] = generator
 
         self._evaluate_ode_function = generate_ode_function(
             *self._args_for_gen_ode_func(),
