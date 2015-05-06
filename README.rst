@@ -158,24 +158,20 @@ constants and specified quantities. Here, we specify sinusoidal forcing::
    sys = System(kane,
                 constants={mass: 1.0, stiffness: 1.0,
                            damping: 0.2, gravity: 9.8},
-                specified=lambda x, t: sin(t),
-                initial_conditions=array([0.1, -1.0]))
-
-Now generate the function needed for numerical evaluation of the ODEs::
-
-   sys.generate_ode_function()
+                specifieds={force: lambda x, t: sin(t)},
+                initial_conditions={position: 0.1, speed: -1.0})
 
 Integrate the equations of motion under the influence of a specified sinusoidal
 force::
 
-   t = linspace(0.0, 10.0, 1000)
-   y = sys.integrate(t)
+   sys.times = linspace(0.0, 10.0, 1000)
+   y = sys.integrate()
 
 Plot the results::
 
    import matplotlib.pyplot as plt
 
-   plt.plot(t, y)
+   plt.plot(sys.times, y)
    plt.legend((str(position), str(speed)))
    plt.show()
 
