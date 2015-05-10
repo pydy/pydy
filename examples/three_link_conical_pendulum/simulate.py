@@ -6,7 +6,7 @@ from scipy.integrate import odeint
 from pydy.codegen.code import generate_ode_function
 
 # local
-from derive import l, m_bob, m_link, Ixx, Iyy, Izz, g, kane
+from derive import l, m_bob, m_link, Ixx, Iyy, Izz, g, kane, q, u
 
 param_syms = []
 for par_seq in [l, m_bob, m_link, Ixx, Iyy, Izz, (g,)]:
@@ -40,7 +40,7 @@ param_vals = [link_length for x in l] + \
 print("Generating numeric right hand side.")
 right_hand_side = generate_ode_function(kane.mass_matrix_full,
                                         kane.forcing_full,
-                                        param_syms, kane._q, kane._u)
+                                        param_syms, q, u)
 
 # To simulate the system, a time vector and initial conditions for the
 # system's states is required.
