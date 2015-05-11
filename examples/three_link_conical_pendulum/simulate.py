@@ -40,7 +40,7 @@ param_vals = [link_length for x in l] + \
 print("Generating numeric right hand side.")
 right_hand_side = generate_ode_function(kane.mass_matrix_full,
                                         kane.forcing_full,
-                                        param_syms, kane._q, kane._u)
+                                        param_syms, kane.q, kane.u)
 
 # To simulate the system, a time vector and initial conditions for the
 # system's states is required.

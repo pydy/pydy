@@ -14,7 +14,7 @@ def numeric_right_hand_side(kane, parameters):
 
     """
 
-    dynamic = kane._q + kane._u
+    dynamic = kane.q[:] + kane.u[:]
     dummy_symbols = [Dummy() for i in dynamic]
     dummy_dict = dict(zip(dynamic, dummy_symbols))
     kindiff_dict = kane.kindiffdict()
