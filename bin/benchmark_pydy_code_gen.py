@@ -56,7 +56,7 @@ def run_benchmark(max_num_links, num_time_steps=1000):
             print(subtitle)
             print('-' * len(subtitle))
             start = time.time()
-            evaluate_ode = sys.generate_ode_function()
+            evaluate_ode = sys.generate_ode_function(generator=method)
             code_generation_times[j, k] = time.time() - start
             print('The code generation took {:1.5f} seconds.'.format(
                 code_generation_times[j, k]))
