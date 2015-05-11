@@ -14,6 +14,7 @@ from ..utils import sympy_equal_to_or_newer_than
 
 SYMPY_VERSION = sm.__version__
 
+
 class TestSystem():
 
     def setup(self):
@@ -35,7 +36,8 @@ class TestSystem():
         # -----------------------------------
         sys = System(self.kane)
 
-        assert Counter(sys.constants_symbols) == Counter(list(sm.symbols('k0, m0, g, c0')))
+        assert Counter(sys.constants_symbols) == \
+            Counter(list(sm.symbols('k0, m0, g, c0')))
         assert sys.specifieds_symbols == [self.specified_symbol]
         assert sys.states == dynamicsymbols('x0, v0')
         assert sys.evaluate_ode_function is None
@@ -224,7 +226,8 @@ class TestSystem():
         with testing.assert_raises(ValueError):
             sys.specifieds = {'symbols': [sm.symbols('m1')], 'values': [1.0]}
         with testing.assert_raises(ValueError):
-            sys.specifieds = {'symbols': [sm.symbols('T2, T2')], 'values': [1, 2]}
+            sys.specifieds = {'symbols': [sm.symbols('T2, T2')],
+                              'values': [1, 2]}
         with testing.assert_raises(ValueError):
             sys.specifieds = {'symbols': [dynamicsymbols('T2')],
                               'values': [1.0]}
@@ -235,7 +238,6 @@ class TestSystem():
             'symbols': [spec_syms[1], spec_syms[0], spec_syms[2],
                         spec_syms[3]],
             'values': [2.0, 1.0, 3.0, 4.0]}
-        x_03 = sys.integrate()
         # I tested: x_01 is not allclose to x_03.
 
         sys.generate_ode_function()
@@ -337,7 +339,7 @@ class TestSystem():
         x_01 = sys.integrate()
 
         sys = System(self.kane, times=times)
-        rhs = sys.generate_ode_function(generator='lambdify')
+        sys.generate_ode_function(generator='lambdify')
         x_02 = sys.integrate()
 
         testing.assert_allclose(x_01, x_02)

@@ -6,7 +6,7 @@ from pydy.viz.scene import Scene
 from pydy.viz.visualization_frame import VisualizationFrame
 
 # local
-from derive import I, O, links, particles, kane, q, u
+from derive import I, O, links, particles, q, u
 from simulate import param_syms, state_trajectories, param_vals
 from simulate import link_length, link_radius, particle_radius
 
