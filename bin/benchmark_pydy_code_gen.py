@@ -11,7 +11,6 @@ from scipy.integrate import odeint
 from numpy import hstack, ones, pi, linspace, array, zeros, zeros_like
 import matplotlib.pyplot as plt
 from pydy.models import n_link_pendulum_on_cart
-from pydy.codegen.code import generate_ode_function
 
 
 def run_benchmark(max_num_links, num_time_steps=1000):
@@ -46,9 +45,9 @@ def run_benchmark(max_num_links, num_time_steps=1000):
             parameter_vals += [arm_length, bob_mass]
 
         # odeint arguments
-        x0 = hstack((0, pi / 2 * ones(len(results[3]) - 1), 1e-3 *
-                    ones(len(results[4]))))
-        args = {'constants': dict(zip(results[2], array(parameter_vals)))}
+        x0 = hstack((0, pi / 2 * ones(len(sys.coordinates) - 1), 1e-3 *
+                    ones(len(sys.speeds))))
+        args = {'constants': dict(zip(sys.constants, array(parameter_vals)))}
         t = linspace(0, 10, num_time_steps)
 
         for k, method in enumerate(methods):
@@ -57,8 +56,7 @@ def run_benchmark(max_num_links, num_time_steps=1000):
             print(subtitle)
             print('-' * len(subtitle))
             start = time.time()
-            evaluate_ode = generate_ode_function(*results,
-                                                      generator=method)
+            evaluate_ode = sys.generate_ode_function()
             code_generation_times[j, k] = time.time() - start
             print('The code generation took {:1.5f} seconds.'.format(
                 code_generation_times[j, k]))
@@ -69,13 +67,12 @@ def run_benchmark(max_num_links, num_time_steps=1000):
             print('ODE integration took {:1.5f} seconds.\n'.format(
                 integration_times[j, k]))
 
-        del results, evaluate_ode
+        del sys, evaluate_ode
 
     # clean up the cython crud
     files = glob.glob('multibody_system*')
     for f in files:
         os.remove(f)
-    shutil.rmtree('build')
 
     # plot the results
     fig, ax = plt.subplots(3, 1, sharex=True)
