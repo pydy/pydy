@@ -122,9 +122,6 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
                 updated_object.length = jQuery("#_length").val()
                 break;
 
-            // TODO for Mesh..
-
-
         }
 
         jQuery.extend(true,self.model.objects[int_id],updated_object);
