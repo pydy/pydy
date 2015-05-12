@@ -20,15 +20,20 @@ class TestCodeRHSArgs():
 
         sys = n_link_pendulum_on_cart(3, True, True)
 
-        args = sys._args_for_gen_ode_func()
-        kwargs = sys._kwargs_for_gen_ode_func()
+        constants = sys.constants_symbols
+        specifieds = sys.specifieds_symbols
 
-        mass_matrix, forcing_vector, constants, coordinates, speeds = args
-        specifieds = kwargs['specified']
+        args = (sys.eom_method.mass_matrix_full,
+                sys.eom_method.forcing_full,
+                constants,
+                sys.coordinates,
+                sys.speeds)
+
+        kwargs = {'specified': specifieds}
 
         rhs = generate_ode_function(*args, **kwargs)
 
-        x = np.array(np.random.random(len(coordinates + speeds)))
+        x = np.array(np.random.random(len(sys.coordinates + sys.speeds)))
 
         rhs_args = {'constants': {k: 1.0 for k in constants}}
 
@@ -68,8 +73,13 @@ class TestCode():
 
         system = multi_mass_spring_damper(1, True, True)
 
-        args = system._args_for_gen_ode_func()
-        kwargs = system._kwargs_for_gen_ode_func()
+        args = (system.eom_method.mass_matrix_full,
+                system.eom_method.forcing_full,
+                system.constants_symbols,
+                system.coordinates,
+                system.speeds)
+
+        kwargs = {'specified': system.specifieds_symbols}
 
         mass_matrix, forcing_vector, constants, coordinates, speeds = args
         specifieds = kwargs['specified']
@@ -119,11 +129,13 @@ class TestCode():
         # Now try it without specified values.
         system = multi_mass_spring_damper(1, True)
 
-        args = system._args_for_gen_ode_func()
-        kwargs = system._kwargs_for_gen_ode_func()
+        args = (system.eom_method.mass_matrix_full,
+                system.eom_method.forcing_full,
+                system.constants_symbols,
+                system.coordinates,
+                system.speeds)
 
         mass_matrix, forcing_vector, constants, coordinates, speeds = args
-        specifieds = kwargs['specified']
 
         expected_dx = np.array([v, 1.0 / m * (-c * v + m * g - k * x)])
 
