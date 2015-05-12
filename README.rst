@@ -352,10 +352,13 @@ User Facing
 Development
 ~~~~~~~~~~~
 
+- When using older SymPy development versions with non-PEP440 compliant version
+  identifiers, setuptools < 8 is required. [PR `#166`_]
 - Development version numbers are now PEP 440 compliant. [PR `#141`_]
 - Introduced pull request checklists and CONTRIBUTING file. [PR `#146`_]
 - Introduced light code linting into Travis. [PR `#148`_]
 
+.. _#166: https://github.com/pydy/pydy/pull/166
 .. _#141: https://github.com/pydy/pydy/pull/141
 .. _#146: https://github.com/pydy/pydy/pull/146
 .. _#148: https://github.com/pydy/pydy/pull/148
