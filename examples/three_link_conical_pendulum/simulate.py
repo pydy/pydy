@@ -3,7 +3,7 @@
 # external
 from numpy import radians, linspace, hstack, zeros, ones
 from scipy.integrate import odeint
-from pydy.codegen.code import generate_ode_function
+from pydy.codegen.ode_function_generators import generate_ode_function
 
 # local
 from derive import l, m_bob, m_link, Ixx, Iyy, Izz, g, kane, q, u
@@ -38,9 +38,8 @@ param_vals = [link_length for x in l] + \
 # A function that evaluates the right hand side of the set of first order
 # ODEs can be generated.
 print("Generating numeric right hand side.")
-right_hand_side = generate_ode_function(kane.mass_matrix_full,
-                                        kane.forcing_full,
-                                        param_syms, q, u)
+right_hand_side = generate_ode_function(kane.forcing_full, q, u, param_syms,
+                                        mass_matrix=kane.mass_matrix_full)
 
 # To simulate the system, a time vector and initial conditions for the
 # system's states is required.
