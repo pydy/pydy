@@ -18,9 +18,6 @@ install:
   - sudo apt-get install -y -qq python-numpy python-scipy cython
   - sudo apt-get install -y -qq python-coverage
   - sudo apt-get install -y -qq phantomjs
-  # SymPy's development version identifiers are not PEP 440 compliant and
-  # Travis now uses pip>6 setuptools>8, so we roll these back.
-  - pip install "pip<6" "setuptools<8"
   # Theano may try to install SciPy from source if the --no-deps flags isn't
   # there.
   - pip install --no-deps Theano==0.6.0
@@ -38,7 +35,6 @@ install:
   # Install PEP 8 linters (flake8 is like pep8 but also reports unused imports)
   - pip install flake8
 before_script:
-  - python -c "import setuptools; print(setuptools.__version__)"
   - pip --version
   - pip freeze
 script:
