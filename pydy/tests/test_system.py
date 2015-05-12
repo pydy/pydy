@@ -19,14 +19,17 @@ class TestSystem():
 
     def setup(self):
 
-        self.kane = multi_mass_spring_damper(1, True, True).eom_method
-        self.specified_symbol = dynamicsymbols('f0')
+        # Create a simple system with one specified quantity.
+        self.sys = multi_mass_spring_damper(1, apply_gravity=True,
+                                            apply_external_forces=True)
+        self.specified_symbol = self.sys.specifieds_symbols[0]
         self.constant_map = dict(zip(sm.symbols('m0, k0, c0, g'),
                                      [2.0, 1.5, 0.5, 9.8]))
-        self.sys = System(self.kane,
-                          specifieds={self.specified_symbol: np.ones(1)},
-                          constants=self.constant_map)
+        self.sys.specifieds = {self.specified_symbol: np.ones(1)}
+        self.sys.constants = self.constant_map
+        self.kane = self.sys.eom_method
 
+        # Create a system with multiple specified quantities.
         self.kane_nlink = n_link_pendulum_on_cart(3, cart_force=True,
                                                   joint_torques=True).eom_method
 
@@ -36,8 +39,8 @@ class TestSystem():
         # -----------------------------------
         sys = System(self.kane)
 
-        assert Counter(sys.constants_symbols) == \
-            Counter(list(sm.symbols('k0, m0, g, c0')))
+        assert (Counter(sys.constants_symbols) ==
+                Counter(list(sm.symbols('k0, m0, g, c0'))))
         assert sys.specifieds_symbols == [self.specified_symbol]
         assert sys.states == dynamicsymbols('x0, v0')
         assert sys.evaluate_ode_function is None
@@ -244,6 +247,13 @@ class TestSystem():
         x_04 = sys.integrate()
         testing.assert_allclose(x_01, x_04)
 
+        # Test with no specifieds.
+        sys = multi_mass_spring_damper(1, apply_gravity=True)
+        sys.initial_conditions = {dynamicsymbols('x0'): 0.1,
+                                  dynamicsymbols('v0'): -1.0}
+        sys.times = times
+        sys.integrate()
+
     def test_ode_solver(self):
 
         assert self.sys.ode_solver == odeint
@@ -300,10 +310,9 @@ class TestSystem():
 
         assert rhs is self.sys.evaluate_ode_function
 
-        args = {'constants': self.sys.constants,
-                'specified': self.sys.specifieds}
+        args = (self.sys.specifieds, self.sys.constants)
 
-        actual = rhs(np.ones(2), 0.0, args)
+        actual = rhs(np.ones(2), 0.0, *args)
 
         # Regression.
         testing.assert_allclose(actual, np.array([1, 9.3]))
@@ -314,18 +323,20 @@ class TestSystem():
         spec_syms = sys.specifieds_symbols
         rhs = sys.generate_ode_function()
         x = np.array(np.random.random(len(sys.states)))
-        args = {'constants': {k: 1.0 for k in sys.constants_symbols}}
+        args = (self.sys.specifieds,
+                {k: 1.0 for k in sys.constants_symbols})
 
         # Specify constants in two different ways and ensure we get the
         # same results. This is like Jason's test in codegen.
-        args['specified'] = dict(zip(spec_syms, [1.0, 2.0, 3.0, 4.0]))
-        xd_01 = rhs(x, 0.0, args)
+        args = (dict(zip(spec_syms, [1.0, 2.0, 3.0, 4.0])),
+                {k: 1.0 for k in sys.constants_symbols})
+        xd_01 = rhs(x, 0.0, *args)
 
-        args['specified'] = {
-            spec_syms[0]: lambda x, t: np.ones(1),
-            (spec_syms[3], spec_syms[1]): lambda x, t: np.array([4, 2]),
-            spec_syms[2]: 3.0 * np.ones(1)}
-        xd_02 = rhs(x, 0.0, args)
+        args = ({spec_syms[0]: lambda x, t: np.ones(1),
+                 (spec_syms[3], spec_syms[1]): lambda x, t: np.array([4, 2]),
+                 spec_syms[2]: 3.0 * np.ones(1)},
+                {k: 1.0 for k in sys.constants_symbols})
+        xd_02 = rhs(x, 0.0, *args)
 
         testing.assert_allclose(xd_01, xd_02)
 
@@ -350,8 +361,7 @@ class TestSystem():
                                   [1.0, 1.0, 1.0, 1.0]))
         specified_dict = {dynamicsymbols('f0'): 0.0}
         x_03 = sys.ode_solver(sys.evaluate_ode_function, [0, 0], sys.times,
-                              args=({'constants': constants_dict,
-                                     'specified': specified_dict},))
+                              args=(specified_dict, constants_dict))
         testing.assert_allclose(x_02, x_03)
 
         # Ensure that initial conditions are reordered properly.
@@ -363,9 +373,9 @@ class TestSystem():
         sys.initial_conditions = ic
         x_04 = sys.integrate()
         x_05 = sys.ode_solver(
-            sys.evaluate_ode_function, x0, sys.times, args=(
-                {'constants': sys._constants_padded_with_defaults(),
-                 'specified': sys._specifieds_padded_with_defaults()},))
+            sys.evaluate_ode_function, x0, sys.times,
+            args=(sys._specifieds_padded_with_defaults(),
+                  sys._constants_padded_with_defaults()))
 
         testing.assert_allclose(x_04, x_05)
 

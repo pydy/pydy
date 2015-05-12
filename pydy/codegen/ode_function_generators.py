@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import warnings
+
 import numpy as np
 import numpy.linalg
 import scipy.linalg
@@ -365,6 +367,12 @@ r : dictionary
         except (KeyError, IndexError, ValueError):
             return args
         else:
+            with warnings.catch_warnings():
+                warnings.simplefilter('once')
+                warnings.warn("The old style args, i.e. {'constants': , "
+                              "'specified'}, for the generated function will "
+                              "be removed in PyDy 0.4.0.", DeprecationWarning)
+
             new_args = list(args[:-1])  # gets x and t
 
             if self.specifieds is not None:

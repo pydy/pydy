@@ -30,8 +30,10 @@ def test_create_static_html():
     kane = me.KanesMethod(ceiling, q_ind=[position], u_ind=[speed],
                           kd_eqs=kinematic_equations)
     kane.kanes_equations(forces, particles)
-    sys = System(kane, initial_conditions={position: 0.1, speed: -1.0},
-            constants={mass: 1.0, stiffness: 1.0, damping: 0.2, gravity: 9.8})
+    sys = System(kane,
+                 initial_conditions={position: 0.1, speed: -1.0},
+                 constants={mass: 1.0, stiffness: 1.0, damping: 0.2,
+                            gravity: 9.8})
 
     # integrate eoms
     t = linspace(0.0, 10.0, 100)
