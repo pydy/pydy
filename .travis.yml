@@ -54,5 +54,3 @@ script:
   - cd docs && make html && cd ..
   # Make sure the library installs.
   - python setup.py install
-  # Make sure benchmarks runs
-  - python bin/benchmark_pydy_code_gen.py 2 4
