@@ -35,6 +35,7 @@ if os.environ.get('READTHEDOCS', None) == 'True':
         def __getattr__(cls, name):
                 return Mock()
 
+    # Every module that is imported in PyDy is required to be in this list.
     MOCK_MODULES = ['numpy',
                     'numpy.linalg',
                     'numpy.testing',
@@ -52,11 +53,19 @@ if os.environ.get('READTHEDOCS', None) == 'True':
                     'sympy.printing.theanocode',
                     'sympy.physics',
                     'sympy.physics.mechanics',
+                    'sympy.physics.mechanics.functions',
                     'sympy.matrices',
                     'sympy.matrices.expressions',
                     'pkg_resources']
 
-    sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+    pairs = []
+    for mod_name in MOCK_MODULES:
+        mocked = Mock()
+        # This is necessary for the version checks in pydy.utils.
+        if mod_name == 'sympy':
+            mocked.__version__ = '0.7.6'
+        pairs.append((mod_name, mocked))
+    sys.modules.update(pairs)
 
 # -- General configuration ------------------------------------------------
 
