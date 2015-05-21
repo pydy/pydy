@@ -4,13 +4,13 @@ PyDy
 
 |pypi| |rtd-docs| |travis-build| |Gitter Badge|
 
-.. |pypi| image:: https://img.shields.io/pypi/dm/pydy.svg
-    :target: https://pypi.python.org/pypi/pydy/
-    :alt: Latest Version
+.. |pypi| image:: https://img.shields.io/pypi/v/pydy.svg
+   :target: https://pypi.python.org/pypi/pydy
+   :alt: Latest Released Version
 
 .. |rtd-docs| image:: https://readthedocs.org/projects/pydy/badge/?version=latest
-    :target: https://readthedocs.org/projects/pydy/?badge=latest
-    :alt: Latest documentation
+   :target: http://pydy.readthedocs.org/en/latest
+   :alt: Latest documentation
 
 .. |travis-build| image:: https://travis-ci.org/pydy/pydy.png?branch=master
    :target: https://travis-ci.org/pydy/pydy
@@ -59,7 +59,7 @@ PyDy has hard dependencies on the following software:
 - SymPy_ >= 0.7.4.1
 - NumPy_ >= 1.6.1
 - SciPy_ >= 0.9.0
-- IPython_ >= 0.13.0
+- IPython_ >= 0.2.0
 
 PyDy has optional dependencies on these packages:
 
@@ -81,7 +81,8 @@ Anaconda_ distribution for easy cross platform installation.
 .. _conda: http://conda.pydata.org/
 .. _Anaconda: http://docs.continuum.io/anaconda/
 
-Once the dependencies are installed, the package can be downloaed from PyPi::
+Once the dependencies are installed, the lastest stable version of the package
+can be downloaed from PyPi::
 
    $ wget https://pypi.python.org/packages/source/p/pydy/pydy-0.2.1.tar.gz
 
@@ -159,12 +160,11 @@ constants and specified quantities. Here, we specify sinusoidal forcing::
                 constants={mass: 1.0, stiffness: 1.0,
                            damping: 0.2, gravity: 9.8},
                 specifieds={force: lambda x, t: sin(t)},
-                initial_conditions={position: 0.1, speed: -1.0})
+                initial_conditions={position: 0.1, speed: -1.0},
+                times=linspace(0.0, 10.0, 1000))
 
-Integrate the equations of motion under the influence of a specified sinusoidal
-force::
+Integrate the equations of motion to get the state trajectories::
 
-   sys.times = linspace(0.0, 10.0, 1000)
    y = sys.integrate()
 
 Plot the results::
@@ -345,9 +345,10 @@ User Facing
 - Overhauled the code generation package to make the generators more easily
   extensible and to improve simluation speed. [PR `#113`_]
 - Added a new System class and module to more seamlessly manage integrating the
-  equations of motion.
+  equations of motion. [PR `#81`_]
 
 .. _#113: https://github.com/pydy/pydy/pull/113
+.. _#81: https://github.com/pydy/pydy/pull/81
 
 Development
 ~~~~~~~~~~~
