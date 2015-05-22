@@ -18,7 +18,7 @@ __all__ = ['Shape',
 import numpy as np
 
 
-#This is a list of ColorKeywords from THREE.js
+# This is a list of ColorKeywords from THREE.js
 Three_ColorKeywords = ['aliceblue', 'antiquewhite', 'aqua',
                        'aquamarine', 'azure', 'beige', 'bisque',
                        'black', 'blanchedalmond', 'blue', 'blueviolet',
@@ -65,8 +65,9 @@ Three_ColorKeywords = ['aliceblue', 'antiquewhite', 'aqua',
                        'violet', 'wheat', 'white', 'whitesmoke',
                        'yellow', 'yellowgreen']
 
-Materials = ["default", "CHECKERBOARD", "METAL", "DIRT", "FOIL", "WATER", "GRASS",
-             "checkerboard", "metal", "dirt", "foil", "water", "grass"]
+Materials = ["default", "CHECKERBOARD", "METAL", "DIRT", "FOIL", "WATER",
+             "GRASS", "checkerboard", "metal", "dirt", "foil", "water",
+             "grass"]
 
 
 class Shape(object):
@@ -107,17 +108,14 @@ class Shape(object):
     """
     def __init__(self, name='unnamed', color='grey', material="default"):
         self.name = name
-        if not isinstance(color, str) \
-        and color not in Three_ColorKeywords:
-            raise ValueError("'color' should be a valid ",
-                            "Three.js colors string.")
+        if not isinstance(color, str) and color not in Three_ColorKeywords:
+            raise ValueError("'color' should be a valid Three.js colors "
+                             "string.")
         else:
             self.color = color
-        if not isinstance(material, str) \
-        and material not in Materials:
-            raise ValueError(" 'material' is not valid. ",
-                               "Please check the list of \
-                               available materials")
+        if not isinstance(material, str) and material not in Materials:
+            raise ValueError("'material' is not valid. Please check the list"
+                             " of available materials")
         else:
             self.material = material
 
@@ -125,7 +123,7 @@ class Shape(object):
 
     def __str__(self):
         attributes = ([self.__class__.__name__, self.name, 'color:' +
-                       self.color,'material:' + self.material] +
+                       self.color, 'material:' + self.material] +
                       sorted([attr + ':{}'.format(getattr(self, attr)) for
                               attr in self.geometry_attrs]))
         return ' '.join(['{}'] * len(attributes)).format(*attributes)
@@ -155,8 +153,7 @@ class Shape(object):
     def color(self, new_color):
         """Sets the color attributes of the shape. This should be a valid
         Three_ColorKeywords color string."""
-        if not isinstance(new_color, str) \
-        and new_color in Three_ColorKeywords:
+        if not isinstance(new_color, str) and new_color in Three_ColorKeywords:
             raise TypeError("'color' should be a valid ",
                             "Three.js colors string.")
         else:
@@ -164,12 +161,11 @@ class Shape(object):
 
     @property
     def material(self):
-        """Returns the material attribute of the shape.
-        Materials are an attribute to shapes, which correspond to
-        visual attributes of the object used(its shine, brightness, opacity etc.).
-        If a shape is attributed as "red" color, and "WATER" material,
-        ideally it should have opacity and brightness properties
-        like that of a red fluid.
+        """Returns the material attribute of the shape. Materials are an
+        attribute to shapes, which correspond to visual attributes of the
+        object used (its shine, brightness, opacity etc.). If a shape is
+        attributed as "red" color, and "WATER" material, ideally it should
+        have opacity and brightness properties like that of a red fluid.
         """
         return self._material
 
@@ -179,11 +175,9 @@ class Shape(object):
         be a valid material from the listed Materials.
 
         """
-        if not isinstance(new_material, str) \
-        and new_material not in Materials:
-            raise ValueError(" 'material' is not valid. ",
-                               "Please check the list of \
-                               available materials")
+        if not isinstance(new_material, str) and new_material not in Materials:
+            raise ValueError(" 'material' is not valid. "
+                             "Please check the list of available materials")
         else:
             self._material = new_material
 
@@ -773,7 +767,8 @@ class Tube(Shape):
     >>> s.radius = 14.0
     >>> s.radius
     14.0
-    >>> s.points = [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0], [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
+    >>> s.points = [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0],
+    ...             [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
     >>> s.points
     [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0], [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
     >>> a = Tube(12.0, points, name='my-shape2', color='red')
