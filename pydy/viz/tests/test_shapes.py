@@ -517,3 +517,52 @@ def test_torus_knot():
     assert torus_knot_.__str__() == \
         'TorusKnot unnamed color:red material:default radius:10.0 tube_radius:2.0'
     assert torus_knot_.__repr__() == 'TorusKnot'
+
+
+def test_mesh():
+    point_list = [[2., 3., 1.], [4., 6., 2.],
+                  [5., 3., 1.], [5., 3., 6.],
+                  [2., 8., 4.], [7., 4., 1.]]
+
+    mesh_shape = Mesh(point_list, name='mesh', color='green')
+    assert mesh_shape.name == 'mesh'
+    #TODO Handle these long strings
+    assert mesh_shape.__str__() == \
+        'Mesh mesh color:green material:default points:[[ 2.  3.  1.]\n [ 4.  6.  2.]\n [ 5.  3.  1.]\n [ 5.  3.  6.]\n [ 2.  8.  4.]\n [ 7.  4.  1.]]'
+
+    assert mesh_shape.__repr__() == 'Mesh'
+    assert_allclose(mesh_shape.points, point_list)
+    assert mesh_shape.color == 'green'
+
+    mesh_shape.name = 'mesh1'
+    assert mesh_shape.name == 'mesh1'
+
+    new_point_list = [[3., 4., 12.],
+                      [2., 4., 4.],
+                      [3., 2., 41.],
+                      [2., 5., 4.]]
+    mesh_shape.points = new_point_list
+    assert_allclose(mesh_shape.points, new_point_list)
+
+    mesh_shape.color = 'pink'
+    assert mesh_shape.color == 'pink'
+
+    actual = mesh_shape.generate_dict()
+
+    expected = {"color": "pink",
+                "type": "Mesh",
+                "name": "mesh1",
+                "points": np.asarray(new_point_list),
+                "material":  "default"}
+
+    for key in ['color', 'type', 'name']:
+        actual[key] == expected[key]
+    assert_allclose(actual['points'], expected['points'])
+
+    assert isinstance(mesh_shape, Shape)
+
+    mesh_shape_ = Mesh(points=point_list, color='green')
+    assert mesh_shape_.name == 'unnamed'
+    assert mesh_shape_.__str__() == \
+        'Mesh unnamed color:green material:default points:[[ 2.  3.  1.]\n [ 4.  6.  2.]\n [ 5.  3.  1.]\n [ 5.  3.  6.]\n [ 2.  8.  4.]\n [ 7.  4.  1.]]'
+    assert mesh_shape_.__repr__() == 'Mesh'

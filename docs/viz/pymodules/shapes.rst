@@ -79,3 +79,8 @@ Tube
 .. autoclass:: pydy.viz.shapes.Tube
    :members:
 
+Mesh
+^^^^
+
+.. autoclass:: pydy.viz.shapes.Mesh
+   :members:
