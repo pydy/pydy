@@ -81,8 +81,8 @@ Anaconda_ distribution for easy cross platform installation.
 .. _conda: http://conda.pydata.org/
 .. _Anaconda: http://docs.continuum.io/anaconda/
 
-Once the dependencies are installed, the lastest stable version of the package
-can be downloaed from PyPi::
+Once the dependencies are installed, the latest stable version of the package
+can be downloaded from PyPi::
 
    $ wget https://pypi.python.org/packages/source/p/pydy/pydy-0.2.1.tar.gz
 
@@ -280,9 +280,9 @@ The full Python test suite can be run with::
 
    (pydy-dev)$ nosetests
 
-For the Javascript tests the Jasmine and blanket.js libraries are used. Both
+For the JavaScript tests the Jasmine and blanket.js libraries are used. Both
 of these libraries are included in pydy.viz with the source. To run the
-Javascript tests::
+JavaScript tests::
 
    cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html && cd ../../../../../
 
@@ -343,11 +343,29 @@ User Facing
 ~~~~~~~~~~~
 
 - Overhauled the code generation package to make the generators more easily
-  extensible and to improve simluation speed. [PR `#113`_]
+  extensible and to improve simulation speed. [PR `#113`_]
+- The visualizer has been overhauled as part of Tarun Gaba's 2014 GSoC
+  internship [PR `#82`_]. Here are some of the changes:
+
+  - The JavaScript is now handled by AJAX and requires a simple server.
+  - The JavaScript has been overhauled and now uses prototype.js for object
+    oriented design.
+  - The visualizer can now be loaded in an IPython notebook via IPython's
+    widgets.
+  - A slider was added to manually control the frame playback.
+  - The visualization objects can be manipulated via the GUI.
+  - The scene json file can be edited via the GUI.
+  - The data and scene description have been separated into two json files.
+  - Different simulation files can be loaded via the GUI.
+  - Shapes can now have a material.
+  - Simulation parameters can be modified and the simulations can be rerun all
+    via the GUI.
+
 - Added a new System class and module to more seamlessly manage integrating the
   equations of motion. [PR `#81`_]
 
 .. _#113: https://github.com/pydy/pydy/pull/113
+.. _#82: https://github.com/pydy/pydy/pull/82
 .. _#81: https://github.com/pydy/pydy/pull/81
 
 Development
