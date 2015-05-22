@@ -171,12 +171,12 @@ class PerspectiveCamera(VisualizationFrame):
         else:
             self._far = new_far
 
-    
+
     def generate_scene_dict(self):
         """
-        This method generates information for a static 
+        This method generates information for a static
         visualization in the initial conditions, in the form
-        of dictionary. This contains camera parameters followed 
+        of dictionary. This contains camera parameters followed
         by an init_orientation Key.
 
         Before calling this method, all the transformation matrix
@@ -185,13 +185,13 @@ class PerspectiveCamera(VisualizationFrame):
         Returns
         =======
         A dict with following Keys:
-        
+
         1. name: name for the camera
         2. fov: Field of View value of the camera
         3. near: near value of the camera
         4. far: far value of the camera
         5. init_orientation: Initial orientation of the camera
-        
+
         """
         scene_dict = { id(self): {} }
         scene_dict[id(self)]['name'] = self.name
@@ -209,15 +209,15 @@ class PerspectiveCamera(VisualizationFrame):
         Generates the simulation information for this visualization
         frame. It maps the simulation data information to the
         scene information via a unique id.
-        
+
         Before calling this method, all the transformation matrix
         generation methods should be called, or it will give an error.
         Returns
         =======
 
-        A dictionary containing list of 4x4 matrices mapped to 
+        A dictionary containing list of 4x4 matrices mapped to
         the unique id as the key.
-        
+
         """
         simulation_dict = {}
         try:
@@ -230,8 +230,8 @@ class PerspectiveCamera(VisualizationFrame):
 
 
         return simulation_dict
-        
-    
+
+
 
 class OrthoGraphicCamera(VisualizationFrame):
     """
@@ -373,20 +373,20 @@ class OrthoGraphicCamera(VisualizationFrame):
 
     def generate_scene_dict(self):
         """
-        This method generates information for a static 
+        This method generates information for a static
         visualization in the initial conditions, in the form
-        of dictionary. This contains camera parameters followed 
+        of dictionary. This contains camera parameters followed
         by an init_orientation Key.
 
         Returns
         =======
         A dict with following Keys:
-        
+
         1. name: name for the camera
         2. near: near value of the camera
         3. far: far value of the camera
         4. init_orientation: Initial orientation of the camera
-        
+
         """
         scene_dict = {}
         scene_dict['name'] = self.name
@@ -403,13 +403,13 @@ class OrthoGraphicCamera(VisualizationFrame):
         Generates the simulation information for this visualization
         frame. It maps the simulation data information to the
         scene information via a unique id.
-        
+
         Returns
         =======
 
-        A dictionary containing list of 4x4 matrices mapped to 
+        A dictionary containing list of 4x4 matrices mapped to
         the unique id as the key.
-        
+
         """
         simulation_dict = {}
         try:

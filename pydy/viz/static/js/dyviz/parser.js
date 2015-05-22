@@ -1,14 +1,14 @@
 
 DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
-    
+
     loadScene: function(){
 
-        /** 
-          * This method calls an ajax request on the 
-          * JSON file and reads the scene info from 
+        /**
+          * This method calls an ajax request on the
+          * JSON file and reads the scene info from
           * the JSON file, and saves it as an object
           * at self.model.
-        **/ 
+        **/
         var self = this;
         var filePath = self.sceneFilePath;
         if(self.getFileExtenstion() !== "json"){
@@ -27,32 +27,32 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
             onComplete: function(){
                 console.log("[PyDy INFO]: Ajax request completed, adding Objects to scene");
                 self.Scene.addObjects();
-                self.Scene.addCameras();
+                //self.Scene.addCameras();
                 self.Scene.addLights();
                 self.Parser.loadSimulation();
                 // Load UI elements relevant for animation stuff!
                 self.loadUIElements();
                 console.log("Done with loadScene");
             },
-            onFailure: function() { 
-                alert('[PyDy ALERT]: Scene file not loaded!'); 
-                console.log('[PyDy ALERT]: Scene file not loaded!'); 
+            onFailure: function() {
+                alert('[PyDy ALERT]: Scene file not loaded!');
+                console.log('[PyDy ALERT]: Scene file not loaded!');
             },
-            on404: function(){ 
-                alert("[PyDy ALERT]: Scene file not Found! error:404"); 
-                console.log("[PyDy ALERT]: Scene file not found! error:404"); 
+            on404: function(){
+                alert("[PyDy ALERT]: Scene file not Found! error:404");
+                console.log("[PyDy ALERT]: Scene file not found! error:404");
             }
         });
     },
 
     loadSimulation: function(){
-        /** 
-          * This method loads the simulation data 
+        /**
+          * This method loads the simulation data
           * from the simulation JSON file. The data is
-          * saved in the form of 4x4 matrices mapped to 
+          * saved in the form of 4x4 matrices mapped to
           * the simulation object id, at a particular time.
-          * 
-        **/ 
+          *
+        **/
         var self = this;
 
         var path = self.getBasePath() + self.model.simulationData;
@@ -64,16 +64,16 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
             },
             onComplete: function(){
                 self.createTimeArray();
-    
+
             },
             onFailure: function() { alert('[PyDy ALERT]: Simulation File not loaded!'); },
             on404: function(){ alert("[PyDy ALERT]: Simulation File Not Found! Error:404"); }
-        }); 
+        });
     },
 
     createTimeArray: function(){
         /**
-          * Creates a time array from 
+          * Creates a time array from
           * the information inferred from
           * simulation data.
         **/

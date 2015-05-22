@@ -5,7 +5,7 @@
 from __future__ import division
 from sympy import expand, solve, symbols, trigsimp, sin, cos, Matrix
 from sympy.physics.mechanics import ReferenceFrame, RigidBody, Point
-from sympy.physics.mechanics import dot, dynamicsymbols, inertia, msprint
+from sympy.physics.mechanics import dot, dynamicsymbols, inertia
 from util import generalized_active_forces, generalized_inertia_forces
 from util import partial_velocities, subs
 

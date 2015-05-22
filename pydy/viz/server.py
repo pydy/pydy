@@ -1,4 +1,5 @@
-import sys
+#!/usr/bin/env python
+
 import os
 import BaseHTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
@@ -12,7 +13,7 @@ def run_server(port=8000,scene_file="Null"):
     Protocol     = "HTTP/1.0"
     server_address = ('127.0.0.1', port)
     HandlerClass.protocol_version = Protocol
-    httpd = ServerClass(server_address, HandlerClass) 
+    httpd = ServerClass(server_address, HandlerClass)
     sa = httpd.socket.getsockname()
     print "Serving HTTP on", sa[0], "port", sa[1], "..."
     print "hit ctrl+c to stop the server.."

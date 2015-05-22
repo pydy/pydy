@@ -6,7 +6,7 @@ from __future__ import division
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import cross, dot
 from sympy import integrate, simplify, symbols, integrate
-from sympy import sin, cos, tan, pi
+from sympy import sin, cos, pi
 
 
 def calc_inertia_vec(rho, p, n_a, N, iv):
@@ -30,7 +30,3 @@ I_2 = calc_inertia_vec(density, pP.pos_from(pO).subs(h_theta_val),
                        N.y, N, (l, 0, L))
 print('I_1 = {0}'.format(I_1))
 print('I_2 = {0}'.format(I_2))
-
-
-
-

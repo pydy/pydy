@@ -7,7 +7,7 @@ from sympy import solve, symbols, sin, cos, expand, trigsimp
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import inertia
 from sympy.physics.mechanics import cross, dot, dynamicsymbols
-from util import msprint, subs, partial_velocities
+from util import msprint, partial_velocities
 from util import generalized_active_forces, potential_energy
 from util import generalized_active_forces_V
 

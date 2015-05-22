@@ -1,27 +1,52 @@
 language: python
-python:
-  - 2.7
+matrix:
+  include:
+    - python: 2.7
+      env: SYMPY_MASTER="false"
+    - python: 2.7
+      env: SYMPY_MASTER="true"
 virtualenv:
   system_site_packages: true
 before_install:
-  # On Ubuntu 12.04 numpy is at 1.6.1, SciPy is at 0.9.0 and Cython is at
-  # 0.15.1.
-  - sudo apt-get install -y -qq libatlas-dev python-numpy python-scipy cython
-  - sudo apt-get install -y -qq python-coverage
-  - sudo apt-get install phantomjs
+  - sudo apt-get update
   # Remove the version of NumPy pre-installed into the Travis virtualenv so
   # that we test with the system installed version.
   - pip uninstall -y numpy
+install:
+  # On Ubuntu 12.04 (Travis's testing machines) numpy is at 1.6.1, SciPy is at
+  # 0.9.0 and Cython is at 0.15.1.
+  - sudo apt-get install -y -qq python-numpy python-scipy cython
+  - sudo apt-get install -y -qq python-coverage
+  - sudo apt-get install -y -qq phantomjs
+  # Theano may try to install SciPy from source if the --no-deps flags isn't
+  # there.
   - pip install --no-deps Theano==0.6.0
-  - pip install sympy==0.7.4.1
+  - if [[ $SYMPY_MASTER == "false" ]]; then
+      pip install sympy==0.7.4.1;
+    elif [[ $SYMPY_MASTER == "true" ]]; then
+      pip install https://github.com/sympy/sympy/archive/master.zip;
+    fi
+  - pip install -U nose
   # Note that the `make html` command that runs 'build-sphinx' does not work if
   # Sphinx is installed with 'apt-get install sphinx'. It can't find the
   # numpydoc extension if it is. It must be bypassing virtualenv to the system
   # Python.
   - pip install sphinx numpydoc
+  # Install PEP 8 linters (flake8 is like pep8 but also reports unused imports)
+  - pip install flake8
+before_script:
+  - pip --version
   - pip freeze
 script:
+  # Run Python and Javascript tests.
   - nosetests -v --with-coverage --cover-package=pydy
-  - cd docs && make html && cd ..
-  - python setup.py install
   - cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html && cd ../../../../../
+  # Check Python and Javascript syntax (trailing whitespaces/newlines, unused imports).
+  - (flake8 --select W1,W2,W3 --exclude booger . &&
+    flake8 --select F401 --exclude booger,__init__.py,conf.py . &&
+    flake8 --select W2,W3 --filename='*.js' examples/ pydy/viz/static/js/dyviz/) ||
+    (echo "Please run a linter and fix errors, e.g. pylint, flake8, pep8, etc."; false)
+  # Make sure the docs build.
+  - cd docs && make html && cd ..
+  # Make sure the library installs.
+  - python setup.py install

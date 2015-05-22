@@ -12,14 +12,13 @@ __all__ = ['Shape',
            'Icosahedron',
            'Torus',
            'TorusKnot',
-           'Tube',
-           'Mesh']
+           'Tube']
 
 
 import numpy as np
 
 
-#This is a list of ColorKeywords from THREE.js
+# This is a list of ColorKeywords from THREE.js
 Three_ColorKeywords = ['aliceblue', 'antiquewhite', 'aqua',
                        'aquamarine', 'azure', 'beige', 'bisque',
                        'black', 'blanchedalmond', 'blue', 'blueviolet',
@@ -65,14 +64,15 @@ Three_ColorKeywords = ['aliceblue', 'antiquewhite', 'aqua',
                        'tan', 'teal', 'thistle', 'tomato', 'turquoise',
                        'violet', 'wheat', 'white', 'whitesmoke',
                        'yellow', 'yellowgreen']
-                       
-Materials = ["default", "CHECKERBOARD", "METAL", "DIRT", "FOIL", "WATER", "GRASS",
-             "checkerboard", "metal", "dirt", "foil", "water", "grass"]
-                                    
+
+Materials = ["default", "CHECKERBOARD", "METAL", "DIRT", "FOIL", "WATER",
+             "GRASS", "checkerboard", "metal", "dirt", "foil", "water",
+             "grass"]
+
 
 class Shape(object):
     """Instantiates a shape. This is primarily used as a superclass for more
-    specific shapes like Mesh, Cylinder, Sphere etc.
+    specific shapes like Cube, Cylinder, Sphere etc.
 
     Shapes must be associated with a reference frame and a point using the
     VisualizationFrame class.
@@ -107,28 +107,25 @@ class Shape(object):
     'red'
 
     """
-    
+
     def __init__(self, name='unnamed', color='grey', material="default"):
         self.name = name
-        if not isinstance(color, str) \
-        and color not in Three_ColorKeywords:
-            raise ValueError("'color' should be a valid ",
-                            "Three.js colors string.")
+        if not isinstance(color, str) and color not in Three_ColorKeywords:
+            raise ValueError("'color' should be a valid Three.js colors "
+                             "string.")
         else:
             self.color = color
-        if not isinstance(material, str) \
-        and material not in Materials:
-            raise ValueError(" 'material' is not valid. ", 
-                               "Please check the list of \
-                               available materials")    
+        if not isinstance(material, str) and material not in Materials:
+            raise ValueError("'material' is not valid. Please check the list"
+                             " of available materials")
         else:
-            self.material = material                       
-            
+            self.material = material
+
         self.geometry_attrs = []
 
     def __str__(self):
         attributes = ([self.__class__.__name__, self.name, 'color:' +
-                       self.color,'material:' + self.material] +
+                       self.color, 'material:' + self.material] +
                       sorted([attr + ':{}'.format(getattr(self, attr)) for
                               attr in self.geometry_attrs]))
         return ' '.join(['{}'] * len(attributes)).format(*attributes)
@@ -158,8 +155,7 @@ class Shape(object):
     def color(self, new_color):
         """Sets the color attributes of the shape. This should be a valid
         Three_ColorKeywords color string."""
-        if not isinstance(new_color, str) \
-        and new_color in Three_ColorKeywords:
+        if not isinstance(new_color, str) and new_color in Three_ColorKeywords:
             raise TypeError("'color' should be a valid ",
                             "Three.js colors string.")
         else:
@@ -167,29 +163,26 @@ class Shape(object):
 
     @property
     def material(self):
-        """Returns the material attribute of the shape. 
-        Materials are an attribute to shapes, which correspond to 
-        visual attributes of the object used(its shine, brightness, opacity etc.). 
-        If a shape is attributed as "red" color, and "WATER" material, 
-        ideally it should have opacity and brightness properties 
-        like that of a red fluid.
+        """Returns the material attribute of the shape. Materials are an
+        attribute to shapes, which correspond to visual attributes of the
+        object used (its shine, brightness, opacity etc.). If a shape is
+        attributed as "red" color, and "WATER" material, ideally it should
+        have opacity and brightness properties like that of a red fluid.
         """
         return self._material
-        
+
     @material.setter
     def material(self, new_material):
         """Sets the material attribute of the shape. The material should
         be a valid material from the listed Materials.
-        
-        """ 
-        if not isinstance(new_material, str) \
-        and new_material not in Materials:
-            raise ValueError(" 'material' is not valid. ", 
-                               "Please check the list of \
-                               available materials")    
+
+        """
+        if not isinstance(new_material, str) and new_material not in Materials:
+            raise ValueError(" 'material' is not valid. "
+                             "Please check the list of available materials")
         else:
-            self._material = new_material      
-        
+            self._material = new_material
+
     def generate_dict(self, constant_map={}):
         """Returns a dictionary containing all the data associated with the
         Shape.
@@ -776,7 +769,8 @@ class Tube(Shape):
     >>> s.radius = 14.0
     >>> s.radius
     14.0
-    >>> s.points = [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0], [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
+    >>> s.points = [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0],
+    ...             [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
     >>> s.points
     [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0], [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
     >>> a = Tube(12.0, points, name='my-shape2', color='red')
@@ -795,59 +789,6 @@ class Tube(Shape):
         super(Tube, self).__init__(**kwargs)
         self.geometry_attrs += ['radius', 'points']
         self.radius = radius
-        self.points = points
-
-    @property
-    def points(self):
-        return self._points
-
-    @points.setter
-    def points(self, new_points):
-        self._points = np.asarray(new_points)
-
-
-class Mesh(Shape):
-    """Instantiates a general mesh surface from the given points.
-
-    Parameters
-    ==========
-    points : array_like, shape(n, 3)
-        n sets of (x, y, z) coordinates that describe a surface mesh.
-
-    Examples
-    ========
-
-    >>> from pydy.viz.shapes import Mesh
-    >>> points = [[1.0, 2.0, 1.0], [2.0, 1.0, 1.0], [2.0, 3.0, 4.0]]
-    >>> s = Mesh(points)
-    >>> s.name
-    'unnamed'
-    >>> s.color
-    'grey'
-    >>> s.points
-    [[1.0, 2.0, 1.0], [2.0, 1.0, 1.0], [2.0, 3.0, 4.0]]
-    >>> s.name = 'my-shape1'
-    >>> s.name
-    'my-shape1'
-    >>> s.color = 'blue'
-    >>> s.color
-    'blue'
-    >>> s.points = [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0], [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
-    >>> s.points
-    [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0], [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
-    >>> a = Mesh(points, name='my-shape2', color='red')
-    >>> a.name
-    'my-shape2'
-    >>> a.color
-    'red'
-    >>> a.points
-    [[1.0, 2.0, 1.0], [2.0, 1.0, 1.0], [2.0, 3.0, 4.0]]
-
-    """
-
-    def __init__(self, points, **kwargs):
-        super(Mesh, self).__init__(**kwargs)
-        self.geometry_attrs += ['points']
         self.points = points
 
     @property

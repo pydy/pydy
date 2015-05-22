@@ -3,13 +3,13 @@
 var DynamicsVisualizer = {};
 
 DynamicsVisualizer = Class.create({
-    /** 
+    /**
       * DV is the main class for Dynamics Visualizer.
-      * it contains methods to set up a default UI, and 
+      * it contains methods to set up a default UI, and
       * maps buttons' `onClick` to functions.
-    **/ 
+    **/
 
-    _initialize: function(){    
+    _initialize: function(){
         /**
           * Checks whether the browser supports webGLs, and
           * initializes the DynamicVisualizer object.
@@ -18,7 +18,7 @@ DynamicsVisualizer = Class.create({
         console.log("[PyDy INFO]: initializing Visualizer");
         if(!self.isWebGLCompatible()){
             console.log("[PyDy ALERT]: Incompatible browser!");
-            alert("The browser does not seems to be webgl compatible! " + 
+            alert("The browser does not seems to be webgl compatible! " +
                 "Please check here for browser compatibility: http://caniuse.com/webgl ");
             return false;
         }
@@ -31,11 +31,11 @@ DynamicsVisualizer = Class.create({
             console.log("[PyDy INFO]: Loading scene JSON file:" + self.sceneFilePath);
             self.Parser.loadScene();
         }
-        
+
     },
 
 
-    isWebGLCompatible: function(){ 
+    isWebGLCompatible: function(){
         /**
           * Checks whether the browser used is
           * compatible for handling webGL based
@@ -43,7 +43,7 @@ DynamicsVisualizer = Class.create({
           * Requires external script: Modernizr.js
           *
         **/
-        
+
         if (!Modernizr.canvas || !Modernizr.webgl) return false;
         else return true;
     },
@@ -51,9 +51,9 @@ DynamicsVisualizer = Class.create({
     activateUIControls: function(){
         /**
           * This method adds functions to the UI buttons
-          * It should be **strictly** called after the 
+          * It should be **strictly** called after the
           * other DynamicsVisualizer sub-modules are loaded
-          * in the browser, else certain functionality will 
+          * in the browser, else certain functionality will
           * be(not might be!) hindered.
         **/
 
@@ -64,10 +64,10 @@ DynamicsVisualizer = Class.create({
             console.log("[PyDy INFO]: Loading scene JSON file:" + self.sceneFilePath);
             self.Parser.loadScene();
         });
-        
+
 
         self._slider = jQuery("#time-slider").slider({min:0,max:100,step:1, handle:"square", value:0});
-        self._slider.on('slide',function(ev) { 
+        self._slider.on('slide',function(ev) {
             var val = ev.value;
             var len = self._timeArray.length;
             var i = 0;
@@ -79,23 +79,23 @@ DynamicsVisualizer = Class.create({
             self.currentTime = self._timeArray[i];
             self.Scene.setAnimationTime(self._timeArray[i]);
         });
-            
-            
+
+
         jQuery("#resetControls").click(function(){
             self.scene._resetControls();
         });
 
         jQuery("#play-animation").click(function(){
             self.Scene.runAnimation();
-            
+
         });
         jQuery("#pause-animation").click(function(){
             self.Scene.pauseAnimation();
-            
+
         });
         jQuery("#stop-animation").click(function(){
             self.Scene.stopAnimation();
-            
+
         });
         jQuery("#close-object-dialog").click(function(){
             jQuery("#object-dialog").html(" ");
@@ -108,7 +108,7 @@ DynamicsVisualizer = Class.create({
             self.editor.refresh();
             // Make JSON downloadable..
             var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(self.model,null,"    "));
-            jQuery('<a href="data:' + data + 
+            jQuery('<a href="data:' + data +
                 '" download="scene_desc.json" class="btn btn-success btn-large"> \
                 <i class="icon-white icon-download-alt">download JSON</a>').appendTo('#download-json');
             jQuery(this).addClass("disabled");
@@ -136,11 +136,11 @@ DynamicsVisualizer = Class.create({
         jQuery("#play-animation").removeClass("disabled");
         jQuery("#show-model").removeClass("disabled");
         var objs = self.model.objects;
-  
+
         jQuery("#object-dropdown").find("li").remove() // clean old dropdown list.
-        
+
         for(var obj in objs){
-            var toAppend = '<li><a id="'+ objs[obj].simulation_id + 
+            var toAppend = '<li><a id="'+ objs[obj].simulation_id +
                            '" href="#">' + objs[obj].name + '</a></li>';
             jQuery("#object-dropdown").append(toAppend);
             // adding click functions to all dropdown objs.
@@ -152,7 +152,7 @@ DynamicsVisualizer = Class.create({
         var constants = self.model.constant_map;
         var div = jQuery("#simulation-params").fadeOut();
         div.html(" "); // clear html first
-        
+
         for(var i in constants){
             div.append('<span class="input-group-addon">' + i + '</span>');
             div.append(jQuery('<input />',{ type:'text', id: i, class: 'form-control', value: constants[i]}));
@@ -173,14 +173,14 @@ DynamicsVisualizer = Class.create({
 
         // Get animation Speed..
         self.animSpeed = jQuery("#anim-speed").val();
-    },   
+    },
 
-    
+
     getBasePath: function(){
         /**
           * Returns the base path of
           * the loaded Scene file.
-        **/ 
+        **/
         var self = this;
 
         var slashes_fixed = self.sceneFilePath.replace(/\\/g, "/");
@@ -191,7 +191,7 @@ DynamicsVisualizer = Class.create({
         /**
           * Returns the extension of
           * the uploaded Scene file.
-        **/ 
+        **/
         var self = this;
         return self.sceneFilePath.split(".").slice(-1)[0].toLowerCase();
 

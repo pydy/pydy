@@ -37,7 +37,7 @@ dissipation_function = function_from_partials(
         map(lambda x: 0 if x == 0 else -x.subs(kde_map), Fr_c),
         u,
         zero_constants=True)
-from sympy import simplify, trigsimp
+from sympy import trigsimp
 dissipation_function = trigsimp(dissipation_function)
 #print('ℱ = {0}'.format(msprint(dissipation_function)))
 

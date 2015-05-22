@@ -55,6 +55,3 @@ for i, f in enumerate(Fr, 1):
     k_f = simplify(f - alpha * (k_q1*q1 + k_q2*q2))
     print("F{0} = {1} * (({2})*q1 + ({3})*q2) + {4}".format(
         i, alpha, k_q1, k_q2, k_f))
-
-
-

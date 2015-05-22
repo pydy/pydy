@@ -1,7 +1,10 @@
-System class
-============
+Introduction
+------------
 
 .. automodule:: pydy.system
+
+API
+---
 
 .. autoclass:: pydy.system.System
    :members:

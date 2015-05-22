@@ -1,6 +1,6 @@
 from sympy import (symbols, ccode, Symbol, cse, numbered_symbols, solve)
 from sympy.physics.mechanics import (dynamicsymbols, ReferenceFrame, Vector,
-    Point, inertia, dot, cross, mprint)
+    Point, inertia, dot, cross)
 
 Vector.simp = False         # Prevent the use of trigsimp and simplify
 t, g = symbols('t g')       # Time and gravitational constant

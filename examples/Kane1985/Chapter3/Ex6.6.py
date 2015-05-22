@@ -5,9 +5,9 @@
 from __future__ import division
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import inertia, inertia_of_point_mass
-from sympy.physics.mechanics import cross, dot
-from sympy import solve, sqrt, symbols, integrate
-from sympy import sin, cos, tan, pi, S
+from sympy.physics.mechanics import dot
+from sympy import symbols
+from sympy import S
 
 m = symbols('m')
 m_val = 12

@@ -13,8 +13,8 @@ Ia, Ib, Ic, Iab, Ibc, Ica, t = symbols('Ia Ib Ic Iab Ibc Ica t')
 omega = dynamicsymbols('omega')
 N = ReferenceFrame('N')
 
-# I = (I11 * N.x + I12 * N.y + I13 * N.z) N.x + 
-#     (I21 * N.x + I22 * N.y + I23 * N.z) N.y + 
+# I = (I11 * N.x + I12 * N.y + I13 * N.z) N.x +
+#     (I21 * N.x + I22 * N.y + I23 * N.z) N.y +
 #     (I31 * N.x + I32 * N.y + I33 * N.z) N.z
 
 # definition of T* is:
@@ -33,4 +33,3 @@ ang_vel = omega1 * B.x + omega2 * B.y + omega3 * B.z
 I = inertia(B, I11, I22, I33, I12, I23, I31)
 T_star = -dot(ang_vel.diff(t, B), I) - dot(cross(ang_vel, I), ang_vel)
 print(msprint(T_star))
-

@@ -5,7 +5,6 @@
 from __future__ import division
 from sympy import Matrix, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
-from sympy.physics.mechanics import dynamicsymbols
 
 
 R_SQ, R_QE, R_EM, R_Ee, R_Mm = symbols('R_SQ R_QE R_EM R_Ee R_Mm', positive=True)

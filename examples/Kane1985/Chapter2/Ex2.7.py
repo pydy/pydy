@@ -42,4 +42,3 @@ for qd in [q1d, q2d, q3d]:
     mprint(qd)
     print("=")
     mprint(soln[qd])
-

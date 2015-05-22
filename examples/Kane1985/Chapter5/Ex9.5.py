@@ -6,7 +6,7 @@ from __future__ import division
 from sympy import sin, cos, pi, solve, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import dynamicsymbols
-from util import msprint, subs, partial_velocities, potential_energy
+from util import msprint, partial_velocities, potential_energy
 from util import generalized_active_forces, generalized_active_forces_V
 
 
@@ -58,4 +58,3 @@ print('Generalized active force contributions from Vγ.')
 Fr_V = generalized_active_forces_V(V, [q1, q2, q3], [u1, u2, u3], kde_map)
 print('Frγ = {0}'.format(msprint(Fr_V)))
 print('Fr = {0}'.format(msprint(Fr)))
-

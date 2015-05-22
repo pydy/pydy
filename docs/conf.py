@@ -24,16 +24,48 @@ import pydy
 
 # This allows readthedocs to use autodoc.
 if os.environ.get('READTHEDOCS', None) == 'True':
-    print('Made it in here')
+    print('docs/conf.py: on READTHEDOCS')
 
-    import mock
+    # This allows the Sphinx docs to build without the required modules.
+    # http://docs.readthedocs.org/en/latest/faq.html#my-project-isn-t-building-with-autodoc
+    from mock import Mock as MagicMock
 
-    MOCK_MODULES = ['numpy', 'numpy.testing', 'matplotlib',
-                    'sympy', 'sympy.physics.mechanics',
-                    'sympy.matrices.expressions']
+    class Mock(MagicMock):
+        @classmethod
+        def __getattr__(cls, name):
+                return Mock()
 
+    # Every module that is imported in PyDy is required to be in this list.
+    MOCK_MODULES = ['numpy',
+                    'numpy.linalg',
+                    'numpy.testing',
+                    'scipy',
+                    'scipy.linalg',
+                    'scipy.integrate',
+                    'matplotlib',
+                    'sympy',
+                    'sympy.core',
+                    'sympy.core.function',
+                    'sympy.utilities',
+                    'sympy.utilities.iterables',
+                    'sympy.printing',
+                    'sympy.printing.ccode',
+                    'sympy.printing.theanocode',
+                    'sympy.physics',
+                    'sympy.physics.mechanics',
+                    'sympy.physics.mechanics.functions',
+                    'sympy.matrices',
+                    'sympy.matrices.expressions',
+                    'pkg_resources']
+
+    pairs = []
     for mod_name in MOCK_MODULES:
-        sys.modules[mod_name] = mock.Mock()
+        mocked = Mock()
+        # This is necessary for the version checks in pydy.utils.
+        if mod_name == 'sympy':
+            mocked.__version__ = '0.7.6'
+        pairs.append((mod_name, mocked))
+    sys.modules.update(pairs)
 
 # -- General configuration ------------------------------------------------
 

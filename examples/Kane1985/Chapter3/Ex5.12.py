@@ -15,6 +15,3 @@ Iij = np.matrix([[169, 144, -96],
 print("Moment of inertia of B with respect to a line that is parallel to")
 print("line PQ and passes through point O.")
 print("{0} kg m**2".format((a * Iij * a.T).item(0)))
-
-
-

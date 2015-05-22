@@ -44,10 +44,9 @@ for n_a, n_b in unit_vector_pairs:
     # Compute the integral by integrating over the whole volume of the tours
     I_ab = integrate(integrate(integrate(integrand,
                  (phi, 0, 2*pi)), (theta, 0, 2*pi)), (s, 0, r))
-    
+
     inertia_scalars.append(I_ab)
- 
+
 # Create an inertia dyad from the list of inertia scalars
 I_A_O = inertia(A, *inertia_scalars)
 print("Inertia of torus about mass center = {0}".format(I_A_O))
-

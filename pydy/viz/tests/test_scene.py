@@ -2,14 +2,14 @@
 
 import os
 
-from numpy import array, linspace
-from scipy.integrate import odeint
+from numpy import linspace
 from sympy import symbols
 import sympy.physics.mechanics as me
 
-from pydy.system import System
-from pydy.codegen.code import generate_ode_function
-from pydy.viz import Sphere, VisualizationFrame, Scene
+from ...system import System
+from ..shapes import Sphere
+from ..visualization_frame import VisualizationFrame
+from ..scene import Scene
 
 
 def test_create_static_html():
@@ -30,8 +30,10 @@ def test_create_static_html():
     kane = me.KanesMethod(ceiling, q_ind=[position], u_ind=[speed],
                           kd_eqs=kinematic_equations)
     kane.kanes_equations(forces, particles)
-    sys = System(kane, initial_conditions={position: 0.1, speed: -1.0},
-            constants={mass: 1.0, stiffness: 1.0, damping: 0.2, gravity: 9.8})
+    sys = System(kane,
+                 initial_conditions={position: 0.1, speed: -1.0},
+                 constants={mass: 1.0, stiffness: 1.0, damping: 0.2,
+                            gravity: 9.8})
 
     # integrate eoms
     t = linspace(0.0, 10.0, 100)

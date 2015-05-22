@@ -3,9 +3,8 @@ This file will use pydy.codegen to simulate the double pendulum.
 
 """
 
-from numpy import concatenate, array, linspace
+from numpy import linspace
 from pydy.system import System
-from scipy.integrate import odeint
 
 from double_pendulum import *
 
@@ -22,4 +21,3 @@ final_time = 5.0
 times = linspace(0.0, final_time, final_time * frames_per_sec)
 sys.times = times
 x = sys.integrate()
-

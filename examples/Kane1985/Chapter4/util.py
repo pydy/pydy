@@ -3,7 +3,6 @@
 """Convenient utility functions for exercises in Chapter 4 of Kane 1985."""
 
 from __future__ import division
-from sympy import diff
 from sympy.physics.mechanics import ReferenceFrame, Point, Particle, RigidBody
 from sympy.physics.mechanics import cross, dot, Vector
 from sympy.physics.mechanics import MechanicsStrPrinter
