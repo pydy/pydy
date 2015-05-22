@@ -37,9 +37,9 @@ viz package
 .. toctree::
     :maxdepth: 2
 
+    viz/viz.rst
     viz/using_visualizer.rst
     viz/api.rst
-    viz/viz.rst
 
 Tutorials
 =========
