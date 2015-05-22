@@ -342,7 +342,7 @@ Release Notes
 User Facing
 ~~~~~~~~~~~
 
-- Removed the partial implementation of the Mesh shape. [PR `#172`]
+- Removed the partial implementation of the Mesh shape. [PR `#172`_]
 - Overhauled the code generation package to make the generators more easily
   extensible and to improve simulation speed. [PR `#113`_]
 - The visualizer has been overhauled as part of Tarun Gaba's 2014 GSoC
