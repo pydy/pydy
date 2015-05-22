@@ -801,5 +801,3 @@ class Tube(Shape):
     @points.setter
     def points(self, new_points):
         self._points = np.asarray(new_points)
-
-
