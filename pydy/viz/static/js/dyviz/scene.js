@@ -157,10 +157,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
         switch(type) {
 
-            case "Mesh":
-                //TODO
-                break;
-
             case "Cube":
                 var geometry = new THREE.CubeGeometry(
                                   object.length,
