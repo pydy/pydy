@@ -342,11 +342,13 @@ Release Notes
 User Facing
 ~~~~~~~~~~~
 
+- Removed the partial implementation of the Mesh shape. [PR `#172`]
 - Overhauled the code generation package to make the generators more easily
   extensible and to improve simluation speed. [PR `#113`_]
 - Added a new System class and module to more seamlessly manage integrating the
   equations of motion. [PR `#81`_]
 
+.. _#172: https://github.com/pydy/pydy/pull/172
 .. _#113: https://github.com/pydy/pydy/pull/113
 .. _#81: https://github.com/pydy/pydy/pull/81
 
