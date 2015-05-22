@@ -3,6 +3,7 @@
 import textwrap
 
 from pkg_resources import parse_version
+from setuptools import __version__ as SETUPTOOLS_VERSION
 import sympy as sm
 from sympy.core.function import AppliedUndef
 from sympy.utilities.iterables import iterable
@@ -14,10 +15,20 @@ SYMPY_VERSION = sm.__version__
 def sympy_equal_to_or_newer_than(version, installed_version=None):
     """Returns true if the installed version of SymPy is equal to or newer
     than the provided version string."""
+
     if installed_version is None:
         v = SYMPY_VERSION
     else:
         v = installed_version
+
+    if v.endswith('-git') and \
+            parse_version(SETUPTOOLS_VERSION) >= parse_version('8.0'):
+
+        msg = ('You are using an older development version of SymPy with a '
+               'non-PEP440 compliant version number: {}. Please install '
+               'setuptools < 8.0 or a newer development version of SymPy.')
+        raise ValueError(msg.format(v))
+
     return cmp(parse_version(v), parse_version(version)) > -1
 
 
