@@ -4,9 +4,10 @@
 import time
 
 # external libraries
-from numpy import linspace, zeros, zeros_like
+from numpy import hstack, ones, pi, linspace, array, zeros, zeros_like
 import matplotlib.pyplot as plt
 from pydy.models import n_link_pendulum_on_cart
+from sympy import symbols
 
 
 def run_benchmark(max_num_links, num_time_steps=1000):
@@ -30,6 +31,11 @@ def run_benchmark(max_num_links, num_time_steps=1000):
 
         start = time.time()
         sys = n_link_pendulum_on_cart(n, cart_force=False)
+
+        m = symbols('m:{}'.format(n + 1))
+        l = symbols('l:{}'.format(n))
+        g = symbols('g')
+
         derivation_times[j] = time.time() - start
         print('The derivation took {:1.5f} seconds.\n'.format(derivation_times[j]))
 
@@ -42,6 +48,20 @@ def run_benchmark(max_num_links, num_time_steps=1000):
 
         times = linspace(0, 10, num_time_steps)
         sys.times = times
+        print sys.coordinates
+        print sys.speeds
+        print sys.states
+        x0 = hstack(
+            (0,
+             pi / 2 * ones(len(sys.coordinates) - 1),
+             1e-3 * ones(len(sys.speeds))))
+        sys.initial_conditions = dict(zip(sys.states, x0))
+
+        constants = [g, m[0]]
+        for i in range(n):
+            constants += [l[i], m[i + 1]]
+
+        sys.constants = dict(zip(constants, array(parameter_vals)))
 
         for k, method in enumerate(methods):
 
