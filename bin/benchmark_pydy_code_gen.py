@@ -48,9 +48,7 @@ def run_benchmark(max_num_links, num_time_steps=1000):
 
         times = linspace(0, 10, num_time_steps)
         sys.times = times
-        print sys.coordinates
-        print sys.speeds
-        print sys.states
+
         x0 = hstack(
             (0,
              pi / 2 * ones(len(sys.coordinates) - 1),
