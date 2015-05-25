@@ -1,13 +1,25 @@
 #!usr/bin/env python
 
-# This file derives the non-linear equations of motion of the Whipple
-# bicycle model.
+"""This file derives the non-linear equations of motion of the Whipple
+bicycle model following the description and nomenclature in [Moore2012]_.
+
+It option depends on DynamicistToolKit to compare to the canonical values of
+this problem.
+
+.. [Moore2012] Moore, Jason K. "Human Control of a Bicycle." Doctor of
+   Philosophy, University of California, Davis, 2012.
+   http://moorepants.github.com/dissertation
+
+"""
+
+# TODO : Make dtk optional.
 
 from collections import OrderedDict
 
-import sympy as sym
-import sympy.physics.mechanics as mec
 import numpy as np
+import sympy as sm
+import sympy.physics.mechanics as mec
+from pydy.codegen.ode_function_generators import CythonODEFunctionGenerator
 from dtk import bicycle
 
 mec.Vector.simp = False
@@ -20,6 +32,7 @@ print('Defining reference frames.')
 
 
 class ReferenceFrame(mec.ReferenceFrame):
+    """Subclass that enforces the desired unit vector indice style."""
 
     def __init__(self, *args, **kwargs):
 
@@ -55,6 +68,9 @@ F = ReferenceFrame('F')
 # Generalized Coordinates and Speeds
 ####################################
 
+# All the following are a function of time.
+t = mec.dynamicsymbols._t
+
 # q1: perpendicular distance from the n2> axis to the rear contact
 #     point in the ground plane
 # q2: perpendicular distance from the n1> axis to the rear contact
@@ -74,22 +90,9 @@ print('Defining time varying symbols.')
 
 q1, q2, q3, q4 = mec.dynamicsymbols('q1 q2 q3 q4')
 q5, q6, q7, q8 = mec.dynamicsymbols('q5 q6 q7 q8')
-q1d, q2d, q3d, q4d = mec.dynamicsymbols('q1 q2 q3 q4', 1)
-q5d, q6d, q7d, q8d = mec.dynamicsymbols('q5 q6 q7 q8', 1)
 
 u1, u2, u3, u4 = mec.dynamicsymbols('u1 u2 u3 u4')
 u5, u6, u7, u8 = mec.dynamicsymbols('u5 u6 u7 u8')
-u1d, u2d, u3d, u4d = mec.dynamicsymbols('u1 u2 u3 u4', 1)
-u5d, u6d, u7d, u8d = mec.dynamicsymbols('u5 u6 u7 u8', 1)
-
-ua1, ua2, ua3, ua4, ua5, ua6 = mec.dynamicsymbols('ua1  ua2  ua3  ua4  ua5 ua6')
-
-# TODO : switch to some more compact code
-#q = mec.dynamicsymbols('q:8')
-#qd = mec.dynamicsymbols('q:8', 1)
-#u = mec.dynamicsymbols('u:8')
-#ud = mec.dynamicsymbols('u:8', 1)
-#ua = mec.dynamicsymbols('ua:6')
 
 #################################
 # Orientation of Reference Frames
@@ -97,7 +100,7 @@ ua1, ua2, ua3, ua4, ua5, ua6 = mec.dynamicsymbols('ua1  ua2  ua3  ua4  ua5 ua6')
 
 print('Orienting frames.')
 
-# TODO : report this issue, or fix it. The following fails.
+# TODO : Report this as a SymPy issue. The following fails:
 #A.orient(N, 'Axis', (q3, A['3']))
 
 # rear frame yaw
@@ -132,24 +135,21 @@ print('Defining constants.')
 # l4: the distance in the e3> direction from the front wheel center to
 #     the center of mass of the fork
 
-rf, rr = sym.symbols('rf rr')
-d1, d2, d3 = sym.symbols('d1 d2 d3')
-l1, l2, l3, l4 = sym.symbols('l1 l2 l3 l4')
+rf, rr = sm.symbols('rf rr', real=True, positive=True)
+d1, d2, d3 = sm.symbols('d1 d2 d3', real=True)
+l1, l2, l3, l4 = sm.symbols('l1 l2 l3 l4', real=True)
 
 # acceleration due to gravity
-g = sym.symbols('g')
+g = sm.symbols('g', real=True)
 
 # mass
-mc, md, me, mf = sym.symbols('mc md me mf')
+mc, md, me, mf = sm.symbols('mc md me mf', real=True, positive=True)
 
 # inertia
-ic11, ic22, ic33, ic31 = sym.symbols('ic11 ic22 ic33 ic31')
-id11, id22 = sym.symbols('id11 id22')
-ie11, ie22, ie33, ie31 = sym.symbols('ie11 ie22 ie33 ie31')
-if11, if22 = sym.symbols('if11 if22')
-
-# time
-t = sym.symbols('t')
+ic11, ic22, ic33, ic31 = sm.symbols('ic11 ic22 ic33 ic31', real=True)
+id11, id22 = sm.symbols('id11 id22', real=True)
+ie11, ie22, ie33, ie31 = sm.symbols('ie11 ie22 ie33 ie31', real=True)
+if11, if22 = sm.symbols('if11 if22', real=True)
 
 ###########
 # Specified
@@ -206,7 +206,10 @@ print('Defining holonomic constraints.')
 
 # this constraint is enforced so that the front wheel contacts the ground
 holonomic = fn.pos_from(dn).dot(A['3'])
-#holonomic = sym.trigsimp(holonomic)
+#holonomic = sm.trigsimp(holonomic)
+
+print('The holonomic constraint is a function of these dynamice variables:')
+print(list(sm.ordered(mec.find_dynamicsymbols(holonomic))))
 
 ####################################
 # Kinematical Differential Equations
@@ -242,14 +245,16 @@ print('Defining linear velocities.')
 no.set_vel(N, 0.0 * N['1'])
 
 # mass centers
-do.set_vel(N, do.pos_from(no).dt(N))
+# THIS CHANGE WAS THE FUCKING MAIN ERROR!
+#do.set_vel(N, do.pos_from(no).dt(N))
+do.v2pt_theory(no, N, D)
 co.v2pt_theory(do, N, C)
 ce.v2pt_theory(do, N, C)
 fo.v2pt_theory(ce, N, E)
 eo.v2pt_theory(fo, N, E)
 
 # wheel contact velocities
-dn.set_vel(N, 0)
+dn.set_vel(N, 0.0 * N['1'])
 fn.v2pt_theory(fo, N, F)
 
 ####################
@@ -262,19 +267,28 @@ nonholonomic = [fn.vel(N).dot(A['1']),
                 fn.vel(N).dot(A['2']),
                 fn.vel(N).dot(A['3'])]
 # The following is pretty slow.
-#nonholonomic = [sym.trigsimp(expr) for expr in nonholonomic]
+#nonholonomic = [sm.trigsimp(expr) for expr in nonholonomic]
+
+# TODO : simplify(nh1-nh2) doesn't give me zero
+#nh1 = fn.vel(N).dot(A['3'])
+#nh2 = holonomic.diff(t).subs(sm.solve(kinematical, [q3.diff(t), q4.diff(t),
+                                                    #q5.diff(t), q7.diff(t)],
+                                      #dict=True)[0])
+
+print('The nonholonomic constraints are a function of these dynamice variables:')
+print(list(sm.ordered(mec.find_dynamicsymbols(sm.Matrix(nonholonomic)))))
 
 #########
 # Inertia
 #########
 
-# note that you cannot define the wheel inertia's with respect to their
-# respective frames because the generalized inertia force calcs will fail
-# because there is no direction cosine matrix relating the wheel frames back to
-# the other reference frames so I define them here with respect to the rear and
-# front frames
-
 print('Defining inertia.')
+
+# NOTE : You cannot define the wheel inertias with respect to their
+# respective frames because the generalized inertia force calcs will fail
+# because there is no direction cosine matrix relating the wheel frames back
+# to the other reference frames so I define them here with respect to the
+# rear and front frames.
 
 Ic = mec.inertia(C, ic11, ic22, ic33, 0.0, 0.0, ic31)
 Id = mec.inertia(C, id11, id22, id11, 0.0, 0.0, 0.0)
@@ -319,6 +333,14 @@ forces = [Fco, Fdo, Feo, Ffo, Tc, Td, Te]
 
 print("Generating Kane's equations.")
 
+# var   : J , G
+# yaw   : q3, q1
+# roll  : q4, q2
+# pitch : q5, q4
+# steer : q7, q5
+# rwh   : u6, u3
+# fwh   : u8, u6
+
 kane = mec.KanesMethod(N,
                        [q3, q4, q7],  # yaw, roll, steer
                        [u4, u6, u7],  # roll rate, rear wheel rate, steer rate
@@ -327,7 +349,30 @@ kane = mec.KanesMethod(N,
                        configuration_constraints=[holonomic],
                        u_dependent=[u3, u5, u8],  # yaw rate, pitch rate, front wheel rate
                        velocity_constraints=nonholonomic)
+
 fr, frstar = kane.kanes_equations(forces, bodies)
+
+mass_matrix = kane.mass_matrix
+print('The mass matrix is a function of these dynamic variables:')
+print(list(sm.ordered(mec.find_dynamicsymbols(mass_matrix))))
+
+# sub in the kin diffs to eliminate some extraneous derivatives
+forcing_vector = mec.msubs(kane.forcing, kane.kindiffdict())
+print('The forcing vector is a function of these dynamic variables:')
+print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
+
+# NOTE : doing this substitution must make the expressions super long
+# because it causes all kinds of slowdowns, for example cse is slow.
+# u3, u5, u8 are all in forcing_vector and need to be replaced by functions
+# of u4, u6, u7
+# These are the equations for u3, u5, u8 in terms of the independent speeds:
+#u_dep = kane._Ars * kane.u[:3, :]
+#print('The dependent speeds are a function of these dynamic variables:')
+#print(list(sm.ordered(mec.find_dynamicsymbols(u_dep))))
+#
+#forcing_vector = mec.msubs(forcing_vector, dict(zip([u3, u5, u8], u_dep)))
+# This takes forever.
+#print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
 
 # Validation of non-linear equations
 
@@ -336,82 +381,85 @@ print('Loading numerical input parameters.')
 bp = bicycle.benchmark_parameters()
 mp = bicycle.benchmark_to_moore(bp)
 
-# load the input values specified in table one of Basu-Mandal2007
+# load the input values specified in Table 1 of Basu-Mandal2007
 basu_input = bicycle.basu_table_one_input()
 
-# convert the values to my coordinates and speeds
+# convert the Basu-Mandall values to my coordinates and speeds
 moore_input = bicycle.basu_to_moore_input(basu_input, bp['rR'], bp['lam'])
 
 constant_substitutions = OrderedDict()
 for k, v in mp.items():
     try:
         exec('constant_substitutions[{}] = v'.format(k))
-        #constant_substitutions[sym.Symbol(k)] = v
+        #constant_substitutions[sm.Symbol(k)] = v
     except NameError:
-        pass
+        print('{} not added to sub dict.'.format(k))
+
 dynamic_substitutions = {}
 for k, v in moore_input.items():
     try:
         exec('dynamic_substitutions[{}] = v'.format(k))
     except NameError:
-        pass
+        print('{} not added to sub dict.'.format(k))
 
 specified_subs = {T4: 0.0, T6: 0.0, T7: 0.0}
 substitutions = specified_subs.copy()
 substitutions.update(constant_substitutions)
 substitutions.update(dynamic_substitutions)
 
+# Try substituting values in through SymPy
+print('Substituting numerical parameters.')
+num_mass_matrix = mec.msubs(mass_matrix, substitutions)
+num_forcing_vector = mec.msubs(forcing_vector, substitutions)
+
+print("Solving for x'.")
+xd = num_mass_matrix.LUsolve(num_forcing_vector)
+
+print(xd)
+
 # BUGS to report:
 # 1. find_dynamicsymbols should deal with Vectors and lists of
 # exprs/vectors/etc.
 
-from pydy.codegen.ode_function_generators import CythonODEFunctionGenerator
-
-g = CythonODEFunctionGenerator(mec.msubs(kane.forcing, kane.kindiffdict()),
-                               kane._q[:],
-                               kane._u[:],
+# TODO : cse takes forever with this problem if the udeps are substituted
+# into forcing_vector, but may be crucial for speed.
+# TODO : The above xd computes but I get singular matrix error for this.
+rhs_of_kin_diffs = sm.Matrix([kane.kindiffdict()[k] for k in kane.q.diff(t)])
+g = CythonODEFunctionGenerator(forcing_vector,
+                               kane.q[:], # q3, q4, q7
+                               kane.u[:], # u4, u6, u7
                                constant_substitutions.keys(),
-                               mass_matrix=mec.msubs(kane.mass_matrix,
-                                                     kane.kindiffdict()),
-                               coordinate_derivatives=sym.Matrix(
-                                   [kane.kindiffdict()[k] for k in
-                                    kane._q.diff(t)]),
+                               mass_matrix=mass_matrix,
+                               coordinate_derivatives=rhs_of_kin_diffs,
                                specifieds=[T4, T6, T7],
                                constants_arg_type='array',
                                specifieds_arg_type='array')
-rhs = g.generate()
+print('Generating rhs')
+#rhs = g.generate()
 
 state_vals = []
-for d in  kane._q[:] + kane._u[:]:
+for d in kane.q[:] + kane.u[:]:
     sym_str = str(d)[:-3]
     state_vals.append(moore_input[sym_str])
 state_vals = np.array(state_vals)
 
-xd = rhs(state_vals, 0.0, np.array(constant_substitutions.values()),
-         np.array([0.0, 0.0, 0.0]))
-
-pause
-
-print('Substituting numerical parameters.')
-mass_matrix = kane.mass_matrix_full.subs(substitutions)
-forcing_vector = kane.forcing_full.subs(kane.kindiffdict()).subs(substitutions)
-
-print("Solving for x'.")
-xd = mass_matrix.LUsolve(forcing_vector)
+#xd = rhs(state_vals, 0.0, np.array(constant_substitutions.values()),
+         #np.array([0.0, 0.0, 0.0]))
+#print(xd)
 
 print("Generating output dictionary.")
 # convert the outputs from my model to the Basu-Mandal coordinates
 # TODO : raise an issue about not knowing which order the x vector is in with
 # reference to M * x' = F
-states = kane._q[:] + kane._u[:]
-state_names = [str(state)[:-3] + 'p' for state in states]
-moore_output = {k: v for k, v in zip(state_names, list(xd))}
-u1 = -rr * u6 * sym.cos(q3)
+speeds = kane.u[:]
+speed_deriv_names = [str(speed)[:-3] + 'p' for speed in speeds]
+moore_output = {k: v for k, v in zip(speed_deriv_names, list(xd))}
+u1 = -rr * u6 * sm.cos(q3)
 u1p = u1.diff(t)
-u2 = -rr * u6 * sym.sin(q3)
+u2 = -rr * u6 * sm.sin(q3)
 u2p = u2.diff(t)
-moore_output['u1p'] = u1p.subs({u6d: moore_output['u6p']}).subs(kane.kindiffdict()).subs(substitutions)
-moore_output['u2p'] = u2p.subs({u6d: moore_output['u6p']}).subs(kane.kindiffdict()).subs(substitutions)
+moore_output['u1p'] = u1p.subs({u6.diff(t): moore_output['u6p']}).subs(kane.kindiffdict()).subs(substitutions)
+moore_output['u2p'] = u2p.subs({u6.diff(t): moore_output['u6p']}).subs(kane.kindiffdict()).subs(substitutions)
 moore_output.update(moore_input)
 
 moore_output_basu = bicycle.moore_to_basu(moore_output, bp['rR'], bp['lam'])
@@ -425,119 +473,4 @@ for k, bv in basu_output.items():
     try:
         testing.assert_allclose(bv, mv)
     except AssertionError:
-        print('Failed: {} is supposed to be {} but is {}'.format(k, bv, mv))
-
-pause
-
-# Try with lambdify
-
-from pydy_code_gen.code import generate_ode_function
-parameters = constant_substitutions.keys()
-parameters.sort()
-print('Generating a numeric right hand side function.')
-rhs = generate_ode_function(kane, parameters, specified=[T4, T6, T7],
-        generator="lambdify")
-state_values = []
-for state in kane._q + kane._u:
-    state_values.append(substitutions[state])
-parameter_values = [0.0, 0.0, 0.0] + [constant_substitutions[k] for k in sorted(constant_substitutions.keys())]
-print('Evaluating the right hand side.')
-xd = rhs(state_values, 0.0, parameter_values)
-
-# yaw rate, and wheel contact diff equations
-# kinetic and potential energy, and energy
-# contact forces
-
-#set_trace()
-
-#def print_if(display, message):
-    #if display == True:
-        #print(message)
-
-display = True
-
-forces = {co: mc * g * N['3'],
-          do: md * g * N['3'],
-          eo: me * g * N['3'],
-          fo: mf * g * N['3'],
-          C: T4 * B['1'] - T6 * C['2'] - T7 * C['3'],
-          D: T6 * C['2'],
-          E: T7 * E['3']}
-
-# TODO : probably need to sub in kind diffs somewhere in all this
-
-# solve for the dependent u's: u3, u5, u8
-# TODO : the following works but I need to make sure there are no remainder
-# expressions, i.e. is nonholonomic[0] = c1 * u3 + ... + c6 * u8 + c7 where c7
-# are terms that aren't linear in the u's
-print("Solving for the dependent u's")
-subs = {}
-simple_holonomic = []
-for equation in nonholonomic:
-    new_equation = 0
-    for speed in [u3, u4, u5, u6, u7, u8]:
-        coefficient = equation.expand().coeff(speed)
-        if coefficient != 0:
-            z = sym.Dummy()
-            subs[z] = coefficient
-            new_equation += z * speed
-    simple_holonomic.append(new_equation)
-
-simple_dependent_u = sym.solve(simple_holonomic, u3, u5, u8, dict=True)[0]
-dependent_u = {}
-for key, equation in simple_dependent_u.items():
-    dependent_u[key] = equation.subs(subs)
-print("Dependent u's found.")
-
-# differentiate the dependent u's
-print("Differentiating the expressions for the dependent u's")
-dependent_u_dot = {}
-for k, v in dependent_u.items():
-    dependent_u_dot[k.diff(t)] = v.diff(t)
-print("U dots computed.")
-
-# generalized active forces
-print("Computing fr and frstar.")
-
-fr = {}
-frstar = {}
-for u in [u4, u6, u7]:
-    print('Computing the {} equations'.format(u))
-    fr[u] = 0
-    frstar[u] = 0
-    for body in bodies:
-        print('Adding the {} component'.format(body))
-
-        try:
-            R = forces[body.masscenter]
-        except KeyError:
-            R = 0
-
-        try:
-            T = forces[body.frame]
-        except KeyError:
-            T = 0
-
-        vr = body.masscenter.vel(N).subs(kane.kindiffdict()).subs(dependent_u).diff(u, N)
-        omega = body.frame.ang_vel_in(N).subs(kane.kindiffdict()).subs(dependent_u)
-        wr = omega.diff(u, N)
-
-        fr[u] += vr.dot(R) + wr.dot(T)
-
-        a = body.masscenter.acc(N).subs(kane.kindiffdict()).subs(dependent_u).subs(dependent_u_dot)
-        alpha = body.frame.ang_acc_in(N).subs(kane.kindiffdict()).subs(dependent_u).subs(dependent_u_dot)
-
-        frstar[u] += (vr.dot(-body.mass * a) +
-        wr.dot(-(alpha.dot(body.inertia[0]) +
-            omega.cross(body.inertia[0]).dot(omega))))
-
-u3p, u4p, u5p, u6p, u7p, u8p = sym.symbols('u3p u4p u5p u6p u7p u8p')
-simple_u_dots = {u3d: u3p, u4d: u4p, u5d: u5p, u6d: u6p, u7d: u7p, u8d: u8p}
-
-fr_equations = []
-for u in [u4, u6, u7]:
-    a = fr[u].subs(simple_u_dots).subs(substitutions)
-    b = frstar[u].subs(simple_u_dots).subs(substitutions)
-    fr_equations.append(a + b)
-
-print("Done with fr and frstar.")
+        print('Failed: {} is supposed to be {:1.16f} but is {:1.16f}'.format(k, bv, mv))
