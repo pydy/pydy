@@ -1,10 +1,11 @@
 #!usr/bin/env python
 
 """This file derives the non-linear equations of motion of the Whipple
-bicycle model following the description and nomenclature in [Moore2012]_.
+bicycle model [Whippl1899]_ following the description and nomenclature in
+[Moore2012]_.
 
-It option depends on DynamicistToolKit to compare to the canonical values of
-this problem.
+It optionally depends on DynamicistToolKit to compare to the canonical
+values of this problem to those presented in [BasuMandal2007]_.
 
 .. [Moore2012] Moore, Jason K. "Human Control of a Bicycle." Doctor of
    Philosophy, University of California, Davis, 2012.
@@ -12,17 +13,15 @@ this problem.
 
 """
 
-# TODO : Make dtk optional.
-
 from collections import OrderedDict
 
 import numpy as np
+from numpy import testing
 import sympy as sm
 import sympy.physics.mechanics as mec
 from pydy.codegen.ode_function_generators import CythonODEFunctionGenerator
+# TODO : Make dtk optional.
 from dtk import bicycle
-
-mec.Vector.simp = False
 
 ##################
 # Reference Frames
@@ -362,7 +361,8 @@ print('The forcing vector is a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
 
 # NOTE : doing this substitution must make the expressions super long
-# because it causes all kinds of slowdowns, for example cse is slow.
+# because it causes all kinds of slowdowns, for example cse is slow in the
+# code gen step.
 # u3, u5, u8 are all in forcing_vector and need to be replaced by functions
 # of u4, u6, u7
 # These are the equations for u3, u5, u8 in terms of the independent speeds:
@@ -374,19 +374,25 @@ print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
 # This takes forever.
 #print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
 
+####################################
 # Validation of non-linear equations
+####################################
 
 print('Loading numerical input parameters.')
 
+# These are the Benchmark bicycle [Meijaard, et. al 2007] parameters
+# reexpressed in the Moore 2012 definition.
 bp = bicycle.benchmark_parameters()
 mp = bicycle.benchmark_to_moore(bp)
 
-# load the input values specified in Table 1 of Basu-Mandal2007
+# load the input values specified in Table 1 of [BasuMandal2007]_
 basu_input = bicycle.basu_table_one_input()
 
-# convert the Basu-Mandall values to my coordinates and speeds
+# convert the Basu-Mandal values to my coordinates and speeds
 moore_input = bicycle.basu_to_moore_input(basu_input, bp['rR'], bp['lam'])
 
+# build dictionaries that map the Moore symbolic parameters to the converted
+# Basu-Mandal values
 constant_substitutions = OrderedDict()
 for k, v in mp.items():
     try:
@@ -403,31 +409,33 @@ for k, v in moore_input.items():
         print('{} not added to sub dict.'.format(k))
 
 specified_subs = {T4: 0.0, T6: 0.0, T7: 0.0}
+
 substitutions = specified_subs.copy()
 substitutions.update(constant_substitutions)
 substitutions.update(dynamic_substitutions)
 
 # Try substituting values in through SymPy
-print('Substituting numerical parameters.')
-num_mass_matrix = mec.msubs(mass_matrix, substitutions)
-num_forcing_vector = mec.msubs(forcing_vector, substitutions)
+print('Substituting numerical parameters into SymPy expressions.')
+num_mass_matrix = sm.matrix2numpy(mec.msubs(mass_matrix, substitutions),
+                                  dtype=float)
+num_forcing_vector = sm.matrix2numpy(mec.msubs(forcing_vector,
+                                               substitutions), dtype=float)
+xd_from_sub = np.linalg.solve(num_mass_matrix, num_forcing_vector).flatten()
 
-print("Solving for x'.")
-xd = num_mass_matrix.LUsolve(num_forcing_vector)
-
-print(xd)
+print('The state derivatives from substitution:')
+print(xd_from_sub)
 
 # BUGS to report:
 # 1. find_dynamicsymbols should deal with Vectors and lists of
 # exprs/vectors/etc.
 
-# TODO : cse takes forever with this problem if the udeps are substituted
-# into forcing_vector, but may be crucial for speed.
-# TODO : The above xd computes but I get singular matrix error for this.
+print('Generating a right hand side function.')
+
 rhs_of_kin_diffs = sm.Matrix([kane.kindiffdict()[k] for k in kane.q.diff(t)])
+
 g = CythonODEFunctionGenerator(forcing_vector,
-                               kane.q[:], # q3, q4, q7
-                               kane.u[:], # u4, u6, u7
+                               kane.q[:],
+                               kane.u[:],
                                constant_substitutions.keys(),
                                mass_matrix=mass_matrix,
                                coordinate_derivatives=rhs_of_kin_diffs,
@@ -435,42 +443,69 @@ g = CythonODEFunctionGenerator(forcing_vector,
                                constants_arg_type='array',
                                specifieds_arg_type='array')
 print('Generating rhs')
-#rhs = g.generate()
+rhs = g.generate()
 
-state_vals = []
-for d in kane.q[:] + kane.u[:]:
-    sym_str = str(d)[:-3]
-    state_vals.append(moore_input[sym_str])
-state_vals = np.array(state_vals)
+state_vals = np.array([dynamic_substitutions[x] for x in kane.q[:] +
+                       kane.u[:]])
+specified_vals = np.zeros(3)
+constants_vals = np.array(constant_substitutions.values())
 
-#xd = rhs(state_vals, 0.0, np.array(constant_substitutions.values()),
-         #np.array([0.0, 0.0, 0.0]))
-#print(xd)
+xd_from_gen = rhs(state_vals, 0.0, specified_vals, constants_vals)
+print('The state derivatives from code gen:')
+print(xd_from_gen)
 
 print("Generating output dictionary.")
 # convert the outputs from my model to the Basu-Mandal coordinates
 # TODO : raise an issue about not knowing which order the x vector is in with
 # reference to M * x' = F
-speeds = kane.u[:]
-speed_deriv_names = [str(speed)[:-3] + 'p' for speed in speeds]
-moore_output = {k: v for k, v in zip(speed_deriv_names, list(xd))}
+speed_deriv_names = [str(speed)[:-3] + 'p' for speed in kane.u[:]]
+
+moore_output_from_sub = {k: v for k, v in zip(speed_deriv_names,
+                                              list(xd_from_sub))}
+moore_output_from_gen = {k: v for k, v in zip(speed_deriv_names,
+                                              list(xd_from_gen))}
+
+# compute u1' and u2' manually
 u1 = -rr * u6 * sm.cos(q3)
 u1p = u1.diff(t)
 u2 = -rr * u6 * sm.sin(q3)
 u2p = u2.diff(t)
-moore_output['u1p'] = u1p.subs({u6.diff(t): moore_output['u6p']}).subs(kane.kindiffdict()).subs(substitutions)
-moore_output['u2p'] = u2p.subs({u6.diff(t): moore_output['u6p']}).subs(kane.kindiffdict()).subs(substitutions)
-moore_output.update(moore_input)
 
-moore_output_basu = bicycle.moore_to_basu(moore_output, bp['rR'], bp['lam'])
+moore_output_from_sub['u1p'] = u1p.subs({u6.diff(t):
+                                         moore_output_from_sub['u6p']}).subs(
+                                             kane.kindiffdict()).subs(substitutions)
+moore_output_from_sub['u2p'] = u2p.subs({u6.diff(t):
+                                         moore_output_from_sub['u6p']}).subs(
+                                             kane.kindiffdict()).subs(substitutions)
+
+moore_output_from_gen['u1p'] = u1p.subs({u6.diff(t):
+                                         moore_output_from_gen['u6p']}).subs(
+                                             kane.kindiffdict()).subs(substitutions)
+moore_output_from_gen['u2p'] = u2p.subs({u6.diff(t):
+                                         moore_output_from_gen['u6p']}).subs(
+                                             kane.kindiffdict()).subs(substitutions)
+
+
+moore_output_from_sub.update(moore_input)
+moore_output_from_gen.update(moore_input)
+
+moore_output_basu_from_sub = bicycle.moore_to_basu(moore_output_from_sub,
+                                                   bp['rR'], bp['lam'])
+moore_output_basu_from_gen = bicycle.moore_to_basu(moore_output_from_gen,
+                                                   bp['rR'], bp['lam'])
+
 basu_output = bicycle.basu_table_one_output()
 
 print("Assertions.")
-from numpy import testing
 
 for k, bv in basu_output.items():
-    mv = float(moore_output_basu[k])
-    try:
-        testing.assert_allclose(bv, mv)
-    except AssertionError:
-        print('Failed: {} is supposed to be {:1.16f} but is {:1.16f}'.format(k, bv, mv))
+    for result in [moore_output_basu_from_sub, moore_output_basu_from_gen]:
+        try:
+            mv = float(result[k])
+        except KeyError:
+            print('{} was not checked.'.format(k))
+        else:
+            try:
+                testing.assert_allclose(bv, mv)
+            except AssertionError:
+                print('Failed: {}:\n  Correct: {:1.16f}\nIncorrect: {:1.16f}'.format(k, bv, mv))
