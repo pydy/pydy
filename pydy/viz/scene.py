@@ -346,7 +346,7 @@ class Scene(object):
 
         Parameters
         ----------
-        system: object, pydy.System
+        system : object, pydy.System
 
         Keyword arguments are same as generate_visualization_json.
 

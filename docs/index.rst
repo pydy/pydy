@@ -38,7 +38,17 @@ viz package
     :maxdepth: 2
 
     viz/viz.rst
+    viz/using_visualizer.rst
     viz/api.rst
+
+Tutorials
+=========
+
+.. toctree::
+    :maxdepth: 2
+
+    tutorials/beginners.rst
+    tutorials/advanced.rst
 
 Indices and tables
 ==================
