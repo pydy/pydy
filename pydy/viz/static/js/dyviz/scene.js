@@ -13,7 +13,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self._addDefaultLight();
         self._addAxes();
         self._addTrackBallControls();
-        self.WindowResize(self.webgl_renderer, self.currentCameras);
+        self.WindowResize(self.webgl_renderer, self.currentCamera, this);
         self.animationPaused = false;
     },
 
@@ -24,14 +24,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/
         var self = this;
         self.webgl_renderer = new THREE.WebGLRenderer();
-        self.width = jQuery(window).width() * 0.4;
-        self.webgl_renderer.setSize(self.width, 480);
-
+        self._updateWidth();
+        self._updateHeight();
+        self.webgl_renderer.setSize(self.width, self.height);
         var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
         self.webgl_renderer.setClearColor(backgroundColor);
         var container = jQuery('#renderer');
         container.append(self.webgl_renderer.domElement);
-
     },
 
     _createEmptyScene: function(){
@@ -54,10 +53,12 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
         self.primaryCamera = new THREE.PerspectiveCamera();
         self.primaryCamera.position.set(0,0,100);
-        self.primaryCamera.aspect = self.width / 480;
+        self._updateWidth();
+        self._updateHeight();
+        self.primaryCamera.aspect = self.width / self.height;
         self._scene.add(self.primaryCamera);
         self.currentCamera = self.primaryCamera;
-
+        self.currentCamera.updateProjectionMatrix();
     },
     _addDefaultLight: function(){
         /**
@@ -95,19 +96,43 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
     },
 
-    WindowResize: function(renderer, camera){
+    _updateWidth: function(){
+        var self = this;
+        self.width = jQuery(window).width() * 0.65;
+    },
+
+    _updateHeight: function(){
+        var self = this;
+        self.height = jQuery(window).height() * 0.8;
+    },
+
+    WindowResize: function(renderer, camera, self){
         /**
           * Adds window resize event listener
           * to renderer and camera and updates
           * them accordingly. This is a modified
           * version of THREEX.WindowResize.js
+          * LICENCE: The MIT License (MIT)
+          *
+          * Copyright (c) 2013 Jerome Etienne
+          *
+          * Permission is hereby granted, free of charge, to any person obtaining a copy of
+          * this software and associated documentation files (the "Software"), to deal in
+          * the Software without restriction, including without limitation the rights to
+          * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+          * the Software, and to permit persons to whom the Software is furnished to do so,
+          * subject to the following conditions:
+          *
+          * The above copyright notice and this permission notice shall be included in all
+          * copies or substantial portions of the Software.
         **/
         var callback  = function(){
-          var width = jQuery(window).width() * 0.4;
+          self._updateWidth();
+          self._updateHeight();
           // notify the renderer of the size change
-          renderer.setSize( width, 480 );
+          renderer.setSize( self.width, self.height );
           // update the camera
-          camera.aspect = width / 480;
+          camera.aspect = self.width / self.height;
           camera.updateProjectionMatrix();
         }
         // bind the resize event
@@ -300,7 +325,9 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         }
         _camera.name = camera.simulation_id;
         _camera["object-info"] = camera;
-        _camera.aspect = self.width / 480;
+        self._updateWidth();
+        self._updateHeight();
+        _camera.aspect = self.width / self.height;
         self._scene.add(_camera);
         self.currentCamera = _camera;
     },
