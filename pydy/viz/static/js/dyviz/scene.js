@@ -13,9 +13,8 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self._addDefaultLight();
         self._addAxes();
         self._addTrackBallControls();
+        self.WindowResize(self.webgl_renderer, self.currentCameras);
         self.animationPaused = false;
-
-
     },
 
     _createRenderer: function(){
@@ -25,8 +24,8 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/
         var self = this;
         self.webgl_renderer = new THREE.WebGLRenderer();
-        var width = jQuery(window).width() * 0.4;
-        self.webgl_renderer.setSize(width, 480);
+        self.width = jQuery(window).width() * 0.4;
+        self.webgl_renderer.setSize(self.width, 480);
 
         var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
         self.webgl_renderer.setClearColor(backgroundColor);
@@ -55,6 +54,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
         self.primaryCamera = new THREE.PerspectiveCamera();
         self.primaryCamera.position.set(0,0,100);
+        self.primaryCamera.aspect = self.width / 480;
         self._scene.add(self.primaryCamera);
         self.currentCamera = self.primaryCamera;
 
@@ -93,6 +93,34 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self.primaryControls = new THREE.TrackballControls(self.currentCamera,
                                             self.webgl_renderer.domElement);
 
+    },
+
+    WindowResize: function(renderer, camera){
+        /**
+          * Adds window resize event listener
+          * to renderer and camera and updates
+          * them accordingly. This is a modified
+          * version of THREEX.WindowResize.js
+        **/
+        var callback  = function(){
+          var width = jQuery(window).width() * 0.4;
+          // notify the renderer of the size change
+          renderer.setSize( width, 480 );
+          // update the camera
+          camera.aspect = width / 480;
+          camera.updateProjectionMatrix();
+        }
+        // bind the resize event
+        window.addEventListener('resize', callback, false);
+        // return .stop() the function to stop watching window resize
+        return {
+          /**
+            * Stop watching window resize
+          **/
+          stop : function(){
+            window.removeEventListener('resize', callback);
+          }
+        };
     },
 
     _resetControls: function(){
@@ -272,10 +300,9 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         }
         _camera.name = camera.simulation_id;
         _camera["object-info"] = camera;
+        _camera.aspect = self.width / 480;
         self._scene.add(_camera);
         self.currentCamera = _camera;
-
-
     },
 
     _addIndividualLight: function(light){
