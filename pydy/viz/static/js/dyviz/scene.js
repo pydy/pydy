@@ -229,7 +229,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
         }
 
-        var material = self.Materials[object.material];
+        var material = DynamicsVisualizer.Materials.getMaterial(object.material);
         material.color = new THREE.Color(object.color);
         var mesh = new THREE.Mesh(geometry, material);
         var element = new Float32Array(object.init_orientation);
