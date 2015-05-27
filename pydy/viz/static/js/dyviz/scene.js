@@ -272,8 +272,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         _camera["object-info"] = camera;
         self._scene.add(_camera);
         self.currentCamera = _camera;
-
-
+        self._addTrackBallControls();
     },
 
     _addIndividualLight: function(light){
