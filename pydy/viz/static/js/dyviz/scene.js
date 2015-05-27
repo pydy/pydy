@@ -347,6 +347,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var time_index = self._timeArray.indexOf(currentTime);
         var _children = self._scene.children;
         for(var i=0;i<_children.length;i++){
+          if(!(_children[i] instanceof (THREE.OrthoGraphicCamera || THREE.PerspectiveCamera))){
             var id = _children[i].name;
             if(self.simData[id] != undefined){
                 var element = new Float32Array(self.simData[id][time_index]);
@@ -355,7 +356,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 _children[i].matrix.identity()
                 _children[i].applyMatrix(orientationMatrix);
             }
-
+          }
         }
         jQuery("#time-slider").slider("setValue",percent);
         jQuery("#time").html(" " + currentTime.toFixed(3) + " s");

@@ -27,7 +27,11 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 
         var div_material = jQuery('<select />',{class: 'form-control', id:"_material"});
         for(var i=0;i<self.MaterialsList.length; i++){
-            div_material.append('<option value="' + self.MaterialsList[i] +  '">' + self.MaterialsList[i] + '</option>');
+            if(self.Geometries[i] == toLoad.type){
+                div_material.append('<option value="' + self.MaterialsList[i] +  '" selected="selected">' + self.MaterialsList[i] + '</option>');
+            }  else {
+                div_material.append('<option value="' + self.MaterialsList[i] +  '">' + self.MaterialsList[i] + '</option>');
+            }
         }
 
         var div_geom = jQuery('<select />',{class: 'form-control', id:"_geometry"});
@@ -120,7 +124,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 
         jQuery.extend(true,self.model.objects[int_id],updated_object);
         self.Scene.addObjects();
-        self.Scene.addCameras();
+        //self.Scene.addCameras();
         self.Scene.addLights();
         self.loadUIElements();
     },
