@@ -27,7 +27,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self.webgl_renderer = new THREE.WebGLRenderer();
         var width = jQuery(window).width() * 0.4;
         self.webgl_renderer.setSize(width, 480);
-
         var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
         self.webgl_renderer.setClearColor(backgroundColor);
         var container = jQuery('#renderer');
@@ -114,7 +113,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * function.
         **/
         var self = this;
-
 
         self._removeAll(); // Removes old objects first!
 
@@ -229,7 +227,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
         }
 
-        var material = DynamicsVisualizer.Materials.getMaterial(object.material);
+        var material = self.Materials.getMaterial(object.material);
         material.color = new THREE.Color(object.color);
         var mesh = new THREE.Mesh(geometry, material);
         var element = new Float32Array(object.init_orientation);

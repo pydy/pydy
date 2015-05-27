@@ -26,14 +26,8 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
         div1.append(jQuery('<input />',{ type:'text', id: "_color", class: 'form-control', value: toLoad.color}));
 
         var div_material = jQuery('<select />',{class: 'form-control', id:"_material"});
-        for(var i in self.Materials){
-            if(i == toLoad.type) {
-                div_material.append('<option value="' + i +  '" selected="selected" >' + i + '</option>');
-
-            }
-            else {
-                div_material.append('<option value="' + i +  '">' + i + '</option>');
-            }
+        for(var i=0;i<self.MaterialsList.length; i++){
+            div_material.append('<option value="' + self.MaterialsList[i] +  '">' + self.MaterialsList[i] + '</option>');
         }
 
         var div_geom = jQuery('<select />',{class: 'form-control', id:"_geometry"});
