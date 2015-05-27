@@ -27,7 +27,7 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 
         var div_material = jQuery('<select />',{class: 'form-control', id:"_material"});
         for(var i=0;i<self.MaterialsList.length; i++){
-            if(self.Geometries[i] == toLoad.type){
+            if(self.MaterialsList[i] == toLoad.type){
                 div_material.append('<option value="' + self.MaterialsList[i] +  '" selected="selected">' + self.MaterialsList[i] + '</option>');
             }  else {
                 div_material.append('<option value="' + self.MaterialsList[i] +  '">' + self.MaterialsList[i] + '</option>');
