@@ -27,7 +27,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self.webgl_renderer = new THREE.WebGLRenderer();
         var width = jQuery(window).width() * 0.4;
         self.webgl_renderer.setSize(width, 480);
-
         var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
         self.webgl_renderer.setClearColor(backgroundColor);
         var container = jQuery('#renderer');
@@ -114,7 +113,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * function.
         **/
         var self = this;
-
 
         self._removeAll(); // Removes old objects first!
 
@@ -229,7 +227,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
         }
 
-        var material = self.Materials[object.material];
+        var material = self.Materials.getMaterial(object.material);
         material.color = new THREE.Color(object.color);
         var mesh = new THREE.Mesh(geometry, material);
         var element = new Float32Array(object.init_orientation);
@@ -274,8 +272,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         _camera["object-info"] = camera;
         self._scene.add(_camera);
         self.currentCamera = _camera;
-
-
+        self._addTrackBallControls();
     },
 
     _addIndividualLight: function(light){
@@ -350,6 +347,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var time_index = self._timeArray.indexOf(currentTime);
         var _children = self._scene.children;
         for(var i=0;i<_children.length;i++){
+          if(!(_children[i] instanceof (THREE.OrthoGraphicCamera || THREE.PerspectiveCamera))){
             var id = _children[i].name;
             if(self.simData[id] != undefined){
                 var element = new Float32Array(self.simData[id][time_index]);
@@ -358,7 +356,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 _children[i].matrix.identity()
                 _children[i].applyMatrix(orientationMatrix);
             }
-
+          }
         }
         jQuery("#time-slider").slider("setValue",percent);
         jQuery("#time").html(" " + currentTime.toFixed(3) + " s");
