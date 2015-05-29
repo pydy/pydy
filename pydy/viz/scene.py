@@ -472,17 +472,17 @@ class Scene(object):
 
         self.create_static_html(silent=True)
         self._widget_dict = OrderedDict()
-        self.container = widgets.ContainerWidget()
+        self.container = widgets.Box()
         components = []
         for var, init_val in \
             zip(self.constant_variables, self.constant_values):
-            self._widget_dict[str(var)] = widgets.FloatTextWidget(value=init_val,
-                                                              description=str(var))
+            self._widget_dict[str(var)] = widgets.FloatText(value=init_val,
+                                                        description=str(var))
             components.append(self._widget_dict[str(var)])
 
-        self.button = widgets.ButtonWidget(description="Rerun Simulations")
+        self.button = widgets.Button(description="Rerun Simulations")
         def button_click(clicked):
-            self.button.add_class('disabled')
+            self.button._dom_classes = ['disabled']
             self.button.description = 'Rerunning Simulation ...'
             self.constant_values = []
             for i in self._widget_dict.values():
@@ -500,24 +500,19 @@ class Scene(object):
             js = 'jQuery("#json-input").val("{}");'.format('static/' + self.scene_json_file)
             display(Javascript(js))
             display(Javascript('jQuery("#simulation-load").click()'));
-            self.button.remove_class('disabled')
+            self.button._dom_classes = ['enabled']
 
             self.button.description = 'Rerun Simulation'
-
 
         self.button.on_click(button_click)
         #components.append(button)
         html_file = open("static/index_ipython.html")
-        self.html_widget = widgets.HTMLWidget(value=html_file.read().format(load_url='static/' + self.scene_json_file))
+        self.html_widget = widgets.HTML(value=html_file.read().format(load_url='static/' + self.scene_json_file))
         self.container.children = components
-        self.container.set_css({"max-height": "10em",
-                                "overflow-y": "scroll",
-                                "display":"block"
-                                })
-        self.html_widget.set_css({"display":"block",
-                                  "float":"left"
-                                  })
+
+        self.container._css = [("canvas", "width", "100%")]
+
         display(self.container)
         display(self.button)
         display(self.html_widget)
-        self.button.add_class('btn-info')
+        self.button._dom_classes = ['btn-info']
