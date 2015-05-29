@@ -47,7 +47,7 @@ def test_create_static_html():
     scene.generate_visualization_json_system(sys, outfile_prefix="test")
 
     # test static dir creation
-    scene.create_static_html(overwrite=True)
+    scene.create_static_html(copy=True)
     assert os.path.exists('static')
     assert os.path.exists('static/index.html')
     assert os.path.exists('static/test_scene_desc.json')

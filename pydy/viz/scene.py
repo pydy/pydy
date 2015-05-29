@@ -363,14 +363,10 @@ class Scene(object):
                                           system.integrate(),
                                           system.constants.values(), **kwargs)
 
-    def create_static_html(self, overwrite=False, silent=False):
+    def create_static_html(self, copy=False, silent=False):
 
-        """Creates a directory named ``static`` in the current working
-        directory which contains all of the HTML, CSS, and Javascript files
-        required to run the visualization. Simply open ``static/index.html``
-        in a WebGL compliant browser to view and interact with the
-        visualization.
-
+        """
+        Copies json files into a static directory, pydy/viz/static by default,
         This method can also be used to output files for embedding the
         visualizations in the static webpages. Simply copy the contents of
         static directory in the relevant directory for embedding in a static
@@ -378,19 +374,28 @@ class Scene(object):
 
         Parameters
         ----------
-        overwrite : boolean, optional, default=False
+        copy : boolean, optional, default=False
             If True, the directory named ``static`` in the current working
-            directory will be overwritten.
-        Silent : boolean, optional, default=False
+            directory will be created/overwritten.
+        silent : boolean, optional, default=False
             If True, no messages will be displayed to
             STDOUT
         """
-
         src = os.path.join(os.path.dirname(__file__), 'static')
+        if copy:
+            dst = os.path.join(os.getcwd(), 'static')
+            if os.path.exists(dst):
+                distutils.dir_util.remove_tree(dst)
+            distutils.dir_util.copy_tree(src, dst)
+            if not silent:
+                print "Contents copied to static directory"
+        else:
+            dst = src
+
         if not silent:
             print("Copying Simulation data.")
-        _scene_outfile_loc = os.path.join(src, self.scene_json_file)
-        _simulation_outfile_loc = os.path.join(src, self.simulation_json_file)
+        _scene_outfile_loc = os.path.join(dst, self.scene_json_file)
+        _simulation_outfile_loc = os.path.join(dst, self.simulation_json_file)
         scene_outfile = open(_scene_outfile_loc, "w")
         simulation_outfile = open(_simulation_outfile_loc, "w")
 
@@ -402,8 +407,9 @@ class Scene(object):
         simulation_outfile.close()
         if not silent:
             print("To view the visualization, open {}".format(
-                  os.path.join(src, 'index.html')) +
-                  " in a WebGL compliant browser.")
+                  os.path.join(dst, 'index.html')) +
+                  " in a WebGL compliant browser using a server." +
+                  "e.g 'python -m SimpleHTTPServer 8000'")
 
     def remove_static_html(self, force=False):
         """Removes the ``static`` directory from the current working
@@ -485,7 +491,7 @@ class Scene(object):
                                     self.constant_variables, self.dynamic_values,
                                     self.constant_values,fps=self.fps,
                                     outfile_prefix=self.outfile_prefix)
-            self.create_static_html(overwrite=True, silent=True)
+            self.create_static_html(silent=True)
             js = 'jQuery("#json-input").val("{}");'.format('static/' + self.scene_json_file)
             display(Javascript(js))
             display(Javascript('jQuery("#simulation-load").click()'));
