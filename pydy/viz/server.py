@@ -7,7 +7,8 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 
 def run_server(port=8000,scene_file="Null"):
     #change dir to static first.
-    os.chdir("static/")
+    static_dir = src = os.path.join(os.path.dirname(__file__), 'static')
+    os.chdir(static_dir)
     HandlerClass = SimpleHTTPRequestHandler
     ServerClass  = BaseHTTPServer.HTTPServer
     Protocol     = "HTTP/1.0"

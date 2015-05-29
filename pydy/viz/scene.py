@@ -386,35 +386,24 @@ class Scene(object):
             STDOUT
         """
 
-        dst = os.path.join(os.getcwd(), 'static')
-
-        if os.path.exists(dst) and overwrite is False:
-            ans = raw_input("The 'static' directory already exists. Would "
-                            + "you like to overwrite the contents? [y|n]\n")
-            if ans == 'y':
-                distutils.dir_util.remove_tree(dst)
-            else:
-                if not silent: print "Aborted!"
-                return
-
         src = os.path.join(os.path.dirname(__file__), 'static')
-        if not silent: print("Copying static data.")
-        distutils.dir_util.copy_tree(src, dst)
-        if not silent: print("Copying Simulation data.")
-        _scene_outfile_loc = os.path.join(os.getcwd(), 'static', self.scene_json_file)
-        _simulation_outfile_loc = os.path.join(os.getcwd(), 'static', self.simulation_json_file)
+        if not silent:
+            print("Copying Simulation data.")
+        _scene_outfile_loc = os.path.join(src, self.scene_json_file)
+        _simulation_outfile_loc = os.path.join(src, self.simulation_json_file)
         scene_outfile = open(_scene_outfile_loc, "w")
         simulation_outfile = open(_simulation_outfile_loc, "w")
 
         scene_outfile.write(json.dumps(self._scene_data_dict, indent=4,
-                                separators=(',', ': ')))
+                            separators=(',', ': ')))
         scene_outfile.close()
-        simulation_outfile.write(json.dumps(self._simulation_data_dict, indent=4,
-                                separators=(',', ': ')))
+        simulation_outfile.write(json.dumps(self._simulation_data_dict,
+                                 indent=4, separators=(',', ': ')))
         simulation_outfile.close()
-        if not silent: print("To view the visualization, open {}".format(
-                            os.path.join(dst, 'index.html')) +
-                            " in a WebGL compliant browser.")
+        if not silent:
+            print("To view the visualization, open {}".format(
+                  os.path.join(src, 'index.html')) +
+                  " in a WebGL compliant browser.")
 
     def remove_static_html(self, force=False):
         """Removes the ``static`` directory from the current working
