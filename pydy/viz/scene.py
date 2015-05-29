@@ -24,6 +24,12 @@ try:
     from IPython.html import widgets
     from IPython.display import display, Javascript
 
+    # Support for ipython 2 and ipython 3
+    if IPython.__version__[0] == '2':
+        ipython2 = True
+    else:
+        ipython2 = False
+
 except ImportError:
     IPython = None
 
@@ -472,17 +478,30 @@ class Scene(object):
 
         self.create_static_html(silent=True)
         self._widget_dict = OrderedDict()
-        self.container = widgets.Box()
+        if ipython2:
+            self.container = widgets.ContainerWidget()
+        else:
+            self.container = widgets.Box()
         components = []
         for var, init_val in \
             zip(self.constant_variables, self.constant_values):
-            self._widget_dict[str(var)] = widgets.FloatText(value=init_val,
+            if ipython2:
+                self._widget_dict[str(var)] = widgets.FloatTextWidget(value=init_val,
+                                                        description=str(var))
+            else:
+                self._widget_dict[str(var)] = widgets.FloatText(value=init_val,
                                                         description=str(var))
             components.append(self._widget_dict[str(var)])
 
-        self.button = widgets.Button(description="Rerun Simulations")
+        if ipython2:
+            self.button = widgets.ButtonWidget(description="Rerun Simulations")
+        else:
+            self.button = widgets.Button(description="Rerun Simulations")
         def button_click(clicked):
-            self.button._dom_classes = ['disabled']
+            if ipython2:
+                self.button.add_class('disabled')
+            else:
+                self.button._dom_classes = ['disabled']
             self.button.description = 'Rerunning Simulation ...'
             self.constant_values = []
             for i in self._widget_dict.values():
@@ -500,19 +519,37 @@ class Scene(object):
             js = 'jQuery("#json-input").val("{}");'.format('static/' + self.scene_json_file)
             display(Javascript(js))
             display(Javascript('jQuery("#simulation-load").click()'));
-            self.button._dom_classes = ['enabled']
+            if ipython2:
+                self.button.remove_class('disabled')
+            else:
+                self.button._dom_classes = ['enabled']
 
             self.button.description = 'Rerun Simulation'
 
         self.button.on_click(button_click)
         #components.append(button)
         html_file = open("static/index_ipython.html")
-        self.html_widget = widgets.HTML(value=html_file.read().format(load_url='static/' + self.scene_json_file))
+        if ipython2:
+            self.html_widget = widgets.HTMLWidget(value=html_file.read().format(load_url='static/' + self.scene_json_file))
+        else:
+            self.html_widget = widgets.HTML(value=html_file.read().format(load_url='static/' + self.scene_json_file))
         self.container.children = components
 
-        self.container._css = [("canvas", "width", "100%")]
+        if ipython2:
+            self.container.set_css({"max-height": "10em",
+                                    "overflow-y": "scroll",
+                                    "display":"block"
+                                    })
+            self.html_widget.set_css({"display":"block",
+                                      "float":"left"
+                                      })
+        else:
+            self.container._css = [("canvas", "width", "100%")]
 
         display(self.container)
         display(self.button)
         display(self.html_widget)
-        self.button._dom_classes = ['btn-info']
+        if ipython2:
+            self.button.add_class('btn-info')
+        else:
+            self.button._dom_classes = ['btn-info']
