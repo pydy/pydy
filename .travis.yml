@@ -40,7 +40,9 @@ before_script:
 script:
   # Run Python and Javascript tests.
   - nosetests -v --with-coverage --cover-package=pydy
-  - cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html && cd ../../../../../
+  # JS tests
+  - cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html
+  - cd -  # It should not be combined with above command
   # Check Python and Javascript syntax (trailing whitespaces/newlines, unused imports).
   - (flake8 --select W1,W2,W3 --exclude booger . &&
     flake8 --select F401 --exclude booger,__init__.py,conf.py . &&
