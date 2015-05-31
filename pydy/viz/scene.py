@@ -480,20 +480,20 @@ class Scene(object):
     def display_ipython(self):
         """
         Method to display the visualization inside the
-        Ipython notebook. It is only supported by IPython
+        IPython notebook. It is only supported by IPython
         versions>=2.0.0
 
         """
 
         # Raise error whenever display_ipython() is called
-        # and Ipython is not installed or Ipython < '2.0.0'
+        # and IPython is not installed or IPython < '2.0.0'
         if IPython is None:
-            raise ImportError('Ipython is not installed but is required. ' +
-                              'Please install IPython >= 2.0.0 and try again')
+            raise ImportError('IPython is not installed but is required. ' +
+                              'Please installed IPython >= 2.0 and try again')
         elif ipython_less_than_3 is None:
-            raise ImportError('Ipython install is ' + Ipython.__version__ +
-                              ' but PyDy supports Ipython >= 2.0.0 ' +
-                              'Please update Ipython and try again')
+            raise ImportError('You have IPython ' + IPython.__version__ +
+                              ' installed but PyDy supports IPython >= 2.0.0' +
+                              'Please update IPython and try again')
 
         self.create_static_html(silent=True)
         self._widget_dict = OrderedDict()
