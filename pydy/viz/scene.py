@@ -8,6 +8,7 @@ import distutils
 import distutils.dir_util
 import datetime
 from collections import OrderedDict
+from pkg_resources import parse_version
 # external
 from sympy.physics.mechanics import ReferenceFrame, Point
 
@@ -24,8 +25,21 @@ try:
     from IPython.html import widgets
     from IPython.display import display, Javascript
 
+    ipy_ver = parse_version(IPython.__version__)
+    if ipy_ver < parse_version('2.0'):
+        raise ImportWarning('PyDy supports IPython >= 2.0.0, while you have ' +
+                            'IPython ' + IPython.__version__ + ' installed. ' +
+                            'IPython related functionalities will not be ' +
+                            'available')
+        ipython_less_than_3 = None
+    elif ipy_ver >= parse_version('2.0') and ipy_ver < parse_version('3.0'):
+        ipython_less_than_3 = True
+    else:  # ipython >= 3.0
+        ipython_less_than_3 = False
+
 except ImportError:
     IPython = None
+    ipython_less_than_3 = None
 
 
 class Scene(object):
@@ -412,9 +426,10 @@ class Scene(object):
         simulation_outfile.write(json.dumps(self._simulation_data_dict, indent=4,
                                 separators=(',', ': ')))
         simulation_outfile.close()
-        if not silent: print("To view the visualization, open {}".format(
-                            os.path.join(dst, 'index.html')) +
-                            " in a WebGL compliant browser.")
+        if not silent:
+            print("To view the visualization, open {}".format(
+                  os.path.join(dst, 'index.html')) +
+                  " in a WebGL compliant browser.")
 
     def remove_static_html(self, force=False):
         """Removes the ``static`` directory from the current working
@@ -433,13 +448,13 @@ class Scene(object):
 
         if not force:
             ans = raw_input("Are you sure you would like to delete the " +
-                                "'static' directory? [y|n]\n")
+                            "'static' directory? [y|n]\n")
             if ans == 'y':
                 force = True
 
         if force:
             distutils.dir_util.remove_tree(os.path.join(os.getcwd(),
-                                                            'static'))
+                                                        'static'))
             print "All Done!"
         else:
             print "aborted!"
@@ -465,59 +480,105 @@ class Scene(object):
     def display_ipython(self):
         """
         Method to display the visualization inside the
-        Ipython notebook. It is only supported by IPython
+        IPython notebook. It is only supported by IPython
         versions>=2.0.0
 
         """
 
+        # Raise error whenever display_ipython() is called
+        # and IPython is not installed or IPython < '2.0.0'
+        if IPython is None:
+            raise ImportError('IPython is not installed but is required. ' +
+                              'Please installed IPython >= 2.0 and try again')
+        elif ipython_less_than_3 is None:
+            raise ImportError('You have IPython ' + IPython.__version__ +
+                              ' installed but PyDy supports IPython >= 2.0.0' +
+                              'Please update IPython and try again')
+
         self.create_static_html(silent=True)
         self._widget_dict = OrderedDict()
-        self.container = widgets.ContainerWidget()
+        if ipython_less_than_3:
+            self.container = widgets.ContainerWidget()
+        else:
+            self.container = widgets.Box()
         components = []
         for var, init_val in \
             zip(self.constant_variables, self.constant_values):
-            self._widget_dict[str(var)] = widgets.FloatTextWidget(value=init_val,
-                                                              description=str(var))
+            if ipython_less_than_3:
+                self._widget_dict[str(var)] = widgets.FloatTextWidget(
+                    value=init_val,
+                    description=str(var))
+            else:
+                self._widget_dict[str(var)] = widgets.FloatText(
+                    value=init_val,
+                    description=str(var))
             components.append(self._widget_dict[str(var)])
 
-        self.button = widgets.ButtonWidget(description="Rerun Simulations")
+        if ipython_less_than_3:
+            self.button = widgets.ButtonWidget(description="Rerun Simulations")
+        else:
+            self.button = widgets.Button(description="Rerun Simulations")
+
         def button_click(clicked):
-            self.button.add_class('disabled')
+            if ipython_less_than_3:
+                self.button.add_class('disabled')
+            else:
+                self.button._dom_classes = ['disabled']
             self.button.description = 'Rerunning Simulation ...'
             self.constant_values = []
             for i in self._widget_dict.values():
                 self.constant_values.append(i.value)
             if self.system is not None:
-                #update system constants
-                self.system.constants = dict(zip(self.system.constants, self.constant_values))
+                # update system constants
+                self.system.constants = dict(zip(self.system.constants,
+                                                 self.constant_values))
                 self.generate_visualization_json_system(self.system)
             else:
-                self.generate_visualization_json(self.dynamic_variables,
-                                    self.constant_variables, self.dynamic_values,
-                                    self.constant_values,fps=self.fps,
-                                    outfile_prefix=self.outfile_prefix)
+                self.generate_visualization_json(
+                    self.dynamic_variables,
+                    self.constant_variables, self.dynamic_values,
+                    self.constant_values,
+                    fps=self.fps,
+                    outfile_prefix=self.outfile_prefix)
             self.create_static_html(overwrite=True, silent=True)
-            js = 'jQuery("#json-input").val("{}");'.format('static/' + self.scene_json_file)
+            js = 'jQuery("#json-input").val("{}");'.format('static/' +
+                                                           self.scene_json_file)
             display(Javascript(js))
-            display(Javascript('jQuery("#simulation-load").click()'));
-            self.button.remove_class('disabled')
+            display(Javascript('jQuery("#simulation-load").click()'))
+            if ipython_less_than_3:
+                self.button.remove_class('disabled')
+            else:
+                self.button._dom_classes = ['enabled']
 
             self.button.description = 'Rerun Simulation'
 
-
         self.button.on_click(button_click)
-        #components.append(button)
         html_file = open("static/index_ipython.html")
-        self.html_widget = widgets.HTMLWidget(value=html_file.read().format(load_url='static/' + self.scene_json_file))
+        if ipython_less_than_3:
+            self.html_widget = widgets.HTMLWidget(
+                value=html_file.read().format(load_url='static/' +
+                                              self.scene_json_file))
+        else:
+            self.html_widget = widgets.HTML(
+                value=html_file.read().format(load_url='static/' +
+                                              self.scene_json_file))
         self.container.children = components
-        self.container.set_css({"max-height": "10em",
-                                "overflow-y": "scroll",
-                                "display":"block"
-                                })
-        self.html_widget.set_css({"display":"block",
-                                  "float":"left"
-                                  })
+
+        if ipython_less_than_3:
+            self.container.set_css({"max-height": "10em",
+                                    "overflow-y": "scroll",
+                                    "display": "block"
+                                    })
+            self.html_widget.set_css({"display": "block",
+                                      "float": "left"
+                                      })
+        else:
+            self.container._css = [("canvas", "width", "100%")]
+
         display(self.container)
         display(self.button)
         display(self.html_widget)
-        self.button.add_class('btn-info')
+        if ipython_less_than_3:
+            self.button.add_class('btn-info')
+        else:
+            self.button._dom_classes = ['btn-info']
