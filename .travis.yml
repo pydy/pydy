@@ -2,9 +2,11 @@ language: python
 matrix:
   include:
     - python: 2.7
-      env: SYMPY_MASTER="false"
+      env: SYMPY_VERSION="oldest"
     - python: 2.7
-      env: SYMPY_MASTER="true"
+      env: SYMPY_VERSION="latest"
+    - python: 2.7
+      env: SYMPY_VERSION="master"
 virtualenv:
   system_site_packages: true
 before_install:
@@ -21,9 +23,11 @@ install:
   # Theano may try to install SciPy from source if the --no-deps flags isn't
   # there.
   - pip install --no-deps Theano==0.6.0
-  - if [[ $SYMPY_MASTER == "false" ]]; then
+  - if [[ $SYMPY_VERSION == "oldest" ]]; then
       pip install sympy==0.7.4.1;
-    elif [[ $SYMPY_MASTER == "true" ]]; then
+    elif [[ $SYMPY_VERSION == "latest" ]]; then
+      pip install sympy;
+    elif [[ $SYMPY_VERSION == "master" ]]; then
       pip install https://github.com/sympy/sympy/archive/master.zip;
     fi
   - pip install -U nose
