@@ -342,7 +342,7 @@ Release Notes
 User Facing
 ~~~~~~~~~~~
 
-- Removed the partial implementation of the Mesh shape. [PR `#172`]
+- Removed the partial implementation of the Mesh shape. [PR `#172`_]
 - Overhauled the code generation package to make the generators more easily
   extensible and to improve simulation speed. [PR `#113`_]
 - The visualizer has been overhauled as part of Tarun Gaba's 2014 GSoC
@@ -352,15 +352,17 @@ User Facing
   - The JavaScript has been overhauled and now uses prototype.js for object
     oriented design.
   - The visualizer can now be loaded in an IPython notebook via IPython's
-    widgets.
+    widgets using ``Scene.display_ipython()``.
   - A slider was added to manually control the frame playback.
   - The visualization objects can be manipulated via the GUI.
   - The scene json file can be edited via the GUI.
-  - The data and scene description have been separated into two json files.
+  - pydy.viz generates two JSONs now (instead of one in earlier versions). The
+    JSON generated from earlier versions will **not** work in the new version.
   - Different simulation files can be loaded via the GUI.
-  - Shapes can now have a material.
+  - Shapes can now have a material attribute.
   - Simulation parameters can be modified and the simulations can be rerun all
     via the GUI.
+  - Switched from socket based server to python's core SimpleHTTPServer.
 
 - Added a new System class and module to more seamlessly manage integrating the
   equations of motion. [PR `#81`_]

@@ -4,6 +4,7 @@
 import numpy as np
 from sympy import symbols
 from numpy.testing import assert_allclose
+from nose.tools import assert_raises
 
 # local
 from ..shapes import (Shape, Cube, Cylinder, Cone, Sphere, Circle, Plane,
@@ -12,6 +13,7 @@ from ..shapes import (Shape, Cube, Cylinder, Cone, Sphere, Circle, Plane,
 
 
 def test_shape():
+
     shape = Shape(name='shape', color='blue', material="DIRT")
 
     assert shape.name == 'shape'
@@ -22,12 +24,20 @@ def test_shape():
 
     shape.name = 'shape1'
     assert shape.name == 'shape1'
+    with assert_raises(TypeError):
+        shape.name = 1
 
     shape.color = 'red'
     assert shape.color == 'red'
+    with assert_raises(ValueError):
+        shape.color = 'puke'
 
+    shape.material = "water"
+    assert shape.material == "water"
     shape.material = "WATER"
     assert shape.material == "WATER"
+    with assert_raises(ValueError):
+        shape.material = 'fluffy cloth'
 
     assert shape.generate_dict() == {"color": "red",
                                      "type": "Shape",
@@ -427,10 +437,10 @@ def test_torus():
     torus.tube_radius = 4.0
     assert torus.tube_radius == 4.0
 
-    torus.color = '#FFFFFF'
-    assert torus.color == '#FFFFFF'
+    torus.color = 'tan'
+    assert torus.color == 'tan'
 
-    assert torus.generate_dict() == {"color": "#FFFFFF",
+    assert torus.generate_dict() == {"color": "tan",
                                      "type": "Torus",
                                      "name": "torus1",
                                      "radius": 15.0,

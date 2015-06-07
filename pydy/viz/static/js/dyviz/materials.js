@@ -1,152 +1,181 @@
-DynamicsVisualizer.Materials = {};
 DynamicsVisualizer.Geometries = ['Cube', 'Cylinder',
                                  'Cone', 'Sphere', 'Circle',
                                  'Plane', 'Tetrahedron',
                                  'Octahedron', 'Icosahedron',
                                  'Torus', 'TorusKnot']
 
-DynamicsVisualizer.Materials["default"] = new THREE.MeshLambertMaterial();
-DynamicsVisualizer.texture_base_path = "static/textures/"
+DynamicsVisualizer.MaterialsList = ['default', 'checkerboard', 'metal',
+                                    'dirt', 'foil', 'water', 'grass',
+                                    'lava', 'moon', 'earth']
 
-// If IPython,
-if(typeof IPython == "undefined"){
+DynamicsVisualizer.Materials = Object.extend(DynamicsVisualizer, {
 
-    DynamicsVisualizer.texture_base_path = "textures/";
+    getMaterial: function(material) {
 
-}
+        var self = this;
 
+        self.texture_base_path = "static/textures/"
+        // If IPython,
+        if(typeof IPython == "undefined"){
+            self.texture_base_path = "textures/";
+        }
+        self.shininess = 50;
+        self.specular = 0x333333;
+        self.shading = THREE.SmoothShading;
 
-function loadMaterials() {
+        switch(material){
 
-    var checkerBoardTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "checkerboard.jpg" );
-    checkerBoardTexture.wrapS = checkerBoardTexture.wrapT = THREE.RepeatWrapping;
-    checkerBoardTexture.anisotropy = 4;
+            case "default":
+                return new THREE.MeshLambertMaterial();
 
-    var metalTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "metal.jpg" );
-    metalTexture.wrapS = metalTexture.wrapT = THREE.RepeatWrapping;
-    metalTexture.repeat.set(2,2);
-    metalTexture.anisotropy = 4;
+            case "checkerboard":
 
-    var moonTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "moon.jpg" );
-    moonTexture.wrapS = moonTexture.wrapT = THREE.RepeatWrapping;
-    moonTexture.anisotropy = 4;
+                self.checkerBoardTexture = THREE.ImageUtils.loadTexture( self.texture_base_path + "checkerboard.jpg" );
+                self.checkerBoardTexture.wrapS = self.checkerBoardTexture.wrapT = THREE.RepeatWrapping;
+                self.checkerBoardTexture.anisotropy = 4;
 
-    var earthTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "earth.jpg" );
-    earthTexture.wrapS = earthTexture.wrapT = THREE.RepeatWrapping;
-    earthTexture.anisotropy = 4;
+                return new THREE.MeshPhongMaterial({
+                    map: self.checkerBoardTexture,
+                    bumpMap: null,
+                    bumpScale: 0,
+                    color: 0xffffff,
+                    ambient: 0x555555,
+                    specular: 0x222222,
+                    shininess: 10,
+                    shading: self.shading } );
 
-    var grassTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "grass.jpg" );
-    grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping;
-    grassTexture.repeat.set(1,1);
-    grassTexture.anisotropy = 4;
+            case "metal":
 
-    var dirtTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "dirt.jpg" );
-    dirtTexture.wrapS = dirtTexture.wrapT = THREE.RepeatWrapping;
-    dirtTexture.repeat.set(1,1);
-    dirtTexture.anisotropy = 4;
+                self.metalTexture = THREE.ImageUtils.loadTexture( self.texture_base_path + "metal.jpg" );
+                self.metalTexture.wrapS = self.metalTexture.wrapT = THREE.RepeatWrapping;
+                self.metalTexture.repeat.set(2,2);
+                self.metalTexture.anisotropy = 4;
 
-    var waterTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "water.jpg" );
-    waterTexture.wrapS = waterTexture.wrapT = THREE.RepeatWrapping;
-    waterTexture.repeat.set(1,1);
-    waterTexture.anisotropy = 4;
+                return new THREE.MeshPhongMaterial({
+                    map: self.metalTexture,
+                    bumpMap: self.metalTexture,
+                    bumpScale: 0.1,
+                    color: 0xffffff,
+                    ambient: 0x555555,
+                    specular: 0x222222,
+                    shininess: 70,
+                    shading: self.shading } );
 
-    var lavaTexture = THREE.ImageUtils.loadTexture( DynamicsVisualizer.texture_base_path + "lavatile.jpg" );
-    lavaTexture.repeat.set( 4, 2 );
-    lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping;
-    lavaTexture.anisotropy = 4;
+            case "dirt":
 
-    var shininess = 50, specular = 0x333333, shading = THREE.SmoothShading;
+                self.dirtTexture = THREE.ImageUtils.loadTexture( self.texture_base_path + "dirt.jpg" );
+                self.dirtTexture.wrapS = self.dirtTexture.wrapT = THREE.RepeatWrapping;
+                self.dirtTexture.repeat.set(1,1);
+                self.dirtTexture.anisotropy = 4;
 
-    DynamicsVisualizer.Materials["checkerboard"] = new THREE.MeshPhongMaterial(
-        {   map: checkerBoardTexture,
-            bumpMap: null,
-            bumpScale: 0,
-            color: 0xffffff,
-            ambient: 0x555555,
-            specular: 0x222222,
-            shininess: 10,
-            shading: shading } );
+                return new THREE.MeshPhongMaterial({
+                    map: self.dirtTexture,
+                    bumpMap: self.dirtTexture,
+                    bumpScale: 0.05,
+                    color: 0xffffff,
+                    ambient: 0x555555,
+                    specular: 0x222222,
+                    shininess: 10,
+                    shading: self.shading } );
 
+            case "foil":
 
-    DynamicsVisualizer.Materials["metal"] = new THREE.MeshPhongMaterial(
-        {   map: metalTexture,
-            bumpMap: metalTexture,
-            bumpScale: 0.1,
-            color: 0xffffff,
-            ambient: 0x555555,
-            specular: 0x222222,
-            shininess: 70,
-            shading: shading } );
+                self.waterTexture = THREE.ImageUtils.loadTexture( self.texture_base_path + "water.jpg" );
+                self.waterTexture.wrapS = self.waterTexture.wrapT = THREE.RepeatWrapping;
+                self.waterTexture.repeat.set(1,1);
+                self.waterTexture.anisotropy = 4;
 
-    DynamicsVisualizer.Materials["dirt"] = new THREE.MeshPhongMaterial(
-        {   map: dirtTexture,
-            bumpMap: dirtTexture,
-            bumpScale: 0.05,
-            color: 0xffffff,
-            ambient: 0x555555,
-            specular: 0x222222,
-            shininess: 10,
-            shading: shading } );
+                return new new THREE.MeshPhongMaterial({
+                    map: self.waterTexture,
+                    bumpMap: self.waterTexture,
+                    bumpScale: 0.3,
+                    color: 0xccccaa,
+                    ambient: 0x555544,
+                    specular: 0x777777,
+                    shininess: 100,
+                    shading: self.shading } );
 
-    DynamicsVisualizer.Materials["foil"] = new THREE.MeshPhongMaterial(
-        {   map: waterTexture,
-            bumpMap: waterTexture,
-            bumpScale: 0.3,
-            color: 0xccccaa,
-            ambient: 0x555544,
-            specular: 0x777777,
-            shininess: 100,
-            shading: shading } );
+            case "water":
 
-    DynamicsVisualizer.Materials["water"] = new THREE.MeshPhongMaterial(
-        {   map: waterTexture,
-            bumpMap: waterTexture,
-            bumpScale: 0.05,
-            color: 0x3333aa,
-            ambient: 0x335577,
-            specular: 0x555555,
-            shininess: shininess,
-            shading: shading } );
+                self.waterTexture = THREE.ImageUtils.loadTexture( self.texture_base_path + "water.jpg" );
+                self.waterTexture.wrapS = self.waterTexture.wrapT = THREE.RepeatWrapping;
+                self.waterTexture.repeat.set(1,1);
+                self.waterTexture.anisotropy = 4;
 
+                return new THREE.MeshPhongMaterial({
+                    map: self.waterTexture,
+                    bumpMap: self.waterTexture,
+                    bumpScale: 0.05,
+                    color: 0x3333aa,
+                    ambient: 0x335577,
+                    specular: 0x555555,
+                    shininess: self.shininess,
+                    shading: self.shading } );
 
-    DynamicsVisualizer.Materials["grass"] = new THREE.MeshPhongMaterial(
-        {   map: grassTexture,
-            bumpMap: grassTexture,
-            bumpScale: 0.05,
-            color: 0xffffff,
-            ambient: 0x777777,
-            specular: 0x333333,
-            opacity: 1,
-            shininess: shininess,
-            shading: shading } );
+            case "grass":
 
-    DynamicsVisualizer.Materials["lava"] = new THREE.MeshPhongMaterial(
-        {   map: lavaTexture,
-            bumpMap: lavaTexture,
-            bumpScale: 0.5,
-            color: 0xffffff,
-            ambient: 0x777777,
-            specular: 0x333333,
-            shininess: shininess,
-            shading: shading } );
+                self.grassTexture = THREE.ImageUtils.loadTexture( self.texture_base_path + "grass.jpg" );
+                self.grassTexture.wrapS = self.grassTexture.wrapT = THREE.RepeatWrapping;
+                self.grassTexture.repeat.set(1,1);
+                self.grassTexture.anisotropy = 4;
 
-    DynamicsVisualizer.Materials["moon"] = new THREE.MeshPhongMaterial(
-        {   map: moonTexture,
-            bumpMap: moonTexture,
-            bumpScale: 0.0001,
-            color: 0xffffff,
-            ambient: 0x777777,
-            specular: 0x333333,
-            shininess: 0,
-            shading: shading } );
+                return new THREE.MeshPhongMaterial({
+                    map: self.grassTexture,
+                    bumpMap: self.grassTexture,
+                    bumpScale: 0.05,
+                    color: 0xffffff,
+                    ambient: 0x777777,
+                    specular: 0x333333,
+                    opacity: 1,
+                    shininess: self.shininess,
+                    shading: self.shading } );
 
-    DynamicsVisualizer.Materials["earth"] = new THREE.MeshPhongMaterial(
-        {   map: earthTexture,
-            color: 0xffffff,
-            ambient: 0x777777,
-            specular: 0x333333,
-            shininess: shininess,
-            shading: shading } );
+            case "lava":
 
-}
-loadMaterials();
+                self.lavaTexture = THREE.ImageUtils.loadTexture( self.texture_base_path + "lavatile.jpg" );
+                self.lavaTexture.repeat.set( 4, 2 );
+                self.lavaTexture.wrapS = self.lavaTexture.wrapT = THREE.RepeatWrapping;
+                self.lavaTexture.anisotropy = 4;
+
+                return new THREE.MeshPhongMaterial({
+                    map: self.lavaTexture,
+                    bumpMap: self.lavaTexture,
+                    bumpScale: 0.5,
+                    color: 0xffffff,
+                    ambient: 0x777777,
+                    specular: 0x333333,
+                    shininess: self.shininess,
+                    shading: self.shading } );
+
+            case "moon":
+
+                self.moonTexture = THREE.ImageUtils.loadTexture( self.texture_base_path + "moon.jpg" );
+                self.moonTexture.wrapS = self.moonTexture.wrapT = THREE.RepeatWrapping;
+                self.moonTexture.anisotropy = 4;
+
+                return new THREE.MeshPhongMaterial({
+                    map: self.moonTexture,
+                    bumpMap: self.moonTexture,
+                    bumpScale: 0.0001,
+                    color: 0xffffff,
+                    ambient: 0x777777,
+                    specular: 0x333333,
+                    shininess: 0,
+                    shading: self.shading } );
+
+            case "earth":
+
+                self.earthTexture = THREE.ImageUtils.loadTexture( self.texture_base_path + "earth.jpg" );
+                self.earthTexture.wrapS = self.earthTexture.wrapT = THREE.RepeatWrapping;
+                self.earthTexture.anisotropy = 4;
+
+                return new THREE.MeshPhongMaterial({
+                    map: self.earthTexture,
+                    color: 0xffffff,
+                    ambient: 0x777777,
+                    specular: 0x333333,
+                    shininess: self.shininess,
+                    shading: self.shading } );
+        }
+    }
+});

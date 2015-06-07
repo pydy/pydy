@@ -168,7 +168,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/
         var self = this;
 
-
         self._removeAll(); // Removes old objects first!
 
         var objects = self.model.objects;
@@ -282,7 +281,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
         }
 
-        var material = self.Materials[object.material];
+        var material = self.Materials.getMaterial(object.material);
         material.color = new THREE.Color(object.color);
         var mesh = new THREE.Mesh(geometry, material);
         var element = new Float32Array(object.init_orientation);
@@ -330,6 +329,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         _camera.aspect = self.width / self.height;
         self._scene.add(_camera);
         self.currentCamera = _camera;
+        self._addTrackBallControls();
     },
 
     _addIndividualLight: function(light){
@@ -404,6 +404,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var time_index = self._timeArray.indexOf(currentTime);
         var _children = self._scene.children;
         for(var i=0;i<_children.length;i++){
+          if(!(_children[i] instanceof (THREE.OrthoGraphicCamera || THREE.PerspectiveCamera))){
             var id = _children[i].name;
             if(self.simData[id] != undefined){
                 var element = new Float32Array(self.simData[id][time_index]);
@@ -412,7 +413,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 _children[i].matrix.identity()
                 _children[i].applyMatrix(orientationMatrix);
             }
-
+          }
         }
         jQuery("#time-slider").slider("setValue",percent);
         jQuery("#time").html(" " + currentTime.toFixed(3) + " s");
