@@ -63,7 +63,6 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
 
         jQuery("#apply-" + id).click(function(){
             self.ParamEditor.applySceneInfo(jQuery(this).attr("id").split("-").slice(-1)[0]);
-
         });
 
         self.ParamEditor._addGeometryFor(toLoad);

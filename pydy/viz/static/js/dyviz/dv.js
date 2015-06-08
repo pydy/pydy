@@ -100,7 +100,7 @@ DynamicsVisualizer = Class.create({
         jQuery("#close-object-dialog").click(function(){
             jQuery("#object-dialog").html(" ");
             jQuery(this).addClass("disabled");
-
+            jQuery("#object-dialog").css("display", "none");
         });
 
         jQuery("#show-model").click(function(){
@@ -112,7 +112,6 @@ DynamicsVisualizer = Class.create({
                 '" download="scene_desc.json" class="btn btn-success btn-large"> \
                 <i class="icon-white icon-download-alt">download JSON</a>').appendTo('#download-json');
             jQuery(this).addClass("disabled");
-
         });
 
         jQuery("#close-model-dialog").click(function(){
@@ -137,7 +136,7 @@ DynamicsVisualizer = Class.create({
         jQuery("#show-model").removeClass("disabled");
         var objs = self.model.objects;
 
-        jQuery("#object-dropdown").find("li").remove() // clean old dropdown list.
+        jQuery("#object-dropdown").find("li").remove(); // clean old dropdown list.
 
         for(var obj in objs){
             var toAppend = '<li><a id="'+ objs[obj].simulation_id +
@@ -146,6 +145,7 @@ DynamicsVisualizer = Class.create({
             // adding click functions to all dropdown objs.
             jQuery("#" + objs[obj].simulation_id).click(function(){
                 self.ParamEditor.openDialog(jQuery(this).attr("id"));
+                jQuery("#object-dialog").css("display", "block");
             });
         }
 

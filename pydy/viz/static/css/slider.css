@@ -6,19 +6,32 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  */
+html{
+  min-width: 800px;
+}
+
 .slider {
   display: inline-block;
+}
+.slider {
+  width: 100%;
+}
+#slider-wrapper {
+  margin-top: 15px;
   vertical-align: middle;
-  position: relative;
+  width: 100%;
 }
 .slider.slider-horizontal {
-  width: 210px;
+  width: 100%;
+  vertical-align: middle;
   height: 20px;
+  margin-bottom: 0;
 }
 .slider.slider-horizontal .slider-track {
   height: 10px;
-  width: 100%;
-  margin-top: -5px;
+  width: 85%;
+  margin-top: 10px;
+  margin-left: 80px;
   top: 50%;
   left: 0;
 }

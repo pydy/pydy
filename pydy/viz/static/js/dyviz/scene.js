@@ -60,6 +60,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self.currentCamera = self.primaryCamera;
         self.currentCamera.updateProjectionMatrix();
     },
+
     _addDefaultLight: function(){
         /**
           * This method adds a default light
@@ -98,12 +99,17 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
     _updateWidth: function(){
         var self = this;
-        self.width = jQuery(window).width() * 0.65;
+        // Setting minimum width to be 800px
+        if(jQuery(window).width() > 800) {
+            self.width = jQuery(window).width() * 0.665;
+        } else{
+            self.width = 800 * 0.665;
+        }
     },
 
     _updateHeight: function(){
         var self = this;
-        self.height = jQuery(window).height() * 0.8;
+        self.height = jQuery(window).height() * 0.80;
     },
 
     WindowResize: function(renderer, camera, self){
@@ -134,7 +140,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           // update the camera
           camera.aspect = self.width / self.height;
           camera.updateProjectionMatrix();
-        }
+        };
         // bind the resize event
         window.addEventListener('resize', callback, false);
         // return .stop() the function to stop watching window resize
@@ -329,6 +335,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         _camera.aspect = self.width / self.height;
         self._scene.add(_camera);
         self.currentCamera = _camera;
+        self.currentCamera.updateProjectionMatrix();
         self._addTrackBallControls();
     },
 
@@ -367,13 +374,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/
         var self = this;
         // toggle buttons..
-        jQuery("#play-animation").css("display","none");
-        jQuery("#pause-animation").css("display","block");
-        jQuery("#stop-animation").css("display","block");
+        jQuery("#play-animation").prop('disabled', true);
+        jQuery("#pause-animation").prop('disabled', false);
+        jQuery("#stop-animation").prop('disabled', false);
 
         if(!self.animationPaused){
           self.currentTime = 0;
-        };
+        }
 
         self.animationPaused = false;
         var timeDelta = self.model.timeDelta;
@@ -427,9 +434,9 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
        **/
        var self = this;
        console.log("[PyDy INFO]: Pausing Animation");
-       jQuery("#stop-animation").css("display","block");
-       jQuery("#pause-animation").css("display","none");
-       jQuery("#play-animation").css("display","block");
+        jQuery("#play-animation").prop('disabled', false);
+        jQuery("#pause-animation").prop('disabled', true);
+        jQuery("#stop-animation").prop('disabled', false);
        window.clearInterval(self.animationID);
        self.animationPaused = true;
 
@@ -446,9 +453,9 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         }
         self.currentTime = 0;
         self.setAnimationTime(0);
-        jQuery("#stop-animation").css("display","none");
-        jQuery("#pause-animation").css("display","none");
-        jQuery("#play-animation").css("display","block");
+        jQuery("#play-animation").prop('disabled', false);
+        jQuery("#pause-animation").prop('disabled', true);
+        jQuery("#stop-animation").prop('disabled', true);
 
     },
 
