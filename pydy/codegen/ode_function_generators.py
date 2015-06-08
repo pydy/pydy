@@ -752,6 +752,8 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
         else:
             super(CythonODEFunctionGenerator, self).__init__(*args, **kwargs)
 
+    __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
+
     @staticmethod
     def _cythonize(outputs, inputs):
         return CythonMatrixGenerator(inputs, outputs).compile()
@@ -878,6 +880,8 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
             raise ImportError('Theano must be installed to use this class.')
         else:
             super(TheanoODEFunctionGenerator, self).__init__(*args, **kwargs)
+
+    __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
 
     def define_inputs(self):
 
