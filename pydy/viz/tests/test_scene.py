@@ -46,7 +46,7 @@ class TestScene(object):
 
         self.sys = System(kane)
         self.sys.initial_conditions = {position: 0.1, speed: -1.0}
-        self.sys.constants = {mass: 1.0, stiffness: 1.0, damping: 0.2,
+        self.sys.constants = {mass: 1.0, stiffness: 2.0, damping: 3.0,
                               gravity: 9.8}
         self.sys.times = linspace(0.0, 0.01, 2)
 
@@ -115,7 +115,7 @@ class TestScene(object):
                                         [1.0, 0.0, 0.0, 0.0,
                                          0.0, 1.0, 0.0, 0.0,
                                          0.0, 0.0, 1.0, 0.0,
-                                         0.09049483063184803, 0.0, 0.0, 1.0]],
+                                         0.09062405469543587, 0.0, 0.0, 1.0]],
                          light_id: [[1.0, 0.0, 0.0, 0.0,
                                      0.0, 1.0, 0.0, 0.0,
                                      0.0, 0.0, 1.0, 0.0,
@@ -225,8 +225,8 @@ class TestScene(object):
         scene.generate_visualization_json_system(self.sys)
 
         # Tests issue #204
-        assert scene._scene_data_dict['constant_map'] == {'m': 1.0, 'k': 1.0,
-                                                          'c': 0.2, 'g': 9.8}
+        assert scene._scene_data_dict['constant_map'] == {'m': 1.0, 'k': 2.0,
+                                                          'c': 3.0, 'g': 9.8}
 
     def teardown(self):
 
