@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from sympy import symbols, trigsimp, zeros, Matrix
 from sympy.physics.mechanics import *
 
@@ -11,22 +13,23 @@ q1 : yaw
 q2 : roll
 q3 : pitch
 
-Two ignorable coordinates will be added to halep create the visualization:
+Two ignorable coordinates will be added to help create the visualization:
 
 q4 : x ground contact point
 q5 : y ground contant point
 
-The generalized speeds are defined as:
+The generalized speeds are defined:
 
-u1 :
-u2 : pitch rate
-u3 : roll rate
+u1 : q2'
+u2 : sin(q2) * q1'
+u3 : cos(q2) * q1'
 
 The model constants are:
 
 r : radius of the disc
 m : mass of the disc
 g : acceleration due to gravity
+
 """
 
 mechanics_printing(pretty_print=True)
@@ -82,7 +85,8 @@ fr, frstar = kane.kanes_equations(ForceList, BodyList)
 # Now we augment the kinematical equations of motion with the differential
 # equations that govern the translation of the disc along it's rolling path
 # so that we can integrate them to find the disc's path in inertial space.
-# These will be used to make the visualization realistic.
+# These will be used to make the visualization more interesting and
+# realistic.
 
 # This unit vector is always tagent to the path on the ground that the
 # contact point traces out.

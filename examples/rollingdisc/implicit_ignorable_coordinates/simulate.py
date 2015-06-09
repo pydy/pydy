@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 import numpy as np
 from scipy.integrate import odeint
@@ -35,7 +36,7 @@ initial_conditions = {q1: 0.0,
 
 x0 = [initial_conditions[s] for s in states]
 
-args = {'constants': constants.values()}
+args = {'constants': constants}
 
 # Simulate
 # ========
@@ -43,5 +44,5 @@ args = {'constants': constants.values()}
 frames_per_sec = 60
 final_time = 10.0
 
-t = np.linspace(0.0, final_time, final_time * frames_per_sec)
+t = np.linspace(0.0, final_time, num=int(final_time * frames_per_sec) + 1)
 x = odeint(xdot_function, x0, t, args=(args,))

@@ -30,4 +30,4 @@ scene.generate_visualization_json(coordinates + speeds,
                                   constants.keys(),
                                   x,
                                   constants.values())
-scene.create_static_html()
+scene.display()
