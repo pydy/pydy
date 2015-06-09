@@ -378,15 +378,22 @@ class Scene(object):
                                           system.constants.values(), **kwargs)
 
     def create_static_html(self, overwrite=False, silent=False):
-
         """Creates a directory named ``static`` in the current working
         directory which contains all of the HTML, CSS, and Javascript files
-        required to run the visualization. Simply open ``static/index.html``
-        in a WebGL compliant browser to view and interact with the
-        visualization.
+        required to run the vizualization application. To run the
+        application, navigate into the ``static`` directory and start a
+        webserver from that directory, e.g.::
+
+            $ python -m SimpleHTTPServer
+
+        Now, in a WebGL compliant browser, navigate to::
+
+            http://127.0.0.1:8000
+
+        to view and interact with the visualization.
 
         This method can also be used to output files for embedding the
-        visualizations in the static webpages. Simply copy the contents of
+        visualizations in static webpages. Simply copy the contents of
         static directory in the relevant directory for embedding in a static
         website.
 
@@ -395,9 +402,9 @@ class Scene(object):
         overwrite : boolean, optional, default=False
             If True, the directory named ``static`` in the current working
             directory will be overwritten.
-        Silent : boolean, optional, default=False
-            If True, no messages will be displayed to
-            STDOUT
+        silent : boolean, optional, default=False
+            If True, no messages will be displayed to STDOUT.
+
         """
 
         dst = os.path.join(os.getcwd(), 'static')
