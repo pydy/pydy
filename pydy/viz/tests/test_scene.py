@@ -63,8 +63,6 @@ class TestScene(object):
         assert scene.reference_frame == self.ref_frame
         assert scene.origin == self.origin
         assert scene.name == 'unnamed'
-        assert scene._width == 800
-        assert scene._height == 800
         # TODO : These are failing.
         #assert scene.cameras == [PerspectiveCamera('DefaultCamera',
                                                    #self.ref_frame,
@@ -90,13 +88,11 @@ class TestScene(object):
                                                         self.ref_frame.y))
 
         scene = Scene(self.ref_frame, self.origin, self.viz_frame,
-                      name='my_scene', width=200, height=300,
-                      cameras=[custom_camera], lights=[custom_light])
+                      name='my_scene', cameras=[custom_camera],
+                      lights=[custom_light])
 
         assert scene.visualization_frames == [self.viz_frame]
         assert scene.name == 'my_scene'
-        assert scene._width == 200
-        assert scene._height == 300
         assert scene.cameras == [custom_camera]
         assert scene.lights == [custom_light]
 

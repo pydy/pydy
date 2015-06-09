@@ -58,9 +58,6 @@ class Scene(object):
     A scene needs to be supplied with visualization_frames, Cameras, and
     Light objects, as optional arguments.
 
-    A scene can also be supplied with the height and width of the browser
-    window where visualization would be displayed. Default is 800 * 800.
-
     """
     def __init__(self, reference_frame, origin, *visualization_frames,
                  **kwargs):
@@ -79,11 +76,6 @@ class Scene(object):
             the scene.
         name : str, optional
             Name of Scene object.
-        width : int or float, optional
-            The width of the canvas used for visualizations. Default is
-            800px.
-        height : int or float, optional
-            Height of the canvas used for visualizations. Default is 800px.
         camera : Camera, optional
             The camera with which to display the object. Default is
             PerspectiveCamera, with reference_frame and origin same as
@@ -98,18 +90,6 @@ class Scene(object):
             self.name = kwargs['name']
         except KeyError:
             self.name = 'unnamed'
-
-        # TODO : width and height are not even used!
-
-        try:
-            self._width = kwargs['width']
-        except KeyError:
-            self._width = 800
-
-        try:
-            self._height = kwargs['height']
-        except KeyError:
-            self._height = 800
 
         try:
             self.cameras = kwargs['cameras']
