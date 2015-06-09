@@ -200,7 +200,7 @@ class TestVisualizationFrameScene(object):
 
         assert_allclose(self.global_frame1.\
                               evaluate_transformation_matrix(self.states, \
-                                self.param_vals).tolist(), self.list1)
+                                self.param_vals), self.list1)
 
         self.global_frame2.generate_transformation_matrix(self.I, self.O)
         self.global_frame2.generate_numeric_transform_function(self.dynamic, \
@@ -208,7 +208,7 @@ class TestVisualizationFrameScene(object):
 
         assert_allclose(self.global_frame2.\
                               evaluate_transformation_matrix(self.states, \
-                                self.param_vals).tolist(), self.list2)
+                                self.param_vals), self.list2)
 
 
     def test_perspective_camera(self):
@@ -402,4 +402,3 @@ class TestVisualizationFrameScene(object):
 
         self.scene2.reference_frame = self.A
         assert self.scene2.reference_frame == self.A
-

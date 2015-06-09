@@ -1,127 +1,114 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-		<title>PyDy Visualizer</title>
+<html lang="en">
 
-		<!--- External Libs -->
-		<!-- Jquery and jquery-ui-->
-		<script type="text/javascript" src="js/lib/jquery.min.js"></script>
-		<script type="text/javascript" src="js/lib/jquery-ui.js"></script>
-		<script type="text/javascript" src="js/lib/three.min.js"></script>
-		<script type="text/javascript" src="js/lib/TrackballControls.js"></script>
+  <head>
 
-		<!--- Bootstrap -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-		<script type="text/javascript" src="js/lib/bootstrap.min.js"></script>
+    <title>PyDy Visualizer</title>
 
-		<!--- Canvas Scripts -->
+    <!--CSS -->
+    <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="css/slider.css">
+    <link type="text/css" rel="stylesheet" href="css/main.css">
+    <link type="text/css" rel="stylesheet" href="css/codemirror/codemirror.css">
+    <link type="text/css" rel="stylesheet" href="css/codemirror/blackboard.css">
 
-		<script type="text/javascript" src="data.json"></script>
+    <!-- External Javascripts -->
+    <script type="text/javascript" src="js/external/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="js/external/jquery/jquery-ui.js"></script>
 
-		<script type="text/javascript" src="js/canvas/initialize.js"></script>
-		<script type="text/javascript" src="js/canvas/addObjects.js"></script>
-		<script type="text/javascript" src="js/canvas/animate.js"></script>
+    <script type="text/javascript" src="js/external/bootstrap/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/external/codemirror/codemirror.js" ></script>
+    <script type="text/javascript" src="js/external/codemirror/javascript-mode.js" ></script>
 
-		<!--- css -->
-		<link rel="stylesheet" type="text/css" href="css/style.css">
+    <script type="text/javascript" src="js/external/three/three.min.js"></script>
+    <script type="text/javascript" src="js/external/three/TrackballControls.js"></script>
 
-		<!--- Bootstrap -->
-		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" media="screen">
-	</head>
+    <script type="text/javascript" src="js/external/utils/bootstrap-slider.js"></script>
+    <script type="text/javascript" src="js/external/utils/modernizr-2.0.6.js"></script>
+    <script type="text/javascript" src="js/external/utils/prototype.js"></script>
 
-	<body>
-		<div id="canvas">
-			<!--- WebGL renderer is called from canvas javascripts
-					on this element --->
-		</div>
-	<div id="container">
-	    <div id="banner"><h1>PyDy Visualizer</h1></div>
-		<div id="control-panel" class="well">
-			<h1>Control Panel</h1>
-			
-			<!--- Contains all the components for controlling 
-			      visualizations and animations --->
-             
-			<div id="animation-controls" class="btn-group btn-gp">
-				<br /><span class="label label-default">Animation Controls</span>
-				<br />
-				<button id="startAnimation" class="btn btn-primary"><i class="icon-white icon-play"></i> Play</button>
-				<button id="pauseAnimation" class="btn btn-primary"><i class="icon-white icon-pause"></i> Pause</button>
-				<button id="stopAnimation" class="btn btn-primary"><i class="icon-white icon-stop"></i> Stop</button>
-				<br /><br /><input type="checkbox" id="isLooped"></input><label>Play Looped</label>
-			</div>
-			<hr />
-			
-			<!--- Server Settings --->
-			<div id="server-settings" class="btn-group btn-gp">
-				<br /><span class="label label-default">Server Settings</span>
-				<br />
-				<button id="resetControls" class="btn btn-primary"><i class="icon-white icon-play"></i> Reset Camera</button>
-				<button id="shutdownServer" class="btn btn-primary"><i class="icon-white icon-pause"></i> Shutdown Server</button>
-			</div>
-			<hr />
-			<!---------------------->
-			
-			<!--- Move to a specific frame --->
-			<!------ TODO --------
-			<div id="frame-slider" class="btn-group btn-gp">
-				<br /><span class="label label-default">Frame Navigator</span>
-				<br />
-				<button id="resetControls" class="btn btn-primary"><i class="icon-white icon-play"></i> Reset Camera</button>
-				<button id="shutdownServer" class="btn btn-primary"><i class="icon-white icon-pause"></i> Shutdown Server</button>
-			</div>
-			<hr />
+    <!-- DyViz Javascripts -->
+    <script type="text/javascript" src="js/dyviz/dv.js"></script>
+    <script type="text/javascript" src="js/dyviz/scene.js"></script>
+    <script type="text/javascript" src="js/dyviz/parser.js"></script>
+    <script type="text/javascript" src="js/dyviz/param_editor.js"></script>
+    <script type="text/javascript" src="js/dyviz/materials.js"></script>
+    <script type="text/javascript" src="js/dyviz/main.js"></script>
 
-			
-			<!--- Animation Statistics --->
-            <div id="animation-statistics" class="btn-group btn-gp">
-				<br /><span class="label label-default">Animation Statistics</span>
-				<br />
-				
-				
-				<label>Animation Progress</label>
-				<div class="progress progress-striped active">
-					<div id="animationProgressBar" class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="background-color:rgb(66, 139, 202);">
-						<span id="animationProgressText"class="sr-only">0%</span>
-					</div>
-					<label id="animationProgressText">0%</label>
-					<label>40%</label>
+  </head>
 
-				</div>
-				<!----------TODO--------
-				<label>Frame Rate</label>
-				<div class="progress progress-striped active">
-					<div id="framerateBar" class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 60%; background-color:rgb(66, 139, 202);">
-						<span id="framerateText"class="sr-only">0%</span>
-					</div>
-				</div>
-				-------->
+  <body>
+    <div id="wrapper">
+      <div id="container">
+        <div id="sidebar-right" >
+          <div id="json-inp">
+            <input type="text" class="form-control" id="json-input" value="{load_url}">
+            <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load">
+            <hr />
+            <br />
+            <br />
+            <input type="checkbox" id="play-looped">
+              Play Looped
+          </div><!--!json-inp-->
+          <hr />
+          <div id="edit-objects">
+            <div class="btn-group">
+              <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+                Edit Objects
+                <span class="caret"></span>
+              </button>
+              <ul id="object-dropdown" class="dropdown-menu" role="menu"></ul>
+              <button id="close-object-dialog" class="btn btn-default btn-info disabled">
+                Close Dialog
+              </button>
+              <br />
+            </div>
+            <hr />
+            <div id="object-dialog" class="well"></div>
+          </div>
+          <hr />
+        </div>
+        <div id="canvas" >
+          <div id="model-loader-wrapper" style="display:None">
+            <button id="close-model-dialog" class="btn btn-primary btn-small">
+              <i class="icon-white icon-list-alt"></i>
+              Close Dialog
+            </button>
+            <div id="download-json"><!-- appends JSON download link via jQuery --></div>
+            <textarea rows="10" cols="50" id="model-loader" class="form-control"></textarea>
+            <hr />
+          </div>
+          <div id="control-button-group" style="display:inline-block;" class="btn-group">
+            <button id="play-animation" class="btn btn-default btn-success disabled" >
+              <span class="glyphicon glyphicon-play"></span>Play
+            </button>
+            <button id="pause-animation" style="display:none;" class="btn btn-default btn-info active">
+              <span class="glyphicon glyphicon-pause" ></span>
+              Pause
+            </button>
+            <button id="stop-animation" style="display:none;" class="btn btn-default btn-danger active">
+              <span class="glyphicon glyphicon-stop" ></span>
+              Stop
+            </button>
+            <button id="show-model" class="btn btn-default btn-info disabled">
+              <span class="glyphicon glyphicon-edit" ></span>
+              Show Scene JSON
+            </button>
+            <div id="slider-wrapper">
+              <span class="glyphicon glyphicon-time" ></span>
+              <span style="margin-right:1em;" id="time"> 0s</span>
+              <div id="time-slider" class="slider" style="float:right; width:28em;padding-left: 2em;"></div>
+            </div>
+          </div>
+          <hr />
+          <div id="renderer"></div>
+        </div>
+      </div>
+    </div>
+  </body>
 
-			</div></div>
-			<hr />
-			<!----- Footer------>
-			<div id="footer">
-			PyDyViz Version:0.1.0
-			</div>
-			
-			
-			<!--- Script for loading Canvas ----->
-			<script>
-				var s = new Canvas(JSONObj);
-				s.initialize();
-				s.addControls();
-				s.addLights();
-				s.addCameras();
-				s.addFrames();
-			</script>
-		</div>
-	</body>
-</html>	
-        
+  <script type="text/javascript" src="js/dyviz/main.js"></script>
 
-
-        
-
-
-
+</html>

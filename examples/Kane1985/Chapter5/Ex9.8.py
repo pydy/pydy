@@ -3,12 +3,11 @@
 """Exercise 9.8 from Kane 1985."""
 
 from __future__ import division
-from sympy import simplify, solve, symbols, Matrix
+from sympy import solve, symbols, Matrix
 from sympy.physics.mechanics import ReferenceFrame, Point
-from sympy.physics.mechanics import inertia, RigidBody
-from sympy.physics.mechanics import cross, dot, dynamicsymbols
+from sympy.physics.mechanics import dot, dynamicsymbols
 from util import msprint, subs, partial_velocities
-from util import generalized_active_forces, potential_energy
+from util import generalized_active_forces
 from util import kde_matrix, vc_matrix
 
 

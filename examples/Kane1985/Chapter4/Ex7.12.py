@@ -57,4 +57,3 @@ print("pB' = {0}".format(pB_prime.pos_from(pO).subs(subdict(soln,
                                                             [p1, p2, p3]))))
 print("|pB'| = {0} m".format(pB_prime.pos_from(pO).subs(
             subdict(soln, [p1, p2, p3])).magnitude().n()))
-

@@ -1,5 +1,14 @@
+# pydy
+
+*data.json
+*desc.json
+
+# python
+
 *.py[cod]
 
+# Editor's default saves
+*~
 # C extensions
 *.so
 
@@ -21,6 +30,12 @@ __pycache__
 # Installer logs
 pip-log.txt
 
+# ipython checkpoints
+*.ipynb_checkpoints
+
+# sphinx docs build
+*_build
+
 # Unit test / coverage reports
 .coverage
 .tox
@@ -33,3 +48,4 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+.idea/

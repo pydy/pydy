@@ -5,7 +5,7 @@ import os
 
 from setuptools import setup, find_packages
 
-from pydy import __version__
+exec(open('pydy/version.py').read())
 
 # I was getting the same error as:
 # https://github.com/statsmodels/statsmodels/issues/1073, so the following

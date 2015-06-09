@@ -113,7 +113,7 @@ for i in range(3):
 # After this point, we have married ourselves this choice of independent speeds
 M_v_i = M_v[:, :3]       # take u[0], u[1], u[2] as independent
 M_v_d = M_v[:, 3:6]      # take u[3], u[4], u[5] as dependent
-M_v_aux = M_v[:, 6:]     # last colums are the auxiliary 
+M_v_aux = M_v[:, 6:]     # last colums are the auxiliary
 M_v_i_aux = M_v_i.row_join(M_v_aux)
 A_rs = - M_v_d.inv() * M_v_i_aux
 # Constraint matrix:  u_dependent = A_rs * [u_i; u_aux]

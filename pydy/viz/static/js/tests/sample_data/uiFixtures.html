@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>PyDy Visualizer</title>
+</head>
+
+<body>
+<div id="wrapper">
+  <div id="container">
+    <div id="sidebar-right" >
+      <div id="json-inp">
+        <input type="text" class="form-control" id="json-input" value="sample_data/scene_desc.json">
+        <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load" >
+        <input type="button" class="btn btn-success" value="Save/Edit" id="save-json">
+      </div><!--!json-inp-->
+      <hr />
+      <div id="edit-objects">
+        <div class="btn-group">
+            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">Edit Objects
+              <span class="caret"></span>
+            </button>
+            <ul id="object-dropdown" class="dropdown-menu" role="menu"></ul>
+            <button id="close-object-dialog" class="btn btn-default btn-info disabled">Close Dialog</button>
+            <br />
+        </div>
+        <hr />
+        <div id="object-dialog" class="well"> </div>
+      </div>
+      <hr />
+      <span> Edit Simulation Parameters</span>
+      <div class="well" id="simulation-params-wrapper">
+        <div class="input-group" id="simulation-params"></div><hr />
+        <button id="rerun-simulation" class="btn btn-default btn-success"> Apply and Rerun Simulations</button>
+      </div>
+    </div>
+    <div id="canvas" >
+      <div id="model-loader-wrapper" style="display:None">
+        <button id="close-model-dialog" class="btn btn-primary btn-small"><i class="icon-white icon-list-alt"></i> Close Dialog</button>
+        <textarea rows="10" cols="50" id="model-loader" class="form-control"></textarea>
+        <hr />
+      </div>
+      <div id="control-button-group" style="display:inline-block;" class="btn-group">
+        <button id="play-animation" class="btn btn-default btn-success disabled" ><span class="glyphicon glyphicon-play"></span>Play Animation</button>
+
+        <button id="stop-animation" style="display:none;" class="btn btn-default btn-danger active"><span class="glyphicon glyphicon-stop" ></span>Stop Animation</button>
+            
+        <button id="show-model" class="btn btn-default btn-info disabled"><span class="glyphicon glyphicon-stop" ></span>Show Model</button>
+          
+        <div id="slider-wrapper">
+          <span class="glyphicon glyphicon-time" ></span><span style="margin-right:1em;" id="time"> 0s</span>
+          <div id="time-slider" class="slider" style="float:right; width:28em;padding-left: 2em;"></div> 
+        </div>    
+      </div>
+      <hr />
+      <div id="renderer"></div>
+    </div>
+  </div>
+</div>  
+</body>
+</html>
+

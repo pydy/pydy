@@ -2,17 +2,12 @@
 
 # standard library
 import time
-import os
-import shutil
-import glob
 
 # external libraries
-from scipy.integrate import odeint
 from numpy import hstack, ones, pi, linspace, array, zeros, zeros_like
 import matplotlib.pyplot as plt
-from pydy.codegen.code import generate_ode_function
-from pydy.codegen.tests.models import \
-    generate_n_link_pendulum_on_cart_equations_of_motion
+from pydy.models import n_link_pendulum_on_cart
+from sympy import symbols
 
 
 def run_benchmark(max_num_links, num_time_steps=1000):
@@ -35,8 +30,12 @@ def run_benchmark(max_num_links, num_time_steps=1000):
         print('=' * len(title))
 
         start = time.time()
-        results = \
-            generate_n_link_pendulum_on_cart_equations_of_motion(n, cart_force=False)
+        sys = n_link_pendulum_on_cart(n, cart_force=False)
+
+        m = symbols('m:{}'.format(n + 1))
+        l = symbols('l:{}'.format(n))
+        g = symbols('g')
+
         derivation_times[j] = time.time() - start
         print('The derivation took {:1.5f} seconds.\n'.format(derivation_times[j]))
 
@@ -47,11 +46,20 @@ def run_benchmark(max_num_links, num_time_steps=1000):
         for i in range(n):
             parameter_vals += [arm_length, bob_mass]
 
-        # odeint arguments
-        x0 = hstack((0, pi / 2 * ones(len(results[3]) - 1), 1e-3 *
-                    ones(len(results[4]))))
-        args = {'constants': array(parameter_vals)}
-        t = linspace(0, 10, num_time_steps)
+        times = linspace(0, 10, num_time_steps)
+        sys.times = times
+
+        x0 = hstack(
+            (0,
+             pi / 2 * ones(len(sys.coordinates) - 1),
+             1e-3 * ones(len(sys.speeds))))
+        sys.initial_conditions = dict(zip(sys.states, x0))
+
+        constants = [g, m[0]]
+        for i in range(n):
+            constants += [l[i], m[i + 1]]
+
+        sys.constants = dict(zip(constants, array(parameter_vals)))
 
         for k, method in enumerate(methods):
 
@@ -59,25 +67,18 @@ def run_benchmark(max_num_links, num_time_steps=1000):
             print(subtitle)
             print('-' * len(subtitle))
             start = time.time()
-            evaluate_ode = generate_ode_function(*results,
-                                                      generator=method)
+            sys.generate_ode_function(generator=method)
             code_generation_times[j, k] = time.time() - start
             print('The code generation took {:1.5f} seconds.'.format(
                 code_generation_times[j, k]))
 
             start = time.time()
-            odeint(evaluate_ode, x0, t, args=(args,))
+            sys.integrate()
             integration_times[j, k] = time.time() - start
             print('ODE integration took {:1.5f} seconds.\n'.format(
                 integration_times[j, k]))
 
-        del results, evaluate_ode
-
-    # clean up the cython crud
-    files = glob.glob('multibody_system*')
-    for f in files:
-        os.remove(f)
-    shutil.rmtree('build')
+        del sys
 
     # plot the results
     fig, ax = plt.subplots(3, 1, sharex=True)

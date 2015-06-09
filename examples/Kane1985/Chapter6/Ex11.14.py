@@ -7,7 +7,7 @@ from sympy import cos, expand, radsimp, solve, sqrt, symbols, trigsimp
 from sympy.physics.mechanics import ReferenceFrame, RigidBody, Point
 from sympy.physics.mechanics import dot, dynamicsymbols, inertia, msprint
 from util import generalized_active_forces, generalized_inertia_forces
-from util import partial_velocities, subs
+from util import partial_velocities
 
 q1, q2, q3 = dynamicsymbols('q1:4')
 q2d, q3d = dynamicsymbols('q2 q3', level=1)

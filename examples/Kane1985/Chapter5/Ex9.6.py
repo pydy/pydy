@@ -3,11 +3,11 @@
 """Exercise 8.8 from Kane 1985."""
 
 from __future__ import division
-from sympy import sin, cos, pi, expand, simplify, solve, symbols
+from sympy import expand, simplify, solve, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import dynamicsymbols
-from util import msprint, subs, partial_velocities, potential_energy
-from util import generalized_active_forces, generalized_active_forces_V
+from util import msprint, partial_velocities, potential_energy
+from util import generalized_active_forces
 
 
 q1, q2 = dynamicsymbols('q1 q2')

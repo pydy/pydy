@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-__all__ = ['Shape',
-           'Cube',
+__all__ = ['Cube',
            'Cylinder',
            'Cone',
            'Sphere',
@@ -12,14 +11,13 @@ __all__ = ['Shape',
            'Icosahedron',
            'Torus',
            'TorusKnot',
-           'Tube',
-           'Mesh']
-
+           'Tube']
 
 import numpy as np
 
-#This is a list of ColorKeywords from THREE.js
-Three_ColorKeywords = ['aliceblue', 'antiquewhite', 'aqua',
+
+# This is a list of ColorKeywords from THREE.js
+THREE_COLORKEYWORDS = ['aliceblue', 'antiquewhite', 'aqua',
                        'aquamarine', 'azure', 'beige', 'bisque',
                        'black', 'blanchedalmond', 'blue', 'blueviolet',
                        'brown', 'burlywood', 'cadetblue', 'chartreuse',
@@ -64,19 +62,25 @@ Three_ColorKeywords = ['aliceblue', 'antiquewhite', 'aqua',
                        'tan', 'teal', 'thistle', 'tomato', 'turquoise',
                        'violet', 'wheat', 'white', 'whitesmoke',
                        'yellow', 'yellowgreen']
+
+MATERIALS = ["default", "checkerboard", "metal", "dirt", "foil", "water",
+             "grass"]
+
+
 class Shape(object):
     """Instantiates a shape. This is primarily used as a superclass for more
-    specific shapes like Mesh, Cylinder, Sphere etc.
+    specific shapes like Cube, Cylinder, Sphere etc.
 
     Shapes must be associated with a reference frame and a point using the
     VisualizationFrame class.
 
     Parameters
     ==========
+
     name : str, optional
         A name assigned to the shape.
-    color: str, optional
-        A color string from list of colors in Three_ColorKeywords
+    color : str, optional
+        A color string from list of colors in THREE_COLORKEYWORDS
 
     Examples
     ========
@@ -101,20 +105,23 @@ class Shape(object):
 
     """
 
-    def __init__(self, name='unnamed', color='grey'):
+    def __init__(self, name='unnamed', color='grey', material="default"):
+
         self.name = name
-        if color not in Three_ColorKeywords:
-            raise TypeError("'color' should be a valid ",
-                            "Three.js colors string.")
-        else:
-            self.color = color
+        self.color = color
+        self.material = material
+
         self.geometry_attrs = []
 
     def __str__(self):
-        attributes = ([self.__class__.__name__, self.name, 'color:' +
-                       self.color] +
+
+        attributes = ([self.__class__.__name__,
+                       self.name,
+                       'color:' + self.color,
+                       'material:' + self.material] +
                       sorted([attr + ':{}'.format(getattr(self, attr)) for
                               attr in self.geometry_attrs]))
+
         return ' '.join(['{}'] * len(attributes)).format(*attributes)
 
     def __repr__(self):
@@ -129,7 +136,7 @@ class Shape(object):
     def name(self, new_name):
         """Sets the name attribute of the shape."""
         if not isinstance(new_name, str):
-            raise TypeError('name should be a valid str object.')
+            raise TypeError("'name' should be a valid str object.")
         else:
             self._name = new_name
 
@@ -141,13 +148,32 @@ class Shape(object):
     @color.setter
     def color(self, new_color):
         """Sets the color attributes of the shape. This should be a valid
-        Three_ColorKeywords color string."""
-        if not isinstance(new_color, str) \
-        and new_color in Three_ColorKeywords:
-            raise TypeError("'color' should be a valid ",
-                            "Three.js colors string.")
+        three.js color keyword string."""
+        if new_color not in THREE_COLORKEYWORDS:
+            msg = "'color' should be a valid Three.js colors string:\n{}"
+            raise ValueError(msg.format('\n'.join(THREE_COLORKEYWORDS)))
         else:
             self._color = new_color
+
+    @property
+    def material(self):
+        """Returns the material attribute of the shape."""
+        return self._material
+
+    @material.setter
+    def material(self, new_material):
+        """Sets the material attribute of the shape, i.e. its shine,
+        brightness, opacity etc.. The material should be a valid material
+        from the listed MATERIALS. If a shape is attributed as "red" color,
+        and "water" material, ideally it should have opacity and brightness
+        properties like that of a red fluid.
+
+        """
+        if new_material.lower() not in MATERIALS:
+            msg = "'material' is not valid. Choose from:\n{}"
+            raise ValueError(msg.format('\n'.join(MATERIALS)))
+        else:
+            self._material = new_material
 
     def generate_dict(self, constant_map={}):
         """Returns a dictionary containing all the data associated with the
@@ -159,10 +185,12 @@ class Shape(object):
             If any of the shape's geometry are defined as SymPy expressions,
             then this dictionary should map all SymPy Symbol's found in the
             expressions to floats.
+
         """
         data_dict = {}
         data_dict['name'] = self.name
         data_dict['color'] = self.color
+        data_dict['material'] = self.material
         data_dict['type'] = self.__repr__()
         for geom in self.geometry_attrs:
             atr = getattr(self, geom)
@@ -183,7 +211,7 @@ class Cube(Shape):
 
     Parameters
     ==========
-    length: float or SymPy expression
+    length : float or SymPy expression
         The length of the cube.
 
     Examples
@@ -227,9 +255,9 @@ class Cylinder(Shape):
 
     Parameters
     ==========
-    length: float or SymPy expression
+    length : float or SymPy expression
         The length of the cylinder.
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the cylinder.
 
     Examples
@@ -280,9 +308,9 @@ class Cone(Shape):
 
     Parameters
     ==========
-    length: float or SymPy expression
+    length : float or SymPy expression
         The length of the cone.
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The base radius of the cone.
 
     Examples
@@ -333,7 +361,7 @@ class Sphere(Shape):
 
     Parameters
     ==========
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the sphere.
 
     Examples
@@ -377,7 +405,7 @@ class Circle(Sphere):
 
     Parameters
     ==========
-    radius: float or SymPy Expression
+    radius : float or SymPy Expression
         The radius of the circle.
 
     Examples
@@ -416,9 +444,9 @@ class Plane(Shape):
 
     Parameters
     ==========
-    length: float or SymPy expression
+    length : float or SymPy expression
         The length of the plane.
-    width: float or SymPy expression
+    width : float or SymPy expression
         The width of the plane.
 
     Examples
@@ -469,7 +497,7 @@ class Tetrahedron(Sphere):
 
     Parameters
     ==========
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the circum-scribing sphere of around the tetrahedron.
 
     Examples
@@ -509,7 +537,7 @@ class Octahedron(Sphere):
 
     Parameters
     ==========
-    radius: float or SymPy expression.
+    radius : float or SymPy expression.
         The radius of the circum-scribing sphere around the octahedron.
 
     Examples
@@ -549,7 +577,7 @@ class Icosahedron(Sphere):
 
     Parameters
     ==========
-    radius: float or a SymPy expression
+    radius : float or a SymPy expression
         Radius of the circum-scribing sphere for Icosahedron
 
     Examples
@@ -589,9 +617,9 @@ class Torus(Shape):
 
     Parameters
     ==========
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the torus.
-    tube_radius: float or SymPy expression
+    tube_radius : float or SymPy expression
         The radius of the torus tube.
 
     Examples
@@ -659,9 +687,9 @@ class TorusKnot(Torus):
 
     Parameters
     ==========
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the torus knot.
-    tube_radius: float or SymPy expression
+    tube_radius : float or SymPy expression
         The radius of the torus knot tube.
 
     Examples
@@ -734,7 +762,8 @@ class Tube(Shape):
     >>> s.radius = 14.0
     >>> s.radius
     14.0
-    >>> s.points = [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0], [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
+    >>> s.points = [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0],
+    ...             [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
     >>> s.points
     [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0], [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
     >>> a = Tube(12.0, points, name='my-shape2', color='red')
@@ -753,59 +782,6 @@ class Tube(Shape):
         super(Tube, self).__init__(**kwargs)
         self.geometry_attrs += ['radius', 'points']
         self.radius = radius
-        self.points = points
-
-    @property
-    def points(self):
-        return self._points
-
-    @points.setter
-    def points(self, new_points):
-        self._points = np.asarray(new_points)
-
-
-class Mesh(Shape):
-    """Instantiates a general mesh surface from the given points.
-
-    Parameters
-    ==========
-    points : array_like, shape(n, 3)
-        n sets of (x, y, z) coordinates that describe a surface mesh.
-
-    Examples
-    ========
-
-    >>> from pydy.viz.shapes import Mesh
-    >>> points = [[1.0, 2.0, 1.0], [2.0, 1.0, 1.0], [2.0, 3.0, 4.0]]
-    >>> s = Mesh(points)
-    >>> s.name
-    'unnamed'
-    >>> s.color
-    'grey'
-    >>> s.points
-    [[1.0, 2.0, 1.0], [2.0, 1.0, 1.0], [2.0, 3.0, 4.0]]
-    >>> s.name = 'my-shape1'
-    >>> s.name
-    'my-shape1'
-    >>> s.color = 'blue'
-    >>> s.color
-    'blue'
-    >>> s.points = [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0], [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
-    >>> s.points
-    [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0], [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
-    >>> a = Mesh(points, name='my-shape2', color='red')
-    >>> a.name
-    'my-shape2'
-    >>> a.color
-    'red'
-    >>> a.points
-    [[1.0, 2.0, 1.0], [2.0, 1.0, 1.0], [2.0, 3.0, 4.0]]
-
-    """
-
-    def __init__(self, points, **kwargs):
-        super(Mesh, self).__init__(**kwargs)
-        self.geometry_attrs += ['points']
         self.points = points
 
     @property

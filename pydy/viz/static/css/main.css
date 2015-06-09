@@ -1,0 +1,101 @@
+input[type=text]{
+	padding:6px;font-size:18px; 
+	border:2px solid #ccc;
+	background: white;
+	padding: 5px;
+	width:280px;
+	margin-bottom: 10px;
+	border-radius: 4px;
+	-webkit-transition: 0.5s ease-in-out all;
+	-moz-transition: 0.5s ease-in-out all;
+	-ms-transition: 0.5s ease-in-out all;
+	-o-transition: 0.5s ease-in-out all;
+	transition: 0.5s ease-in-out all;
+}
+
+input[type=text]:focus{
+	border-color:white;
+	-moz-box-shadow: 0px 0px 14px #dfdfdf;
+	-webkit-box-shadow: 0px 0px 14px #dfdfdf;
+	box-shadow: 0px 0px 14px #dfdfdf;
+}
+
+#wrapper{
+
+	min-height:100px;
+}
+
+#slider-wrapper{ display: inline-block; }
+
+
+#container {
+
+	margin: 2em;
+
+}
+
+#sidebar-right {
+
+	float:right;
+	display:block;
+	width:28%;
+
+}
+#json-input{
+	min-height:2em;
+
+}
+
+.btn{
+	margin:0.1em;
+}
+#log-container {
+
+	margin:1.5em;
+	max-height: 10em;
+	overflow: overlay;
+	
+
+}
+
+#canvas{
+
+	width: 69%;
+    float: left;
+    min-height: 10em;
+    
+}
+
+#objectDialog{
+	min-height: 15em;
+}
+
+/* Overriding bootstrap button radius */
+#play-animation{
+	border-radius: 0.5em;
+	margin-right: 0.5em;
+}
+
+#pause-animation{
+	border-radius: 0.5em;
+	margin-right: 0.5em;
+}
+
+#stop-animation{
+	border-radius: 0.5em;
+	margin-right: 0.5em;
+}
+
+#close-object-dialog{
+	border-radius: 0.5em;
+	margin-left:0.5em;
+}
+
+#show-model{
+	border-radius: 0.5em;
+	margin-left:0.5em;
+}
+
+ul {
+    list-style-type: none;
+}

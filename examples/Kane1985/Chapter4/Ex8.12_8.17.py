@@ -6,8 +6,8 @@ from __future__ import division
 from sympy import expand, solve, symbols, trigsimp
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import inertia, RigidBody
-from sympy.physics.mechanics import cross, dot, dynamicsymbols
-from util import msprint, subs, partial_velocities
+from sympy.physics.mechanics import dot, dynamicsymbols
+from util import msprint, partial_velocities
 from util import generalized_active_forces, generalized_inertia_forces
 
 print("\nEx8.12")

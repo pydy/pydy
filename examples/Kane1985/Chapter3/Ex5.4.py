@@ -5,8 +5,8 @@
 from __future__ import division
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import dot
-from sympy import solve, sqrt, symbols, integrate
-from sympy import sin, cos, tan, pi
+from sympy import symbols, integrate
+from sympy import sin, cos, pi
 
 
 a, b, R = symbols('a b R', real=True, nonnegative=True)

@@ -8,7 +8,7 @@ from sympy import pi, acos
 from sympy import simplify, symbols
 from sympy.physics.mechanics import ReferenceFrame, Point
 from sympy.physics.mechanics import inertia, inertia_of_point_mass
-from sympy.physics.mechanics import cross, dot
+from sympy.physics.mechanics import dot
 
 
 def inertia_matrix(dyadic, rf):

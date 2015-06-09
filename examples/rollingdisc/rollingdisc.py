@@ -19,7 +19,7 @@ qd = [qi.diff(t) for qi in q]
 # u[2] -- disc angular velocity component, disc fixed z direction
 u = dynamicsymbols('u:3')
 ud = [ui.diff(t) for ui in u]
-ud_zero = {udi : 0 for udi in ud}     # 
+ud_zero = {udi : 0 for udi in ud}     #
 
 # Auxiliary generalized speeds
 # ua[0] -- contact point auxiliary generalized speed, x direction
