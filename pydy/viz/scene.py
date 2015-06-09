@@ -95,8 +95,8 @@ class Scene(object):
             self.cameras = kwargs['cameras']
         except KeyError:
             self.cameras = [PerspectiveCamera('DefaultCamera',
-                            self._reference_frame,
-                            self._origin.locatenew(
+                            self.reference_frame,
+                            self.origin.locatenew(
                                 'p_camera',
                                 10*self._reference_frame.z))]
 
@@ -104,8 +104,8 @@ class Scene(object):
             self.lights = kwargs['lights']
         except KeyError:
             self.lights = [PointLight('DefaultLight',
-                           self._reference_frame,
-                           self._origin.locatenew(
+                           self.reference_frame,
+                           self.origin.locatenew(
                                'p_light',
                                10*self._reference_frame.z))]
 
@@ -197,8 +197,8 @@ class Scene(object):
         self.fps = fps
 
         constant_map = dict(zip(constant_variables, constant_values))
-        # TODO : This assumes that all constants have unique strings an that
-        # they are valid strings in JSON.
+        # TODO : This assumes that all constants have unique strings and
+        # that they are valid strings for the JSON file.
         constant_variables_str = [str(i) for i in constant_variables]
         constant_map_for_json = dict(zip(constant_variables_str,
                                          constant_values))
@@ -206,7 +206,8 @@ class Scene(object):
         self._simulation_data_dict = \
             self.generate_simulation_dict(dynamic_variables,
                                           constant_variables,
-                                          dynamic_values, constant_values)
+                                          dynamic_values,
+                                          constant_values)
 
         self._scene_data_dict = \
             self.generate_scene_dict(constant_map=constant_map)

@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import glob
 
 from numpy import linspace
 from sympy import symbols
@@ -45,8 +46,8 @@ class TestScene(object):
 
         self.sys = System(kane)
         self.sys.initial_conditions = {position: 0.1, speed: -1.0}
-        self.constants = {mass: 1.0, stiffness: 1.0, damping: 0.2,
-                          gravity: 9.8}
+        self.sys.constants = {mass: 1.0, stiffness: 1.0, damping: 0.2,
+                              gravity: 9.8}
         self.sys.times = linspace(0.0, 0.01, 2)
 
         sphere = Sphere()
@@ -54,6 +55,9 @@ class TestScene(object):
         self.ref_frame = ceiling
         self.origin = origin
         self.viz_frame = VisualizationFrame(ceiling, block, sphere)
+        self.viz_frame_sym_shape = VisualizationFrame(ceiling, block,
+                                                      Sphere(radius=mass /
+                                                             10.0))
 
     def test_init(self):
 
@@ -63,16 +67,11 @@ class TestScene(object):
         assert scene.reference_frame == self.ref_frame
         assert scene.origin == self.origin
         assert scene.name == 'unnamed'
-        # TODO : These are failing.
-        #assert scene.cameras == [PerspectiveCamera('DefaultCamera',
-                                                   #self.ref_frame,
-                                                   #self.origin.locatenew(
-                                                       #'p_camera', 10 *
-                                                       #self.ref_frame.z))]
-        #assert scene.lights == [PointLight('DefaultLight', self.ref_frame,
-                                           #self.origin.locatenew(
-                                               #'p_light', 10 *
-                                               #self.ref_frame.z))]
+        # NOTE : There isn't any way to compare the actual camera and light
+        # objects because they will be created with different instances of a
+        # point. So this is the best bet for now:
+        assert scene.cameras[0].name == 'DefaultCamera'
+        assert scene.lights[0].name == 'DefaultLight'
 
         scene.visualization_frames = [self.viz_frame]
         assert scene.visualization_frames == [self.viz_frame]
@@ -116,7 +115,7 @@ class TestScene(object):
                                         [1.0, 0.0, 0.0, 0.0,
                                          0.0, 1.0, 0.0, 0.0,
                                          0.0, 0.0, 1.0, 0.0,
-                                         0.09009483961898038, 0.0, 0.0, 1.0]],
+                                         0.09049483063184803, 0.0, 0.0, 1.0]],
                          light_id: [[1.0, 0.0, 0.0, 0.0,
                                      0.0, 1.0, 0.0, 0.0,
                                      0.0, 0.0, 1.0, 0.0,
@@ -134,8 +133,6 @@ class TestScene(object):
                                       0.0, 0.0, 1.0, 0.0,
                                       0.0, 0.0, 10.0, 1.0]]}
 
-        # TODO : This needs floating point comparisons and I think the hash
-        # value changes everytime the method is called.
         assert sim_dict == expected_dict
 
     def test_generate_scene_dict(self):
@@ -148,10 +145,10 @@ class TestScene(object):
 
         # NOTE : generate_simulation_dict must be called before
         # generate_scene_dict
-        sim_dict = scene.generate_simulation_dict(self.sys.states,
-                                                  self.sys.constants.keys(),
-                                                  self.sys.integrate(),
-                                                  self.sys.constants.values())
+        scene.generate_simulation_dict(self.sys.states,
+                                       self.sys.constants.keys(),
+                                       self.sys.integrate(),
+                                       self.sys.constants.values())
         scene_dict = scene.generate_scene_dict()
 
         expected_scene_dict = \
@@ -165,9 +162,9 @@ class TestScene(object):
                                         0.0, 1.0, 0.0, 0.0,
                                         0.0, 0.0, 1.0, 0.0,
                                         0.0, 0.0, 10.0, 1.0],
-                                    'simulation_id': light_id,
-                                    'type': 'PointLight',
-                                    'name': 'DefaultLight'}},
+                                   'simulation_id': light_id,
+                                   'type': 'PointLight',
+                                   'name': 'DefaultLight'}},
              'cameras': {camera_id: {'fov': 45.0,
                                      'name': 'DefaultCamera',
                                      'far': 1000.0,
@@ -178,7 +175,7 @@ class TestScene(object):
                                           0.0, 1.0, 0.0, 0.0,
                                           0.0, 0.0, 1.0, 0.0,
                                           0.0, 0.0, 10.0, 1.0],
-                                           'type': 'PerspectiveCamera'}},
+                                     'type': 'PerspectiveCamera'}},
              'objects': {viz_frame_id: {'simulation_id': viz_frame_id,
                                         'name': 'unnamed',
                                         'color': 'grey',
@@ -194,7 +191,16 @@ class TestScene(object):
 
         assert scene_dict == expected_scene_dict
 
-        # TODO : Test the constant_map kwarg.
+        # Test the constant_map kwarg.
+        scene = Scene(self.ref_frame, self.origin, self.viz_frame_sym_shape)
+        viz_frame_id = id(scene.visualization_frames[0])
+        scene.generate_simulation_dict(self.sys.states,
+                                       self.sys.constants.keys(),
+                                       self.sys.integrate(),
+                                       self.sys.constants.values())
+        scene_dict = scene.generate_scene_dict(constant_map=self.sys.constants)
+
+        assert scene_dict['objects'][viz_frame_id]['radius'] == 0.1
 
     def test_create_static_html(self):
 
@@ -213,6 +219,21 @@ class TestScene(object):
         scene.remove_static_html(force=True)
         assert not os.path.exists('static')
 
-    def cleanup(self):
+    def test_generate_visualization_json_system(self):
 
-        shutil.rmtree('static')
+        scene = Scene(self.ref_frame, self.origin, self.viz_frame)
+        scene.generate_visualization_json_system(self.sys)
+
+        # Tests issue #204
+        assert scene._scene_data_dict['constant_map'] == {'m': 1.0, 'k': 1.0,
+                                                          'c': 0.2, 'g': 9.8}
+
+    def teardown(self):
+
+        try:
+            shutil.rmtree('static')
+        except OSError:
+            pass
+
+        for json in glob.glob("*.json"):
+            os.remove(json)
