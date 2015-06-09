@@ -13,27 +13,23 @@ html{
 .slider {
   display: inline-block;
 }
-.slider {
-  width: 100%;
-}
 #slider-wrapper {
-  margin-top: 15px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   vertical-align: middle;
-  width: 100%;
+  width: 100%   ;
 }
 .slider.slider-horizontal {
-  width: 100%;
+  width: 90% !important;
   vertical-align: middle;
   height: 20px;
-  margin-bottom: 0;
+  position: absolute;
 }
 .slider.slider-horizontal .slider-track {
   height: 10px;
-  width: 85%;
-  margin-top: 10px;
-  margin-left: 80px;
+  width: 99%;
+  vertical-align: middle;
   top: 50%;
-  left: 0;
 }
 .slider.slider-horizontal .slider-selection {
   height: 100%;
@@ -41,8 +37,8 @@ html{
   bottom: 0;
 }
 .slider.slider-horizontal .slider-handle {
-  margin-left: -10px;
   margin-top: -5px;
+  margin-left: -5px;
 }
 .slider.slider-horizontal .slider-handle.triangle {
   border-width: 0 10px 10px 10px;
