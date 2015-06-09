@@ -20,7 +20,6 @@ html{
   width: 71%;
 }
 .slider.slider-horizontal {
-  width: 42% !important;
   vertical-align: middle;
   height: 20px;
   position: absolute;
