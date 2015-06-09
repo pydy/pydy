@@ -17,10 +17,10 @@ html{
   margin-top: 10px;
   margin-bottom: 10px;
   vertical-align: middle;
-  width: 100%   ;
+  width: 71%;
 }
 .slider.slider-horizontal {
-  width: 90% !important;
+  width: 42% !important;
   vertical-align: middle;
   height: 20px;
   position: absolute;
