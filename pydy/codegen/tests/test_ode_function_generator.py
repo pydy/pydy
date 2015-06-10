@@ -140,6 +140,12 @@ class TestODEFunctionGeneratorSubclasses(object):
 
         np.testing.assert_allclose(xdot, expected_xdot)
 
+    def test_init_doc(self):
+
+        for Subclass in self.ode_function_subclasses:
+            assert (Subclass.__init__.__doc__ ==
+                    ODEFunctionGenerator.__init__.__doc__)
+
     def test_generate_full_rhs(self):
 
         rhs = self.sys.eom_method.rhs()
@@ -282,8 +288,8 @@ class TestODEFunctionGeneratorSubclasses(object):
         # There are eight constants and four specified inputs available.
         sys = models.n_link_pendulum_on_cart(3, True, True)
         right_hand_side = sys.eom_method.rhs()
-        constants = sys.constants_symbols
-        specifieds = sys.specifieds_symbols
+        constants = list(sm.ordered(sys.constants_symbols))
+        specifieds = list(sm.ordered(sys.specifieds_symbols))
 
         constants_arg_types = [None, 'array', 'dictionary']
         specifieds_arg_types = [None, 'array', 'function', 'dictionary']
@@ -320,7 +326,7 @@ class TestODEFunctionGeneratorSubclasses(object):
                 g = LambdifyODEFunctionGenerator(right_hand_side,
                                                  sys.coordinates,
                                                  sys.speeds,
-                                                 sys.constants_symbols,
+                                                 constants,
                                                  specifieds=specifieds,
                                                  constants_arg_type=p_arg_type,
                                                  specifieds_arg_type=r_arg_type)
@@ -338,7 +344,7 @@ class TestODEFunctionGeneratorSubclasses(object):
         # Now make sure it all works with specifieds=None
         sys = models.n_link_pendulum_on_cart(3, False, False)
         right_hand_side = sys.eom_method.rhs()
-        constants = sys.constants_symbols
+        constants = list(sm.ordered(sys.constants_symbols))
 
         del last_xdot
 
@@ -348,7 +354,7 @@ class TestODEFunctionGeneratorSubclasses(object):
                 g = LambdifyODEFunctionGenerator(right_hand_side,
                                                  sys.coordinates,
                                                  sys.speeds,
-                                                 sys.constants_symbols,
+                                                 constants,
                                                  constants_arg_type=p_arg_type,
                                                  specifieds_arg_type=r_arg_type)
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import webbrowser
 import BaseHTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 
@@ -22,7 +23,9 @@ def run_server(port=8000, scene_file="Null"):
     print "Serving HTTP on", sa[0], "port", sa[1], "..."
     print "hit ctrl+c to stop the server.."
     print "To view visualization, open:\n"
-    print "http://localhost:"+str(sa[1]) + "/index.html?load="+scene_file
+    url = "http://localhost:"+str(sa[1]) + "/index.html?load="+scene_file
+    print url
+    webbrowser.open(url)
     httpd.serve_forever()
 
 
