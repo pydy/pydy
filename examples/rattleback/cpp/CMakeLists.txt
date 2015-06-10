@@ -41,8 +41,9 @@ target_link_libraries(paraboloid_sim
                       ${GSL_LIBRARIES})
 
 add_executable(ellipsoid_equilibrium ellipsoid_eq.cc)
-target_link_libraries(ellipsoid_equilibrium rattleback vtkRendering)
+target_link_libraries(ellipsoid_equilibrium rattleback ${VTK_LIBRARIES})
 
-add_executable(RattleBackAnimation RattleBackAnimation.cc
-                                   RattleBackCallback.cc)
-target_link_libraries(RattleBackAnimation rattleback vtkRendering)
+# rattleback animation source files are missing:
+#add_executable(RattleBackAnimation RattleBackAnimation.cc
+#                                   RattleBackCallback.cc)
+#target_link_libraries(RattleBackAnimation rattleback ${VTK_LIBRARIES})
