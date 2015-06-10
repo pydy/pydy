@@ -4,7 +4,7 @@ import os
 import shutil
 import glob
 
-from numpy import linspace
+import numpy as np
 from numpy.testing import assert_allclose
 from sympy import symbols
 import sympy.physics.mechanics as me
@@ -12,7 +12,7 @@ import sympy.physics.mechanics as me
 from ...system import System
 from ..shapes import Sphere
 from ..visualization_frame import VisualizationFrame
-from ..camera import PerspectiveCamera
+from ..camera import PerspectiveCamera, OrthoGraphicCamera
 from ..light import PointLight
 from ..scene import Scene
 
@@ -50,7 +50,7 @@ class TestScene(object):
         self.sys.initial_conditions = {position: 0.1, speed: -1.0}
         self.sys.constants = {mass: 1.0, stiffness: 2.0, damping: 3.0,
                               gravity: 9.8}
-        self.sys.times = linspace(0.0, 0.01, 2)
+        self.sys.times = np.linspace(0.0, 0.01, 2)
 
         sphere = Sphere()
 
@@ -206,6 +206,39 @@ class TestScene(object):
         scene_dict = scene.generate_scene_dict(constant_map=self.sys.constants)
 
         assert scene_dict['objects'][viz_frame_id]['radius'] == 0.1
+
+    def test_custom_camera(self):
+
+        camera_frame = self.ref_frame.orientnew('rot', 'body',
+                                                [np.pi / 2.0,
+                                                 np.pi / 2.0,
+                                                 np.pi / 2.0], 'xyz')
+
+        camera_point = self.origin.locatenew('cam_point', 30.0 *
+                                             camera_frame.z)
+
+        camera = OrthoGraphicCamera('my_camera', camera_frame, camera_point)
+
+        scene = Scene(self.ref_frame, self.origin, self.viz_frame,
+                      cameras=[camera])
+
+        camera_id = id(camera)
+
+        scene.generate_simulation_dict(self.sys.states,
+                                       self.sys.constants.keys(),
+                                       self.sys.integrate(),
+                                       self.sys.constants.values())
+        scene_dict = scene.generate_scene_dict()
+
+        expected_orientation_matrix = np.array([0.0, 0.0, 1.0, 0.0,
+                                                0.0, -1.0, 0.0, 0.0,
+                                                1.0, 0.0, 0.0, 0.0,
+                                                30.0, 0.0, 0.0, 1.0])
+
+        assert_allclose(scene_dict['cameras'][camera_id]['init_orientation'],
+                        expected_orientation_matrix, atol=1e-14)
+
+        assert scene_dict['cameras'][camera_id]['type'] == 'OrthoGraphicCamera'
 
     def test_create_static_html(self):
 

@@ -367,13 +367,13 @@ class OrthoGraphicCamera(VisualizationFrame):
               4. init_orientation: Initial orientation of the camera
 
         """
-        scene_dict = {}
-        scene_dict['name'] = self.name
-        scene_dict['type'] = self.__repr__()
-        scene_dict['near'] = self.near
-        scene_dict['far'] = self.far
-        scene_dict["simulation_id"] = id(self)
-        scene_dict["init_orientation"] = self._visualization_matrix[0]
+        scene_dict = {id(self): {}}
+        scene_dict[id(self)]['name'] = self.name
+        scene_dict[id(self)]['type'] = self.__repr__()
+        scene_dict[id(self)]['near'] = self.near
+        scene_dict[id(self)]['far'] = self.far
+        scene_dict[id(self)]["simulation_id"] = id(self)
+        scene_dict[id(self)]["init_orientation"] = self._visualization_matrix[0]
 
         return scene_dict
 
