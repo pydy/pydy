@@ -5,8 +5,7 @@ import webbrowser
 import BaseHTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 
-
-def run_server(port=8000,scene_file="Null", directory="static/"):
+def run_server(port=8000, scene_file="Null", directory="static/"):
     #change dir to static first.
     os.chdir(directory)
     HandlerClass = SimpleHTTPRequestHandler
@@ -23,7 +22,6 @@ def run_server(port=8000,scene_file="Null", directory="static/"):
     print url
     webbrowser.open(url)
     httpd.serve_forever()
-
 
 if __name__ == "__main__":
     run_server()
