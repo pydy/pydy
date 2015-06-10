@@ -6,21 +6,29 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  */
+html{
+  min-width: 800px;
+}
+
 .slider {
   display: inline-block;
+}
+#slider-wrapper {
+  margin-top: 10px;
+  margin-bottom: 10px;
   vertical-align: middle;
-  position: relative;
+  width: 71%;
 }
 .slider.slider-horizontal {
-  width: 210px;
+  vertical-align: middle;
   height: 20px;
+  position: absolute;
 }
 .slider.slider-horizontal .slider-track {
   height: 10px;
-  width: 100%;
-  margin-top: -5px;
+  width: 99%;
+  vertical-align: middle;
   top: 50%;
-  left: 0;
 }
 .slider.slider-horizontal .slider-selection {
   height: 100%;
@@ -28,8 +36,8 @@
   bottom: 0;
 }
 .slider.slider-horizontal .slider-handle {
-  margin-left: -10px;
   margin-top: -5px;
+  margin-left: -5px;
 }
 .slider.slider-horizontal .slider-handle.triangle {
   border-width: 0 10px 10px 10px;

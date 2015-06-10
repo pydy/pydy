@@ -496,7 +496,7 @@ class Scene(object):
         # and IPython is not installed or IPython < '2.0.0'
         if IPython is None:
             raise ImportError('IPython is not installed but is required. ' +
-                              'Please installed IPython >= 2.0 and try again')
+                              'Please install IPython >= 2.0 and try again')
         elif ipython_less_than_3 is None:
             raise ImportError('You have IPython ' + IPython.__version__ +
                               ' installed but PyDy supports IPython >= 2.0.0' +

@@ -21,17 +21,31 @@ input[type=text]:focus{
 }
 
 #wrapper{
-
 	min-height:100px;
 }
 
-#slider-wrapper{ display: inline-block; }
+#slider-wrapper{
+  display: inline-block;
+}
 
+#checkbox-play-looped{
+  margin-top: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
+  vertical-align: middle;
+  display: inline-block;
+}
 
 #container {
-
 	margin: 2em;
+}
 
+#control-button-group {
+  width: 71%;
+}
+
+canvas {
+  float: left;
 }
 
 #sidebar-right {
@@ -43,7 +57,7 @@ input[type=text]:focus{
 }
 #json-input{
 	min-height:2em;
-
+  width: 100%;
 }
 
 .btn{
@@ -54,16 +68,6 @@ input[type=text]:focus{
 	margin:1.5em;
 	max-height: 10em;
 	overflow: overlay;
-	
-
-}
-
-#canvas{
-
-	width: 69%;
-    float: left;
-    min-height: 10em;
-    
 }
 
 #objectDialog{
@@ -97,5 +101,5 @@ input[type=text]:focus{
 }
 
 ul {
-    list-style-type: none;
+  list-style-type: none;
 }
