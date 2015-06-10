@@ -6,16 +6,12 @@ import BaseHTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 
 
-def run_server(port=8000, scene_file="Null"):
-    # change dir to static first.
-    if os.path.exists(os.path.join('static', scene_file)):
-        os.chdir("static/")
-    else:
-        static_dir = os.path.join(os.path.dirname(__file__), 'static')
-        os.chdir(static_dir)
+def run_server(port=8000,scene_file="Null"):
+    #change dir to static first.
+    os.chdir("static/")
     HandlerClass = SimpleHTTPRequestHandler
-    ServerClass = BaseHTTPServer.HTTPServer
-    Protocol = "HTTP/1.0"
+    ServerClass  = BaseHTTPServer.HTTPServer
+    Protocol     = "HTTP/1.0"
     server_address = ('127.0.0.1', port)
     HandlerClass.protocol_version = Protocol
     httpd = ServerClass(server_address, HandlerClass)
