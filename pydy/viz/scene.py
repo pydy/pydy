@@ -468,28 +468,29 @@ class Scene(object):
 
     def display(self):
         """
-        display method can be used in two ways.
-        When called from IPython notebook, it shows the visualization
-        in the form of output cell in the IPython notebook.
-        If it is called from python interpreter or
-        IPython interpreter(not notebook), It generates an html file,
-        in the current directory, which can be opened in the webgl
-        compliant browser for viewing the visualizations.
+        It is called from python interpreter or
+        IPython interpreter(not notebook) and runs a server to
+        serve visualization from pydy/viz/static after moving scene and
+        simulation files there. Any webgl compliant browser can be used
+        for viewing the visualizations.
 
         The simulation data is used from this scene, hence
         all simulation data generation methods should be called before
         calling this method
-
         """
-        self.create_static_html()
-        run_server(scene_file=self.scene_json_file)
+        static_dir = os.path.join(os.path.dirname(__file__), 'static')
+        # Copy scene and simulation files into pydy/viz/static
+        os.rename(os.path.join(os.getcwd(), self.scene_json_file),
+                  os.path.join(static_dir, self.scene_json_file))
+        os.rename(os.path.join(os.getcwd(), self.simulation_json_file),
+                  os.path.join(static_dir, self.simulation_json_file))
+        run_server(scene_file=self.scene_json_file, directory=static_dir)
 
     def display_ipython(self):
         """
         Method to display the visualization inside the
         IPython notebook. It is only supported by IPython
         versions>=2.0.0
-
         """
 
         # Raise error whenever display_ipython() is called
