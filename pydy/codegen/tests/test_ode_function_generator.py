@@ -140,6 +140,12 @@ class TestODEFunctionGeneratorSubclasses(object):
 
         np.testing.assert_allclose(xdot, expected_xdot)
 
+    def test_init_doc(self):
+
+        for Subclass in self.ode_function_subclasses:
+            assert (Subclass.__init__.__doc__ ==
+                    ODEFunctionGenerator.__init__.__doc__)
+
     def test_generate_full_rhs(self):
 
         rhs = self.sys.eom_method.rhs()
