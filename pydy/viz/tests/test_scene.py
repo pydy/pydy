@@ -5,6 +5,7 @@ import shutil
 import glob
 
 from numpy import linspace
+from numpy.testing import assert_allclose
 from sympy import symbols
 import sympy.physics.mechanics as me
 
@@ -133,7 +134,10 @@ class TestScene(object):
                                       0.0, 0.0, 1.0, 0.0,
                                       0.0, 0.0, 10.0, 1.0]]}
 
-        assert sim_dict == expected_dict
+        assert sorted(expected_dict.keys()) == sorted(sim_dict.keys())
+
+        for k, v in sim_dict.items():
+            assert_allclose(v, expected_dict[k])
 
     def test_generate_scene_dict(self):
 
