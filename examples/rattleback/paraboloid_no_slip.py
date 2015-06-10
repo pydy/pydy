@@ -75,7 +75,7 @@ R.set_ang_acc(N, ud[0]*R.x + ud[1]*R.y + ud[2]*R.z)
 RO.set_acc(N, RO.vel(N).diff(t, R) + cross(R.ang_vel_in(N), RO.vel(N)))
 
 # Forces and Torques
-F_P = sum([cf*uv for cf, uv in zip(CF, Y)])
+F_P = sum([cf*uv for cf, uv in zip(CF, Y)], Vector(0))
 F_RO = m*g*Y.z
 T_R = -s*R.ang_vel_in(N)
 
@@ -91,8 +91,8 @@ T_star = - dot(R.ang_acc_in(N), I)\
          - cross(R.ang_vel_in(N), dot(I, R.ang_vel_in(N)))
 
 # Isolate the parts that involve only time derivatives of u's
-R_star_udot = sum([R_star.diff(udi, N)*udi for udi in ud])
-T_star_udot = sum([T_star.diff(udi, N)*udi for udi in ud])
+R_star_udot = sum([R_star.diff(udi, N)*udi for udi in ud], Vector(0))
+T_star_udot = sum([T_star.diff(udi, N)*udi for udi in ud], Vector(0))
 for ui in u:
   assert(R_star_udot.diff(ui, N) == 0)
   assert(T_star_udot.diff(ui, N) == 0)
@@ -240,6 +240,5 @@ output_code = re.sub(r"qd([01234])", r"dxdt[\1]", output_code)
 output_code = re.sub(r"u([012])", r"x[\1 + 5]", output_code)
 output_code = re.sub(r"ud([012])", r"dxdt[\1 + 5]", output_code)
 
-f = file("paraboloid_no_slip.txt", 'w')
-f.write(output_code)
-f.close()
+with open("paraboloid_no_slip.txt", 'w') as f:
+    f.write(output_code)
