@@ -275,7 +275,8 @@ nonholonomic = [fn.vel(N).dot(A['1']),
                                       #dict=True)[0])
 
 print('The nonholonomic constraints are a function of these dynamice variables:')
-print(list(sm.ordered(mec.find_dynamicsymbols(sm.Matrix(nonholonomic)))))
+for expr in nonholonomic:
+    print(list(sm.ordered(mec.find_dynamicsymbols(expr))))
 
 #########
 # Inertia
