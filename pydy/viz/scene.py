@@ -187,11 +187,8 @@ class Scene(object):
             timestamp = str(datetime.datetime.now())
             outfile_prefix = "_".join(timestamp.split(".")[0].split(" "))
 
-        self.scene_json_file = outfile_prefix + "_scene_desc.json"
-        self.simulation_json_file = outfile_prefix + "_simulation_data.json"
-
-        self.outfile_prefix = outfile_prefix
-        self.fps = fps
+        self._scene_json_file = outfile_prefix + "_scene_desc.json"
+        self._simulation_json_file = outfile_prefix + "_simulation_data.json"
 
         constant_map = dict(zip(constant_variables, constant_values))
         # TODO : This assumes that all constants have unique strings and
@@ -207,19 +204,19 @@ class Scene(object):
         self._scene_data_dict = \
             self.generate_scene_dict(constant_map=constant_map)
 
-        self._scene_data_dict["simulationData"] = self.simulation_json_file
+        self._scene_data_dict["simulationData"] = self._simulation_json_file
         # NOTE : Python 3 division is imported at the top of the file so
         # this will be a float.
         self._scene_data_dict["timeDelta"] = 1 / fps
         self._scene_data_dict["timeSteps"] = dynamic_values.shape[0]
         self._scene_data_dict["constant_map"] = constant_map_for_json
 
-        with open(self.scene_json_file, 'w') as scene_data_outfile:
+        with open(self._scene_json_file, 'w') as scene_data_outfile:
             scene_data_outfile.write(json.dumps(self._scene_data_dict,
                                                 indent=4,
                                                 separators=(',', ': ')))
 
-        with open(self.simulation_json_file, 'w') as simulation_data_outfile:
+        with open(self._simulation_json_file, 'w') as simulation_data_outfile:
             simulation_data_outfile.write(json.dumps(
                 self._simulation_data_dict, indent=4,
                 separators=(',', ': ')))
@@ -412,9 +409,9 @@ class Scene(object):
             print("Copying Simulation data.")
 
         _scene_outfile_loc = os.path.join(os.getcwd(), 'static',
-                                          self.scene_json_file)
+                                          self._scene_json_file)
         _simulation_outfile_loc = os.path.join(os.getcwd(), 'static',
-                                               self.simulation_json_file)
+                                               self._simulation_json_file)
         scene_outfile = open(_scene_outfile_loc, "w")
         simulation_outfile = open(_simulation_outfile_loc, "w")
 
@@ -462,7 +459,7 @@ class Scene(object):
     def display(self):
         """Displays the scene in the default webbrowser."""
         self.create_static_html()
-        run_server(scene_file=self.scene_json_file)
+        run_server(scene_file=self._scene_json_file)
 
     def _rerun_button_callback(self, clicked):
         """Callback for the "Rerun Simulation" button. When executed the
@@ -470,36 +467,36 @@ class Scene(object):
         in a new simulation of the model."""
 
         if ipython_less_than_3:
-            self.rerun_button.add_class('disabled')
+            self._rerun_button.add_class('disabled')
         else:
-            self.rerun_button._dom_classes = ['btn-info', 'active', 'disabled']
+            self._rerun_button._dom_classes = ['btn-info', 'active', 'disabled']
 
-        self.rerun_button.description = 'Rerunning Simulation...'
+        self._rerun_button.description = 'Rerunning Simulation...'
 
-        original_scene_file = self.scene_json_file
+        original_scene_file = self._scene_json_file
         try:
             self._system.constants = {s: w.value for s, w in
                                       self._constants_text_widgets.items()}
             self.generate_visualization_json_system(self._system)
         except:
             print('Simulation rerun failed, using previous simulation data.')
-            self.scene_json_file = original_scene_file
+            self._scene_json_file = original_scene_file
 
         self.create_static_html(overwrite=True, silent=True)
 
         # TODO : This should be loading the scene file from the cwd instead
         # of the static directory.
         js_tmp = 'jQuery("#json-input").val("{}");'
-        js = js_tmp.format('static/' + self.scene_json_file)
+        js = js_tmp.format('static/' + self._scene_json_file)
         display(Javascript(js))
         display(Javascript('jQuery("#simulation-load").click()'))
 
         if ipython_less_than_3:
-            self.rerun_button.remove_class('disabled')
+            self._rerun_button.remove_class('disabled')
         else:
-            self.rerun_button._dom_classes = ['btn-info', 'enabled']
+            self._rerun_button._dom_classes = ['btn-info', 'enabled']
 
-        self.rerun_button.description = self._rerun_button_desc
+        self._rerun_button.description = self._rerun_button_desc
 
     def display_ipython(self):
         """Displays the scene using an IPython widget inside an IPython
@@ -530,13 +527,13 @@ class Scene(object):
             # Construct a container that holds all of the constants input
             # text widgets.
             if ipython_less_than_3:
-                self.constants_container = widgets.ContainerWidget()
-                self.constants_container.set_css({"max-height": "10em",
-                                                  "overflow-y": "scroll",
-                                                  "display": "block"})
+                self._constants_container = widgets.ContainerWidget()
+                self._constants_container.set_css({"max-height": "10em",
+                                                   "overflow-y": "scroll",
+                                                   "display": "block"})
             else:
-                self.constants_container = widgets.Box()
-                self.constants_container._css = [("canvas", "width", "100%")]
+                self._constants_container = widgets.Box()
+                self._constants_container._css = [("canvas", "width", "100%")]
 
             self._constants_text_widgets = OrderedDict()
             for sym, init_val in self._system.constants.items():
@@ -550,33 +547,33 @@ class Scene(object):
 
             # Construct a button for controlling rerunning the simulations.
             if ipython_less_than_3:
-                self.rerun_button = widgets.ButtonWidget()
-                self.rerun_button.add_class('btn-info')
+                self._rerun_button = widgets.ButtonWidget()
+                self._rerun_button.add_class('btn-info')
             else:
-                self.rerun_button = widgets.Button()
-                self.rerun_button._dom_classes = ['btn-info']
+                self._rerun_button = widgets.Button()
+                self._rerun_button._dom_classes = ['btn-info']
 
             self._rerun_button_desc = "Rerun Simulation"
-            self.rerun_button.description = self._rerun_button_desc
+            self._rerun_button.description = self._rerun_button_desc
 
-            self.rerun_button.on_click(self._rerun_button_callback)
+            self._rerun_button.on_click(self._rerun_button_callback)
 
-            self.constants_container.children = \
+            self._constants_container.children = \
                 self._constants_text_widgets.values()
 
-            display(self.constants_container)
-            display(self.rerun_button)
+            display(self._constants_container)
+            display(self._rerun_button)
 
         with open("static/index_ipython.html", 'r') as html_file:
             html = html_file.read()
 
-        html = html.format(load_url='static/' + self.scene_json_file)
+        html = html.format(load_url='static/' + self._scene_json_file)
 
         if ipython_less_than_3:
-            self.html_widget = widgets.HTMLWidget(value=html)
-            self.html_widget.set_css({"display": "block",
+            self._html_widget = widgets.HTMLWidget(value=html)
+            self._html_widget.set_css({"display": "block",
                                       "float": "left"})
         else:
-            self.html_widget = widgets.HTML(value=html)
+            self._html_widget = widgets.HTML(value=html)
 
-        display(self.html_widget)
+        display(self._html_widget)
