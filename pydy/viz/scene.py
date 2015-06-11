@@ -213,6 +213,8 @@ class Scene(object):
             self.generate_scene_dict(constant_map=constant_map)
 
         self._scene_data_dict["simulationData"] = self.simulation_json_file
+        # NOTE : Python 3 division is imported at the top of the file so
+        # this will be a float.
         self._scene_data_dict["timeDelta"] = 1 / fps
         self._scene_data_dict["timeSteps"] = dynamic_values.shape[0]
         self._scene_data_dict["constant_map"] = constant_map_for_json
@@ -235,8 +237,8 @@ class Scene(object):
         ==========
         constant_map : dictionary
             A map of symbolic constants to numerical values. This is
-            typically used if there are symbolics in the dimensions of the
-            shapes.
+            typically used if there are symbolics in the parameters of the
+            Shape objects.
 
         Returns
         =======
@@ -354,6 +356,9 @@ class Scene(object):
 
         """
         if not isinstance(system, System):
+            # NOTE : Not sure why the next line is here. Leaving it here in
+            # case it breaks something that is not tested.
+            self.system = None
             msg = "{} should be a valid pydy.System object".format(system)
             raise TypeError(msg)
         else:

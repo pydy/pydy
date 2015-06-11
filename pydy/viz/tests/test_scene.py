@@ -20,6 +20,7 @@ from ..scene import Scene
 class TestScene(object):
 
     def setup(self):
+        """Setups a simple 1 DoF mass spring damper system visualization."""
 
         mass, stiffness, damping, gravity = symbols('m, k, c, g')
 
