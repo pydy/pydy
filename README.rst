@@ -2,11 +2,14 @@
 PyDy
 ====
 
-|pypi| |rtd-docs| |travis-build| |Gitter Badge|
+|pypi| |binstar| |rtd-docs| |travis-build| |Gitter Badge|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pydy.svg
    :target: https://pypi.python.org/pypi/pydy
    :alt: Latest Released Version
+   
+.. |binstar| image:: https://binstar.org/pydy/pydy/badges/version.svg
+   :target: https://binstar.org/pydy/pydy
 
 .. |rtd-docs| image:: https://readthedocs.org/projects/pydy/badge/?version=latest
    :target: http://pydy.readthedocs.org/en/latest
