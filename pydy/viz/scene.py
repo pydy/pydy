@@ -11,6 +11,7 @@ from collections import OrderedDict
 from pkg_resources import parse_version
 
 # external
+from sympy import latex
 from sympy.physics.mechanics import ReferenceFrame, Point
 
 # local
@@ -537,12 +538,13 @@ class Scene(object):
 
             self._constants_text_widgets = OrderedDict()
             for sym, init_val in self._system.constants.items():
+                desc = latex(sym, mode='inline')
                 if ipython_less_than_3:
                     text_widget = widgets.FloatTextWidget(value=init_val,
-                                                          description=str(sym))
+                                                          description=desc)
                 else:
                     text_widget = widgets.FloatText(value=init_val,
-                                                    description=str(sym))
+                                                    description=desc)
                 self._constants_text_widgets[sym] = text_widget
 
             # Construct a button for controlling rerunning the simulations.
@@ -572,7 +574,7 @@ class Scene(object):
         if ipython_less_than_3:
             self._html_widget = widgets.HTMLWidget(value=html)
             self._html_widget.set_css({"display": "block",
-                                      "float": "left"})
+                                       "float": "left"})
         else:
             self._html_widget = widgets.HTML(value=html)
 
