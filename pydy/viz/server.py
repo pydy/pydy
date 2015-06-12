@@ -5,6 +5,8 @@ import webbrowser
 import BaseHTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 
+__all__ = ['run_server']
+
 
 def run_server(port=8000,scene_file="Null"):
     #change dir to static first.
