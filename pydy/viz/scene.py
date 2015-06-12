@@ -20,6 +20,11 @@ from .server import run_server
 from .light import PointLight
 from ..system import System
 
+import sys
+if sys.version_info > (3, 0):
+    raw_input = input
+
+
 __all__ = ['Scene']
 
 try:
@@ -392,7 +397,7 @@ class Scene(object):
 
         if os.path.exists(dst) and overwrite is False:
             ans = raw_input("The 'static' directory already exists. Would "
-                            + "you like to overwrite the contents? [y|n]\n")
+                            "you like to overwrite the contents? [y|n]\n")
             if ans == 'y':
                 distutils.dir_util.remove_tree(dst)
             else:
