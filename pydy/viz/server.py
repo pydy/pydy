@@ -16,11 +16,11 @@ def run_server(port=8000,scene_file="Null"):
     HandlerClass.protocol_version = Protocol
     httpd = ServerClass(server_address, HandlerClass)
     sa = httpd.socket.getsockname()
-    print "Serving HTTP on", sa[0], "port", sa[1], "..."
-    print "hit ctrl+c to stop the server.."
-    print "To view visualization, open:\n"
-    url = "http://localhost:"+str(sa[1]) + "/index.html?load="+scene_file
-    print url
+    print("Serving HTTP on", sa[0], "port", sa[1], "...")
+    print("hit ctrl+c to stop the server..")
+    print("To view visualization, open:\n")
+    url = "http://localhost:"+ str(sa[1]) + "/index.html?load=" + scene_file
+    print(url)
     webbrowser.open(url)
     httpd.serve_forever()
 

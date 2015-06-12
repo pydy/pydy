@@ -397,7 +397,7 @@ class Scene(object):
                 distutils.dir_util.remove_tree(dst)
             else:
                 if not silent:
-                    print "Aborted!"
+                    print("Aborted!")
                 return
 
         src = os.path.join(os.path.dirname(__file__), 'static')
@@ -441,7 +441,7 @@ class Scene(object):
 
         """
         if not os.path.exists('static'):
-            print "All Done!"
+            print("All Done!")
             return
 
         if not force:
@@ -453,9 +453,9 @@ class Scene(object):
         if force:
             distutils.dir_util.remove_tree(os.path.join(os.getcwd(),
                                                         'static'))
-            print "All Done!"
+            print("All Done!")
         else:
-            print "aborted!"
+            print("aborted!")
 
     def display(self):
         """Displays the scene in the default webbrowser."""
