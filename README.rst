@@ -58,14 +58,16 @@ Installation
 PyDy has hard dependencies on the following software:
 
 - Python >= 2.7, < 3
-- setuptools
+- setuptools\ [#]_
 - SymPy_ >= 0.7.4.1
 - NumPy_ >= 1.6.1
 - SciPy_ >= 0.9.0
-- IPython_ >= 0.2.0
+
+.. [#] setuptools > 8.0 is required if development versions of SymPy are used.
 
 PyDy has optional dependencies on these packages:
 
+- IPython_ >= 0.2.0
 - Cython_ >= 0.15.1
 - Theano_ >= 0.6.0
 
@@ -89,7 +91,7 @@ can be downloaded from PyPi::
 
    $ wget https://pypi.python.org/packages/source/p/pydy/pydy-0.2.1.tar.gz
 
-and extracted and installed\ [#]::
+and extracted and installed\ [#]_::
 
    $ tar -zxvf pydy-0.2.1.tar.gz
    $ cd pydy-0.2.1
