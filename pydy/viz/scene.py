@@ -462,17 +462,17 @@ class Scene(object):
         self.create_static_html()
         run_server(scene_file=self._scene_json_file)
 
-    def _rerun_button_callback(self, clicked):
+    def _rerun_button_callback(self, btn):
         """Callback for the "Rerun Simulation" button. When executed the
         parameter values are collected from the text input widgets and used
         in a new simulation of the model."""
 
         if ipython_less_than_3:
-            self._rerun_button.add_class('disabled')
+            btn.add_class('disabled')
         else:
-            self._rerun_button._dom_classes = ['btn-info', 'active', 'disabled']
+            btn._dom_classes = ['btn-info', 'active', 'disabled']
 
-        self._rerun_button.description = 'Rerunning Simulation...'
+        btn.description = 'Rerunning Simulation...'
 
         original_scene_file = self._scene_json_file
         original_constants = self._system.constants
@@ -494,19 +494,17 @@ class Scene(object):
 
         self.create_static_html(overwrite=True, silent=True)
 
-        # TODO : This should be loading the scene file from the cwd instead
-        # of the static directory.
         js_tmp = 'jQuery("#json-input").val("{}");'
         js = js_tmp.format('static/' + self._scene_json_file)
         display(Javascript(js))
         display(Javascript('jQuery("#simulation-load").click()'))
 
         if ipython_less_than_3:
-            self._rerun_button.remove_class('disabled')
+            btn.remove_class('disabled')
         else:
-            self._rerun_button._dom_classes = ['btn-info', 'enabled']
+            btn._dom_classes = ['btn-info', 'enabled']
 
-        self._rerun_button.description = self._rerun_button_desc
+        btn.description = self._rerun_button_desc
 
     def _fill_constants_widgets(self):
         """Fills up the constants widget with the current constants symbols
