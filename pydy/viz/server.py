@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import webbrowser
-import BaseHTTPServer
-from SimpleHTTPServer import SimpleHTTPRequestHandler
+if sys.version_info < (3, 0):
+    from SimpleHTTPServer import SimpleHTTPRequestHandler
+    from BaseHTTPServer import HTTPServer
+else:
+    from http.server import SimpleHTTPRequestHandler
+    from http.server import HTTPServer
+
 
 __all__ = ['run_server']
 
@@ -12,7 +18,7 @@ def run_server(port=8000,scene_file="Null"):
     #change dir to static first.
     os.chdir("static/")
     HandlerClass = SimpleHTTPRequestHandler
-    ServerClass  = BaseHTTPServer.HTTPServer
+    ServerClass  = HTTPServer
     Protocol     = "HTTP/1.0"
     server_address = ('127.0.0.1', port)
     HandlerClass.protocol_version = Protocol
