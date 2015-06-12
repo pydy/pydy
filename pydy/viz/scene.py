@@ -475,13 +475,22 @@ class Scene(object):
         self._rerun_button.description = 'Rerunning Simulation...'
 
         original_scene_file = self._scene_json_file
+        original_constants = self._system.constants
         try:
             self._system.constants = {s: w.value for s, w in
                                       self._constants_text_widgets.items()}
             self.generate_visualization_json_system(self._system)
         except:
             print('Simulation rerun failed, using previous simulation data.')
+            # If the simulation fails for any reason we revert everything
+            # back to the previous state, including filling the text widgets
+            # with the previous values of the constants. The _scene_info and
+            # _simulation_data dicts may be in a bad state, but that should
+            # be ok, because generate_visualiation_json will have to be run
+            # again for anything new to happen.
             self._scene_json_file = original_scene_file
+            self._system.constants = original_constants
+            self._fill_constants_widgets()
 
         self.create_static_html(overwrite=True, silent=True)
 
@@ -498,6 +507,38 @@ class Scene(object):
             self._rerun_button._dom_classes = ['btn-info', 'enabled']
 
         self._rerun_button.description = self._rerun_button_desc
+
+    def _fill_constants_widgets(self):
+        """Fills up the constants widget with the current constants symbols
+        and values."""
+
+        for sym, init_val in self._system.constants.items():
+
+            desc = latex(sym, mode='inline')
+
+            if ipython_less_than_3:
+                text_widget = widgets.FloatTextWidget(value=init_val,
+                                                      description=desc)
+            else:
+                text_widget = widgets.FloatText(value=init_val,
+                                                description=desc)
+
+            self._constants_text_widgets[sym] = text_widget
+
+    def _initialize_rerun_button(self):
+        """Construct a button for controlling rerunning the simulations."""
+
+        if ipython_less_than_3:
+            self._rerun_button = widgets.ButtonWidget()
+            self._rerun_button.add_class('btn-info')
+        else:
+            self._rerun_button = widgets.Button()
+            self._rerun_button._dom_classes = ['btn-info']
+
+        self._rerun_button_desc = "Rerun Simulation"
+        self._rerun_button.description = self._rerun_button_desc
+
+        self._rerun_button.on_click(self._rerun_button_callback)
 
     def display_ipython(self):
         """Displays the scene using an IPython widget inside an IPython
@@ -534,34 +575,16 @@ class Scene(object):
                                                    "display": "block"})
             else:
                 self._constants_container = widgets.Box()
-                self._constants_container._css = [("canvas", "width", "100%")]
+                self._constants_container._css = [("canvas", "width",
+                                                   "100%")]
 
             self._constants_text_widgets = OrderedDict()
-            for sym, init_val in self._system.constants.items():
-                desc = latex(sym, mode='inline')
-                if ipython_less_than_3:
-                    text_widget = widgets.FloatTextWidget(value=init_val,
-                                                          description=desc)
-                else:
-                    text_widget = widgets.FloatText(value=init_val,
-                                                    description=desc)
-                self._constants_text_widgets[sym] = text_widget
-
-            # Construct a button for controlling rerunning the simulations.
-            if ipython_less_than_3:
-                self._rerun_button = widgets.ButtonWidget()
-                self._rerun_button.add_class('btn-info')
-            else:
-                self._rerun_button = widgets.Button()
-                self._rerun_button._dom_classes = ['btn-info']
-
-            self._rerun_button_desc = "Rerun Simulation"
-            self._rerun_button.description = self._rerun_button_desc
-
-            self._rerun_button.on_click(self._rerun_button_callback)
-
+            self._fill_constants_widgets()
+            # Add all of the constants widgets to the container.
             self._constants_container.children = \
                 self._constants_text_widgets.values()
+
+            self._initialize_rerun_button()
 
             display(self._constants_container)
             display(self._rerun_button)
