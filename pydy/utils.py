@@ -29,7 +29,7 @@ def sympy_equal_to_or_newer_than(version, installed_version=None):
                'setuptools < 8.0 or a newer development version of SymPy.')
         raise ValueError(msg.format(v))
 
-    return cmp(parse_version(v), parse_version(version)) > -1
+    return parse_version(v) >= parse_version(version)
 
 
 def wrap_and_indent(lines, indentation=4, width=79):
