@@ -1,11 +1,17 @@
-"""The simplest example of a dynamic system which includes
+#!/usr/bin/env python
+
+"""This script generates the equations of motion of a knife edged disc
+rolling on a flat surface under the influence of gravity. This demonstration
+is one of the simplest examples of a dynamic system which includes:
+
  - Configuration constraint
  - Velocity constraint
  - Auxiliary generalized forces to determine constraint forces
 
-Keep in mind that the approach below is diabolical.  This problem can be solved
-much more simply.  The diabolical nature is only here to make sure that the
-results from KanesMethod are correct.
+Keep in mind that the approach below is diabolical.  This problem can be
+solved much more simply. The diabolical nature is only here to make sure
+that the results from KanesMethod are correct.
+
 """
 
 from sympy import symbols, Matrix, solve, Poly, sin, cos, zeros
@@ -104,7 +110,7 @@ print("Acceleration constraints")
 mprint(f_a)
 
 # Constraint coefficient matrix:  M_v * [u; ua] = 0
-M_v = zeros((3, 9))
+M_v = zeros(3, 9)
 for i in range(3):
     for j, ui in enumerate(u + ua):
         M_v[i, j] = f_v[i].diff(ui)
