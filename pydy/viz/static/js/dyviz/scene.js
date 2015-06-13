@@ -109,7 +109,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
     _updateHeight: function(){
         var self = this;
-        self.height = jQuery(window).height() * 0.85;
+        self.height = jQuery(window).height() * 0.83;
     },
 
     WindowResize: function(renderer, camera, self){
