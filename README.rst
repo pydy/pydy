@@ -63,7 +63,7 @@ PyDy has hard dependencies on the following software:
 - NumPy_ >= 1.6.1
 - SciPy_ >= 0.9.0
 
-.. [#] setuptools > 8.0 is required if development versions of SymPy are used.
+.. [#] setuptools >= 8.0 is required if development versions of SymPy are used.
 
 PyDy has optional dependencies on these packages:
 
