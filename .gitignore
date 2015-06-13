@@ -49,3 +49,6 @@ nosetests.xml
 .project
 .pydevproject
 .idea/
+
+# vim swap files
+*.swp
