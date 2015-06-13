@@ -585,7 +585,7 @@ class Scene(object):
             self._fill_constants_widgets()
             # Add all of the constants widgets to the container.
             self._constants_container.children = \
-                self._constants_text_widgets.values()
+                tuple(v for v in self._constants_text_widgets.values())
 
             self._initialize_rerun_button()
 
