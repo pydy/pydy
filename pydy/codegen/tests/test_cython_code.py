@@ -160,7 +160,7 @@ setup(name="boogly_bee",
 
     def test_compile(self):
 
-        f = self.generator.compile(tmp_dir='booger')
+        f = self.generator.compile()
 
         subs = {}
 
