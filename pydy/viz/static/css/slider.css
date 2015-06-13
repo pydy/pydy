@@ -28,6 +28,7 @@ html{
   vertical-align: middle;
   height: 20px;
   position: relative;
+  width: 80% !important;
 }
 
 #container .slider.slider-horizontal .slider-track {
