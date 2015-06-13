@@ -51,6 +51,8 @@ you must call ``generate_ode_function`` on your own::
 
 """
 
+from itertools import repeat
+
 import sympy as sm
 from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
@@ -191,9 +193,10 @@ class System(object):
                 raise ValueError("Symbol {} is not a constant.".format(k))
 
     def _constants_padded_with_defaults(self):
-        return dict(self.constants.items() + {
-            s: 1.0 for s in self.constants_symbols if s not in
-            self.constants}.items())
+        d = dict(zip(self.constants_symbols,
+                     repeat(1.0, len(self.constants_symbols))))
+        d.update(self.constants)
+        return d
 
     @property
     def specifieds(self):
@@ -321,9 +324,10 @@ class System(object):
         return False
 
     def _specifieds_padded_with_defaults(self):
-        return dict(self.specifieds.items() + {
-            s: 0.0 for s in self.specifieds_symbols if not
-            self._symbol_is_in_specifieds_dict(s, self.specifieds)}.items())
+        d = dict(zip(self.specifieds_symbols,
+                     repeat(0.0, len(self.specifieds_symbols))))
+        d.update(self.specifieds)
+        return d
 
     @property
     def times(self):
@@ -393,8 +397,10 @@ class System(object):
                 raise ValueError("Symbol {} is not a state.".format(k))
 
     def _initial_conditions_padded_with_defaults(self):
-        d = {s: 0.0 for s in self.states if s not in self.initial_conditions}
-        return dict(self.initial_conditions.items() + d.items())
+        d = dict(zip(self.states,
+                     repeat(0.0, len(self.states))))
+        d.update(self.initial_conditions)
+        return d
 
     @property
     def evaluate_ode_function(self):
