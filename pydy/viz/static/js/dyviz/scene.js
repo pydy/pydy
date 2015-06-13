@@ -101,7 +101,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var self = this;
         // Setting minimum width to be 800px
         if(jQuery(window).width() > 800) {
-            self.width = jQuery(window).width() * 0.68;
+            self.width = jQuery(window).width() * 0.69;
         } else{
             self.width = 800 * 0.665;
         }
@@ -109,7 +109,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
     _updateHeight: function(){
         var self = this;
-        self.height = jQuery(window).height() * 0.80;
+        self.height = jQuery(window).height() * 0.85;
     },
 
     WindowResize: function(renderer, camera, self){

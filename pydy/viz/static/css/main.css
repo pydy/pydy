@@ -46,6 +46,8 @@
 
 #container canvas {
   float: left;
+	margin-top: 10px;
+	margin-left: 10px;
 }
 
 #container #sidebar-right {

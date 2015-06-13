@@ -19,12 +19,13 @@ html{
   margin-bottom: 10px;
   vertical-align: middle;
   width: 71%;
+  margin-left: 1%;
 }
 
 #container .slider.slider-horizontal {
   vertical-align: middle;
   height: 20px;
-  position: absolute;
+  position: relative;
 }
 
 #container .slider.slider-horizontal .slider-track {
