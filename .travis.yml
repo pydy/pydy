@@ -1,25 +1,21 @@
 language: python
-matrix:
-  include:
-    - python: 2.7
-      env: SYMPY_VERSION="oldest"
-    - python: 2.7
-      env: SYMPY_VERSION="latest"
-    - python: 2.7
-      env: SYMPY_VERSION="master"
-virtualenv:
-  system_site_packages: true
+env:
+  matrix:
+  - SYMPY_VERSION="latest"
+  - SYMPY_VERSION="master"
+  - SYMPY_VERSION="oldest"
+python:
+  - 2.7
 before_install:
   - sudo apt-get update
-  # Remove the version of NumPy pre-installed into the Travis virtualenv so
-  # that we test with the system installed version.
-  - pip uninstall -y numpy
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda/bin:$PATH
+  - conda update --yes conda
 install:
-  # On Ubuntu 12.04 (Travis's testing machines) numpy is at 1.6.1, SciPy is at
-  # 0.9.0 and Cython is at 0.15.1.
-  - sudo apt-get install -y -qq python-numpy python-scipy cython
-  - sudo apt-get install -y -qq python-coverage
-  - sudo apt-get install -y -qq phantomjs
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION pip numpy scipy cython coverage
+  - sudo apt-get install phantomjs
   # Theano may try to install SciPy from source if the --no-deps flags isn't
   # there.
   - pip install --no-deps Theano==0.6.0
