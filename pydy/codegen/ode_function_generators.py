@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+import sys
+if sys.version_info > (3, 0):
+    from collections.abc import Sequence
+else:
+    from collections import Sequence
+from pkg_resources import parse_version
+from itertools import chain
 import warnings
 
 import numpy as np
@@ -281,6 +288,14 @@ r : dictionary
         self.linear_sys_solver = linear_sys_solver
         self.constants_arg_type = constants_arg_type
         self.specifieds_arg_type = specifieds_arg_type
+
+        # As the order of the constants and specifieds arguments if not
+        # important, allow Sets to be used as input. However, the order must be
+        # maintained and converted to a Sequence.
+        if constants is not None and not isinstance(constants, Sequence):
+            self.constants = tuple(constants)
+        if specifieds is not None and not isinstance(specifieds, Sequence):
+            self.specifieds = tuple(specifieds)
 
         self.system_type = self._deduce_system_type(
             mass_matrix=mass_matrix,
@@ -713,7 +728,6 @@ r : dictionary
         p]."""
 
         self.inputs = [self.coordinates, self.speeds, self.constants]
-
         if self.specifieds is not None:
             self.inputs.insert(2, self.specifieds)
 
@@ -884,12 +898,13 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
     __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
 
     def define_inputs(self):
-
-        if self.specifieds is None:
-            self.inputs = self.coordinates + self.speeds + self.constants
-        else:
-            self.inputs = (self.coordinates + self.speeds + self.specifieds
-                           + self.constants)
+        # Theano's input requires a flatted sequence instead of sequence of
+        # sequences.
+        specifieds = []
+        if self.specifieds is not None:
+            specifieds = self.specifieds
+        self.inputs = chain(self.coordinates, self.speeds,
+                            specifieds, self.constants)
 
     def _theanoize(self, outputs):
 

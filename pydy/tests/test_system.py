@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from collections import Counter
-
 import numpy as np
 from numpy import testing
 import sympy as sm
@@ -22,7 +20,7 @@ class TestSystem():
         # Create a simple system with one specified quantity.
         self.sys = multi_mass_spring_damper(1, apply_gravity=True,
                                             apply_external_forces=True)
-        self.specified_symbol = self.sys.specifieds_symbols[0]
+        self.specified_symbol = next(iter(self.sys.specifieds_symbols))
         self.constant_map = dict(zip(sm.symbols('m0, k0, c0, g'),
                                      [2.0, 1.5, 0.5, 9.8]))
         self.sys.specifieds = {self.specified_symbol: np.ones(1)}
@@ -39,9 +37,9 @@ class TestSystem():
         # -----------------------------------
         sys = System(self.kane)
 
-        assert (Counter(sys.constants_symbols) ==
-                Counter(list(sm.symbols('k0, m0, g, c0'))))
-        assert sys.specifieds_symbols == [self.specified_symbol]
+        assert (sys.constants_symbols ==
+                set(sm.symbols('k0, m0, g, c0')))
+        assert sys.specifieds_symbols == {self.specified_symbol}
         assert sys.states == dynamicsymbols('x0, v0')
         assert sys.evaluate_ode_function is None
         assert sys.eom_method is self.kane
@@ -187,7 +185,7 @@ class TestSystem():
         # Complex error-checking when using property as a dict.
         # -----------------------------------------------------
         sys = System(self.kane_nlink)
-        spec_syms = sys.specifieds_symbols
+        spec_syms = list(sys.specifieds_symbols)
         times = np.linspace(0, 0.5, 10)
         sys.specifieds = {
             spec_syms[0]: lambda x, t: np.ones(t),
@@ -216,7 +214,7 @@ class TestSystem():
         # Test old way of providing specifieds.
         # -------------------------------------
         sys = System(self.kane_nlink)
-        spec_syms = sys.specifieds_symbols
+        spec_syms = list(sys.specifieds_symbols)
         # Get numbers using the new way.
         sys.specifieds = dict(zip(spec_syms, [1.0, 2.0, 3.0, 4.0]))
         sys.times = times
@@ -326,7 +324,7 @@ class TestSystem():
         # n-link cart: play with specifieds.
         # ----------------------------------
         sys = System(self.kane_nlink)
-        spec_syms = sys.specifieds_symbols
+        spec_syms = list(sys.specifieds_symbols)
         rhs = sys.generate_ode_function()
         x = np.array(np.random.random(len(sys.states)))
         args = (self.sys.specifieds,

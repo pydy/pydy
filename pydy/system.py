@@ -183,7 +183,9 @@ class System(object):
 
     @property
     def constants_symbols(self):
-        """The symbolic constants (not functions of time) in the system."""
+        """A set of the symbolic constants (not functions of time) in the
+        system.
+        """
         return self._constants_symbols
 
     def _check_constants(self, constants):
@@ -252,7 +254,7 @@ class System(object):
 
     @property
     def specifieds_symbols(self):
-        """The dynamicsymbols you must specify."""
+        """A set of the dynamicsymbols you must specify."""
         # TODO : Eventually use a method in the KanesMethod class.
         return self._specifieds_symbols
 
@@ -578,9 +580,9 @@ class System(object):
             for expr in from_eoms:
                 functions_of_time = functions_of_time.union(
                     find_dynamicsymbols(expr))
-            return list(functions_of_time.difference(from_sym_lists))
+            return functions_of_time.difference(from_sym_lists)
         else:
-            return list(self.eom_method._find_dynamicsymbols(
+            return set(self.eom_method._find_dynamicsymbols(
                 *self._Kane_inlist_insyms()))
 
     def _Kane_constant_symbols(self):
@@ -597,9 +599,9 @@ class System(object):
             unique_symbols = set()
             for expr in from_eoms:
                 unique_symbols = unique_symbols.union(expr.free_symbols)
-            constants = list(unique_symbols)
+            constants = unique_symbols
         else:
-            constants = list(self.eom_method._find_othersymbols(
+            constants = set(self.eom_method._find_othersymbols(
                 *self._Kane_inlist_insyms()))
         constants.remove(dynamicsymbols._t)
         return constants

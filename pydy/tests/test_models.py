@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# standard libraries
-from collections import Counter
-
 # external libraries
 import sympy as sm
 import sympy.physics.mechanics as me
@@ -19,8 +16,8 @@ def test_multi_mass_spring_damper():
 
     sys = multi_mass_spring_damper()
 
-    assert Counter(sys.constants_symbols) == Counter([k0, c0, m0])
-    assert sys.specifieds_symbols == list()
+    assert sys.constants_symbols == {k0, c0, m0}
+    assert sys.specifieds_symbols == set()
     assert sys.coordinates == [x0]
     assert sys.speeds == [v0]
     assert sys.states == [x0, v0]
@@ -43,8 +40,8 @@ def test_multi_mass_spring_damper_with_forces():
     sys = multi_mass_spring_damper(apply_gravity=True,
                                    apply_external_forces=True)
 
-    assert Counter(sys.constants_symbols) == Counter([k0, m0, g, c0])
-    assert sys.specifieds_symbols == [f0]
+    assert sys.constants_symbols == {k0, m0, g, c0}
+    assert sys.specifieds_symbols == {f0}
     assert sys.coordinates == [x0]
     assert sys.speeds == [v0]
     assert sys.states == [x0, v0]
@@ -66,9 +63,9 @@ def test_multi_mass_spring_damper_double():
 
     sys = multi_mass_spring_damper(2, True, True)
 
-    assert Counter(sys.constants_symbols) == \
-        Counter([c1, m1, k0, c0, k1, g, m0])
-    assert sys.specifieds_symbols == [f0, f1]
+    assert sys.constants_symbols == \
+        {c1, m1, k0, c0, k1, g, m0}
+    assert sys.specifieds_symbols == {f0, f1}
     assert sys.coordinates == [x0, x1]
     assert sys.speeds == [v0, v1]
     assert sys.states == [x0, x1, v0, v1]
