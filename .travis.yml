@@ -1,40 +1,34 @@
 language: python
 env:
   matrix:
-  - SYMPY_VERSION="latest"
-  - SYMPY_VERSION="master"
-  - SYMPY_VERSION="oldest"
+  - DEP_VERSIONS="oldest"
+  - DEP_VERSIONS="latest"
+  - DEP_VERSIONS="master"
 python:
   - 2.7
 before_install:
   - sudo apt-get update
-  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
   - export PATH=/home/travis/miniconda/bin:$PATH
-  - conda update --yes conda
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
 install:
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION pip numpy scipy cython coverage
   - sudo apt-get install phantomjs
-  # Theano may try to install SciPy from source if the --no-deps flags isn't
-  # there.
-  - pip install --no-deps Theano==0.6.0
-  - if [[ $SYMPY_VERSION == "oldest" ]]; then
-      pip install sympy==0.7.4.1;
-    elif [[ $SYMPY_VERSION == "latest" ]]; then
-      pip install sympy;
-    elif [[ $SYMPY_VERSION == "master" ]]; then
+  - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION pip coverage nose sphinx numpydoc flake8
+  - source activate test-env
+  - if [[ $DEP_VERSIONS == "oldest" ]]; then
+      conda install numpy==1.7.0 scipy==0.11.0 sympy==0.7.4.1 cython==0.17 theano==0.6.0;
+    elif [[ $DEP_VERSIONS == "latest" ]]; then
+      conda install numpy scipy sympy cython theano;
+    elif [[ $DEP_VERSIONS == "master" ]]; then
+      conda install numpy scipy cython theano;
       pip install https://github.com/sympy/sympy/archive/master.zip;
     fi
-  - pip install -U nose
-  # Note that the `make html` command that runs 'build-sphinx' does not work if
-  # Sphinx is installed with 'apt-get install sphinx'. It can't find the
-  # numpydoc extension if it is. It must be bypassing virtualenv to the system
-  # Python.
-  - pip install sphinx numpydoc
-  # Install PEP 8 linters (flake8 is like pep8 but also reports unused imports)
-  - pip install flake8
 before_script:
+  - conda info
+  - conda list
   - pip --version
   - pip freeze
 script:
