@@ -17,15 +17,15 @@ before_install:
 install:
   - sudo apt-get install phantomjs
   - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION pip coverage nose sphinx numpydoc flake8
+  - source activate test-env
   - if [[ $DEP_VERSIONS == "oldest" ]]; then
-      conda install -n test-env numpy=1.6.2 scipy=0.11 sympy=0.7.4.1 cython=0.17 theano=0.6;
+      conda install numpy=1.7 scipy=0.11 sympy=0.7.4 cython=0.17 theano=0.6;
     elif [[ $DEP_VERSIONS == "latest" ]]; then
-      conda install -n test-env numpy scipy sympy cython theano;
+      conda install numpy scipy sympy cython theano;
     elif [[ $DEP_VERSIONS == "master" ]]; then
-      conda install -n test-env numpy scipy cython theano;
+      conda install numpy scipy cython theano;
       pip install https://github.com/sympy/sympy/archive/master.zip;
     fi
-  - source activate test-env
 before_script:
   - conda info
   - conda list

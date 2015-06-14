@@ -24,7 +24,7 @@ setup(
     license='LICENSE.txt',
     packages=find_packages(),
     install_requires=['sympy>=0.7.4.1',
-                      'numpy>=1.6.2',
+                      'numpy>=1.7',
                       'scipy>=0.11',
                       ],
     extras_require={'doc': ['sphinx', 'numpydoc'],
