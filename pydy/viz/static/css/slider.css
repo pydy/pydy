@@ -8,79 +8,97 @@
  */
 html{
   min-width: 800px;
+  margin: 10px 5px 5px 5px;
+
 }
 
-.slider {
+#container .slider {
   display: inline-block;
 }
-#slider-wrapper {
+
+#container #slider-wrapper {
   margin-top: 10px;
   margin-bottom: 10px;
   vertical-align: middle;
   width: 71%;
+  margin-left: 1%;
 }
-.slider.slider-horizontal {
+
+#container .slider.slider-horizontal {
   vertical-align: middle;
   height: 20px;
-  position: absolute;
+  position: relative;
+  width: 80% !important;
 }
-.slider.slider-horizontal .slider-track {
+
+#container .slider.slider-horizontal .slider-track {
   height: 10px;
   width: 99%;
   vertical-align: middle;
   top: 50%;
 }
-.slider.slider-horizontal .slider-selection {
+
+#container .slider.slider-horizontal .slider-selection {
   height: 100%;
   top: 0;
   bottom: 0;
 }
-.slider.slider-horizontal .slider-handle {
+
+#container .slider.slider-horizontal .slider-handle {
   margin-top: -5px;
   margin-left: -5px;
 }
-.slider.slider-horizontal .slider-handle.triangle {
+
+#container .slider.slider-horizontal .slider-handle.triangle {
   border-width: 0 10px 10px 10px;
   width: 0;
   height: 0;
   border-bottom-color: #0480be;
   margin-top: 0;
 }
-.slider.slider-vertical {
+
+#container .slider.slider-vertical {
   height: 210px;
   width: 20px;
 }
-.slider.slider-vertical .slider-track {
+
+#container .slider.slider-vertical .slider-track {
   width: 10px;
   height: 100%;
   margin-left: -5px;
   left: 50%;
   top: 0;
 }
-.slider.slider-vertical .slider-selection {
+
+#container .slider.slider-vertical .slider-selection {
   width: 100%;
   left: 0;
   top: 0;
   bottom: 0;
 }
-.slider.slider-vertical .slider-handle {
+
+#container .slider.slider-vertical .slider-handle {
   margin-left: -5px;
   margin-top: -10px;
 }
-.slider.slider-vertical .slider-handle.triangle {
+
+#container .slider.slider-vertical .slider-handle.triangle {
   border-width: 10px 0 10px 10px;
   width: 1px;
   height: 1px;
   border-left-color: #0480be;
   margin-left: 0;
 }
-.slider input {
+
+#container .slider input {
   display: none;
 }
-.slider .tooltip-inner {
+
+#container .slider .tooltip-inner {
   white-space: nowrap;
 }
-.slider-track {
+
+#container .slider-track {
   position: absolute;
   cursor: pointer;
   background-color: #f7f7f7;
@@ -98,7 +116,8 @@ html{
   -moz-border-radius: 4px;
   border-radius: 4px;
 }
-.slider-selection {
+
+#container .slider-selection {
   position: absolute;
   background-color: #f7f7f7;
   background-image: -moz-linear-gradient(top, #f9f9f9, #f5f5f5);
@@ -118,7 +137,8 @@ html{
   -moz-border-radius: 4px;
   border-radius: 4px;
 }
-.slider-handle {
+
+#container .slider-handle {
   position: absolute;
   width: 20px;
   height: 20px;
@@ -136,11 +156,13 @@ html{
   opacity: 0.8;
   border: 0px solid transparent;
 }
-.slider-handle.round {
+
+#container .slider-handle.round {
   -webkit-border-radius: 20px;
   -moz-border-radius: 20px;
   border-radius: 20px;
 }
-.slider-handle.triangle {
+
+#container .slider-handle.triangle {
   background: transparent none;
 }

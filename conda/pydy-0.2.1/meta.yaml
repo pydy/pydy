@@ -1,0 +1,33 @@
+package:
+  name: pydy
+  version: "0.2.1"
+
+source:
+  fn: pydy-0.2.1.tar.gz
+  url: https://pypi.python.org/packages/source/p/pydy/pydy-0.2.1.tar.gz
+  md5: 013b41ec1f46b50a484cd1f42c0f55fb
+
+requirements:
+  build:
+    - python >=2.7,<3.0
+    - setuptools
+    - numpy >=1.6.1
+    - sympy >=0.7.4.1
+
+  run:
+    - python >=2.7,<3.0
+    - numpy >=1.6.1
+    - sympy >=0.7.4.1
+
+test:
+  imports:
+    - pydy
+    - pydy.codegen
+    - pydy.codegen.tests
+    - pydy.viz
+    - pydy.viz.tests
+
+about:
+  home: http://pydy.org
+  license: LICENSE.txt
+  summary: 'Python tool kit for multi-body dynamics.'

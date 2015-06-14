@@ -22,11 +22,10 @@ Y = N.orientnew('Y', 'Axis', [q[0], N.z]) # Yaw Frame
 L = Y.orientnew('L', 'Axis', [q[1], Y.x]) # Lean Frame
 R = L.orientnew('R', 'Axis', [q[2], L.y]) # Rattleback body fixed frame
 
-print R.dcm(Y)
+print(R.dcm(Y))
 
 I = inertia(R, Ixx, Iyy, Izz, Ixy, Iyz, Ixz)    # Inertia dyadic
-print I.express(Y)
-stop
+print(I.express(Y))
 # Rattleback ground contact point
 P = Point('P')
 
@@ -35,8 +34,8 @@ P = Point('P')
 # David A. Levinson, 1982, International Journal of Non-Linear Mechanics
 #mu = [dot(rk, Y.z) for rk in R]
 #eps = sqrt((a*mu[0])**2 + (b*mu[1])**2 + (c*mu[2])**2)
-O = P.locatenew('RO', -rx*R.x - rx*R.y - rx*R.z)
-RO = O.locatenew('O', d*R.x + e*R.y + f*R.z)
+O = P.locatenew('O', -rx*R.x - rx*R.y - rx*R.z)
+RO = O.locatenew('RO', d*R.x + e*R.y + f*R.z)
 
 w_r_n = wx*R.x + wy*R.y + wz*R.z
 omega_dict = {wx: dot(qd[0]*Y.z, R.x),
@@ -52,18 +51,19 @@ mu_dict = {mu_x: dot(R.x, Y.z), mu_y: dot(R.y, Y.z), mu_z: dot(R.z, Y.z)}
 F_RO = Fx*R.x + Fy*R.y + Fz*R.z + m*g*(mu_x*R.x + mu_y*R.y + mu_z*R.z)
 newton_eqn = F_RO - m*a_ro_n
 force_scalars = solve([dot(newton_eqn, uv).expand() for uv in R], [Fx, Fy, Fz])
-#print "v_ro_n =", v_ro_n
-#print "a_ro_n =", a_ro_n
-#print "Force scalars =", force_scalars
+#print("v_ro_n =", v_ro_n)
+#print("a_ro_n =", a_ro_n)
+#print("Force scalars =", force_scalars)
 euler_eqn = cross(P.pos_from(RO), F_RO) - cross(w_r_n, dot(I, w_r_n))
-#print euler_eqn
+#print(euler_eqn)
 
-print dot(euler_eqn, R.x).subs(omega_dict).expand()
-print dot(euler_eqn, R.y).subs(omega_dict).expand()
-print dot(euler_eqn, R.z).subs(omega_dict).expand().subs(force_scalars).expand().subs(mu_dict).expand()
-stop
+print(dot(euler_eqn, R.x).subs(omega_dict).expand())
+print(dot(euler_eqn, R.y).subs(omega_dict).expand())
+print(dot(euler_eqn, R.z).subs(omega_dict).expand().subs(force_scalars).expand().subs(mu_dict).expand())
 # Mass center position and velocity
 RO = O.locatenew('RO', d*R.x + e*R.y + f*R.z)
+RO.set_vel(N, v_ro_n)
+O.v2pt_theory(RO, N, R)
 
 # Partial angular velocities and partial velocities
 partial_w = [R.ang_vel_in(N).diff(qdi, N) for qdi in qd]
@@ -124,8 +124,7 @@ for i in range(4):
     dh[2*i + j] = h[i].diff(q[j+1])
 
 # Subsitution dictionary to replace dynamic symbols with regular symbols
-symbol_dict = {q[1]: Symbol('q1'), q[2]: Symbol('q2'), qd[0]: Symbol('qd0'),
-               r[0]: Symbol('rx'), r[1]: Symbol('ry'),  r[2]: Symbol('rz')}
+symbol_dict = {q[1]: Symbol('q1'), q[2]: Symbol('q2'), qd[0]: Symbol('qd0')}
 
 for i in range(4):
   h[i] = h[i].subs(symbol_dict)
@@ -161,6 +160,5 @@ for i in range(8):
 import re
 output_code = re.sub(r"z(\d+)", r"z[\1]", output_code)
 
-f = file("ellipsoid_no_slip_steady.txt", 'w')
-f.write(output_code)
-f.close()
+with open ("ellipsoid_no_slip_steady.txt", 'w') as f:
+    f.write(output_code)

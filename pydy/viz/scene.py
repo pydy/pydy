@@ -9,7 +9,9 @@ import distutils.dir_util
 import datetime
 from collections import OrderedDict
 from pkg_resources import parse_version
+
 # external
+from sympy import latex
 from sympy.physics.mechanics import ReferenceFrame, Point
 
 # local
@@ -43,25 +45,20 @@ except ImportError:
 
 
 class Scene(object):
-    """
-    Scene class holds all the data required for the visualizations/
+    """The Scene class holds all the data required for the visualizations
     animation of a system.
 
     It has methods for inputting the numerical data from the numerical
-    integrations of Equations of Motions and convert them to JSON
-    values, which can be then parsed by Javascripts(webgls).
+    integrations of Equations of Motions and convert them to JSON values,
+    which can be then parsed by Javascripts(webgls).
 
     A scene object takes a ReferenceFrame, and a Point as required
-    arguments. The reference_frame and point act as the inertial
-    frame and origin with respect to which all objects are oriented
-    and rendered in the visualizations
+    arguments. The reference_frame and point act as the inertial frame and
+    origin with respect to which all objects are oriented and rendered in
+    the visualizations
 
-    A scene needs to be supplied with visualization_frames, Cameras,
-    and Light objects, as optional arguments.
-    A scene can also be supplied with the height and width of the
-    browser window where visualization would be displayed.
-    Default is 800 * 800.
-
+    A scene needs to be supplied with visualization_frames, Cameras, and
+    Light objects, as optional arguments.
 
     """
     def __init__(self, reference_frame, origin, *visualization_frames,
@@ -81,104 +78,76 @@ class Scene(object):
             the scene.
         name : str, optional
             Name of Scene object.
-        width : int or float, optional
-            The width of the canvas used for visualizations. Default is
-            800px.
-        height : int or float, optional
-            Height of the canvas used for visualizations. Default is 800px.
         camera : Camera, optional
             The camera with which to display the object. Default is
             PerspectiveCamera, with reference_frame and origin same as
             defined for this scene.
         """
 
-        self._reference_frame = reference_frame
-        self._origin = origin
-
+        self.reference_frame = reference_frame
+        self.origin = origin
         self.visualization_frames = list(visualization_frames)
+        self._system = None
 
         try:
-            self._name = kwargs['name']
+            self.name = kwargs['name']
         except KeyError:
-            self._name = 'unnamed'
-
-        try:
-            self._width = kwargs['width']
-        except KeyError:
-            self._width = 800
-
-        try:
-            self._height = kwargs['height']
-        except KeyError:
-            self._height = 800
+            self.name = 'unnamed'
 
         try:
             self.cameras = kwargs['cameras']
         except KeyError:
+            camera_point = self.origin.locatenew('p_camera', 10 *
+                                                 self.reference_frame.z)
             self.cameras = [PerspectiveCamera('DefaultCamera',
-                            self._reference_frame,
-                            self._origin.locatenew(
-                                'p_camera',
-                                10*self._reference_frame.z))]
+                                              self.reference_frame,
+                                              camera_point)]
 
         try:
             self.lights = kwargs['lights']
         except KeyError:
-            self.lights = [PointLight('DefaultLight',
-                           self._reference_frame,
-                           self._origin.locatenew(
-                               'p_light',
-                               10*self._reference_frame.z))]
+            light_point = self.origin.locatenew('p_light', 10 *
+                                                self.reference_frame.z)
+            self.lights = [PointLight('DefaultLight', self.reference_frame,
+                                      light_point)]
 
     @property
     def name(self):
-        """
-        Returns Name of Scene.
-        """
+        """Returns the name of the scene."""
         return self._name
 
     @name.setter
     def name(self, new_name):
-        """
-        sets name of scene.
-        """
+        """Sets the name of the scene."""
         if not isinstance(new_name, str):
-            raise TypeError('Name should be a valid str.')
+            raise TypeError("'name' should be a valid string.")
         else:
             self._name = new_name
 
     @property
     def origin(self):
-        """
-        returns Origin of the Scene.
-        """
+        """Returns the origin point of the scene."""
         return self._origin
 
     @origin.setter
     def origin(self, new_origin):
-        """
-        sets origin of the scene
-        """
+        """Sets the origin point of the scene."""
         if not isinstance(new_origin, Point):
-            raise TypeError('''origin should be a valid Point Object''')
+            raise TypeError("'origin' should be a valid Point object.")
         else:
             self._origin = new_origin
 
     @property
     def reference_frame(self):
-        """
-        returns reference_frame of the Scene.
-        """
+        """Returns the base reference frame of the scene."""
         return self._reference_frame
 
     @reference_frame.setter
     def reference_frame(self, new_reference_frame):
-        """
-        Sets reference frame for the scene.
-        """
+        """Sets the base reference frame for the scene."""
         if not isinstance(new_reference_frame, ReferenceFrame):
-            raise TypeError('''reference_frame should be a valid
-                                ReferenceFrame object.''')
+            raise TypeError("'reference_frame' should be a valid "
+                            "ReferenceFrame object.")
         else:
             self._reference_frame = new_reference_frame
 
@@ -186,109 +155,97 @@ class Scene(object):
                                     constant_variables, dynamic_values,
                                     constant_values, fps=30,
                                     outfile_prefix=None):
-        """
-        generate_visualization_json() method generates a json str, which is
-        saved to file.
+        """Creates two JSON files in the current working directory. One
+        contains the scene information and one contains the simulation data.
 
         Parameters
         ==========
-        dynamic_variables : Sympifyable list or tuple
-            This contains all the dynamic symbols or state variables
-            which are required for solving the transformation matrices
-            of all the frames of the scene.
+        dynamic_variables : sequence of SymPy functions of time, len(m)
+            The variables representing the state of the system. They should
+            be in the same order as ``dynamic_values``.
+        constant_variables : sequence of SymPy symbols, len(p)
+            The variables representing the constants in the system. They
+            should be in the same order as ``constant_variables``.
+        dynamic_values : ndarray, shape(n, m)
+            The trajectories of the states.
+        constant_values : ndarray, shape(p,)
+            The numerical values of the constants.
+        fps : int, optional, default=30
+            Frames per second at which animation should be displayed. Please
+            not that this should not exceed the hardware limit of the
+            display device to be used. Default is 30fps.
+        outfile_prefix : str, optional, default=None
+            A prefix for the JSON files. The files will be named as
+            `outfile_prefix_scene_desc.json` and
+            `outfile_prefix_simulation_data.json`. If not specified a
+            timestamp shall be used as the prefix.
 
-        constant_variables : Sympifyable list or tuple
-            This contains all the symbols for the parameters which are
-            used for defining various objects in the system.
 
-        dynamic_values : list or tuple
-            initial states of the system. The list or tuple
-            should be respective to the state_sym.
+        """
 
-        constant_values : list or tuple
-            values of the parameters. The list or tuple
-            should be respective to the par_sym.
+        # TODO : The colons need to be removed from this file name.
+        if outfile_prefix is None:
+            timestamp = str(datetime.datetime.now())
+            outfile_prefix = "_".join(timestamp.split(".")[0].split(" "))
 
-        fps : int
-            fps at which animation should be displayed.
-            Please not that this fps should not exceed
-            the hardware limit of the display device to
-            be used. Default is 30fps.
+        self._scene_json_file = outfile_prefix + "_scene_desc.json"
+        self._simulation_json_file = outfile_prefix + "_simulation_data.json"
 
-        outfile_prefix : str
-            A prefix to be put while saving the scene_desc
-            and simulation_data files. Files will be named
-            as `outfile_prefix_scene_desc.json` and
-            `outfile_prefix_simulation_data.json`. If not specified
-            a timestamp shall be used as the prefix.
+        constant_map = dict(zip(constant_variables, constant_values))
+        # TODO : This assumes that all constants have unique strings and
+        # that they are valid strings for the JSON file.
+        constant_map_for_json = {str(k): v for k, v in constant_map.items()}
+
+        self._simulation_data_dict = \
+            self.generate_simulation_dict(dynamic_variables,
+                                          constant_variables,
+                                          dynamic_values,
+                                          constant_values)
+
+        self._scene_data_dict = \
+            self.generate_scene_dict(constant_map=constant_map)
+
+        self._scene_data_dict["simulationData"] = self._simulation_json_file
+        # NOTE : Python 3 division is imported at the top of the file so
+        # this will be a float.
+        self._scene_data_dict["timeDelta"] = 1 / fps
+        self._scene_data_dict["timeSteps"] = dynamic_values.shape[0]
+        self._scene_data_dict["constant_map"] = constant_map_for_json
+
+        with open(self._scene_json_file, 'w') as scene_data_outfile:
+            scene_data_outfile.write(json.dumps(self._scene_data_dict,
+                                                indent=4,
+                                                separators=(',', ': ')))
+
+        with open(self._simulation_json_file, 'w') as simulation_data_outfile:
+            simulation_data_outfile.write(json.dumps(
+                self._simulation_data_dict, indent=4,
+                separators=(',', ': ')))
+
+    def generate_scene_dict(self, constant_map={}):
+        """Generates a dictionary containing all of the information needed
+        to build the scene.
+
+        Parameters
+        ==========
+        constant_map : dictionary
+            A map of symbolic constants to numerical values. This is
+            typically used if there are symbolics in the parameters of the
+            Shape objects.
 
         Returns
         =======
-
-        The dictionary contains following keys:
-        1) Width of the scene.
-        2) Height of the scene.
-        3) name of the scene.
-        4) frames in the scene, which contains sub-dictionaries
-           of all the visualization frames information.
-
-
-        """
-
-        if outfile_prefix is None:
-            outfile_prefix = "_".join(str(datetime.datetime.now()).\
-                                  split(".")[0].split(" "))
-
-        #Saving the arguments for re-running simulations
-        self.constant_variables = constant_variables
-        self.dynamic_variables = dynamic_variables
-        self.constant_values = constant_values
-        self.dynamic_values = dynamic_values
-        self.outfile_prefix = outfile_prefix
-        self.fps = fps
-        constant_map = dict(zip(constant_variables, constant_values))
-        constant_variables_str = [str(i) for i in constant_variables]
-        constant_map_for_json = dict(zip(constant_variables_str, constant_values))
-        self.scene_json_file = outfile_prefix + "_scene_desc.json"
-        self.simulation_json_file = outfile_prefix + "_simulation_data.json"
-
-        self._simulation_data_dict = self.generate_simulation_dict(dynamic_variables,
-                                                           constant_variables,
-                                                           dynamic_values,
-                                                           constant_values)
-        self._scene_data_dict = self.generate_scene_dict(constant_map=constant_map)
-        self._scene_data_dict["simulationData"] = self.simulation_json_file
-
-        self._scene_data_dict["timeDelta"] = 1/fps
-        self._scene_data_dict["timeSteps"] = len(dynamic_values)
-
-
-        self._scene_data_dict["constant_map"] = constant_map_for_json
-        scene_data_outfile = open(self.scene_json_file, 'w')
-        scene_data_outfile.write(json.dumps(self._scene_data_dict, indent=4,
-                                 separators=(',', ': ')))
-        scene_data_outfile.close()
-
-        simulation_data_outfile = open(self.simulation_json_file, 'w')
-        simulation_data_outfile.write(json.dumps(self._simulation_data_dict, indent=4,
-                                 separators=(',', ': ')))
-        simulation_data_outfile.close()
-
-    def generate_scene_dict(self, constant_map={}):
-        """
-        This method is used to create the dictionary compatible with
-        PyDy visualizer. This JSON file contains all the relevant information
-        required by PyDy visualizer to draw the scene on the canvas.
-
+        scene_info : dictionary
 
         """
 
         self._scene_info = {}
         self._scene_info["source"] = "PyDy"
-        self._scene_info["name"] = self._name
-        self._scene_info["newtonian_frame"] = str(self._reference_frame)
-        self._scene_info["workspaceSize"] = 0.2#This should be accomodated in scene
-                                                #instead of width/height of scene
+        self._scene_info["name"] = self.name
+        self._scene_info["newtonian_frame"] = str(self.reference_frame)
+        # TODO : This should be accomodated in scene instead of width/height
+        # of scene.
+        self._scene_info["workspaceSize"] = 0.2
 
         self._scene_info["objects"] = {}
         self._scene_info["cameras"] = {}
@@ -297,7 +254,6 @@ class Scene(object):
         for frame in self.visualization_frames:
             _object_info = frame.generate_scene_dict(constant_map=constant_map)
             self._scene_info["objects"].update(_object_info)
-
 
         for camera in self.cameras:
             _object_info = camera.generate_scene_dict()
@@ -310,72 +266,97 @@ class Scene(object):
         return self._scene_info
 
     def generate_simulation_dict(self, dynamic_variables,
-                                    constant_variables, dynamic_values,
-                                    constant_values):
-        """
-        This method is used to create the JSON file compatible with
-        PyDy visualizer. This JSON file consists of all the simulation data
-        along with references to the objects, for allowing motion to the
-        objects in the PyDy visualizer.
+                                 constant_variables, dynamic_values,
+                                 constant_values):
+        """Returns a dictionary containing all of the simulation
+        information. It consists of all the simulation data along with
+        references to the objects, for allowing motion to the objects in the
+        PyDy visualizer.
+
+        Parameters
+        ==========
+        dynamic_variables : sequence of SymPy functions of time, len(m)
+            The variables representing the state of the system. They should
+            be in the same order as ``dynamic_values``.
+        constant_variables : sequence of SymPy symbols, len(p)
+            The variables representing the constants in the system. They
+            should be in the same order as ``constant_variables``.
+        dynamic_values : ndarray, shape(n, m)
+            The trajectories of the states.
+        constant_values : ndarray, shape(p,)
+            The numerical values of the constants.
+
+        Returns
+        =======
+        simulation_info : dictionary
+
+        Notes
+        =====
+
+        This method must be called before ``generate_scene_dict``.
 
         """
         self._simulation_info = {}
 
         for frame in self.visualization_frames:
-            frame.generate_transformation_matrix(self._reference_frame,
-                                                 self._origin)
+            frame.generate_transformation_matrix(self.reference_frame,
+                                                 self.origin)
             frame.generate_numeric_transform_function(dynamic_variables,
                                                       constant_variables)
             frame.evaluate_transformation_matrix(dynamic_values,
-                                                         constant_values)
-
+                                                 constant_values)
 
             self._simulation_info.update(frame.generate_simulation_dict())
 
         for camera in self.cameras:
-            camera.generate_transformation_matrix(self._reference_frame,
-                                                 self._origin)
+            camera.generate_transformation_matrix(self.reference_frame,
+                                                  self.origin)
             camera.generate_numeric_transform_function(dynamic_variables,
-                                                      constant_variables)
+                                                       constant_variables)
             camera.evaluate_transformation_matrix(dynamic_values,
-                                                         constant_values)
+                                                  constant_values)
 
             self._simulation_info.update(camera.generate_simulation_dict())
 
         for light in self.lights:
-            light.generate_transformation_matrix(self._reference_frame,
-                                                 self._origin)
+            light.generate_transformation_matrix(self.reference_frame,
+                                                 self.origin)
             light.generate_numeric_transform_function(dynamic_variables,
                                                       constant_variables)
             light.evaluate_transformation_matrix(dynamic_values,
-                                                         constant_values)
+                                                 constant_values)
 
             self._simulation_info.update(light.generate_simulation_dict())
 
+        # TODO : This is bad practice. The method should either return the
+        # data or mutate the object, but not both.
         return self._simulation_info
 
     def generate_visualization_json_system(self, system, **kwargs):
-        """ Alternative method compatible with System class
-        for generating visualization JSON.
+        """Creates the visualization JSON files for the provided system.
 
         Parameters
-        ----------
-        system : object, pydy.System
+        ==========
+        system : pydy.system.System
+            A fully developed PyDy system that is prepared for the
+            ``.integrate()`` method.
 
-        Keyword arguments are same as generate_visualization_json.
+        Notes
+        =====
+        The optional keyword arguments are same as the
+        ``generate_visualization_json`` method.
 
         """
         if not isinstance(system, System):
-            self.system = None
-            raise TypeError("{} should be a valid pydy.System object".format(system))
+            msg = "{} should be a valid pydy.System object".format(system)
+            raise TypeError(msg)
         else:
-            #save system
-            self.system = system
+            self._system = system
 
         self.generate_visualization_json(system.states,
-                                          system.constants_symbols,
-                                          system.integrate(),
-                                          system.constants.values(), **kwargs)
+                                         system.constants.keys(),
+                                         system.integrate(),
+                                         system.constants.values(), **kwargs)
 
     def create_static_html(self, overwrite=False, silent=False):
         """Creates a directory named ``static`` in the current working
@@ -415,24 +396,34 @@ class Scene(object):
             if ans == 'y':
                 distutils.dir_util.remove_tree(dst)
             else:
-                if not silent: print "Aborted!"
+                if not silent:
+                    print "Aborted!"
                 return
 
         src = os.path.join(os.path.dirname(__file__), 'static')
-        if not silent: print("Copying static data.")
+
+        if not silent:
+            print("Copying static data.")
         distutils.dir_util.copy_tree(src, dst)
-        if not silent: print("Copying Simulation data.")
-        _scene_outfile_loc = os.path.join(os.getcwd(), 'static', self.scene_json_file)
-        _simulation_outfile_loc = os.path.join(os.getcwd(), 'static', self.simulation_json_file)
+
+        if not silent:
+            print("Copying Simulation data.")
+
+        _scene_outfile_loc = os.path.join(os.getcwd(), 'static',
+                                          self._scene_json_file)
+        _simulation_outfile_loc = os.path.join(os.getcwd(), 'static',
+                                               self._simulation_json_file)
         scene_outfile = open(_scene_outfile_loc, "w")
         simulation_outfile = open(_simulation_outfile_loc, "w")
 
         scene_outfile.write(json.dumps(self._scene_data_dict, indent=4,
-                                separators=(',', ': ')))
+                                       separators=(',', ': ')))
         scene_outfile.close()
-        simulation_outfile.write(json.dumps(self._simulation_data_dict, indent=4,
-                                separators=(',', ': ')))
+        simulation_outfile.write(json.dumps(self._simulation_data_dict,
+                                            indent=4,
+                                            separators=(',', ': ')))
         simulation_outfile.close()
+
         if not silent:
             print("To view the visualization, open {}".format(
                   os.path.join(dst, 'index.html')) +
@@ -467,34 +458,98 @@ class Scene(object):
             print "aborted!"
 
     def display(self):
-        """
-        It is called from python interpreter or
-        IPython interpreter(not notebook) and runs a server to
-        serve visualization from pydy/viz/static after moving scene and
-        simulation files there. Any webgl compliant browser can be used
-        for viewing the visualizations.
+        """Displays the scene in the default webbrowser."""
+        self.create_static_html()
+        run_server(scene_file=self._scene_json_file)
 
-        The simulation data is used from this scene, hence
-        all simulation data generation methods should be called before
-        calling this method
-        """
-        static_dir = os.path.join(os.path.dirname(__file__), 'static')
-        # Copy scene and simulation files into pydy/viz/static
-        os.rename(os.path.join(os.getcwd(), self.scene_json_file),
-                  os.path.join(static_dir, self.scene_json_file))
-        os.rename(os.path.join(os.getcwd(), self.simulation_json_file),
-                  os.path.join(static_dir, self.simulation_json_file))
-        run_server(scene_file=self.scene_json_file, directory=static_dir)
+    def _rerun_button_callback(self, btn):
+        """Callback for the "Rerun Simulation" button. When executed the
+        parameter values are collected from the text input widgets and used
+        in a new simulation of the model."""
+
+        if ipython_less_than_3:
+            btn.add_class('disabled')
+        else:
+            btn._dom_classes = ['btn-info', 'active', 'disabled']
+
+        btn.description = 'Rerunning Simulation...'
+
+        original_scene_file = self._scene_json_file
+        original_constants = self._system.constants
+        try:
+            self._system.constants = {s: w.value for s, w in
+                                      self._constants_text_widgets.items()}
+            self.generate_visualization_json_system(self._system)
+        except:
+            print('Simulation rerun failed, using previous simulation data.')
+            # If the simulation fails for any reason we revert everything
+            # back to the previous state, including filling the text widgets
+            # with the previous values of the constants. The _scene_info and
+            # _simulation_data dicts may be in a bad state, but that should
+            # be ok, because generate_visualiation_json will have to be run
+            # again for anything new to happen.
+            self._scene_json_file = original_scene_file
+            self._system.constants = original_constants
+            self._fill_constants_widgets()
+
+        self.create_static_html(overwrite=True, silent=True)
+
+        js_tmp = 'jQuery("#json-input").val("{}");'
+        js = js_tmp.format('static/' + self._scene_json_file)
+        display(Javascript(js))
+        display(Javascript('jQuery("#simulation-load").click()'))
+
+        if ipython_less_than_3:
+            btn.remove_class('disabled')
+        else:
+            btn._dom_classes = ['btn-info', 'enabled']
+
+        btn.description = self._rerun_button_desc
+
+    def _fill_constants_widgets(self):
+        """Fills up the constants widget with the current constants symbols
+        and values."""
+
+        for sym, init_val in self._system.constants.items():
+
+            desc = latex(sym, mode='inline')
+
+            if ipython_less_than_3:
+                text_widget = widgets.FloatTextWidget(value=init_val,
+                                                      description=desc)
+            else:
+                text_widget = widgets.FloatText(value=init_val,
+                                                description=desc)
+
+            self._constants_text_widgets[sym] = text_widget
+
+    def _initialize_rerun_button(self):
+        """Construct a button for controlling rerunning the simulations."""
+
+        if ipython_less_than_3:
+            self._rerun_button = widgets.ButtonWidget()
+            self._rerun_button.add_class('btn-info')
+        else:
+            self._rerun_button = widgets.Button()
+            self._rerun_button._dom_classes = ['btn-info']
+
+        self._rerun_button_desc = "Rerun Simulation"
+        self._rerun_button.description = self._rerun_button_desc
+
+        self._rerun_button.on_click(self._rerun_button_callback)
 
     def display_ipython(self):
-        """
-        Method to display the visualization inside the
-        IPython notebook. It is only supported by IPython
-        versions>=2.0.0
+        """Displays the scene using an IPython widget inside an IPython
+        notebook cell.
+
+        Notes
+        =====
+        IPython widgets are only supported by IPython versions >= 2.0.0.
+
         """
 
-        # Raise error whenever display_ipython() is called
-        # and IPython is not installed or IPython < '2.0.0'
+        # Raise error whenever display_ipython() is called and IPython is
+        # not installed or IPython < '2.0.0'
         if IPython is None:
             raise ImportError('IPython is not installed but is required. ' +
                               'Please install IPython >= 2.0 and try again')
@@ -504,89 +559,44 @@ class Scene(object):
                               'Please update IPython and try again')
 
         self.create_static_html(silent=True)
-        self._widget_dict = OrderedDict()
-        if ipython_less_than_3:
-            self.container = widgets.ContainerWidget()
-        else:
-            self.container = widgets.Box()
-        components = []
-        for var, init_val in \
-            zip(self.constant_variables, self.constant_values):
+
+        # Only create the constants input boxes and the rerun simulation
+        # button if the scene was generated with a System.
+        if self._system is not None:
+
+            # Construct a container that holds all of the constants input
+            # text widgets.
             if ipython_less_than_3:
-                self._widget_dict[str(var)] = widgets.FloatTextWidget(
-                    value=init_val,
-                    description=str(var))
+                self._constants_container = widgets.ContainerWidget()
+                self._constants_container.set_css({"max-height": "10em",
+                                                   "overflow-y": "scroll",
+                                                   "display": "block"})
             else:
-                self._widget_dict[str(var)] = widgets.FloatText(
-                    value=init_val,
-                    description=str(var))
-            components.append(self._widget_dict[str(var)])
+                self._constants_container = widgets.Box()
+                self._constants_container._css = [("canvas", "width",
+                                                   "100%")]
+
+            self._constants_text_widgets = OrderedDict()
+            self._fill_constants_widgets()
+            # Add all of the constants widgets to the container.
+            self._constants_container.children = \
+                self._constants_text_widgets.values()
+
+            self._initialize_rerun_button()
+
+            display(self._constants_container)
+            display(self._rerun_button)
+
+        with open("static/index_ipython.html", 'r') as html_file:
+            html = html_file.read()
+
+        html = html.format(load_url='static/' + self._scene_json_file)
 
         if ipython_less_than_3:
-            self.button = widgets.ButtonWidget(description="Rerun Simulations")
+            self._html_widget = widgets.HTMLWidget(value=html)
+            self._html_widget.set_css({"display": "block",
+                                       "float": "left"})
         else:
-            self.button = widgets.Button(description="Rerun Simulations")
+            self._html_widget = widgets.HTML(value=html)
 
-        def button_click(clicked):
-            if ipython_less_than_3:
-                self.button.add_class('disabled')
-            else:
-                self.button._dom_classes = ['disabled']
-            self.button.description = 'Rerunning Simulation ...'
-            self.constant_values = []
-            for i in self._widget_dict.values():
-                self.constant_values.append(i.value)
-            if self.system is not None:
-                # update system constants
-                self.system.constants = dict(zip(self.system.constants,
-                                                 self.constant_values))
-                self.generate_visualization_json_system(self.system)
-            else:
-                self.generate_visualization_json(
-                    self.dynamic_variables,
-                    self.constant_variables, self.dynamic_values,
-                    self.constant_values,
-                    fps=self.fps,
-                    outfile_prefix=self.outfile_prefix)
-            self.create_static_html(overwrite=True, silent=True)
-            js = 'jQuery("#json-input").val("{}");'.format('static/' +
-                                                           self.scene_json_file)
-            display(Javascript(js))
-            display(Javascript('jQuery("#simulation-load").click()'))
-            if ipython_less_than_3:
-                self.button.remove_class('disabled')
-            else:
-                self.button._dom_classes = ['enabled']
-
-            self.button.description = 'Rerun Simulation'
-
-        self.button.on_click(button_click)
-        html_file = open("static/index_ipython.html")
-        if ipython_less_than_3:
-            self.html_widget = widgets.HTMLWidget(
-                value=html_file.read().format(load_url='static/' +
-                                              self.scene_json_file))
-        else:
-            self.html_widget = widgets.HTML(
-                value=html_file.read().format(load_url='static/' +
-                                              self.scene_json_file))
-        self.container.children = components
-
-        if ipython_less_than_3:
-            self.container.set_css({"max-height": "10em",
-                                    "overflow-y": "scroll",
-                                    "display": "block"
-                                    })
-            self.html_widget.set_css({"display": "block",
-                                      "float": "left"
-                                      })
-        else:
-            self.container._css = [("canvas", "width", "100%")]
-
-        display(self.container)
-        display(self.button)
-        display(self.html_widget)
-        if ipython_less_than_3:
-            self.button.add_class('btn-info')
-        else:
-            self.button._dom_classes = ['btn-info']
+        display(self._html_widget)
