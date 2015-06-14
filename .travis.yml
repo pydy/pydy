@@ -19,7 +19,7 @@ install:
   - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION pip coverage nose sphinx numpydoc flake8
   - source activate test-env
   - if [[ $DEP_VERSIONS == "oldest" ]]; then
-      conda install numpy=1.7 scipy=0.11 sympy=0.7.4 cython=0.17 theano=0.6;
+      conda install numpy==1.7.0 scipy==0.11.0 sympy==0.7.4.1 cython==0.17 theano==0.6.0;
     elif [[ $DEP_VERSIONS == "latest" ]]; then
       conda install numpy scipy sympy cython theano;
     elif [[ $DEP_VERSIONS == "master" ]]; then
