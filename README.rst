@@ -60,15 +60,15 @@ PyDy has hard dependencies on the following software:
 - Python >= 2.7, < 3
 - setuptools\ [#]_
 - SymPy_ >= 0.7.4.1
-- NumPy_ >= 1.6.1
-- SciPy_ >= 0.9.0
+- NumPy_ >= 1.6.2
+- SciPy_ >= 0.11.0
 
 .. [#] setuptools >= 8.0 is required if development versions of SymPy are used.
 
 PyDy has optional dependencies on these packages:
 
 - IPython_ >= 0.2.0
-- Cython_ >= 0.15.1
+- Cython_ >= 0.17
 - Theano_ >= 0.6.0
 
 .. _Theano: http://deeplearning.net/software/theano/
@@ -347,6 +347,7 @@ Release Notes
 User Facing
 ~~~~~~~~~~~
 
+- Bumped up the minimum dependencies for NumPy, SciPy, and Cython.
 - Removed the partial implementation of the Mesh shape. [PR `#172`_]
 - Overhauled the code generation package to make the generators more easily
   extensible and to improve simulation speed. [PR `#113`_]
