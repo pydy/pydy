@@ -4,6 +4,8 @@
 from __future__ import division
 import os
 import json
+import shutil
+import tempfile
 import distutils
 import distutils.dir_util
 import datetime
@@ -459,8 +461,14 @@ class Scene(object):
 
     def display(self):
         """Displays the scene in the default webbrowser."""
-        self.create_static_html()
-        run_server(scene_file=self._scene_json_file)
+        tmp_dir = tempfile.mkdtemp(prefix='pydy_', suffix='_viz')
+        src = os.path.join(os.path.dirname(__file__), 'static')
+        distutils.dir_util.copy_tree(src, tmp_dir)
+        shutil.move(os.path.join(os.getcwd(), self._scene_json_file),
+                    os.path.join(tmp_dir, self._scene_json_file))
+        shutil.move(os.path.join(os.getcwd(), self._simulation_json_file),
+                    os.path.join(tmp_dir, self._simulation_json_file))
+        run_server(scene_file=self._scene_json_file, directory=tmp_dir)
 
     def _rerun_button_callback(self, btn):
         """Callback for the "Rerun Simulation" button. When executed the
