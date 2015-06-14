@@ -75,3 +75,7 @@ def find_dynamicsymbols(expression, exclude=None):
         exclude_set = set()
     return set([i for i in expression.atoms(AppliedUndef, sm.Derivative) if
                 i.free_symbols == t_set]) - exclude_set
+
+
+class PyDyDeprecationWarning(DeprecationWarning):
+    pass

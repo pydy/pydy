@@ -5,8 +5,8 @@ if sys.version_info > (3, 0):
     from collections.abc import Sequence
 else:
     from collections import Sequence
-from pkg_resources import parse_version
 from itertools import chain
+from pkg_resources import parse_version
 import warnings
 
 import numpy as np
@@ -20,7 +20,12 @@ theano = sm.external.import_module('theano')
 if theano:
     from sympy.printing.theanocode import theano_function
 
+import pydy
+from ..utils import PyDyDeprecationWarning
 from .cython_code import CythonMatrixGenerator
+
+
+warnings.simplefilter('once', PyDyDeprecationWarning)
 
 
 class ODEFunctionGenerator(object):
@@ -374,6 +379,10 @@ r : dictionary
         the key 'constants'. It may also contain a key 'specified'."""
 
         # DEPRECATED : Remove before 0.4.0 release.
+        if parse_version(pydy.__version__) > parse_version('0.4.0'):
+            msg = ("The old style args, i.e. {'constants': , 'specified'}, "
+                    "for the generated function is no longer supported as "
+                    "of PyDy 0.4.0. Please remove this function.")
 
         last_arg = args[-1]
         try:
@@ -382,11 +391,10 @@ r : dictionary
         except (KeyError, IndexError, ValueError):
             return args
         else:
-            with warnings.catch_warnings():
-                warnings.simplefilter('once')
-                warnings.warn("The old style args, i.e. {'constants': , "
-                              "'specified'}, for the generated function will "
-                              "be removed in PyDy 0.4.0.", DeprecationWarning)
+            warnings.warn("The old style args, i.e. {'constants': , "
+                          "'specified'}, for the generated function will be "
+                          "removed in PyDy 0.4.0.",
+                          PyDyDeprecationWarning)
 
             new_args = list(args[:-1])  # gets x and t
 
