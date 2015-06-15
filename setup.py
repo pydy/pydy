@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 
 from setuptools import setup, find_packages
 
@@ -11,6 +12,18 @@ exec(open('pydy/version.py').read())
 # https://github.com/statsmodels/statsmodels/issues/1073, so the following
 # line is added.
 os.environ["MPLCONFIGDIR"] = "."
+
+NUMPY_MIN_VER = '1.7'
+SCIPY_MIN_VER = '0.11'
+SYMPY_MIN_VER = '0.7.4.1'
+CYTHON_MIN_VER = '0.17'
+THEANO_MIN_VER = '0.6.0'
+if sys.version_info >= (3, 0):
+    NUMPY_MIN_VER = '1.9'
+    SCIPY_MIN_VER = '0.14.0'
+    SYMPY_MIN_VER = '0.7.5'
+    CYTHON_MIN_VER = '0.20.1'
+    THEANO_MIN_VER = '0.7.0'
 
 setup(
     name='pydy',
@@ -23,12 +36,13 @@ setup(
     keywords="multibody dynamics",
     license='LICENSE.txt',
     packages=find_packages(),
-    install_requires=['sympy>=0.7.4.1',
-                      'numpy>=1.7',
-                      'scipy>=0.11',
+    install_requires=['numpy>={}'.format(NUMPY_MIN_VER),
+                      'scipy>={}'.format(SCIPY_MIN_VER),
+                      'sympy>={}'.format(SYMPY_MIN_VER),
                       ],
     extras_require={'doc': ['sphinx', 'numpydoc'],
-                    'codegen': ['Cython>=0.17', 'Theano>=0.6.0'],
+                    'codegen': ['Cython>={}'.format(CYTHON_MIN_VER),
+                                'Theano>={}'.format(THEANO_MIN_VER)],
                     'examples': ['matplotlib>=0.99'],
                     },
     tests_require=['nose>=1.3.0'],
