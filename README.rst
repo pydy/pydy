@@ -7,7 +7,7 @@ PyDy
 .. |pypi| image:: https://img.shields.io/pypi/v/pydy.svg
    :target: https://pypi.python.org/pypi/pydy
    :alt: Latest Released Version
-   
+
 .. |binstar| image:: https://binstar.org/pydy/pydy/badges/version.svg
    :target: https://binstar.org/pydy/pydy
 
@@ -69,7 +69,7 @@ PyDy has hard dependencies on the following software\[#]_:
 
 PyDy has optional dependencies on these packages:
 
-- IPython_ >= 0.2.0
+- IPython_ >= 0.3.0
 - Theano_ >= 0.6.0 (>= 0.7.0 with Python >= 3.3)
 - Cython_ >= 0.17 (>= 0.20.1 with Python >= 3.3)
 
@@ -349,8 +349,9 @@ Release Notes
 User Facing
 ~~~~~~~~~~~
 
-- Added support Python 3.3 and 3.4. [PR `#38`_]
-- Bumped up the minimum dependencies for NumPy, SciPy, and Cython.
+- Dropped support for IPython < 3.0. [PR `#237`_]
+- Added support Python 3.3 and 3.4. [PR `#229`_]
+- Bumped up the minimum dependencies for NumPy, SciPy, and Cython [PR `#233`_].
 - Removed the partial implementation of the Mesh shape. [PR `#172`_]
 - Overhauled the code generation package to make the generators more easily
   extensible and to improve simulation speed. [PR `#113`_]
@@ -376,7 +377,9 @@ User Facing
 - Added a new System class and module to more seamlessly manage integrating the
   equations of motion. [PR `#81`_]
 
-.. _#38: https://github.com/pydy/pydy/pull/38
+.. _#237: https://github.com/pydy/pydy/pull/237
+.. _#229: https://github.com/pydy/pydy/pull/229
+.. _#233: https://github.com/pydy/pydy/pull/233
 .. _#172: https://github.com/pydy/pydy/pull/172
 .. _#113: https://github.com/pydy/pydy/pull/113
 .. _#82: https://github.com/pydy/pydy/pull/82
@@ -385,12 +388,14 @@ User Facing
 Development
 ~~~~~~~~~~~
 
+- Switched to a conda based Travis testing setup. [PR `#231`_]
 - When using older SymPy development versions with non-PEP440 compliant version
   identifiers, setuptools < 8 is required. [PR `#166`_]
 - Development version numbers are now PEP 440 compliant. [PR `#141`_]
 - Introduced pull request checklists and CONTRIBUTING file. [PR `#146`_]
 - Introduced light code linting into Travis. [PR `#148`_]
 
+.. _#231: https://github.com/pydy/pydy/pull/231
 .. _#166: https://github.com/pydy/pydy/pull/166
 .. _#141: https://github.com/pydy/pydy/pull/141
 .. _#146: https://github.com/pydy/pydy/pull/146
