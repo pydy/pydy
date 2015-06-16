@@ -79,3 +79,6 @@ def find_dynamicsymbols(expression, exclude=None):
 
 class PyDyDeprecationWarning(DeprecationWarning):
     pass
+
+class PyDyImportWarning(ImportWarning):
+    pass

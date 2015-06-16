@@ -3,6 +3,7 @@
 # standard library
 from __future__ import division
 import os
+import warnings
 import json
 import distutils
 import distutils.dir_util
@@ -19,6 +20,7 @@ from .camera import PerspectiveCamera
 from .server import run_server
 from .light import PointLight
 from ..system import System
+from ..utils import PyDyImportWarning
 
 import sys
 if sys.version_info > (3, 0):
@@ -27,26 +29,22 @@ if sys.version_info > (3, 0):
 
 __all__ = ['Scene']
 
+warnings.simplefilter('once', PyDyImportWarning)
+
 try:
     import IPython
-    from IPython.html import widgets
-    from IPython.display import display, Javascript
-
-    ipy_ver = parse_version(IPython.__version__)
-    if ipy_ver < parse_version('2.0'):
-        raise ImportWarning('PyDy supports IPython >= 2.0.0, while you have ' +
-                            'IPython ' + IPython.__version__ + ' installed. ' +
-                            'IPython related functionalities will not be ' +
-                            'available')
-        ipython_less_than_3 = None
-    elif ipy_ver >= parse_version('2.0') and ipy_ver < parse_version('3.0'):
+    if parse_version(IPython.__version__) < parse_version('3.0'):
+        msg = ('PyDy only supports IPython >= 3.0.0. You have '
+               'IPython {} installed. IPython related functionalities will '
+               'not be available')
+        warnings.warn(msg.format(IPython.__version__), PyDyImportWarning)
         ipython_less_than_3 = True
-    else:  # ipython >= 3.0
+    else:
         ipython_less_than_3 = False
-
+        from IPython.html import widgets
+        from IPython.display import display, Javascript
 except ImportError:
     IPython = None
-    ipython_less_than_3 = None
 
 
 class Scene(object):
@@ -472,10 +470,7 @@ class Scene(object):
         parameter values are collected from the text input widgets and used
         in a new simulation of the model."""
 
-        if ipython_less_than_3:
-            btn.add_class('disabled')
-        else:
-            btn._dom_classes = ['btn-info', 'active', 'disabled']
+        btn._dom_classes = ['btn-info', 'active', 'disabled']
 
         btn.description = 'Rerunning Simulation...'
 
@@ -504,10 +499,7 @@ class Scene(object):
         display(Javascript(js))
         display(Javascript('jQuery("#simulation-load").click()'))
 
-        if ipython_less_than_3:
-            btn.remove_class('disabled')
-        else:
-            btn._dom_classes = ['btn-info', 'enabled']
+        btn._dom_classes = ['btn-info', 'enabled']
 
         btn.description = self._rerun_button_desc
 
@@ -519,24 +511,16 @@ class Scene(object):
 
             desc = latex(sym, mode='inline')
 
-            if ipython_less_than_3:
-                text_widget = widgets.FloatTextWidget(value=init_val,
-                                                      description=desc)
-            else:
-                text_widget = widgets.FloatText(value=init_val,
-                                                description=desc)
+            text_widget = widgets.FloatText(value=init_val,
+                                            description=desc)
 
             self._constants_text_widgets[sym] = text_widget
 
     def _initialize_rerun_button(self):
         """Construct a button for controlling rerunning the simulations."""
 
-        if ipython_less_than_3:
-            self._rerun_button = widgets.ButtonWidget()
-            self._rerun_button.add_class('btn-info')
-        else:
-            self._rerun_button = widgets.Button()
-            self._rerun_button._dom_classes = ['btn-info']
+        self._rerun_button = widgets.Button()
+        self._rerun_button._dom_classes = ['btn-info']
 
         self._rerun_button_desc = "Rerun Simulation"
         self._rerun_button.description = self._rerun_button_desc
@@ -549,19 +533,18 @@ class Scene(object):
 
         Notes
         =====
-        IPython widgets are only supported by IPython versions >= 2.0.0.
+        IPython widgets are only supported by IPython versions >= 3.0.0.
 
         """
 
-        # Raise error whenever display_ipython() is called and IPython is
-        # not installed or IPython < '2.0.0'
         if IPython is None:
             raise ImportError('IPython is not installed but is required. ' +
-                              'Please install IPython >= 2.0 and try again')
-        elif ipython_less_than_3 is None:
-            raise ImportError('You have IPython ' + IPython.__version__ +
-                              ' installed but PyDy supports IPython >= 2.0.0' +
-                              'Please update IPython and try again')
+                              'Please install IPython >= 3.0 and try again')
+
+        if ipython_less_than_3:
+            msg = ('You have IPython {} installed but PyDy only supports '
+                   'IPython >= 3.0. Please update IPython and try again.')
+            raise ImportError(msg.format(IPython.__version__))
 
         self.create_static_html(silent=True)
 
@@ -571,15 +554,8 @@ class Scene(object):
 
             # Construct a container that holds all of the constants input
             # text widgets.
-            if ipython_less_than_3:
-                self._constants_container = widgets.ContainerWidget()
-                self._constants_container.set_css({"max-height": "10em",
-                                                   "overflow-y": "scroll",
-                                                   "display": "block"})
-            else:
-                self._constants_container = widgets.Box()
-                self._constants_container._css = [("canvas", "width",
-                                                   "100%")]
+            self._constants_container = widgets.Box()
+            self._constants_container._css = [("canvas", "width", "100%")]
 
             self._constants_text_widgets = OrderedDict()
             self._fill_constants_widgets()
@@ -597,11 +573,6 @@ class Scene(object):
 
         html = html.format(load_url='static/' + self._scene_json_file)
 
-        if ipython_less_than_3:
-            self._html_widget = widgets.HTMLWidget(value=html)
-            self._html_widget.set_css({"display": "block",
-                                       "float": "left"})
-        else:
-            self._html_widget = widgets.HTML(value=html)
+        self._html_widget = widgets.HTML(value=html)
 
         display(self._html_widget)
