@@ -1,8 +1,12 @@
+import warnings
 from sympy.matrices.expressions import Identity
 
+from ..utils import PyDyUserWarning
 from .visualization_frame import VisualizationFrame
 
 __all__ = ['PerspectiveCamera', 'OrthoGraphicCamera']
+
+warnings.simplefilter('once', PyDyUserWarning)
 
 
 class PerspectiveCamera(VisualizationFrame):
@@ -64,8 +68,9 @@ class PerspectiveCamera(VisualizationFrame):
         >>> camera3 = PerspectiveCamera('frame3', I, Pa)
         """
 
-        raise RuntimeWarning("Rotation of Perspective Camera does not work " +
-                             "properly in the visualiser.")
+        msg = ("Rotation of Perspective Camera does not work "
+               "properly in the visualiser.")
+        warnings.warn(msg, PyDyUserWarning)
 
         try:
             self._fov = kwargs['fov']

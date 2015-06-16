@@ -50,7 +50,7 @@ you must call ``generate_ode_function`` on your own::
     sys.integrate()
 
 """
-
+import warnings
 from itertools import repeat
 
 import sympy as sm
@@ -58,12 +58,14 @@ from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
 
 from .codegen.ode_function_generators import generate_ode_function
-from .utils import sympy_equal_to_or_newer_than
+from .utils import sympy_equal_to_or_newer_than, PyDyFutureWarning
 
 SYMPY_VERSION = sm.__version__
 
 if sympy_equal_to_or_newer_than('0.7.6'):
     from sympy.physics.mechanics.functions import find_dynamicsymbols
+
+warnings.simplefilter('once', PyDyFutureWarning)
 
 
 class System(object):
@@ -96,7 +98,8 @@ class System(object):
     """
     def __init__(self, eom_method, constants=None, specifieds=None,
                  ode_solver=None, initial_conditions=None, times=None):
-        raise FutureWarning('PyDy System is experimental and may change in the future.')
+        msg = ('PyDy System is experimental and may change in the future.')
+        warnings.warn(msg, PyDyFutureWarning)
 
         self._eom_method = eom_method
 
