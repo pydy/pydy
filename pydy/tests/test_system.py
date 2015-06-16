@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from collections import Counter
-
 import numpy as np
 from numpy import testing
 import sympy as sm
@@ -22,7 +20,7 @@ class TestSystem():
         # Create a simple system with one specified quantity.
         self.sys = multi_mass_spring_damper(1, apply_gravity=True,
                                             apply_external_forces=True)
-        self.specified_symbol = self.sys.specifieds_symbols[0]
+        self.specified_symbol = next(iter(self.sys.specifieds_symbols))
         self.constant_map = dict(zip(sm.symbols('m0, k0, c0, g'),
                                      [2.0, 1.5, 0.5, 9.8]))
         self.sys.specifieds = {self.specified_symbol: np.ones(1)}
@@ -39,9 +37,9 @@ class TestSystem():
         # -----------------------------------
         sys = System(self.kane)
 
-        assert (Counter(sys.constants_symbols) ==
-                Counter(list(sm.symbols('k0, m0, g, c0'))))
-        assert sys.specifieds_symbols == [self.specified_symbol]
+        assert (sys.constants_symbols ==
+                set(sm.symbols('k0, m0, g, c0')))
+        assert sys.specifieds_symbols == {self.specified_symbol}
         assert sys.states == dynamicsymbols('x0, v0')
         assert sys.evaluate_ode_function is None
         assert sys.eom_method is self.kane
@@ -60,13 +58,15 @@ class TestSystem():
                      constants=self.constant_map)
 
         assert sys.eom_method is self.kane
-        assert sys.specifieds.keys() == [dynamicsymbols('f0')]
-        testing.assert_allclose(sys.specifieds.values(), [np.ones(1)])
+        assert list(sys.specifieds.keys()) == [dynamicsymbols('f0')]
+        testing.assert_allclose(list(sys.specifieds.values()),
+                                [np.ones(1)])
         assert sys.initial_conditions.keys() == ic.keys()
-        testing.assert_allclose(sys.initial_conditions.values(), ic.values())
+        testing.assert_allclose(list(sys.initial_conditions.values()),
+                                list(ic.values()))
         assert sys.constants.keys() == self.constant_map.keys()
-        testing.assert_allclose(sys.constants.values(),
-                                self.constant_map.values())
+        testing.assert_allclose(list(sys.constants.values()),
+                                list(self.constant_map.values()))
 
         # Use old specifieds.
         # -------------------
@@ -107,7 +107,8 @@ class TestSystem():
         sys = System(self.kane, constants=constants)
 
         assert sys.constants.keys() == constants.keys()
-        testing.assert_allclose(sys.constants.values(), constants.values())
+        testing.assert_allclose(list(sys.constants.values()),
+                                list(constants.values()))
 
         # Set constants after construction.
         # ---------------------------------
@@ -118,15 +119,16 @@ class TestSystem():
         sys.constants = constants
 
         assert sys.constants.keys() == constants.keys()
-        testing.assert_allclose(sys.constants.values(), constants.values())
+        testing.assert_allclose(list(sys.constants.values()),
+                                list(constants.values()))
 
         # Using the property as a dict.
         # -----------------------------
         sys = System(self.kane)
         # Modifying the dict directly does change the dict.
         sys.constants[sm.symbols('m0')] = 9.3
-        assert sys.constants.keys() == [sm.symbols('m0')]
-        testing.assert_allclose(sys.constants.values(), [9.3])
+        assert list(sys.constants.keys()) == [sm.symbols('m0')]
+        testing.assert_allclose(list(sys.constants.values()), [9.3])
 
         # Putting in a non-constant key does not raise exception.
         sys.constants[dynamicsymbols('v0')] = 9.8
@@ -147,15 +149,15 @@ class TestSystem():
         sys = System(self.kane)
         assert sys.specifieds == dict()
         sys.specifieds = {dynamicsymbols('f0'): 5.9}
-        assert sys.specifieds.keys() == [dynamicsymbols('f0')]
-        testing.assert_allclose(sys.specifieds.values(), [5.9])
+        assert list(sys.specifieds.keys()) == [dynamicsymbols('f0')]
+        testing.assert_allclose(list(sys.specifieds.values()), [5.9])
 
         # Using the property as a dict.
         # -----------------------------
         # Modifying the dict directly does change the dict.
         sys.specifieds[dynamicsymbols('f0')] = 5.1
-        assert sys.specifieds.keys() == [dynamicsymbols('f0')]
-        testing.assert_allclose(sys.specifieds.values(), [5.1])
+        assert list(sys.specifieds.keys()) == [dynamicsymbols('f0')]
+        testing.assert_allclose(list(sys.specifieds.values()), [5.1])
         # Putting in a non-specified key does not raise exception.
         sys.specifieds[dynamicsymbols('v0')] = 3.5
         # Then, if we integrate, we do error-checking and we get an exception.
@@ -183,7 +185,7 @@ class TestSystem():
         # Complex error-checking when using property as a dict.
         # -----------------------------------------------------
         sys = System(self.kane_nlink)
-        spec_syms = sys.specifieds_symbols
+        spec_syms = list(sys.specifieds_symbols)
         times = np.linspace(0, 0.5, 10)
         sys.specifieds = {
             spec_syms[0]: lambda x, t: np.ones(t),
@@ -212,7 +214,7 @@ class TestSystem():
         # Test old way of providing specifieds.
         # -------------------------------------
         sys = System(self.kane_nlink)
-        spec_syms = sys.specifieds_symbols
+        spec_syms = list(sys.specifieds_symbols)
         # Get numbers using the new way.
         sys.specifieds = dict(zip(spec_syms, [1.0, 2.0, 3.0, 4.0]))
         sys.times = times
@@ -274,22 +276,24 @@ class TestSystem():
         # ----------------------
         sys = System(self.kane, initial_conditions=ic)
         assert sys.initial_conditions.keys() == ic.keys()
-        testing.assert_allclose(sys.initial_conditions.values(), ic.values())
+        testing.assert_allclose(list(sys.initial_conditions.values()),
+                                list(ic.values()))
 
         # Set the attribute.
         # ------------------
         sys = System(self.kane)
         sys.initial_conditions = ic
         assert sys.initial_conditions.keys() == ic.keys()
-        testing.assert_allclose(sys.initial_conditions.values(), ic.values())
+        testing.assert_allclose(list(sys.initial_conditions.values()),
+                                list(ic.values()))
 
         # Using the property as a dict.
         # -----------------------------
         # Modifying hte dict directly does change the dict.
         sys = System(self.kane, times=[0.0, 1.0])
         sys.initial_conditions[dynamicsymbols('x0')] = 5.8
-        assert sys.initial_conditions.keys() == [dynamicsymbols('x0')]
-        testing.assert_allclose(sys.initial_conditions.values(), [5.8])
+        assert list(sys.initial_conditions.keys()) == [dynamicsymbols('x0')]
+        testing.assert_allclose(list(sys.initial_conditions.values()), [5.8])
         # Putting in a non-state key does not raise exception.
         sys.initial_conditions[sm.symbols('m0')] = 7.9
         # Then, if we integrate, we do error-checking and we get an exception.
@@ -320,7 +324,7 @@ class TestSystem():
         # n-link cart: play with specifieds.
         # ----------------------------------
         sys = System(self.kane_nlink)
-        spec_syms = sys.specifieds_symbols
+        spec_syms = list(sys.specifieds_symbols)
         rhs = sys.generate_ode_function()
         x = np.array(np.random.random(len(sys.states)))
         args = (self.sys.specifieds,

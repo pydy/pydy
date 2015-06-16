@@ -20,6 +20,11 @@ from .server import run_server
 from .light import PointLight
 from ..system import System
 
+import sys
+if sys.version_info > (3, 0):
+    raw_input = input
+
+
 __all__ = ['Scene']
 
 try:
@@ -392,12 +397,12 @@ class Scene(object):
 
         if os.path.exists(dst) and overwrite is False:
             ans = raw_input("The 'static' directory already exists. Would "
-                            + "you like to overwrite the contents? [y|n]\n")
+                            "you like to overwrite the contents? [y|n]\n")
             if ans == 'y':
                 distutils.dir_util.remove_tree(dst)
             else:
                 if not silent:
-                    print "Aborted!"
+                    print("Aborted!")
                 return
 
         src = os.path.join(os.path.dirname(__file__), 'static')
@@ -441,7 +446,7 @@ class Scene(object):
 
         """
         if not os.path.exists('static'):
-            print "All Done!"
+            print("All Done!")
             return
 
         if not force:
@@ -453,9 +458,9 @@ class Scene(object):
         if force:
             distutils.dir_util.remove_tree(os.path.join(os.getcwd(),
                                                         'static'))
-            print "All Done!"
+            print("All Done!")
         else:
-            print "aborted!"
+            print("aborted!")
 
     def display(self):
         """Displays the scene in the default webbrowser."""
@@ -580,7 +585,7 @@ class Scene(object):
             self._fill_constants_widgets()
             # Add all of the constants widgets to the container.
             self._constants_container.children = \
-                self._constants_text_widgets.values()
+                tuple(v for v in self._constants_text_widgets.values())
 
             self._initialize_rerun_button()
 

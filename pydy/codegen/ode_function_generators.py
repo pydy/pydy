@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+import sys
+if sys.version_info > (3, 0):
+    from collections.abc import Sequence
+else:
+    from collections import Sequence
+from itertools import chain
+from pkg_resources import parse_version
 import warnings
 
 import numpy as np
@@ -13,7 +20,12 @@ theano = sm.external.import_module('theano')
 if theano:
     from sympy.printing.theanocode import theano_function
 
+import pydy
+from ..utils import PyDyDeprecationWarning
 from .cython_code import CythonMatrixGenerator
+
+
+warnings.simplefilter('once', PyDyDeprecationWarning)
 
 
 class ODEFunctionGenerator(object):
@@ -282,6 +294,14 @@ r : dictionary
         self.constants_arg_type = constants_arg_type
         self.specifieds_arg_type = specifieds_arg_type
 
+        # As the order of the constants and specifieds arguments if not
+        # important, allow Sets to be used as input. However, the order must be
+        # maintained and converted to a Sequence.
+        if constants is not None and not isinstance(constants, Sequence):
+            self.constants = tuple(constants)
+        if specifieds is not None and not isinstance(specifieds, Sequence):
+            self.specifieds = tuple(specifieds)
+
         self.system_type = self._deduce_system_type(
             mass_matrix=mass_matrix,
             coordinate_derivatives=coordinate_derivatives)
@@ -359,6 +379,10 @@ r : dictionary
         the key 'constants'. It may also contain a key 'specified'."""
 
         # DEPRECATED : Remove before 0.4.0 release.
+        if parse_version(pydy.__version__) > parse_version('0.4.0'):
+            msg = ("The old style args, i.e. {'constants': , 'specified'}, "
+                    "for the generated function is no longer supported as "
+                    "of PyDy 0.4.0. Please remove this function.")
 
         last_arg = args[-1]
         try:
@@ -367,11 +391,10 @@ r : dictionary
         except (KeyError, IndexError, ValueError):
             return args
         else:
-            with warnings.catch_warnings():
-                warnings.simplefilter('once')
-                warnings.warn("The old style args, i.e. {'constants': , "
-                              "'specified'}, for the generated function will "
-                              "be removed in PyDy 0.4.0.", DeprecationWarning)
+            warnings.warn("The old style args, i.e. {'constants': , "
+                          "'specified'}, for the generated function will be "
+                          "removed in PyDy 0.4.0.",
+                          PyDyDeprecationWarning)
 
             new_args = list(args[:-1])  # gets x and t
 
@@ -713,7 +736,6 @@ r : dictionary
         p]."""
 
         self.inputs = [self.coordinates, self.speeds, self.constants]
-
         if self.specifieds is not None:
             self.inputs.insert(2, self.specifieds)
 
@@ -884,12 +906,13 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
     __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
 
     def define_inputs(self):
-
-        if self.specifieds is None:
-            self.inputs = self.coordinates + self.speeds + self.constants
-        else:
-            self.inputs = (self.coordinates + self.speeds + self.specifieds
-                           + self.constants)
+        # Theano's input requires a flatted sequence instead of sequence of
+        # sequences.
+        specifieds = []
+        if self.specifieds is not None:
+            specifieds = self.specifieds
+        self.inputs = chain(self.coordinates, self.speeds,
+                            specifieds, self.constants)
 
     def _theanoize(self, outputs):
 

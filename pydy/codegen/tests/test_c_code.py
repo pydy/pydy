@@ -25,7 +25,7 @@ class TestCMatrixGenerator():
         self.arguments = (list(sm.ordered(sys.constants_symbols)),
                           sys.coordinates,
                           sys.speeds,
-                          sys.specifieds_symbols)
+                          list(sm.ordered(sys.specifieds_symbols)))
 
         self.generator = CMatrixGenerator(self.arguments, self.matrices)
 
@@ -47,7 +47,7 @@ class TestCMatrixGenerator():
          m4, m5) = self.arguments[0]
         x0, x1, x2, x3, x4, x5 = self.arguments[1]
         v0, v1, v2, v3, v4, v5 = self.arguments[2]
-        f5, f2, f3, f0, f4, f1 = self.arguments[3]
+        f0, f1, f2, f3, f4, f5 = self.arguments[3]
 
         expected_subexprs = [
             (pd[0], m4 + m5),
@@ -103,7 +103,7 @@ class TestCMatrixGenerator():
                      'm0, m1, m2, m3, m4, m5'),
                     'x0(t), x1(t), x2(t), x3(t), x4(t), x5(t)',
                     'v0(t), v1(t), v2(t), v3(t), v4(t), v5(t)',
-                    'f5(t), f2(t), f3(t), f0(t), f4(t), f1(t)')
+                    'f0(t), f1(t), f2(t), f3(t), f4(t), f5(t)')
 
         assert self.generator.comma_lists() == expected
 
@@ -131,7 +131,7 @@ input_0[19] : [c0, c1, c2, c3, c4, c5, g, k0, k1, k2, k3, k4, k5, m0, m1, m2,
 m3, m4, m5]
 input_1[6] : [x0(t), x1(t), x2(t), x3(t), x4(t), x5(t)]
 input_2[6] : [v0(t), v1(t), v2(t), v3(t), v4(t), v5(t)]
-input_3[6] : [f5(t), f2(t), f3(t), f0(t), f4(t), f1(t)]\
+input_3[6] : [f0(t), f1(t), f2(t), f3(t), f4(t), f5(t)]\
 """
 
         expected['subexprs'] = \
@@ -140,16 +140,16 @@ input_3[6] : [f5(t), f2(t), f3(t), f0(t), f4(t), f1(t)]\
     double pydy_1 = input_0[16] + pydy_0;
     double pydy_2 = input_0[15] + pydy_1;
     double pydy_3 = input_0[14] + pydy_2;
-    double pydy_4 = input_3[1];
-    double pydy_5 = input_3[2];
+    double pydy_4 = input_3[2];
+    double pydy_5 = input_3[3];
     double pydy_6 = input_3[4];
-    double pydy_7 = input_3[0];
+    double pydy_7 = input_3[5];
     double pydy_8 = input_0[6]*input_0[15];
     double pydy_9 = input_0[6]*input_0[16];
     double pydy_10 = input_0[6]*input_0[17];
     double pydy_11 = input_0[6]*input_0[18];
     double pydy_12 = input_0[6]*input_0[14] + pydy_10 + pydy_11 + pydy_4 +
-    pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9 + input_3[5];\
+    pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9 + input_3[1];\
 """
 
 
@@ -193,7 +193,7 @@ input_3[6] : [f5(t), f2(t), f3(t), f0(t), f4(t), f1(t)]\
     output_0[35] = input_0[18];
 
     output_1[0] = -input_0[0]*input_2[0] + input_0[6]*input_0[13] -
-    input_0[7]*input_1[0] + pydy_12 + input_3[3];
+    input_0[7]*input_1[0] + pydy_12 + input_3[0];
     output_1[1] = -input_0[1]*input_2[1] - input_0[8]*input_1[1] + pydy_12;
     output_1[2] = -input_0[2]*input_2[2] - input_0[9]*input_1[2] + pydy_10 +
     pydy_11 + pydy_4 + pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9;
@@ -228,7 +228,7 @@ input_0[19] : [c0, c1, c2, c3, c4, c5, g, k0, k1, k2, k3, k4, k5, m0, m1, m2,
 m3, m4, m5]
 input_1[6] : [x0(t), x1(t), x2(t), x3(t), x4(t), x5(t)]
 input_2[6] : [v0(t), v1(t), v2(t), v3(t), v4(t), v5(t)]
-input_3[6] : [f5(t), f2(t), f3(t), f0(t), f4(t), f1(t)]
+input_3[6] : [f0(t), f1(t), f2(t), f3(t), f4(t), f5(t)]
 
 */\
 """
@@ -251,16 +251,16 @@ void evaluate(
     double pydy_1 = input_0[16] + pydy_0;
     double pydy_2 = input_0[15] + pydy_1;
     double pydy_3 = input_0[14] + pydy_2;
-    double pydy_4 = input_3[1];
-    double pydy_5 = input_3[2];
+    double pydy_4 = input_3[2];
+    double pydy_5 = input_3[3];
     double pydy_6 = input_3[4];
-    double pydy_7 = input_3[0];
+    double pydy_7 = input_3[5];
     double pydy_8 = input_0[6]*input_0[15];
     double pydy_9 = input_0[6]*input_0[16];
     double pydy_10 = input_0[6]*input_0[17];
     double pydy_11 = input_0[6]*input_0[18];
     double pydy_12 = input_0[6]*input_0[14] + pydy_10 + pydy_11 + pydy_4 +
-    pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9 + input_3[5];
+    pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9 + input_3[1];
 
     output_0[0] = input_0[13] + pydy_3;
     output_0[1] = pydy_3;
@@ -300,7 +300,7 @@ void evaluate(
     output_0[35] = input_0[18];
 
     output_1[0] = -input_0[0]*input_2[0] + input_0[6]*input_0[13] -
-    input_0[7]*input_1[0] + pydy_12 + input_3[3];
+    input_0[7]*input_1[0] + pydy_12 + input_3[0];
     output_1[1] = -input_0[1]*input_2[1] - input_0[8]*input_1[1] + pydy_12;
     output_1[2] = -input_0[2]*input_2[2] - input_0[9]*input_1[2] + pydy_10 +
     pydy_11 + pydy_4 + pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9;

@@ -21,7 +21,7 @@ class TestCodeRHSArgs():
         sys = n_link_pendulum_on_cart(3, True, True)
 
         constants = sys.constants_symbols
-        specifieds = sys.specifieds_symbols
+        specifieds = tuple(sys.specifieds_symbols)
 
         args = (sys.eom_method.mass_matrix_full,
                 sys.eom_method.forcing_full,
@@ -42,7 +42,7 @@ class TestCodeRHSArgs():
         xd_01 = rhs(x, 0.0, rhs_args)
 
         rhs_args['specified'] = {
-            tuple(specifieds): lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])}
+            specifieds: lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])}
 
         xd_02 = rhs(x, 0.0, rhs_args)
 
@@ -79,7 +79,7 @@ class TestCode():
                 system.coordinates,
                 system.speeds)
 
-        kwargs = {'specified': system.specifieds_symbols}
+        kwargs = {'specified': tuple(system.specifieds_symbols)}
 
         mass_matrix, forcing_vector, constants, coordinates, speeds = args
         specifieds = kwargs['specified']

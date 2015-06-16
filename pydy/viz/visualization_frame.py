@@ -1,5 +1,10 @@
 __all__ = ['VisualizationFrame']
 
+import sys
+if sys.version_info < (3, 0):
+    from collections import Iterator
+else:
+    from collections.abc import Iterator
 import numpy as np
 from sympy import Dummy, lambdify
 from sympy.matrices.expressions import Identity
@@ -255,9 +260,9 @@ class VisualizationFrame(object):
         dummy_symbols = [Dummy() for i in dynamic_variables]
         dummy_dict = dict(zip(dynamic_variables, dummy_symbols))
         transform = self._transform.subs(dummy_dict)
+        dummy_symbols.extend(constant_variables)
 
-        self._numeric_transform = lambdify(dummy_symbols +
-                                           constant_variables, transform,
+        self._numeric_transform = lambdify(dummy_symbols, transform,
                                            modules="numpy")
 
         return self._numeric_transform
@@ -282,6 +287,8 @@ class VisualizationFrame(object):
         #else convert it to one:
 
         states = np.array(dynamic_values)
+        if not isinstance(constant_values, Iterator):
+            constant_values = list(constant_values)
         if len(states.shape) > 1:
             n = states.shape[0]
             new = np.zeros((n, 4, 4))
