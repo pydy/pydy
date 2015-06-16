@@ -349,6 +349,7 @@ class Scene(object):
         ``generate_visualization_json`` method.
 
         """
+        print "calling generate visualization json system"
         if not isinstance(system, System):
             msg = "{} should be a valid pydy.System object".format(system)
             raise TypeError(msg)
@@ -459,16 +460,26 @@ class Scene(object):
         else:
             print "aborted!"
 
+    def create_tmp_directory(self):
+        """Removes other tmp directories and creates a new one"""
+        print "Calling create tmp directory"
+        directories = os.listdir(tempfile.gettempdir())
+        for directory in directories:
+            if directory.startswith("pydy"):
+                shutil.rmtree(os.path.join(tempfile.gettempdir(), directory))
+
+        self.tmp_dir = tempfile.mkdtemp(prefix='pydy_', suffix='_viz')
+        src = os.path.join(os.path.dirname(__file__), 'static')
+        distutils.dir_util.copy_tree(src, self.tmp_dir)
+        shutil.move(os.path.join(os.getcwd(), self._scene_json_file),
+                    os.path.join(self.tmp_dir, self._scene_json_file))
+        shutil.move(os.path.join(os.getcwd(), self._simulation_json_file),
+                    os.path.join(self.tmp_dir, self._simulation_json_file))
+
     def display(self):
         """Displays the scene in the default webbrowser."""
-        tmp_dir = tempfile.mkdtemp(prefix='pydy_', suffix='_viz')
-        src = os.path.join(os.path.dirname(__file__), 'static')
-        distutils.dir_util.copy_tree(src, tmp_dir)
-        shutil.move(os.path.join(os.getcwd(), self._scene_json_file),
-                    os.path.join(tmp_dir, self._scene_json_file))
-        shutil.move(os.path.join(os.getcwd(), self._simulation_json_file),
-                    os.path.join(tmp_dir, self._simulation_json_file))
-        server = Server(scene_file=self._scene_json_file, directory=tmp_dir)
+        self.create_tmp_directory()
+        server = Server(scene_file=self._scene_json_file, directory=self.tmp_dir)
         server.run_server()
 
     def _rerun_button_callback(self, btn):
@@ -557,6 +568,7 @@ class Scene(object):
 
         """
 
+        print "CAlling display_ipython"
         # Raise error whenever display_ipython() is called and IPython is
         # not installed or IPython < '2.0.0'
         if IPython is None:
@@ -567,7 +579,7 @@ class Scene(object):
                               ' installed but PyDy supports IPython >= 2.0.0' +
                               'Please update IPython and try again')
 
-        self.create_static_html(silent=True)
+        self.create_tmp_directory()
 
         # Only create the constants input boxes and the rerun simulation
         # button if the scene was generated with a System.
@@ -596,11 +608,13 @@ class Scene(object):
             display(self._constants_container)
             display(self._rerun_button)
 
-        with open("static/index_ipython.html", 'r') as html_file:
+        with open(os.path.join(self.tmp_dir, "index_ipython.html"), 'r') as html_file:
             html = html_file.read()
 
-        html = html.format(load_url='static/' + self._scene_json_file)
-
+        print "tmp_dir",os.path.join(self.tmp_dir, self._scene_json_file)
+        print os.path.relpath(self.tmp_dir, os.getcwd())
+        html = html.format(tmp_dir=os.path.relpath(self.tmp_dir, os.getcwd()),
+                           load_url=os.path.join(self.tmp_dir, self._scene_json_file))
         if ipython_less_than_3:
             self._html_widget = widgets.HTMLWidget(value=html)
             self._html_widget.set_css({"display": "block",
