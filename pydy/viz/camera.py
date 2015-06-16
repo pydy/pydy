@@ -63,6 +63,10 @@ class PerspectiveCamera(VisualizationFrame):
         >>> # initializing with Particle, reference_frame ...
         >>> camera3 = PerspectiveCamera('frame3', I, Pa)
         """
+
+        raise RuntimeWarning("Rotation of Perspective Camera does not work " +
+                             "properly in the visualiser.")
+
         try:
             self._fov = kwargs['fov']
         except KeyError:

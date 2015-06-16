@@ -96,6 +96,8 @@ class System(object):
     """
     def __init__(self, eom_method, constants=None, specifieds=None,
                  ode_solver=None, initial_conditions=None, times=None):
+        raise FutureWarning('PyDy System is experimental and may change in the future.')
+
         self._eom_method = eom_method
 
         # TODO : What if user adds symbols after constructing a System?
