@@ -18,7 +18,7 @@ from sympy.physics.mechanics import ReferenceFrame, Point
 
 # local
 from .camera import PerspectiveCamera
-from .server import run_server
+from .server import Server
 from .light import PointLight
 from ..system import System
 
@@ -468,7 +468,8 @@ class Scene(object):
                     os.path.join(tmp_dir, self._scene_json_file))
         shutil.move(os.path.join(os.getcwd(), self._simulation_json_file),
                     os.path.join(tmp_dir, self._simulation_json_file))
-        run_server(scene_file=self._scene_json_file, directory=tmp_dir)
+        server = Server(scene_file=self._scene_json_file, directory=tmp_dir)
+        server.run_server()
 
     def _rerun_button_callback(self, btn):
         """Callback for the "Rerun Simulation" button. When executed the
