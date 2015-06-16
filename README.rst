@@ -55,21 +55,23 @@ analyses, simulation, and visualization.
 Installation
 ============
 
-PyDy has hard dependencies on the following software:
+PyDy has hard dependencies on the following software\[#]_:
 
-- Python >= 2.7, < 3
+- Python >= 2.7, >= 3.3
 - setuptools\ [#]_
-- SymPy_ >= 0.7.4.1
-- NumPy_ >= 1.7
-- SciPy_ >= 0.11.0
+- NumPy_ >= 1.7 (>= 1.9 with Python >= 3.3)
+- SciPy_ >= 0.11.0 (>= 0.14.0 with Python >= 3.3)
+- SymPy_ >= 0.7.4.1 (>= 0.7.5 with Python >= 3.3)
 
+.. [#] We only test PyDy with these minimum dependencies. Previous versions may
+   work.
 .. [#] setuptools >= 8.0 is required if development versions of SymPy are used.
 
 PyDy has optional dependencies on these packages:
 
 - IPython_ >= 0.2.0
-- Cython_ >= 0.17
-- Theano_ >= 0.6.0
+- Theano_ >= 0.6.0 (>= 0.7.0 with Python >= 3.3)
+- Cython_ >= 0.17 (>= 0.20.1 with Python >= 3.3)
 
 .. _Theano: http://deeplearning.net/software/theano/
 .. _Cython: http://cython.org/
@@ -336,7 +338,7 @@ message to our public `mailing list`_ or visit our `Gitter chatroom`_.
 If you think there’s a bug or you would like to request a feature, please open
 an `issue`_ on Github.
 
-.. _issue: https://github.com/pydy/issues
+.. _issue: https://github.com/pydy/pydy/issues
 
 Release Notes
 =============
@@ -347,6 +349,7 @@ Release Notes
 User Facing
 ~~~~~~~~~~~
 
+- Added support Python 3.3 and 3.4. [PR `#38`_]
 - Bumped up the minimum dependencies for NumPy, SciPy, and Cython.
 - Removed the partial implementation of the Mesh shape. [PR `#172`_]
 - Overhauled the code generation package to make the generators more easily
@@ -373,6 +376,7 @@ User Facing
 - Added a new System class and module to more seamlessly manage integrating the
   equations of motion. [PR `#81`_]
 
+.. _#38: https://github.com/pydy/pydy/pull/38
 .. _#172: https://github.com/pydy/pydy/pull/172
 .. _#113: https://github.com/pydy/pydy/pull/113
 .. _#82: https://github.com/pydy/pydy/pull/82
