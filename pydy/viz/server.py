@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import signal
 import socket
 import webbrowser
@@ -103,7 +104,8 @@ class Server(object):
 
         """
         res = raw_input("Shutdown this visualization server ([y]/n)? ")
-        if res.lower()[0:1] is (None or 'y'):
+        res = res.lower()[0:1]
+        if res == '' or res == 'y':
             print("Shutdown confirmed")
             print("Shutting down server...")
             self.httpd.stop()
