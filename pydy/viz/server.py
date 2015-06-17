@@ -86,10 +86,10 @@ class Server(object):
         print(url)
         webbrowser.open(url)
         print("Hit Ctrl+C to stop the server...")
-        signal.signal(signal.SIGINT, self.stop_server)
+        signal.signal(signal.SIGINT, self._stop_server)
         self.httpd.serve()
 
-    def stop_server(self, signal, frame):
+    def _stop_server(self, signal, frame):
         """
         Confirms and stops the visulisation server
         :param signal:
