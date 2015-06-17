@@ -71,7 +71,7 @@ class Server(object):
 
     """
     def __init__(self, scene_file, directory=None, port=None):
-        if scene_file
+        if scene_file:
             self.scene_file = scene_file
 
         if directory:
