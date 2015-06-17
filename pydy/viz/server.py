@@ -96,9 +96,9 @@ class Server(object):
     def _stop_server(self, signal, frame):
         """
         Confirms and stops the visulisation server
-        :param signal:
+        signal:
             Required by signal.signal
-        :param frame:
+        frame:
             Required by signal.signal
 
         """
