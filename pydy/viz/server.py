@@ -103,3 +103,5 @@ class Server(object):
             print("Shutdown confirmed")
             print("Shutting down server...")
             self.httpd.stop()
+        else:
+            print("Resuming operations...")
