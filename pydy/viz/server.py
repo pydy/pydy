@@ -60,8 +60,6 @@ class Server(object):
         Defines the port on which the server will run.
     scene_file : name of the scene_file generated for visualization
         Used here to display the url
-    directory : path of the directory which contains static and scene files.
-        Server is started in this directory itself.
 
     Example
     -------
