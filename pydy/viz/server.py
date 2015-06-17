@@ -4,21 +4,27 @@ import os
 import signal
 import socket
 import webbrowser
-import BaseHTTPServer
-from SimpleHTTPServer import SimpleHTTPRequestHandler
 
+# For python 2 and python 3 compatibility
+if sys.version_info < (3, 0):
+    from SimpleHTTPServer import SimpleHTTPRequestHandler
+    from BaseHTTPServer import HTTPServer
+else:
+    from http.server import SimpleHTTPRequestHandler
+    from http.server import HTTPServer
+    raw_input = input
 
 __all__ = ['Server']
 
 
-class StoppableHTTPServer(BaseHTTPServer.HTTPServer):
+class StoppableHTTPServer(HTTPServer):
     """
     Overrides BaseHTTPServer.HTTPServer to include a stop
     function.
     """
 
     def server_bind(self):
-        BaseHTTPServer.HTTPServer.server_bind(self)
+        HTTPServer.server_bind(self)
         self.socket.settimeout(1)
         self.run = True
 
@@ -49,17 +55,17 @@ class Server(object):
     """
     Parameters
     ----------
-    :param port : integer
+    port : integer
         Defines the port on which the server will run.
-    :param scene_file : name of the scene_file generated for visualization
+    scene_file : name of the scene_file generated for visualization
         Used here to display the url
-    :param directory : path of the directory which contains static and scene files.
+    directory : path of the directory which contains static and scene files.
         Server is started in this directory itself.
 
     Example
     -------
-        >>> server = Server(scene_file=_scene_json_file)
-        >>> server.run_server()
+    >>> server = Server(scene_file=_scene_json_file)
+    >>> server.run_server()
 
     """
     def __init__(self, port=8000, scene_file="Null"):
@@ -97,7 +103,7 @@ class Server(object):
 
         """
         res = raw_input("Shutdown this visualization server ([y]/n)? ")
-        if res is (None or 'y'):
+        if res.lower()[0:1] is (None or 'y'):
             print("Shutdown confirmed")
             print("Shutting down server...")
             self.httpd.stop()
