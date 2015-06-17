@@ -59,7 +59,10 @@ class Server(object):
     port : integer
         Defines the port on which the server will run.
     scene_file : name of the scene_file generated for visualization
-        Used here to display the url
+        A Valid PyDy generated scene file in 'directory'.
+    directory : absolute path of a directory
+        Absolute path to the directory which contains scene_file with
+        all other static files.
 
     Example
     -------
@@ -67,14 +70,26 @@ class Server(object):
     >>> server.run_server()
 
     """
-    def __init__(self, port=8000, scene_file="Null"):
-        self.port = port
-        self.scene_file = scene_file
-        self.directory = "static/"
+    def __init__(self, scene_file, directory=None, port=None):
+        if scene_file
+            self.scene_file = scene_file
+
+        if directory:
+            self.directory = directory
+        else:
+            self.directory = "static/"
+
+        if port:
+            self.port = port
+        else:
+            self.port = 8000
 
     def run_server(self):
         # Change dir to static first.
         os.chdir(self.directory)
+        # Get a free port
+        while self._check_port(self.port):
+            self.port += 1
         handler_class = SimpleHTTPRequestHandler
         server_class = StoppableHTTPServer
         protocol = "HTTP/1.0"
@@ -91,6 +106,14 @@ class Server(object):
         print("Hit Ctrl+C to stop the server...")
         signal.signal(signal.SIGINT, self._stop_server)
         self.httpd.serve()
+
+    def _check_port(self, port):
+        soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = soc.connect_ex(('127.0.0.1', port))
+        if result == 0:
+            return True
+        else:
+            return False
 
     def _stop_server(self, signal, frame):
         """
