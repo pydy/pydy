@@ -14,7 +14,8 @@ DynamicsVisualizer.Materials = Object.extend(DynamicsVisualizer, {
 
         var self = this;
 
-        self.texture_base_path = "static/textures/"
+        // TODO : This `pydy-resources` directory should not be hard coded here!
+        self.texture_base_path = "pydy-resources/textures/"
         // If IPython,
         if(typeof IPython == "undefined"){
             self.texture_base_path = "textures/";

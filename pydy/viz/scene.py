@@ -4,16 +4,15 @@
 from __future__ import division
 import os
 import sys
-import shutil
 import warnings
 import json
 import distutils
 import distutils.dir_util
 import datetime
 from collections import OrderedDict
-from pkg_resources import parse_version
 
 # external
+from pkg_resources import parse_version
 import numpy as np
 from sympy import latex
 from sympy.physics.mechanics import ReferenceFrame, Point
@@ -54,6 +53,9 @@ class Scene(object):
     set of visualization frames.
 
     """
+
+    pydy_directory = "pydy-resources"
+
     def __init__(self, reference_frame, origin, *visualization_frames,
                  **kwargs):
         """Initialize a Scene instance.
@@ -95,7 +97,7 @@ class Scene(object):
             contain at least all necessary symbols to evaluate the
             transformation matrices of the visualization frame, cameras, and
             lights and to evaluate the Shapes' parameters.
-        states_symbols : sequence of functions of time, len(m), optional, default=None
+        states_symbols : sequence of functions, len(m), optional, default=None
             An ordered sequence of the SymPy functions that represent the
             states. The order must match the order of the
             ``states_trajectories``.
@@ -124,7 +126,8 @@ class Scene(object):
                           'cameras': [PerspectiveCamera('DefaultCamera',
                                                         self.reference_frame,
                                                         self._default_camera_point)],
-                          'lights': [PointLight('DefaultLight', self.reference_frame,
+                          'lights': [PointLight('DefaultLight',
+                                                self.reference_frame,
                                                 self._default_light_point)],
                           'system': None,
                           'time': None,
@@ -133,10 +136,9 @@ class Scene(object):
                           'states_trajectories': None,
                           'frames_per_second': 30}
         default_kwargs.update(kwargs)
+
         for k, v in default_kwargs.items():
             setattr(self, k, v)
-
-        self.pydy_dir = "pydy-resources"
 
     @property
     def name(self):
@@ -208,10 +210,10 @@ class Scene(object):
         return self._times
 
     @times.setter
-    def times(self, new_time):
+    def times(self, new_times):
 
         try:
-            if new_time is not None and self.system is not None:
+            if new_times is not None and self.system is not None:
                 msg = ('The system attribute has already been set, so the '
                        'time cannot be set. Set Scene.system = None to '
                        'allow a time array to be added.')
@@ -220,19 +222,19 @@ class Scene(object):
             pass
 
         try:
-            if new_time is not None and self.states_trajectories is not None:
+            if new_times is not None and self.states_trajectories is not None:
                 len_traj = self.states_trajectories.shape[0]
-                if len(new_time) != len_traj:
+                if len(new_times) != len_traj:
                     msg = ('The time array length, {}, does not match the '
                            'length of the state trajectories array, {}.')
-                    raise ValueError(msg.format(len(new_time), len_traj))
+                    raise ValueError(msg.format(len(new_times), len_traj))
         except AttributeError:
             pass
 
-        if new_time is None:
-            self._times = new_time
+        if new_times is None:
+            self._times = new_times
         else:
-            self._times = np.array(new_time)
+            self._times = np.array(new_times)
 
     @property
     def states_symbols(self):
@@ -318,6 +320,13 @@ class Scene(object):
             pass
         self._constants = new_constants
 
+    def clear_trajectories(self):
+        """Sets the 'system', 'times', 'constants', 'states_symbols', and
+        'states_trajectories' to None."""
+        for attr in ['system', 'times', 'constants', 'states_symbols',
+                     'states_trajectories']:
+            setattr(self, attr, None)
+
     def generate_visualization_json(self, dynamic_variables,
                                     constant_variables, dynamic_values,
                                     constant_values, fps=30,
@@ -359,25 +368,27 @@ class Scene(object):
         self.frames_per_second = fps
         self._generate_json(prefix=outfile_prefix)
 
-    def _generate_json(self, directory=None, prefix=None, overwrite=True):
-        """Creates two JSON files and copies all the necessary static
-        files in the specified directory . One of the JSON files contains
-        the scene information and other one contains the simulation data. If
-        ``directory`` is None the files will be created in the current
-        working directory.
+    def _generate_json(self, directory=None, prefix=None):
+        """Creates two JSON files and copies all the necessary static files
+        in the specified directory. One of the JSON files contains the scene
+        information and other one contains the simulation data.
+
+        Parameters
+        ==========
+        directory : string, optional, default=None
+            The directory in which the json files are placed. If None, this
+            will be the current working directory.
+        prefix : string
+            A custom prefix for the two json files. If None, a time stamp is
+            used.
+
         """
 
         if directory is None:
-            directory = os.path.join(os.getcwd(), self.pydy_dir)
+            directory = os.getcwd()
 
         if prefix is None:
             prefix = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-
-        if overwrite is True and os.path.exists(directory):
-            distutils.dir_util.remove_tree(directory)
-
-        src = os.path.join(os.path.dirname(__file__), 'static')
-        distutils.dir_util.copy_tree(src, directory)
 
         self._scene_json_file = prefix + "_scene_desc.json"
         self._simulation_json_file = prefix + "_simulation_data.json"
@@ -493,7 +504,7 @@ class Scene(object):
 
         Notes
         =====
-        The optional keyword arguments are same as the
+        The optional keyword arguments are the same as those in the
         ``generate_visualization_json`` method.
 
         """
@@ -508,11 +519,11 @@ class Scene(object):
         self._generate_json(prefix=prefix)
 
     def create_static_html(self, overwrite=False, silent=False):
-        """Creates a directory named ``static`` in the current working
-        directory which contains all of the HTML, CSS, and Javascript files
-        required to run the vizualization application. To run the
-        application, navigate into the ``static`` directory and start a
-        webserver from that directory, e.g.::
+        """Creates a directory named ``pydy-visualization`` in the current
+        working directory which contains all of the HTML, CSS, Javascript,
+        and json files required to run the vizualization application. To run
+        the application, navigate into the ``pydy-visualization`` directory
+        and start a webserver from that directory, e.g.::
 
             $ python -m SimpleHTTPServer
 
@@ -530,17 +541,19 @@ class Scene(object):
         Parameters
         ----------
         overwrite : boolean, optional, default=False
-            If True, the directory named ``static`` in the current working
-            directory will be overwritten.
+            If True, the directory named ``pydy-visualization`` in the
+            current working directory will be overwritten.
         silent : boolean, optional, default=False
             If True, no messages will be displayed to STDOUT.
 
         """
 
-        dst = os.path.join(os.getcwd(), 'static')
-        if os.path.exists(dst) and overwrite is False:
-            ans = raw_input("The 'static' directory already exists. Would "
-                            "you like to overwrite the contents? [y|n]\n")
+        pydy_dir = os.path.join(os.getcwd(), self.pydy_directory)
+
+        if os.path.exists(pydy_dir) and overwrite is False:
+            msg = ("The '{}' directory already exists. Would "
+                   "you like to overwrite the contents? [y|n]\n")
+            ans = raw_input(msg.format(self.pydy_directory))
             if ans == 'y':
                 overwrite = True
             else:
@@ -548,15 +561,22 @@ class Scene(object):
                     print("Aborted!")
                 return
 
+        # Copy all of the HTML/CSS/JS files from the source tree into the
+        # local directory.
         if not silent:
-            print("Copying static and simulation data.")
+            print("Copying static data.")
+        src = os.path.join(os.path.dirname(__file__), 'static')
+        distutils.dir_util.copy_tree(src, pydy_dir)
 
-        self._generate_json(directory=dst, overwrite=overwrite)
+        # Add the two json files to the directory.
+        if not silent:
+            print("Copying Simulation data.")
+        self._generate_json(directory=pydy_dir)
 
         if not silent:
-            print("To view the visualization, open {}".format(
-                  os.path.join(dst, 'index.html')) +
-                  " in a WebGL compliant browser.")
+            msg = ("To view the visualzation, run `python -m "
+                   "SimpleHTTPServer` from the `{}` directory.")
+            print(msg.format(self.pydy_directory))
 
     def remove_static_html(self, force=False):
         """Removes the ``static`` directory from the current working
@@ -569,28 +589,32 @@ class Scene(object):
             directory.
 
         """
-        if not os.path.exists('static'):
+
+        pydy_dir = os.path.join(os.getcwd(), self.pydy_directory)
+
+        if not os.path.exists(pydy_dir):
             print("All Done!")
             return
 
         if not force:
-            ans = raw_input("Are you sure you would like to delete the " +
-                            "'static' directory? [y|n]\n")
+            msg = ("Are you sure you would like to delete the '{}' "
+                   "directory? [y|n]\n")
+            ans = raw_input(msg.format(self.pydy_directory))
             if ans == 'y':
                 force = True
 
         if force:
-            distutils.dir_util.remove_tree(os.path.join(os.getcwd(),
-                                                        'static'))
+            distutils.dir_util.remove_tree(pydy_dir)
             print("All Done!")
         else:
-            print("aborted!")
+            print("Aborted!")
 
     def display(self):
-        """Displays the scene in the default webbrowser."""
-        resource_directory = os.path.join(os.getcwd(), self.pydy_dir)
-        self._generate_json(directory=resource_directory)
-        server = Server(scene_file=self._scene_json_file, directory=resource_directory)
+        """Displays the scene in the default web browser."""
+        self.create_static_html(overwrite=True, silent=True)
+        resource_dir = os.path.join(os.getcwd(), self.pydy_directory)
+        server = Server(scene_file=self._scene_json_file,
+                        directory=resource_dir)
         server.run_server()
 
     def _rerun_button_callback(self, btn):
@@ -603,11 +627,13 @@ class Scene(object):
         btn.description = 'Rerunning Simulation...'
 
         original_scene_file = self._scene_json_file
-        original_constants = self._system.constants
+        original_sim_file = self._simulation_json_file
+        original_constants = self.system.constants.copy()
         try:
-            self._system.constants = {s: w.value for s, w in
-                                      self._constants_text_widgets.items()}
-            self.generate_visualization_json_system(self._system)
+            self.system.constants = {s: w.value for s, w in
+                                     self._constants_text_widgets.items()}
+            pydy_dir = os.path.join(os.getcwd(), self.pydy_directory)
+            self._generate_json(directory=pydy_dir)
         except:
             print('Simulation rerun failed, using previous simulation data.')
             # If the simulation fails for any reason we revert everything
@@ -617,13 +643,12 @@ class Scene(object):
             # be ok, because generate_visualiation_json will have to be run
             # again for anything new to happen.
             self._scene_json_file = original_scene_file
-            self._system.constants = original_constants
+            self._simulation_json_file = original_sim_file
+            self.system.constants = original_constants
             self._fill_constants_widgets()
 
-        self.create_static_html(overwrite=True, silent=True)
-
-        js_tmp = 'jQuery("#json-input").val("{}");'
-        js = js_tmp.format('static/' + self._scene_json_file)
+        js_tmp = 'jQuery("#json-input").val("{}/{}");'
+        js = js_tmp.format(self.pydy_directory, self._scene_json_file)
         display(Javascript(js))
         display(Javascript('jQuery("#simulation-load").click()'))
 
@@ -649,10 +674,8 @@ class Scene(object):
 
         self._rerun_button = widgets.Button()
         self._rerun_button._dom_classes = ['btn-info']
-
         self._rerun_button_desc = "Rerun Simulation"
         self._rerun_button.description = self._rerun_button_desc
-
         self._rerun_button.on_click(self._rerun_button_callback)
 
     def display_ipython(self):
@@ -674,8 +697,7 @@ class Scene(object):
                    'IPython >= 3.0. Please update IPython and try again.')
             raise ImportError(msg.format(IPython.__version__))
 
-        resource_directory = os.path.join(os.getcwd(), self.pydy_dir)
-        self._generate_json(directory=resource_directory)
+        self.create_static_html(overwrite=True, silent=True)
 
         # Only create the constants input boxes and the rerun simulation
         # button if the scene was generated with a System.
@@ -697,13 +719,14 @@ class Scene(object):
             display(self._constants_container)
             display(self._rerun_button)
 
-        ipython_static_url = os.path.relpath(self.pydy_dir, os.getcwd())
-
-        with open(os.path.join(ipython_static_url, "index_ipython.html"), 'r') as html_file:
+        ipython_static_url = os.path.relpath(self.pydy_directory, os.getcwd())
+        ip_html_file = os.path.join(ipython_static_url, "index_ipython.html")
+        with open(ip_html_file, 'r') as html_file:
             html = html_file.read()
 
-        html = html.format(static_url=os.path.join('files', ipython_static_url),
-                           load_url=os.path.join(ipython_static_url, self._scene_json_file))
+        html = html.format(static_url=ipython_static_url,
+                           load_url=os.path.join(ipython_static_url,
+                                                 self._scene_json_file))
 
         self._html_widget = widgets.HTML(value=html)
 
