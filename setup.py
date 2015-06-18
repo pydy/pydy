@@ -13,17 +13,18 @@ exec(open('pydy/version.py').read())
 # line is added.
 os.environ["MPLCONFIGDIR"] = "."
 
-NUMPY_MIN_VER = '1.7'
-SCIPY_MIN_VER = '0.11'
-SYMPY_MIN_VER = '0.7.4.1'
-CYTHON_MIN_VER = '0.17'
-THEANO_MIN_VER = '0.6.0'
 if sys.version_info >= (3, 0):
     NUMPY_MIN_VER = '1.9'
     SCIPY_MIN_VER = '0.14.0'
     SYMPY_MIN_VER = '0.7.5'
     CYTHON_MIN_VER = '0.20.1'
     THEANO_MIN_VER = '0.7.0'
+else:
+    NUMPY_MIN_VER = '1.7'
+    SCIPY_MIN_VER = '0.11'
+    SYMPY_MIN_VER = '0.7.4.1'
+    CYTHON_MIN_VER = '0.17'
+    THEANO_MIN_VER = '0.6.0'
 
 setup(
     name='pydy',
