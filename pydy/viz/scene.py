@@ -89,7 +89,7 @@ class Scene(object):
         system : System, optional, default=None
             A PyDy system class which is initiated such that the
             ``integrate()`` method will produce valid state trajectories.
-        time : array_like, shape(n,), optional, default=None
+        times : array_like, shape(n,), optional, default=None
             Monotoncially increaing float values of time that correspond to
             the state trajectories.
         constants : dictionary, optional, default=None
@@ -103,11 +103,11 @@ class Scene(object):
             ``states_trajectories``.
         states_trajectories : array_like, shape(n, m), optional, default=None
             A two dimensional array with numerical values for each state at
-            each poitn in time during the animation.
+            each point in time during the animation.
 
         Notes
         =====
-        The user is allowed to supply either system or time, constants,
+        The user is allowed to supply either system or times, constants,
         states_symbols, and states_trajectories. Providing a System allows for
         interactively changing the simulation parameters via the Scene GUI
         in the IPython notebook.
@@ -130,7 +130,7 @@ class Scene(object):
                                                 self.reference_frame,
                                                 self._default_light_point)],
                           'system': None,
-                          'time': None,
+                          'times': None,
                           'constants': None,
                           'states_symbols': None,
                           'states_trajectories': None,
@@ -195,7 +195,7 @@ class Scene(object):
             msg = ('The {} attribute has already been set, so the system '
                    'cannot be set. Use the clear_trajectories method to '
                    'set all relevant attributes to None.')
-            for attr in ['time', 'constants', 'states_symbols',
+            for attr in ['times', 'constants', 'states_symbols',
                          'states_trajectories']:
                 try:
                     if getattr(self, attr) is not None:
@@ -215,7 +215,7 @@ class Scene(object):
         try:
             if new_times is not None and self.system is not None:
                 msg = ('The system attribute has already been set, so the '
-                       'time cannot be set. Set Scene.system = None to '
+                       'times cannot be set. Set Scene.system = None to '
                        'allow a time array to be added.')
                 raise ValueError(msg)
         except AttributeError:
@@ -225,7 +225,7 @@ class Scene(object):
             if new_times is not None and self.states_trajectories is not None:
                 len_traj = self.states_trajectories.shape[0]
                 if len(new_times) != len_traj:
-                    msg = ('The time array length, {}, does not match the '
+                    msg = ('The times array length, {}, does not match the '
                            'length of the state trajectories array, {}.')
                     raise ValueError(msg.format(len(new_times), len_traj))
         except AttributeError:
@@ -284,10 +284,10 @@ class Scene(object):
             pass
 
         try:
-            if new_states_trajectories is not None and self.time is not None:
-                if len(self.time) != new_states_trajectories.shape[0]:
+            if new_states_trajectories is not None and self.times is not None:
+                if len(self.times) != new_states_trajectories.shape[0]:
                     msg = ("The number of time instances do not match the "
-                           "number in the time array.")
+                           "number in the times array.")
                     raise ValueError(msg)
         except AttributeError:
             pass
@@ -518,7 +518,7 @@ class Scene(object):
                 prefix = v
         self._generate_json(prefix=prefix)
 
-    def create_static_html(self, overwrite=False, silent=False):
+    def create_static_html(self, overwrite=False, silent=False, prefix=None):
         """Creates a directory named ``pydy-visualization`` in the current
         working directory which contains all of the HTML, CSS, Javascript,
         and json files required to run the vizualization application. To run
@@ -545,6 +545,8 @@ class Scene(object):
             current working directory will be overwritten.
         silent : boolean, optional, default=False
             If True, no messages will be displayed to STDOUT.
+        prefix : string, optional
+            An optional prefix for the json data files.
 
         """
 
@@ -571,7 +573,7 @@ class Scene(object):
         # Add the two json files to the directory.
         if not silent:
             print("Copying Simulation data.")
-        self._generate_json(directory=pydy_dir)
+        self._generate_json(directory=pydy_dir, prefix=prefix)
 
         if not silent:
             msg = ("To view the visualzation, run `python -m "

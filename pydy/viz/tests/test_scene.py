@@ -79,7 +79,7 @@ class TestScene(object):
         scene.visualization_frames = [self.viz_frame]
         assert scene.visualization_frames == [self.viz_frame]
         assert scene.system is None
-        assert scene.time is None
+        assert scene.times is None
         assert scene.constants is None
         assert scene.states_symbols is None
         assert scene.states_trajectories is None
@@ -107,13 +107,13 @@ class TestScene(object):
 
         scene = Scene(self.ref_frame, self.origin, self.viz_frame,
                       name='my_scene', cameras=[custom_camera],
-                      lights=[custom_light], time=self.sys.times,
+                      lights=[custom_light], times=self.sys.times,
                       constants=self.sys.constants,
                       states_symbols=self.sys.states,
                       states_trajectories=self.sys.integrate())
 
         assert scene.system is None
-        assert_allclose(scene.time, self.sys.times)
+        assert_allclose(scene.times, self.sys.times)
         assert scene.constants == self.sys.constants
         assert scene.states_symbols == self.sys.states
         assert scene.states_trajectories.shape == (2, 2)
@@ -121,7 +121,7 @@ class TestScene(object):
     def test_setting_incompatible_attrs(self):
 
         scene = Scene(self.ref_frame, self.origin, self.viz_frame,
-                      time=self.sys.times)
+                      times=self.sys.times)
 
         with assert_raises(ValueError):
             scene.system = self.sys
@@ -130,7 +130,19 @@ class TestScene(object):
                       system=self.sys)
 
         with assert_raises(ValueError):
-            scene.time = self.sys.times
+            scene.times = self.sys.times
+
+    def test_clear_trajectories(self):
+        scene = Scene(self.ref_frame, self.origin, self.viz_frame,
+                      times=self.sys.times, constants=self.sys.constants,
+                      states_symbols=self.sys.states,
+                      states_trajectories=self.sys.integrate())
+        scene.clear_trajectories()
+        assert scene.system is None
+        assert scene.times is None
+        assert scene.constants is None
+        assert scene.states_symbols is None
+        assert scene.states_trajectories is None
 
     def test_generate_simulation_dict(self):
 
@@ -270,31 +282,19 @@ class TestScene(object):
 
     def test_create_static_html(self):
 
-        scene = Scene(self.ref_frame, self.origin, self.viz_frame)
-        scene.generate_visualization_json_system(self.sys,
-                                                 outfile_prefix="test")
+        scene = Scene(self.ref_frame, self.origin, self.viz_frame,
+                      system=self.sys)
 
         # test static dir creation
-        scene.create_static_html(overwrite=True)
-        assert os.path.exists('static')
-        assert os.path.exists('static/index.html')
-        assert os.path.exists('static/test_scene_desc.json')
-        assert os.path.exists('static/test_simulation_data.json')
+        scene.create_static_html(overwrite=True, silent=True, prefix='test')
+        assert os.path.exists('pydy-resources')
+        assert os.path.exists('pydy-resources/index.html')
+        assert os.path.exists('pydy-resources/test_scene_desc.json')
+        assert os.path.exists('pydy-resources/test_simulation_data.json')
 
         # test static dir deletion
         scene.remove_static_html(force=True)
-        assert not os.path.exists('static')
-
-    def test_copy_resources(self):
-        scene = Scene(self.ref_frame, self.origin, self.viz_frame)
-        scene.generate_visualization_json_system(self.sys,
-                                                 outfile_prefix="test")
-        # test custom directory creation pointed by scene.static_url
-        scene.copy_resources()
-        assert os.path.exists(scene.pydy_dir)
-        assert os.path.exists(os.path.join(scene.pydy_dir, 'index.html'))
-        assert os.path.exists(os.path.join(scene.pydy_dir, 'test_scene_desc.json'))
-        assert os.path.exists(os.path.join(scene.pydy_dir, 'test_simulation_data.json'))
+        assert not os.path.exists(Scene.pydy_directory)
 
     def test_generate_visualization_json_system(self):
 
@@ -308,7 +308,7 @@ class TestScene(object):
     def teardown(self):
 
         try:
-            shutil.rmtree('static')
+            shutil.rmtree(Scene.pydy_directory)
         except OSError:
             pass
 
