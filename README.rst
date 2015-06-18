@@ -349,6 +349,7 @@ Release Notes
 User Facing
 ~~~~~~~~~~~
 
+- Introduced conda builds and binstar support. [PR `#219`_]
 - Dropped support for IPython < 3.0. [PR `#237`_]
 - Added support Python 3.3 and 3.4. [PR `#229`_]
 - Bumped up the minimum dependencies for NumPy, SciPy, and Cython [PR `#233`_].
@@ -364,22 +365,24 @@ User Facing
   - The visualizer can now be loaded in an IPython notebook via IPython's
     widgets using ``Scene.display_ipython()``.
   - A slider was added to manually control the frame playback.
-  - The visualization objects can be manipulated via the GUI.
-  - The scene json file can be edited via the GUI.
+  - The visualization shapes' attributes can be manipulated via the GUI.
+  - The scene json file can be edited and downloaded from the GUI.
   - pydy.viz generates two JSONs now (instead of one in earlier versions). The
     JSON generated from earlier versions will **not** work in the new version.
-  - Different simulation files can be loaded via the GUI.
   - Shapes can now have a material attribute.
-  - Simulation parameters can be modified and the simulations can be rerun all
-    via the GUI.
+  - Model constants can be modified and the simulations can be rerun all via
+    the GUI.
   - Switched from socket based server to python's core SimpleHTTPServer.
+  - The server has a proper shutdown response [PR `#241`_]
 
-- Added a new System class and module to more seamlessly manage integrating the
-  equations of motion. [PR `#81`_]
+- Added a new experimental System class and module to more seamlessly manage
+  integrating the equations of motion. [PR `#81`_]
 
+.. _#241: https://github.com/pydy/pydy/pull/241
 .. _#237: https://github.com/pydy/pydy/pull/237
 .. _#229: https://github.com/pydy/pydy/pull/229
 .. _#233: https://github.com/pydy/pydy/pull/233
+.. _#219: https://github.com/pydy/pydy/pull/219
 .. _#172: https://github.com/pydy/pydy/pull/172
 .. _#113: https://github.com/pydy/pydy/pull/113
 .. _#82: https://github.com/pydy/pydy/pull/82
