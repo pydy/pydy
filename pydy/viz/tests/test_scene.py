@@ -285,6 +285,17 @@ class TestScene(object):
         scene.remove_static_html(force=True)
         assert not os.path.exists('static')
 
+    def test_copy_resources(self):
+        scene = Scene(self.ref_frame, self.origin, self.viz_frame)
+        scene.generate_visualization_json_system(self.sys,
+                                                 outfile_prefix="test")
+        # test custom directory creation pointed by scene.static_url
+        scene.copy_resources()
+        assert os.path.exists(scene.static_url)
+        assert os.path.exists(os.path.join(scene.static_url, 'index.html'))
+        assert os.path.exists(os.path.join(scene.static_url, 'test_scene_desc.json'))
+        assert os.path.exists(os.path.join(scene.static_url, 'test_simulation_data.json'))
+
     def test_generate_visualization_json_system(self):
 
         scene = Scene(self.ref_frame, self.origin, self.viz_frame)

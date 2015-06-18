@@ -529,8 +529,7 @@ class Scene(object):
 
         """
 
-        dst = self.static_url
-
+        dst = os.path.join(os.getcwd(), 'static')
         if os.path.exists(dst) and overwrite is False:
             ans = raw_input("The 'static' directory already exists. Would "
                             "you like to overwrite the contents? [y|n]\n")
@@ -550,10 +549,8 @@ class Scene(object):
         if not silent:
             print("Copying Simulation data.")
 
-        _scene_outfile_loc = os.path.join(self.static_url,
-                                          self._scene_json_file)
-        _simulation_outfile_loc = os.path.join(self.static_url,
-                                               self._simulation_json_file)
+        _scene_outfile_loc = os.path.join(dst, self._scene_json_file)
+        _simulation_outfile_loc = os.path.join(dst, self._simulation_json_file)
         scene_outfile = open(_scene_outfile_loc, "w")
         simulation_outfile = open(_simulation_outfile_loc, "w")
 
