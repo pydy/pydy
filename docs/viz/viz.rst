@@ -1,5 +1,9 @@
+===
+viz
+===
+
 Introduction
-------------
+============
 
 The viz package in pydy is designed to facilitate browser based animations for
 PyDy framework.

@@ -1,5 +1,9 @@
+=======
+codegen
+=======
+
 Introduction
-------------
+============
 
 The `pydy.codegen` package contains various tools to generate numerical code
 from symbolic descriptions of the equations of motion of systems. It allows you
@@ -22,7 +26,7 @@ We currently support three backends:
    SymPy's C code printer utilities and Cython.
 
 Example Use
------------
+===========
 
 The simplest entry point to the code generation tools is through the `System`
 class.

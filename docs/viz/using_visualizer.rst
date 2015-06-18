@@ -16,24 +16,14 @@ Here is a screenshot of the visualizer, when it is called from outside the
 notebook, i.e. from the Python interpreter:
 
 .. image:: images/screenshot1.png
-    :height: 450px
-    :width:  900px
 
 GUI Elements
 ------------
 
-**(1) Play Button**
-   Plays an animation. On clicking the play button, two buttons appear, "Pause"
-   and "Stop", to pause and stop animation respectively.
-**(2) Show Model**
-   Shows the current JSON which is being rendered in visualizer. It can be
-   copied from the text-box, as well as downloaded. On clicking "Show Model",
-   following dialog is created:
-
-   .. image:: images/screenshot2.png
-       :height: 425px
-       :width:  650px
-
+**(1) Play, Pause, and Stop Buttons**
+   Allows you to start, pause, and stop the animation.
+**(2) Play Looped**
+   When checked the animation is run in a loop.
 **(3) Time Slider**
    This is used to traverse to the particular frame in animation, by sliding
    the slider forward and backward. When the animation is running it will
@@ -44,27 +34,19 @@ GUI Elements
      - Mouse wheel to zoom in, zoom out.
      - Click and drag to rotate camera.
 
-**(5) Text Box**
-   Where the relative link to the scene file can be added. **Note**: The link
-   should be relative to the directory from where the server is run.
-**(6) Load Simulation**
-   Loads the scene from the file mentioned in the text-box above. The scene can
-   also be preloaded, by specifying the file to be loaded in a GET Parameter,
-   e.g::
+**(5) Show Model**
+   Shows the current JSON which is being rendered in visualizer. It can be
+   copied from the text-box, as well as downloaded. On clicking "Show Model",
+   following dialog is created:
 
-      index.html?load=/file/to/load.json
+   .. image:: images/screenshot2.png
+       :width:  650px
 
-   **Note**: In the IPython notebook, the text box is automatically populated
-   and the scene file is loaded on initialization as well as when simulations
-   are "re-run".
-**(7) Play Looped**
-   When checked the animation is run in a loop.
-**(8) Edit Objects**
+**(6) Edit Objects**
    On clicking this button, a dropdown opens up, showing the list of shapes
    which are rendered in the animation:
 
    .. image:: images/screenshot3.png
-       :height: 200px
        :width:  300px
 
    On clicking any object from the dropdown, a dialog box opens up, containing
@@ -72,10 +54,9 @@ GUI Elements
    click the "Apply" button for the changes to be reflected in the canvas (4).
 
    .. image:: images/screenshot4.png
-       :height: 400px
        :width:  300px
 
-**(9) Close Dialog**
+**(7) Close Dialog**
    Closes/hides the "edit objects" dialog.
 
 **Additional options in IPython notebooks:**
@@ -85,7 +66,6 @@ additional feature to edit simulation parameters, from the GUI itself. This is
 how the Visualizer looks, when called from inside an IPython notebook:
 
 .. image:: images/screenshot5.png
-    :height: 320px
     :width:  600px
 
 Here, one can add custom values in text-boxes(1, 2, 3 etc.) and on clicking
