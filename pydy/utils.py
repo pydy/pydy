@@ -82,3 +82,9 @@ class PyDyDeprecationWarning(DeprecationWarning):
 
 class PyDyImportWarning(ImportWarning):
     pass
+
+class PyDyFutureWarning(FutureWarning):
+    pass
+
+class PyDyUserWarning(UserWarning):
+    pass

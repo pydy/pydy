@@ -55,7 +55,7 @@ analyses, simulation, and visualization.
 Installation
 ============
 
-PyDy has hard dependencies on the following software\[#]_:
+PyDy has hard dependencies on the following software\ [#]_:
 
 - Python >= 2.7, >= 3.3
 - setuptools\ [#]_

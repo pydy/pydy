@@ -20,7 +20,7 @@ from sympy.physics.mechanics import ReferenceFrame, Point
 
 # local
 from .camera import PerspectiveCamera
-from .server import run_server
+from .server import Server
 from .light import PointLight
 from ..system import System
 from ..utils import PyDyImportWarning, PyDyDeprecationWarning
@@ -626,7 +626,8 @@ class Scene(object):
     def display(self):
         """Displays the scene in the default webbrowser."""
         self.copy_resources()
-        run_server(scene_file=self._scene_json_file)
+        server = Server(scene_file=self._scene_json_file)
+        server.run_server()
 
     def _rerun_button_callback(self, btn):
         """Callback for the "Rerun Simulation" button. When executed the
