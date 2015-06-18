@@ -8,6 +8,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 from sympy import symbols
 import sympy.physics.mechanics as me
+from nose.tools import assert_raises
 
 from ...system import System
 from ..shapes import Sphere
@@ -77,6 +78,12 @@ class TestScene(object):
 
         scene.visualization_frames = [self.viz_frame]
         assert scene.visualization_frames == [self.viz_frame]
+        assert scene.system is None
+        assert scene.time is None
+        assert scene.constants is None
+        assert scene.states_symbols is None
+        assert scene.states_trajectories is None
+        assert scene.frames_per_second == 30
 
         # test maximal args/kwargs
         custom_camera = PerspectiveCamera('my_camera', self.ref_frame,
@@ -90,25 +97,51 @@ class TestScene(object):
 
         scene = Scene(self.ref_frame, self.origin, self.viz_frame,
                       name='my_scene', cameras=[custom_camera],
-                      lights=[custom_light])
+                      lights=[custom_light], system=self.sys)
 
         assert scene.visualization_frames == [self.viz_frame]
         assert scene.name == 'my_scene'
         assert scene.cameras == [custom_camera]
         assert scene.lights == [custom_light]
+        assert scene.system is self.sys
+
+        scene = Scene(self.ref_frame, self.origin, self.viz_frame,
+                      name='my_scene', cameras=[custom_camera],
+                      lights=[custom_light], time=self.sys.times,
+                      constants=self.sys.constants,
+                      states_symbols=self.sys.states,
+                      states_trajectories=self.sys.integrate())
+
+        assert scene.system is None
+        assert_allclose(scene.time, self.sys.times)
+        assert scene.constants == self.sys.constants
+        assert scene.states_symbols == self.sys.states
+        assert scene.states_trajectories.shape == (2, 2)
+
+    def test_setting_incompatible_attrs(self):
+
+        scene = Scene(self.ref_frame, self.origin, self.viz_frame,
+                      time=self.sys.times)
+
+        with assert_raises(ValueError):
+            scene.system = self.sys
+
+        scene = Scene(self.ref_frame, self.origin, self.viz_frame,
+                      system=self.sys)
+
+        with assert_raises(ValueError):
+            scene.time = self.sys.times
 
     def test_generate_simulation_dict(self):
 
-        scene = Scene(self.ref_frame, self.origin, self.viz_frame)
+        scene = Scene(self.ref_frame, self.origin, self.viz_frame,
+                      system=self.sys)
 
         light_id = id(scene.lights[0])
         camera_id = id(scene.cameras[0])
         viz_frame_id = id(scene.visualization_frames[0])
 
-        sim_dict = scene.generate_simulation_dict(self.sys.states,
-                                                  self.sys.constants.keys(),
-                                                  self.sys.integrate(),
-                                                  self.sys.constants.values())
+        scene._generate_simulation_dict()
 
         expected_dict = {viz_frame_id: [[1.0, 0.0, 0.0, 0.0,
                                          0.0, 1.0, 0.0, 0.0,
@@ -135,14 +168,16 @@ class TestScene(object):
                                       0.0, 0.0, 1.0, 0.0,
                                       0.0, 0.0, 10.0, 1.0]]}
 
-        assert sorted(expected_dict.keys()) == sorted(sim_dict.keys())
+        assert (sorted(expected_dict.keys()) ==
+                sorted(scene._simulation_info.keys()))
 
-        for k, v in sim_dict.items():
+        for k, v in scene._simulation_info.items():
             assert_allclose(v, expected_dict[k])
 
     def test_generate_scene_dict(self):
 
-        scene = Scene(self.ref_frame, self.origin, self.viz_frame)
+        scene = Scene(self.ref_frame, self.origin, self.viz_frame,
+                      system=self.sys)
 
         light_id = id(scene.lights[0])
         camera_id = id(scene.cameras[0])
@@ -150,11 +185,8 @@ class TestScene(object):
 
         # NOTE : generate_simulation_dict must be called before
         # generate_scene_dict
-        scene.generate_simulation_dict(self.sys.states,
-                                       self.sys.constants.keys(),
-                                       self.sys.integrate(),
-                                       self.sys.constants.values())
-        scene_dict = scene.generate_scene_dict()
+        scene._generate_simulation_dict()
+        scene._generate_scene_dict()
 
         expected_scene_dict = \
             {'newtonian_frame': 'N',
@@ -194,18 +226,16 @@ class TestScene(object):
                                              0.1, 0.0, 0.0, 1.0],
                                         'type': 'Sphere'}}}
 
-        assert scene_dict == expected_scene_dict
+        assert scene._scene_info == expected_scene_dict
 
         # Test the constant_map kwarg.
-        scene = Scene(self.ref_frame, self.origin, self.viz_frame_sym_shape)
+        scene = Scene(self.ref_frame, self.origin, self.viz_frame_sym_shape,
+                      system=self.sys)
         viz_frame_id = id(scene.visualization_frames[0])
-        scene.generate_simulation_dict(self.sys.states,
-                                       self.sys.constants.keys(),
-                                       self.sys.integrate(),
-                                       self.sys.constants.values())
-        scene_dict = scene.generate_scene_dict(constant_map=self.sys.constants)
+        scene._generate_simulation_dict()
+        scene._generate_scene_dict()
 
-        assert scene_dict['objects'][viz_frame_id]['radius'] == 0.1
+        assert scene._scene_info['objects'][viz_frame_id]['radius'] == 0.1
 
     def test_custom_camera(self):
 
@@ -220,15 +250,13 @@ class TestScene(object):
         camera = OrthoGraphicCamera('my_camera', camera_frame, camera_point)
 
         scene = Scene(self.ref_frame, self.origin, self.viz_frame,
-                      cameras=[camera])
+                      cameras=[camera], system=self.sys)
 
         camera_id = id(camera)
 
-        scene.generate_simulation_dict(self.sys.states,
-                                       self.sys.constants.keys(),
-                                       self.sys.integrate(),
-                                       self.sys.constants.values())
-        scene_dict = scene.generate_scene_dict()
+        scene._generate_simulation_dict()
+        scene._generate_scene_dict()
+        scene_dict = scene._scene_info
 
         expected_orientation_matrix = np.array([0.0, 0.0, 1.0, 0.0,
                                                 0.0, -1.0, 0.0, 0.0,
@@ -257,14 +285,25 @@ class TestScene(object):
         scene.remove_static_html(force=True)
         assert not os.path.exists('static')
 
+    def test_copy_resources(self):
+        scene = Scene(self.ref_frame, self.origin, self.viz_frame)
+        scene.generate_visualization_json_system(self.sys,
+                                                 outfile_prefix="test")
+        # test custom directory creation pointed by scene.static_url
+        scene.copy_resources()
+        assert os.path.exists(scene.pydy_dir)
+        assert os.path.exists(os.path.join(scene.pydy_dir, 'index.html'))
+        assert os.path.exists(os.path.join(scene.pydy_dir, 'test_scene_desc.json'))
+        assert os.path.exists(os.path.join(scene.pydy_dir, 'test_simulation_data.json'))
+
     def test_generate_visualization_json_system(self):
 
         scene = Scene(self.ref_frame, self.origin, self.viz_frame)
         scene.generate_visualization_json_system(self.sys)
 
         # Tests issue #204
-        assert scene._scene_data_dict['constant_map'] == {'m': 1.0, 'k': 2.0,
-                                                          'c': 3.0, 'g': 9.8}
+        assert scene._scene_info['constant_map'] == {'m': 1.0, 'k': 2.0,
+                                                     'c': 3.0, 'g': 9.8}
 
     def teardown(self):
 

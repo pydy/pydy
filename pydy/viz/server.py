@@ -79,6 +79,7 @@ class Server(object):
     def run_server(self):
         # Change dir to static first.
         os.chdir(self.directory)
+        print(os.getcwd())
         # Get a free port
         while self._check_port(self.port):
             self.port += 1

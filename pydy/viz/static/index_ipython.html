@@ -7,29 +7,29 @@
     <title>PyDy Visualizer</title>
 
     <!--CSS -->
-    <link type="text/css" rel="stylesheet" href="static/css/main.css">
-    <link type="text/css" rel="stylesheet" href="static/css/codemirror/blackboard.css">
-    <link type="text/css" rel="stylesheet" href="static/css/slider.css">
-    <link type="text/css" rel="stylesheet" href="static/css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="{static_url}/css/main.css">
+    <link type="text/css" rel="stylesheet" href="{static_url}/css/codemirror/blackboard.css">
+    <link type="text/css" rel="stylesheet" href="{static_url}/css/slider.css">
+    <link type="text/css" rel="stylesheet" href="{static_url}/css/bootstrap.min.css">
 
     <!-- External Javascript -->
-    <script type="text/javascript" src="static/js/external/jquery/jquery-ui.js"></script>
+    <script type="text/javascript" src="{static_url}/js/external/jquery/jquery-ui.js"></script>
 
-    <script type="text/javascript" src="static/js/external/codemirror/javascript-mode.js" ></script>
+    <script type="text/javascript" src="{static_url}/js/external/codemirror/javascript-mode.js" ></script>
 
-    <script type="text/javascript" src="static/js/external/three/three.min.js"></script>
-    <script type="text/javascript" src="static/js/external/three/TrackballControls.js"></script>
+    <script type="text/javascript" src="{static_url}/js/external/three/three.min.js"></script>
+    <script type="text/javascript" src="{static_url}/js/external/three/TrackballControls.js"></script>
 
-    <script type="text/javascript" src="static/js/external/utils/modernizr-2.0.6.js"></script>
-    <script type="text/javascript" src="static/js/external/utils/bootstrap-slider.js"></script>
-    <script type="text/javascript" src="static/js/external/utils/prototype.js"></script>
+    <script type="text/javascript" src="{static_url}/js/external/utils/modernizr-2.0.6.js"></script>
+    <script type="text/javascript" src="{static_url}/js/external/utils/bootstrap-slider.js"></script>
+    <script type="text/javascript" src="{static_url}/js/external/utils/prototype.js"></script>
 
     <!-- DyViz Javascripts -->
-    <script type="text/javascript" src="static/js/dyviz/dv.js"></script>
-    <script type="text/javascript" src="static/js/dyviz/scene.js"></script>
-    <script type="text/javascript" src="static/js/dyviz/parser.js"></script>
-    <script type="text/javascript" src="static/js/dyviz/param_editor.js"></script>
-    <script type="text/javascript" src="static/js/dyviz/materials.js"></script>
+    <script type="text/javascript" src="{static_url}/js/dyviz/dv.js"></script>
+    <script type="text/javascript" src="{static_url}/js/dyviz/scene.js"></script>
+    <script type="text/javascript" src="{static_url}/js/dyviz/parser.js"></script>
+    <script type="text/javascript" src="{static_url}/js/dyviz/param_editor.js"></script>
+    <script type="text/javascript" src="{static_url}/js/dyviz/materials.js"></script>
 
   </head>
 
@@ -37,9 +37,9 @@
     <div id="wrapper">
       <div id="container">
         <div id="sidebar-right" >
-          <div id="json-inp">
+          <div id="json-inp" style="display:none;">
+            <!--Used in Ipython notebook to set sceneFileURI to load in dv.js-->
             <input type="text" class="form-control" id="json-input" value="{load_url}">
-            <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load">
           </div><!--!json-inp-->
           <hr />
           <div id="edit-objects" style="position: absolute; padding-top: 10px;" >
@@ -94,6 +94,6 @@
     </div>
   </body>
 
-  <script type="text/javascript" src="static/js/dyviz/main.js"></script>
+  <script type="text/javascript" src="{static_url}/js/dyviz/main.js"></script>
 
 </html>
