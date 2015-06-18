@@ -135,6 +135,8 @@ class Scene(object):
         for k, v in default_kwargs.items():
             setattr(self, k, v)
 
+        self.static_url = os.path.join(os.getcwd(), "pydy-resources")
+
     @property
     def name(self):
         """Returns the name of the scene."""
@@ -526,7 +528,7 @@ class Scene(object):
 
         """
 
-        dst = os.path.join(os.getcwd(), 'static')
+        dst = self.static_url
 
         if os.path.exists(dst) and overwrite is False:
             ans = raw_input("The 'static' directory already exists. Would "
@@ -547,9 +549,9 @@ class Scene(object):
         if not silent:
             print("Copying Simulation data.")
 
-        _scene_outfile_loc = os.path.join(os.getcwd(), 'static',
+        _scene_outfile_loc = os.path.join(self.static_url,
                                           self._scene_json_file)
-        _simulation_outfile_loc = os.path.join(os.getcwd(), 'static',
+        _simulation_outfile_loc = os.path.join(self.static_url,
                                                self._simulation_json_file)
         scene_outfile = open(_scene_outfile_loc, "w")
         simulation_outfile = open(_simulation_outfile_loc, "w")
@@ -703,10 +705,13 @@ class Scene(object):
             display(self._constants_container)
             display(self._rerun_button)
 
-        with open("static/index_ipython.html", 'r') as html_file:
+        ipython_static_url = os.path.relpath(self.static_url, os.getcwd())
+
+        with open(os.path.join(ipython_static_url, "index_ipython.html"), 'r') as html_file:
             html = html_file.read()
 
-        html = html.format(load_url='static/' + self._scene_json_file)
+        html = html.format(static_url=os.path.join('files', ipython_static_url),
+                           load_url=os.path.join(ipython_static_url, self._scene_json_file))
 
         self._html_widget = widgets.HTML(value=html)
 
