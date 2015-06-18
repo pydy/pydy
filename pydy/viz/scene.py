@@ -185,7 +185,7 @@ class Scene(object):
     @system.setter
     def system(self, new_system):
 
-        if new_system is not None and not isinstance(new_system, System):
+        if not isinstance(new_system, System):
             msg = "{} should be a valid pydy.System object".format(new_system)
             raise TypeError(msg)
 
@@ -232,7 +232,7 @@ class Scene(object):
         if new_time is None:
             self._time = new_time
         else:
-            self._time = np.asarray(new_time)
+            self._time = np.array(new_time)
 
     @property
     def states_symbols(self):
