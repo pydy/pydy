@@ -136,7 +136,7 @@ class Scene(object):
         for k, v in default_kwargs.items():
             setattr(self, k, v)
 
-        self._static_url = os.path.join(os.getcwd(), "pydy-resources")
+        self.pydy_dir = "pydy-resources"
 
     @property
     def name(self):
@@ -359,7 +359,7 @@ class Scene(object):
         self.frames_per_second = fps
         self._generate_json(prefix=outfile_prefix)
 
-    def _generate_json(self, directory=None, prefix=None):
+    def _generate_json(self, directory=None, prefix=None, overwrite=True):
         """Creates two JSON files and copies all the necessary static
         files in the specified directory . One of the JSON files contains
         the scene information and other one contains the simulation data. If
@@ -368,12 +368,12 @@ class Scene(object):
         """
 
         if directory is None:
-            directory = self._static_url
+            directory = os.path.join(os.getcwd(), self.pydy_dir)
 
         if prefix is None:
             prefix = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
-        if os.path.exists(directory):
+        if overwrite is True and os.path.exists(directory):
             distutils.dir_util.remove_tree(directory)
 
         src = os.path.join(os.path.dirname(__file__), 'static')
@@ -542,33 +542,16 @@ class Scene(object):
             ans = raw_input("The 'static' directory already exists. Would "
                             "you like to overwrite the contents? [y|n]\n")
             if ans == 'y':
-                distutils.dir_util.remove_tree(dst)
+                overwrite = True
             else:
                 if not silent:
                     print("Aborted!")
                 return
 
-        src = os.path.join(os.path.dirname(__file__), 'static')
-
         if not silent:
-            print("Copying static data.")
-        distutils.dir_util.copy_tree(src, dst)
+            print("Copying static and simulation data.")
 
-        if not silent:
-            print("Copying Simulation data.")
-
-        _scene_outfile_loc = os.path.join(dst, self._scene_json_file)
-        _simulation_outfile_loc = os.path.join(dst, self._simulation_json_file)
-        scene_outfile = open(_scene_outfile_loc, "w")
-        simulation_outfile = open(_simulation_outfile_loc, "w")
-
-        scene_outfile.write(json.dumps(self._scene_info, indent=4,
-                                       separators=(',', ': ')))
-        scene_outfile.close()
-        simulation_outfile.write(json.dumps(self._simulation_info,
-                                            indent=4,
-                                            separators=(',', ': ')))
-        simulation_outfile.close()
+        self._generate_json(directory=dst, overwrite=overwrite)
 
         if not silent:
             print("To view the visualization, open {}".format(
@@ -605,8 +588,9 @@ class Scene(object):
 
     def display(self):
         """Displays the scene in the default webbrowser."""
-        self._generate_json()
-        server = Server(scene_file=self._scene_json_file, directory=self._static_url)
+        resource_directory = os.path.join(os.getcwd(), self.pydy_dir)
+        self._generate_json(directory=resource_directory)
+        server = Server(scene_file=self._scene_json_file, directory=resource_directory)
         server.run_server()
 
     def _rerun_button_callback(self, btn):
@@ -690,7 +674,8 @@ class Scene(object):
                    'IPython >= 3.0. Please update IPython and try again.')
             raise ImportError(msg.format(IPython.__version__))
 
-        self._generate_json()
+        resource_directory = os.path.join(os.getcwd(), self.pydy_dir)
+        self._generate_json(directory=resource_directory)
 
         # Only create the constants input boxes and the rerun simulation
         # button if the scene was generated with a System.
@@ -712,7 +697,7 @@ class Scene(object):
             display(self._constants_container)
             display(self._rerun_button)
 
-        ipython_static_url = os.path.relpath(self._static_url, os.getcwd())
+        ipython_static_url = os.path.relpath(self.pydy_dir, os.getcwd())
 
         with open(os.path.join(ipython_static_url, "index_ipython.html"), 'r') as html_file:
             html = html_file.read()
