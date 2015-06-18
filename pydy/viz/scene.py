@@ -185,7 +185,7 @@ class Scene(object):
     @system.setter
     def system(self, new_system):
 
-        if not isinstance(new_system, System):
+        if new_system is not None and not isinstance(new_system, System):
             msg = "{} should be a valid pydy.System object".format(new_system)
             raise TypeError(msg)
 
