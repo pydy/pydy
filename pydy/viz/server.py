@@ -71,18 +71,10 @@ class Server(object):
     >>> server.run_server()
 
     """
-    def __init__(self, scene_file, directory=None, port=None):
+    def __init__(self, scene_file, directory="static/", port=8000):
         self.scene_file = scene_file
-
-        if directory is None:
-            self.directory = directory
-        else:
-            self.directory = "static/"
-
-        if port is None:
-            self.port = port
-        else:
-            self.port = 8000
+        self.port = port
+        self.directory = directory
 
     def run_server(self):
         # Change dir to static first.
