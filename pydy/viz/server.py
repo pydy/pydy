@@ -57,9 +57,10 @@ class Server(object):
     Parameters
     ----------
     port : integer
-        Defines the port on which the server will run.
+        Defines the port on which the server will run. If this port is
+        already bind, then it increment 1 until it finds a free port.
     scene_file : name of the scene_file generated for visualization
-        A Valid PyDy generated scene file in 'directory'.
+        A Valid PyDy generated scene file in 'directory' parameter.
     directory : absolute path of a directory
         Absolute path to the directory which contains scene_file with
         all other static files.
@@ -73,12 +74,12 @@ class Server(object):
     def __init__(self, scene_file, directory=None, port=None):
         self.scene_file = scene_file
 
-        if directory:
+        if directory is None:
             self.directory = directory
         else:
             self.directory = "static/"
 
-        if port:
+        if port is None:
             self.port = port
         else:
             self.port = 8000
@@ -121,7 +122,7 @@ class Server(object):
 
         """
         res = raw_input("Shutdown this visualization server ([y]/n)? ")
-        res = res.lower()[0:1]
+        res = res.lower()[0]
         if res == '' or res == 'y':
             print("Shutdown confirmed")
             print("Shutting down server...")
