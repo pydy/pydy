@@ -4,6 +4,7 @@
 from __future__ import division
 import os
 import sys
+import shutil
 import warnings
 import json
 import distutils
@@ -597,9 +598,37 @@ class Scene(object):
         else:
             print("aborted!")
 
+    def copy_resources(self, silent=False):
+        """
+        Copies simulation and static files to a directory pointed
+        by self.static_url attribute.
+        It overwrites if such directory is already present.
+        """
+        dst = self.static_url
+        if os.path.exists(dst):
+            if not silent:
+                print("Cleaning previous static data")
+            distutils.dir_util.remove_tree(dst)
+
+        src = os.path.join(os.path.dirname(__file__), 'static')
+
+        if not silent:
+            print("Copying static data.")
+        distutils.dir_util.copy_tree(src, dst)
+
+        if not silent:
+            print("Copying Simulation data.")
+        try:
+            shutil.move(os.path.join(os.getcwd(), self._scene_json_file),
+                        os.path.join(self.static_url, self._scene_json_file))
+            shutil.move(os.path.join(os.getcwd(), self._simulation_json_file),
+                        os.path.join(self.static_url, self._simulation_json_file))
+        except IOError:
+            pass
+
     def display(self):
         """Displays the scene in the default webbrowser."""
-        self.create_static_html()
+        self.copy_resources()
         run_server(scene_file=self._scene_json_file)
 
     def _rerun_button_callback(self, btn):
@@ -683,7 +712,7 @@ class Scene(object):
                    'IPython >= 3.0. Please update IPython and try again.')
             raise ImportError(msg.format(IPython.__version__))
 
-        self.create_static_html(silent=True)
+        self.copy_resources(silent=True)
 
         # Only create the constants input boxes and the rerun simulation
         # button if the scene was generated with a System.
