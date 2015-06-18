@@ -105,7 +105,7 @@ class Scene(object):
 
         Notes
         =====
-        The user is allow to supply either system or time, constants,
+        The user is allowed to supply either system or time, constants,
         states_symbols, and states_trajectories. Providing a System allows for
         interactively changing the simulation parameters via the Scene GUI
         in the IPython notebook.
@@ -136,7 +136,7 @@ class Scene(object):
         for k, v in default_kwargs.items():
             setattr(self, k, v)
 
-        self.static_url = os.path.join(os.getcwd(), "pydy-resources")
+        self._static_url = os.path.join(os.getcwd(), "pydy-resources")
 
     @property
     def name(self):
@@ -204,11 +204,11 @@ class Scene(object):
         self._system = new_system
 
     @property
-    def time(self):
-        return self._time
+    def times(self):
+        return self._times
 
-    @time.setter
-    def time(self, new_time):
+    @times.setter
+    def times(self, new_time):
 
         try:
             if new_time is not None and self.system is not None:
@@ -230,9 +230,9 @@ class Scene(object):
             pass
 
         if new_time is None:
-            self._time = new_time
+            self._times = new_time
         else:
-            self._time = np.array(new_time)
+            self._times = np.array(new_time)
 
     @property
     def states_symbols(self):
@@ -360,16 +360,24 @@ class Scene(object):
         self._generate_json(prefix=outfile_prefix)
 
     def _generate_json(self, directory=None, prefix=None):
-        """Creates two JSON files in the specified directory. One contains
-        the scene information and one contains the simulation data. If
+        """Creates two JSON files and copies all the necessary static
+        files in the specified directory . One of the JSON files contains
+        the scene information and other one contains the simulation data. If
         ``directory`` is None the files will be created in the current
-        working directory."""
+        working directory.
+        """
 
         if directory is None:
-            directory = os.getcwd()
+            directory = self._static_url
 
         if prefix is None:
             prefix = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
+        if os.path.exists(directory):
+            distutils.dir_util.remove_tree(directory)
+
+        src = os.path.join(os.path.dirname(__file__), 'static')
+        distutils.dir_util.copy_tree(src, directory)
 
         self._scene_json_file = prefix + "_scene_desc.json"
         self._simulation_json_file = prefix + "_simulation_data.json"
@@ -595,38 +603,10 @@ class Scene(object):
         else:
             print("aborted!")
 
-    def copy_resources(self, silent=False):
-        """
-        Copies simulation and static files to a directory pointed
-        by self.static_url attribute.
-        It overwrites if such directory is already present.
-        """
-        dst = self.static_url
-        if os.path.exists(dst):
-            if not silent:
-                print("Cleaning previous static data")
-            distutils.dir_util.remove_tree(dst)
-
-        src = os.path.join(os.path.dirname(__file__), 'static')
-
-        if not silent:
-            print("Copying static data.")
-        distutils.dir_util.copy_tree(src, dst)
-
-        if not silent:
-            print("Copying Simulation data.")
-        try:
-            shutil.move(os.path.join(os.getcwd(), self._scene_json_file),
-                        os.path.join(self.static_url, self._scene_json_file))
-            shutil.move(os.path.join(os.getcwd(), self._simulation_json_file),
-                        os.path.join(self.static_url, self._simulation_json_file))
-        except IOError:
-            pass
-
     def display(self):
         """Displays the scene in the default webbrowser."""
-        self.copy_resources()
-        server = Server(scene_file=self._scene_json_file)
+        self._generate_json()
+        server = Server(scene_file=self._scene_json_file, directory=self._static_url)
         server.run_server()
 
     def _rerun_button_callback(self, btn):
@@ -710,7 +690,7 @@ class Scene(object):
                    'IPython >= 3.0. Please update IPython and try again.')
             raise ImportError(msg.format(IPython.__version__))
 
-        self.copy_resources(silent=True)
+        self._generate_json()
 
         # Only create the constants input boxes and the rerun simulation
         # button if the scene was generated with a System.
@@ -732,7 +712,7 @@ class Scene(object):
             display(self._constants_container)
             display(self._rerun_button)
 
-        ipython_static_url = os.path.relpath(self.static_url, os.getcwd())
+        ipython_static_url = os.path.relpath(self._static_url, os.getcwd())
 
         with open(os.path.join(ipython_static_url, "index_ipython.html"), 'r') as html_file:
             html = html_file.read()

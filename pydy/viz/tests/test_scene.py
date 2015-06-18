@@ -291,10 +291,10 @@ class TestScene(object):
                                                  outfile_prefix="test")
         # test custom directory creation pointed by scene.static_url
         scene.copy_resources()
-        assert os.path.exists(scene.static_url)
-        assert os.path.exists(os.path.join(scene.static_url, 'index.html'))
-        assert os.path.exists(os.path.join(scene.static_url, 'test_scene_desc.json'))
-        assert os.path.exists(os.path.join(scene.static_url, 'test_simulation_data.json'))
+        assert os.path.exists(scene._static_url)
+        assert os.path.exists(os.path.join(scene._static_url, 'index.html'))
+        assert os.path.exists(os.path.join(scene._static_url, 'test_scene_desc.json'))
+        assert os.path.exists(os.path.join(scene._static_url, 'test_simulation_data.json'))
 
     def test_generate_visualization_json_system(self):
 
