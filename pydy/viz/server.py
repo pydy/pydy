@@ -71,8 +71,7 @@ class Server(object):
 
     """
     def __init__(self, scene_file, directory=None, port=None):
-        if scene_file:
-            self.scene_file = scene_file
+        self.scene_file = scene_file
 
         if directory:
             self.directory = directory
@@ -110,10 +109,7 @@ class Server(object):
     def _check_port(self, port):
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         result = soc.connect_ex(('127.0.0.1', port))
-        if result == 0:
-            return True
-        else:
-            return False
+        return result == 0
 
     def _stop_server(self, signal, frame):
         """
