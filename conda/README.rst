@@ -19,9 +19,10 @@ previous version (or use ``conda skeleton pypi pydy``)::
    $ cp pydy-Y.Y.Y/* pydy-X.X.X/
 
 Edit the files to reflect any new changes in to the package (especially
-dependency changes) and run conda build::
+dependency changes) and run conda build for each version of Python to build
+against::
 
-   $ conda build pydy-X.X.X
+   $ conda build --python X.X pydy-X.X.X
 
 This will build the default package for your computer architecture. Since PyDy
 is a pure Python package we can generate the packages for other architectures

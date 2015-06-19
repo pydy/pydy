@@ -1,0 +1,46 @@
+package:
+  name: pydy
+  version: "0.3.0"
+
+source:
+  fn: pydy-0.3.0.tar.gz
+  url: https://pypi.python.org/packages/source/p/pydy/pydy-0.3.0.tar.gz
+  md5: 4f4812a4e989519149298e475561a7e9
+
+requirements:
+  build:
+    - python 2.7* # [py27]
+    - python 3.3* # [py33]
+    - python 3.4* # [py34]
+    - setuptools >=8.0
+    - sympy >=0.7.4.1
+    - numpy >=1.7
+    - scipy >=0.11
+
+  run:
+    - python 2.7* # [py27]
+    - python 3.3* # [py33]
+    - python 3.4* # [py34]
+    - setuptools >=8.0
+    - sympy >=0.7.4.1
+    - numpy >=1.7
+    - scipy >=0.11
+
+build:
+  number: 0
+  string: py27_0 # [py27]
+  string: py33_0 # [py33]
+  string: py34_0 # [py34]
+
+test:
+  imports:
+    - pydy
+    - pydy.codegen
+    - pydy.codegen.tests
+    - pydy.viz
+    - pydy.viz.tests
+
+about:
+  home: http://pydy.org
+  license: The BSD 3-Clause License
+  summary: 'Python tool kit for multi-body dynamics.'
