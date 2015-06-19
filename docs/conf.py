@@ -56,7 +56,15 @@ if os.environ.get('READTHEDOCS', None) == 'True':
                     'sympy.physics.mechanics.functions',
                     'sympy.matrices',
                     'sympy.matrices.expressions',
-                    'pkg_resources']
+                    'IPython',
+                    'IPython.html',
+                    'IPython.display',
+                    'nose',
+                    'nose.tools',
+                    'Cython',
+                    'Cython.Build',
+                    'pkg_resources',
+                    'setuptools']
 
     pairs = []
     for mod_name in MOCK_MODULES:
@@ -100,7 +108,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyDy Distribution'
-copyright = u'2013-2014, PyDy Authors'
+copyright = u'2009-2015, PyDy Authors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -315,7 +323,7 @@ texinfo_documents = [
 epub_title = u'PyDy Distribution'
 epub_author = u'PyDy Authors'
 epub_publisher = u'PyDy Authors'
-epub_copyright = u'2013-2014, PyDy Authors'
+epub_copyright = u'2009-2015, PyDy Authors'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
