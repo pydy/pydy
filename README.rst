@@ -81,27 +81,33 @@ The examples may require these dependencies:
 - matplotlib_
 
 It's best to install the SciPy Stack dependencies using the instructions_
-provided on the SciPy website. We recommend the conda_ package manager and the
-Anaconda_ distribution for easy cross platform installation.
+provided on the SciPy website first. We recommend the conda_ package manager
+and the Anaconda_ distribution for easy cross platform installation.
 
 .. _instructions: http://www.scipy.org/install.html
 .. _conda: http://conda.pydata.org/
 .. _Anaconda: http://docs.continuum.io/anaconda/
 
 Once the dependencies are installed, the latest stable version of the package
-can be downloaded from PyPi::
+can be downloaded from PyPi\ [#]_::
 
-   $ wget https://pypi.python.org/packages/source/p/pydy/pydy-0.2.1.tar.gz
+   $ wget https://pypi.python.org/packages/source/p/pydy/pydy-X.X.X.tar.gz
 
 and extracted and installed\ [#]_::
 
-   $ tar -zxvf pydy-0.2.1.tar.gz
-   $ cd pydy-0.2.1
+   $ tar -zxvf pydy-X.X.X.tar.gz
+   $ cd pydy-X.X.X
    $ python setup.py install
 
 Or if you have the pip package manager installed you can simply type::
 
    $ pip install pydy
+
+Or if you have conda you can type::
+
+   $ conda install -c pydy pydy
+
+.. [#] Change ``X.X.X`` to the latest version number.
 
 .. [#] For system wide installs you may need root permissions (perhaps prepend
    commands with ``sudo``).
