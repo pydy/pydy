@@ -54,11 +54,13 @@ import warnings
 from itertools import repeat
 
 import sympy as sm
-from sympy.physics.mechanics import dynamicsymbols
+from sympy.physics.mechanics import dynamicsymbols, ReferenceFrame
 from scipy.integrate import odeint
 
+from .bodies import Ground
 from .codegen.ode_function_generators import generate_ode_function
-from .utils import sympy_equal_to_or_newer_than, PyDyFutureWarning
+from .utils import sympy_equal_to_or_newer_than, PyDyFutureWarning,\
+    PyDySystemError
 
 SYMPY_VERSION = sm.__version__
 
@@ -133,6 +135,7 @@ class System(object):
             self._times = times
 
         self._evaluate_ode_function = None
+        self.is_using_joints = True
 
     @property
     def coordinates(self):
@@ -610,3 +613,61 @@ class System(object):
                 *self._Kane_inlist_insyms()))
         constants.remove(dynamicsymbols._t)
         return constants
+
+    @classmethod
+    def using_joints(cls):
+        system = cls()
+        system.is_using_joints = True
+        system.bodies = list()
+        system.ground = Ground()
+        system._force_list = list()
+        system.reference_frame = system.ground.frame
+        system.origin = system.ground.masscenter
+        return system
+
+    @property
+    def gravity(self):
+        if self.is_using_joints:
+            return self.gravity
+        else:
+            raise PyDySystemError('System is not created using joints, gravity' +
+                                  ' is only applied when system includes joints.')
+
+    @gravity.setter
+    def gravity(self, gravity):
+        self.gravity = gravity
+
+    def apply_gravity(self, direction):
+        if self.is_using_joints:
+            self.gravitational_constant = Symbol('gravity')
+            if direction is None:
+                direction = self.reference_frame.z
+            self.gravity = self.gravitational_constant * direction
+            self._add_gravity_force()
+        else:
+            raise PyDySystemError('System is not created using joints, gravity' +
+                                  ' is only applied when system includes joints.')
+
+    def _add_gravity_force(self):
+        for body in self.bodies:
+            self._force_list.append((body.center_of_mass,
+                                     body.mass * self.gravity))
+
+    def get_eoms(self):
+        """ Calculates the eoms after getting values from each body
+            and generating a Kane's object.
+
+        """
+        # TODO
+
+    def visualise(self):
+        """
+        Visualises the system using pydy.viz
+
+        Example:
+        >>> from pydy.system import System
+        >>> system = System
+        >>> # ..Add bodies to the system. TODO
+        >>> system.visualise()
+        """
+        # TODO
