@@ -88,3 +88,6 @@ class PyDyFutureWarning(FutureWarning):
 
 class PyDyUserWarning(UserWarning):
     pass
+
+class PyDySystemError(BaseException):
+    pass

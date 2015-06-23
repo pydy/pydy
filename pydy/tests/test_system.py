@@ -3,9 +3,10 @@
 import numpy as np
 from numpy import testing
 import sympy as sm
-from sympy.physics.mechanics import dynamicsymbols
+from sympy.physics.mechanics import dynamicsymbols, Point, ReferenceFrame
 from scipy.integrate import odeint
 
+from ..bodies import Ground
 from ..system import System
 from ..models import multi_mass_spring_damper, n_link_pendulum_on_cart
 from ..utils import sympy_equal_to_or_newer_than
@@ -37,6 +38,7 @@ class TestSystem():
         # -----------------------------------
         sys = System(self.kane)
 
+        assert sys.is_using_joints is False
         assert (sys.constants_symbols ==
                 set(sm.symbols('k0, m0, g, c0')))
         assert sys.specifieds_symbols == {self.specified_symbol}
@@ -395,3 +397,27 @@ class TestSystem():
         sys = System(self.kane, times=times)
         with testing.assert_raises(NotImplementedError):
             sys.generate_ode_function(generator='made-up')
+
+
+class TestJointSystem():
+
+    def setup(self):
+        self.system = System.using_joints()
+
+    def test_init(self):
+        assert isinstance(self.system.ground, Ground)
+        assert isinstance(self.system.origin, Point)
+        assert isinstance(self.system.reference_frame, ReferenceFrame)
+        assert self.system.bodies == list()
+        assert self.system.is_using_joints is True
+
+    def test_gravity(self):
+        assert self.system.gravitational_constant == sm.Symbol('gravity')
+        assert self.system.gravity == sm.Symbol('gravity') * \
+                                      self.system.reference_frame.z
+
+    def test_generate_eoms(self):
+        # TODO
+
+    def test_visualize(self):
+        # TODO
