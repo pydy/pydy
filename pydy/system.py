@@ -610,3 +610,42 @@ class System(object):
                 *self._Kane_inlist_insyms()))
         constants.remove(dynamicsymbols._t)
         return constants
+
+    def add_gravity(self, direction=None):
+        """Assigns gravity, by default in the direction of reference_frame.z
+        """
+        if direction is None:
+            direction = self.reference_frame.z
+        self._apply_gravity()
+        # TODO
+
+    def _apply_gravity(self):
+        """Applies gravity force to each body in body_list. Called after calling
+        add_gravity and also when a new body is added."""
+        # TODO
+
+    def add_body(self, body):
+        """Adds body to the body_list, assigns system to the body, gravity. Only
+        called when body is not connected to any joints. If it is create a joint
+        first and then add joints to the system
+        """
+        # TODO
+
+    def add_joint(self, joint):
+        """Adds joints to the system and body involved in creating the joints to
+        the system
+        """
+        # TODO
+
+    def get_eom(self):
+        """Generates the equations of motion, it iterates over all parent-body tree
+        and create a tree structure for their center of masses and reference frames
+        """
+        # TODO
+
+    def visualize(self, ipython=True):
+        """
+        Calculates the EoMs and using the data from add_decoration from bodies
+        calls display or display_ipython and starts the server.
+        """
+        # TODO
