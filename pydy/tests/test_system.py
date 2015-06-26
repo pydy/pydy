@@ -3,12 +3,14 @@
 import numpy as np
 from numpy import testing
 import sympy as sm
+from sympy.physics.vector import ReferenceFrame
 from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
 
+from ..bodies import Ground, Body
 from ..system import System
 from ..models import multi_mass_spring_damper, n_link_pendulum_on_cart
-from ..utils import sympy_equal_to_or_newer_than
+from ..utils import sympy_equal_to_or_newer_than, AssignSymbol
 
 SYMPY_VERSION = sm.__version__
 
@@ -395,3 +397,67 @@ class TestSystem():
         sys = System(self.kane, times=times)
         with testing.assert_raises(NotImplementedError):
             sys.generate_ode_function(generator='made-up')
+
+    def test_joint_system_init(self):
+        sys = System(method='joints')
+
+        # test that none of attributes set when system is called with kane
+        # are set.
+        assert hasattr(sys, 'method')
+        assert sys.method == 'joints'
+        assert sys.constants == dict()
+        assert sys.specifieds == dict()
+        assert sys.initial_conditions == dict()
+
+        # test all the attributes used to build system using joints are set.
+        assert isinstance(sys.ground, Ground)
+        assert sys.origin == sys.ground.origin
+        assert sys.gravity is None
+        assert isinstance(sys.reference_frame, ReferenceFrame)
+        assert sys._body_list == []
+
+    def test_joint_system_gravity(self):
+        sys = System(method='joints')
+        sys.add_gravity()
+
+        assert sys.gravitational_constant == Symbol('g')
+        assert sys.gravity == sys.gravitatinal_constant * sys.reference_frame.z
+
+    def test_joint_system_add_body(self):
+        sys = System(method='joints')
+        body = Body('Body')
+
+        sys.add_body(body)
+
+        assert sys.body_list == [body]
+        assert body.system == sys
+        assert body.parent is None
+
+    def test_joint_system_add_gravity(self):
+        sys = System(method='joints')
+        body = Body('Body')
+        sys.add_gravity()
+        gravity_force = body.mass * sys.gravitational_constant * sys.reference_frame.z
+
+        assert body.force_list == list()
+
+        sys.add_body(body)
+
+        assert gravity_force in body.force_list
+
+    # add_joint tested in test_joints
+    def test_system_assign_name(self):
+        system = System(method='joints')
+        body = Body()
+        assert body.name is None
+
+        system.add_body(body)
+        assign_symbol = AssignSymbol()
+
+        assert body.name == assign_symbol.get_body_name()
+        assert body.name == 'body_1'
+        assert isinstance(system.assign_symbol, AssignSymbol)
+
+    def test_system_visualize(self):
+        # TODO tests calling display or display_ipython and then starting server
+        # after assigning
