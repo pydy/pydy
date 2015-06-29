@@ -35,8 +35,9 @@ class Body(RigidBody):
 
     def add_force(self, force):
         """
-        Appends the constant from Force class to the force_list class. Applying exact
-        value of force is handled by the system.
+        Adds force to the body by adding Force's instance to the force_list.
+        force_list is used by system to get the tuples from the instance and
+        create force_list for Kane's method.
 
         Paramters
         ---------
@@ -47,7 +48,8 @@ class Body(RigidBody):
         Example
         -------
         >>> body = Body('body')
-        >>> body.add_force(Force.GRAVITY)
+        >>> force = Force(body.masscenter, body.frame.z, Symbol('g'))
+        >>> body.add_force(force)
 
         """
         # TODO

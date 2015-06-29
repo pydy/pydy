@@ -35,9 +35,10 @@ class TestBody():
         assert isinstance(self.body.force_list, list())
         assert len(self.body.force_list) == 0
 
-        self.body.add_force(Force.GRAVITY)
+        force = Force(body.masscenter, body.frame.z, Symbol('g'))
+        self.body.add_force(force)
         assert len(self.body.force_list) == 1
-        assert self.body.force_list[0] == Force.GRAVITY
+        assert self.body.force_list[0] == force
 
 
 class TestGround():
