@@ -58,4 +58,4 @@ class Body(RigidBody):
 class Ground(Body):
     def __init__(self, name, masscenter=None, frame=None, mass=None, inertia=None):
         # TODO change properties of Body.
-        Body.__init__(self, name, masscenter, frame, mass, inertia)
+        super(Ground, self).__init__(*args,**kwargs)

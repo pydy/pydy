@@ -12,10 +12,10 @@ from ..force import Force
 
 class TestBody():
     def setup(self):
-        self.body = Body('body')
+        self.body = Body('Body')
 
     def test_body_init(self):
-        assert self.body.name == 'body'
+        assert self.body.name == 'Body'
         assert self.body.parent is None
         assert self.body.child is None
         assert isinstance(self.body.masscenter, Point)
@@ -27,9 +27,9 @@ class TestBody():
 
     def test_body_properties_value(self):
         name = self.body.name
-        assert self.body.masscenter == Point(name + '_MassCenter')
-        assert self.body.frame == ReferenceFrame(name + '_ReferenceFrame')
-        assert self.body.mass == Symbol(name + '_Mass')
+        assert self.body.masscenter == Point(name + ' MassCenter')
+        assert self.body.frame == ReferenceFrame(name + ' ReferenceFrame')
+        assert self.body.mass == Symbol(name + ' Mass')
 
     def test_body_add_force(self):
         assert isinstance(self.body.force_list, list())
@@ -47,5 +47,5 @@ class TestGround():
 
     def test_ground_init(self):
         assert hasattr(self.ground, 'origin')
-        assert self.ground.origin == Point(self.ground.name + '_Origin')
+        assert self.ground.origin == Point(self.ground.name + ' Origin')
         assert self.ground.parent is None
