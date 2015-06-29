@@ -31,7 +31,7 @@ class Body(RigidBody):
 
         # TODO define properties for RigidBody.
 
-        RigidBody.__init__(self, name, masscenter, frame, mass, inertia)
+        super(Body, self).__init__(*args, **kwargs)
 
     def add_force(self, force):
         """
@@ -58,4 +58,4 @@ class Body(RigidBody):
 class Ground(Body):
     def __init__(self, name, masscenter=None, frame=None, mass=None, inertia=None):
         # TODO change properties of Body.
-        super(Ground, self).__init__(*args,**kwargs)
+        super(Ground, self).__init__(*args, **kwargs)
