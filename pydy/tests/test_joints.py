@@ -3,7 +3,7 @@ from sympy.physics.vector import Point, dot, cross
 from sympy.physics.mechanics import dynamicsymbols
 
 from ..bodies import Body
-from ..joints import Joint, PinJoint
+from ..joints import Joint, PinJoint, SlidingJoint
 
 
 class TestJoints():
@@ -75,29 +75,29 @@ class TestPinJoint():
 
     def test_pinjoint_init(self):
         # default values
-        assert self.pinjoint.axis1 == self.parent.frame.x
-        assert self.pinjoint.axis2 == self.child.frame.x
-        assert self.pinjoint.parent_joint_point == self.parent.masscenter
-        assert self.pinjoint.child_joint_point == self.child.masscenter
+        assert self.pinjoint.parent_axis == self.parent.frame.x
+        assert self.pinjoint.child_axis == self.child.frame.x
+        assert self.pinjoint.parent_point == self.parent.masscenter
+        assert self.pinjoint.child_point == self.child.masscenter
         assert self.pinjoint.parent_joint_vector == self.parent.frame.x
         assert self.pinjoint.child_joint_vector == self.child.frame.x
 
-        assert self.parent_joint_point.vel(self.parent.frame) == 0
-        assert self.child_joint_point.vel(self.child.frame) == 0
+        assert self.parent_point.vel(self.parent.frame) == 0
+        assert self.child_point.vel(self.child.frame) == 0
 
     def test_pinjoint_parameters(self):
         self.pinjoint = PinJoint('pinjoint', self.parent, self.child,
-                                 (1, 0, 0), (0, 1, 0), axis1='x', axis2='y')
-        assert self.pinjoint.axis1 == self.parent.frame.z
-        assert self.pinjoint.axis2 == self.child.frame.y
-        point1 = self.parent.masscenter.locatenew(self.parent.frame, self.parent.frame.z)
+                                 (1, 0, 0), (0, 1, 0), parent_axis='x', child_axis='y')
+        assert self.pinjoint.parent_axis == self.parent.frame.x
+        assert self.pinjoint.child_axis == self.child.frame.y
+        point1 = self.parent.masscenter.locatenew(self.parent.frame, self.parent.frame.x)
         point2 = self.child.masscenter.locatenew(self.child.frame, self.child.frame.y)
-        assert self.pinjoint.parent_joint_point == point1
+        assert self.pinjoint.parent_point == point1
         assert self.pinjoint.child_joint_piont == point2
-        assert self.pinjoint.parent_joint_vector == self.parent.frame.z
+        assert self.pinjoint.parent_joint_vector == self.parent.frame.x
         assert self.pinjoint.child_joint_vector == self.chidl.frame.y
 
-    def test_joint_joint_functions(self):
+    def test_pinjoint_functions(self):
 
         # part 1 assining parent-child relationship
         self.pinjoint.set_parent_child_rel()
@@ -108,32 +108,32 @@ class TestPinJoint():
         self.pinjoint._locate_joint_point()
         child_masscenter = self.child.masscenter
         parent_masscenter = self.parent.masscenter
-        parent_joint_point = parent_masscenter.locatenew(self.name + '_Point', self.parent_joint_vector)
-        child_joint_point = child_masscenter.locatenew(self.name + '_Point', self.child_joint_vector)
-        assert self.pinjoint.parent_joint_vector == parent_joint_point
-        assert self.pinjoint.child_joint_vector == child_joint_point
+        parent_point = parent_masscenter.locatenew(self.name + '_Point', self.parent_joint_vector)
+        child_point = child_masscenter.locatenew(self.name + '_Point', self.child_joint_vector)
+        assert self.pinjoint.parent_joint_vector == parent_point
+        assert self.pinjoint.child_joint_vector == child_point
 
-        # part 3 aligning axis1 and axis2
+        # part 3 aligning parent_axis and child_axis
         self.join_frames()
         # sample implementation
         # self.child.frame.orient(self.parent.frame, 'Axis', [0, self.parent.frame.x])
-        assert cross(self.pinjoint.axis1, self.pinjoint.axis2) == self.child.frame.z
-        assert cross(self.pinjoint.axis2, self.pinjoint.axis1) == - self.parent.frame.z
+        assert cross(self.pinjoint.parent_axis, self.pinjoint.child_axis) == self.child.frame.z
+        assert cross(self.pinjoint.child_axis, self.pinjoint.parent_axis) == - self.parent.frame.z
         self.align_axes()
-        axis1 = self.pinjoint.axis1
-        axis2 = self.pinjoint.axis2
+        parent_axis = self.pinjoint.parent_axis
+        child_axis = self.pinjoint.child_axis
         # sample implementation
-        # perpendicular_axis_in_parent = - cross(axis1, axis2)
-        # angle_between_axes = acos(dot(self.pinjoint.axis2, self.pinjoint.axis1))
+        # perpendicular_axis_in_parent = - cross(parent_axis, child_axis)
+        # angle_between_axes = acos(dot(self.pinjoint.child_axis, self.pinjoint.parent_axis))
         # self.child.frame.orient(self.parent.frame, 'Axis',
-        #                        [acos(dot(axis1, axis2)/(axis1.magnitude() * axis2.magnitude())),
-        #                         cross(axis1, axis2)])
-        assert acos(dot(axis1, axis2)/(axis1.magnitude() * axis2.magnitude())) == 0
+        #                        [acos(dot(parent_axis, child_axis)/(parent_axis.magnitude() * child_axis.magnitude())),
+        #                         cross(parent_axis, child_axis)])
+        assert acos(dot(parent_axis, child_axis)/(parent_axis.magnitude() * child_axis.magnitude())) == 0
 
         # part 4 adding angular velocity to child w.r.t parent
         assert self.child.frame.ang_vel_in(self.parent.frame) != 0
 
-    def test_joint_apply_joint(self):
+    def test_pinjoint_apply_joint(self):
         # apply_joint() should do everything done above by calling specific funtions
         self.new_pinjoint = PinJoint('pinjoint', self.parent, self.child)
         self.new_pinjoint._apply_joint()
@@ -144,12 +144,65 @@ class TestPinJoint():
         # part 2
         child_masscenter = self.child.masscenter
         parent_masscenter = self.parent.masscenter
-        parent_joint_point = parent_masscenter.locatenew(self.name + '_Point', self.parent_joint_vector)
-        child_joint_point = child_masscenter.locatenew(self.name + '_Point', self.child_joint_vector)
-        assert self.pinjoint.parent_joint_vector == parent_joint_point
-        assert self.pinjoint.child_joint_vector == child_joint_point
+        parent_point = parent_masscenter.locatenew(self.name + '_Point', self.parent_joint_vector)
+        child_point = child_masscenter.locatenew(self.name + '_Point', self.child_joint_vector)
+        assert self.pinjoint.parent_joint_vector == parent_point
+        assert self.pinjoint.child_joint_vector == child_point
 
         # part 4
-        axis1 = self.pinjoint.axis1
-        axis2 = self.pinjoint.axis2
-        assert acos(dot(axis1, axis2)/(axis1.magnitude() * axis2.magnitude())) == 0
+        parent_axis = self.pinjoint.parent_axis
+        child_axis = self.pinjoint.child_axis
+        assert acos(dot(parent_axis, child_axis)/(parent_axis.magnitude() * child_axis.magnitude())) == 0
+
+
+class TestSlidingJoint():
+    def setup(self):
+        self.parent = Body('parent')
+        self.child = Body('child')
+        self.slidingjoint = SlidingJoint('slidingjoint', self.parent, self.child)
+
+    def test_slidingjoint_init(self):
+        # Default values
+        assert self.slidingjoint.parent == self.parent
+        assert self.slidingjoint.child == self.child
+        assert self.slidingjoint.direction1 == self.parent.x
+        assert self.slidingjoint.direction2 == self.child.x
+        assert self.slidingjoint.parent_point == self.parent.masscenter
+        assert self.slidingjoint.child_point == self.child.masscenter
+
+    def test_slidingjoint_paramters(self):
+        # custom parameters
+        self.slidingjoint = SlidingJoint('slidingjoint', self.parent, self.child,
+                                         (1,0,0), (0,1,0), direction1='x', direction2='y')
+        assert self.pinjoint.direction1 == self.parent.frame.x
+        assert self.pinjoint.direction2 == self.child.frame.y
+        point1 = self.parent.masscenter.locatenew(self.parent.frame, self.parent.frame.x)
+        point2 = self.child.masscenter.locatenew(self.child.frame, self.child.frame.y)
+        assert self.pinjoint.parent_point == point1
+        assert self.pinjoint.child_joint_piont == point2
+        assert self.pinjoint.parent_joint_vector == self.parent.frame.x
+        assert self.pinjoint.child_joint_vector == self.child.frame.y
+
+    def test_slidingjoint_functions(self):
+        self.slidingjoint.set_parent_child_rel()
+        assert self.parent.child == self.child
+        assert self.child.parent == self.parent
+
+        self.slidingjoint._locate_joint_point()
+        child_masscenter = self.child.masscenter
+        parent_masscenter = self.parent.masscenter
+        parent_point = parent_masscenter.locatenew(self.name + '_Point', self.parent_joint_vector)
+        child_point = child_masscenter.locatenew(self.name + '_Point', self.child_joint_vector)
+        assert self.pinjoint.parent_joint_vector == parent_point
+        assert self.pinjoint.child_joint_vector == child_point
+
+        self.join_frames()
+        assert cross(self.pinjoint.parent_axis, self.pinjoint.child_axis) == self.child.frame.z
+        assert cross(self.pinjoint.child_axis, self.pinjoint.parent_axis) == - self.parent.frame.z
+
+        self.align_axes()
+        parent_axis = self.pinjoint.parent_axis
+        child_axis = self.pinjoint.child_axis
+        assert acos(dot(parent_axis, child_axis)/(parent_axis.magnitude() * child_axis.magnitude())) == 0
+
+        assert self.child_point.vel(self.parent.frame) != 0

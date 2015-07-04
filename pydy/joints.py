@@ -1,4 +1,4 @@
-__all__ = ['PinJoint', 'PrismaticJoint', 'CylindricJoint', 'SphericalJoint', 'PlanarJoint']
+__all__ = ['PinJoint', 'SlidingJoint', 'CylindricalJoint', 'SphericalJoint', 'PlanarJoint']
 
 
 class Joint(object):
@@ -95,13 +95,11 @@ class PinJoint(Joint):
         #TODO
 
 
-class PrismaticJoint(Joint):
-    def __init__(self, name, parent, parent_joint_vector, child, child_joint_vector, direction=None):
+class SlidingJoint(Joint):
+    def __init__(self, name, parent, child, par_point_vec_tuple=None,
+                 child_point_vec_tuple=None, direction1=None, direction2=None):
         super(Joint, self).__init__(*args, **kwargs)
-        if direction is None:
-            self.direction = self.parent.z
-        else:
-            self.direction = direction
+        # TODO
         self._apply_joint()
 
     def _apply_joint(self):
