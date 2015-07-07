@@ -8,14 +8,25 @@ class Joint(object):
     Note: Some of these methods can be shifted to body. Want to have a discussion
     on this.
     """
-    def __init__(self, name, parent, par_point_vec_tuple, child, child_point_vec_tuple):
-        self.name = name
+    def __init__(self, name=None, parent, par_point_vec_tuple, child, child_point_vec_tuple):
+        if name is None:
+            self._create_name()
+        else:
+            self.name = name
         self.parent = parent
         self.child = child
         self.parent_joint_vector = par_point_vec_tuple
         self.child_joint_vector = child_point_vec_tuple
+        self.counter = 0
+        self._set_parent_child_rel()
 
-    def set_parent_child_rel(self):
+    def _create_name(self, type=None):
+        self.counter += 1
+        if type is None:
+            type = ''
+        self.name = type + 'Joint' + str(self.counter)
+
+    def _set_parent_child_rel(self):
         self.child.parent = self.parent
         self.parent.child = self.child
 
@@ -50,7 +61,7 @@ class Joint(object):
         paramter details. Its exactly same"""
         # TODO
 
-    def convert_tuple_to_vector(self, frame, tuple):
+    def _convert_tuple_to_vector(self, frame, tuple):
         if len(tuple) == 3:
             unit_vectors = [frame.x, frame.y, frame.z]
             vector = 0
@@ -68,21 +79,25 @@ class Joint(object):
 class PinJoint(Joint):
     """Uses methods in Joint's class and create a Revolute (Pin) Joint between
     parent and child."""
-    def __init__(self, name, parent, child, par_point_vec_tuple=None, child_point_vec_tuple=None, axis1=None, axis2=None):
+    def __init__(self, name, parent, child, par_point_vec_tuple=None, child_point_vec_tuple=None, parent_axis=None, child_axis=None):
         super(Joint, self).__init__(*args, **kwargs)
-        if axis1 is None or axis1 == 'x':
+        if parent_axis is None or parent_axis == 'x':
             self.axis1 = parent.frame.x
-        elif axis1 == 'y':
+        elif parent_axis == 'y':
             self.axis1 = parent.frame.y
-        elif axis1 == 'z':
+        elif parent_axis == 'z':
             self.axis1 = parent.frame.z
 
-        if axis2 is None or axis2 == 'x':
+        if child_axis is None or child_axis == 'x':
             self.axis2 = child.frame.x
-        elif axis2 == 'y':
+        elif child_axis == 'y':
             self.axis2 = child.frame.y
-        elif axis2 == 'z':
+        elif child_axis == 'z':
             self.axis2 = child.frame.z
+
+        self.parent_joint_vector = self._convert_tuple_to_vector(self.parent.frame, par_point_vec_tuple)
+        self.child_joint_vector = self._convert_tuple_to_vector(self.child.frame, child_point_vec_tuple)
+
         self._apply_joint()
 
     def _locate_joint_point(self):

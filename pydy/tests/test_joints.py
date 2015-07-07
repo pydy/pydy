@@ -20,7 +20,7 @@ class TestJoints():
         assert self.joint.child_joint_vector == 0
 
     def test_joint_set_parent_child_rel(self):
-        self.joint.set_parent_child_rel()
+        self.joint._set_parent_child_rel()
         assert self.child.parent == self.parent
         assert self.parent.child == self.child
 
@@ -85,6 +85,20 @@ class TestPinJoint():
         assert self.parent_point.vel(self.parent.frame) == 0
         assert self.child_point.vel(self.child.frame) == 0
 
+    def test_pinjoint_init_using_particles(self):
+        point1 = Point('point1')
+        point2 = Point('point2')
+        mass1 = Symbol('m1')
+        mass2 = Symbol('m2')
+
+        parent = Particle('parent', point1, mass1)
+        child = Particle('child', point2, mass2)
+
+        pinjoint = PinJoint('pinjoint', parent, child)
+        assert pinjoint.parent = parent
+        assert pinjoint.child = child
+        assert
+
     def test_pinjoint_parameters(self):
         self.pinjoint = PinJoint('pinjoint', self.parent, self.child,
                                  (1, 0, 0), (0, 1, 0), parent_axis='x', child_axis='y')
@@ -97,10 +111,17 @@ class TestPinJoint():
         assert self.pinjoint.parent_joint_vector == self.parent.frame.x
         assert self.pinjoint.child_joint_vector == self.chidl.frame.y
 
+    def test_pinjoint_tuple_vector(self):
+        a, b, c, d, e, f = symbols('a b c d e f')
+        pinjoint = PinJoint('pinjoint', self.parent, self.child,
+                            (a, b, c), (d, e, f), parent_axis='x', child_axis='y')
+
+
+
     def test_pinjoint_functions(self):
 
         # part 1 assining parent-child relationship
-        self.pinjoint.set_parent_child_rel()
+        self.pinjoint._set_parent_child_rel()
         assert self.child.parent == self.parent
         assert self.parent.child == self.child
 
@@ -184,7 +205,7 @@ class TestSlidingJoint():
         assert self.pinjoint.child_joint_vector == self.child.frame.y
 
     def test_slidingjoint_functions(self):
-        self.slidingjoint.set_parent_child_rel()
+        self.slidingjoint._set_parent_child_rel()
         assert self.parent.child == self.child
         assert self.child.parent == self.parent
 
@@ -206,3 +227,7 @@ class TestSlidingJoint():
         assert acos(dot(parent_axis, child_axis)/(parent_axis.magnitude() * child_axis.magnitude())) == 0
 
         assert self.child_point.vel(self.parent.frame) != 0
+
+
+class TestCylindricalJoint():
+    def setup(self):
