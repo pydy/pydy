@@ -1,12 +1,13 @@
-from sympy.physics.mechanics import RigidBody
+from sympy.physics.mechanics import RigidBody, Particle
 
 from .force import Force
 
 __all__ = ['Body', 'Ground']
 
 
-class Body(RigidBody):
+class Body(object):
     """
+
     Paramters
     ---------
     name: string
@@ -23,15 +24,21 @@ class Body(RigidBody):
         The body's inertia about a point; stored in a tuple as shown above.
 
     """
-    def __init__(self, name, masscenter=None, frame=None, mass=None, inertia=None):
+    def __init__(self, name, masscenter=None, mass=None, frame=None, inertia=None):
+
         self.name = name
         self.parent = None
         self.child = None
         self.force_list = []
-
+        self.body = None
         # TODO define properties for RigidBody.
 
-        super(Body, self).__init__(*args, **kwargs)
+        # is user passes masscenter and mass then a particle is created otherwise a rigidbody.
+        # as a result a body may or may not have inertia.
+        if inertia is None and mass is not None:
+                self.body = Particle(self.name, self.masscenter, self.mass)
+        else:
+                self.body = RigidBody(self.name, self.masscenter, self.frame, self.mas
 
     def add_force(self, force):
         """
@@ -41,16 +48,10 @@ class Body(RigidBody):
 
         Paramters
         ---------
-        force: pydy.Force
-            a constant from pydy.Force which will be used by the system to get the exact
-            value of the force.
-
-        Example
-        -------
-        >>> body = Body('body')
-        >>> force = Force(body.masscenter, body.frame.z, Symbol('g'))
-        >>> body.add_force(force)
-
+        force: (point, vector) or vector
+            Adds the vector force to the point. point must have to be in the body.
+            If body is RigidBody, pass (point, vector) and if body is Particle then pass vector,
+            force is always applied to the masscenter for particle.
         """
         # TODO
 
