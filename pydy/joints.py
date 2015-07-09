@@ -34,8 +34,8 @@ class Joint(object):
         """Locates a new point, Point of Joint, using parent's center of mass
         and parent_joint_vector and sets position of child using child_joint_vector
         from joint point."""
-        self.joint_point = self.parent.masscenter.locatenew(self.name + '_Point', self.parent_joint_vector)
-        self.child.masscenter.set_pos(self.joint_point, self.child_joint_vector)
+        self.joint_point_in_parent = self.parent.masscenter.locatenew(self.name + '_PointInParent', self.)
+        self.joint_point_in_child = self.child.masscenter.locatenew(self.name + '_PointInChild', self.parent)
 
     def set_joint_point_vel(self, value):
         """Sets the velocity of the point at joint w.r.t parent's frame."""
@@ -81,29 +81,12 @@ class PinJoint(Joint):
     parent and child."""
     def __init__(self, name, parent, child, par_point_vec_tuple=None, child_point_vec_tuple=None, parent_axis=None, child_axis=None):
         super(Joint, self).__init__(*args, **kwargs)
-        if parent_axis is None or parent_axis == 'x':
-            self.axis1 = parent.frame.x
-        elif parent_axis == 'y':
-            self.axis1 = parent.frame.y
-        elif parent_axis == 'z':
-            self.axis1 = parent.frame.z
-
-        if child_axis is None or child_axis == 'x':
-            self.axis2 = child.frame.x
-        elif child_axis == 'y':
-            self.axis2 = child.frame.y
-        elif child_axis == 'z':
-            self.axis2 = child.frame.z
+        # TODO
 
         self.parent_joint_vector = self._convert_tuple_to_vector(self.parent.frame, par_point_vec_tuple)
         self.child_joint_vector = self._convert_tuple_to_vector(self.child.frame, child_point_vec_tuple)
 
         self._apply_joint()
-
-    def _locate_joint_point(self):
-        self.joint_point_in_parent = self.parent.masscenter.locatenew(self.name + '_PointInParent', self.)
-        self.joint_point_in_child = self.child.masscenter.locatenew(self.name + '_PointInChild', self.parent.)
-
 
     def _apply_joint(self):
         """Specific implementation of a joint using all public and private methods."""
@@ -124,10 +107,30 @@ class SlidingJoint(Joint):
 # Other classes will have similar implementation
 
 class CylindricJoint(Joint):
-    #TODO
+    def __init__(self, name, parent, child, par_point_vec_tuple=None,
+                 child_point,vec_tuple=None, parent_direction=None, child_direction=None):
+    # TODO
+
+    def _apply_joint(self):
+        # TODO
+
 
 class SphericalJoint(Joint):
-    #TODO
+    """
+    parent_plane and child_plane needs to be discussed.
+    """
+    def __init__(self, name, parent, child, par_point_vec_tuple=None,
+                 child_point,vec_tuple=None, parent_plane=None, child_plane=None):
+    # TODO
+
+    def _apply_joint(self):
+        # TODO
+
 
 class PlanarJoint(Joint):
-    #TODO
+    def __init__(self, name, parent, child, par_point_vec_tuple=None,
+                 child_point,vec_tuple=None, parent_plane=None, child_plane=None):
+    # TODO
+
+    def _apply_joint(self):
+        # TODO

@@ -3,7 +3,7 @@ from sympy.physics.vector import Point, dot, cross
 from sympy.physics.mechanics import dynamicsymbols
 
 from ..bodies import Body
-from ..joints import Joint, PinJoint, SlidingJoint
+from ..joints import Joint, PinJoint, SlidingJoint, CylindricalJoint, SphericalJoint, PlanarJoint
 
 
 class TestJoints():
@@ -85,23 +85,9 @@ class TestPinJoint():
         assert self.parent_point.vel(self.parent.frame) == 0
         assert self.child_point.vel(self.child.frame) == 0
 
-    def test_pinjoint_init_using_particles(self):
-        point1 = Point('point1')
-        point2 = Point('point2')
-        mass1 = Symbol('m1')
-        mass2 = Symbol('m2')
-
-        parent = Particle('parent', point1, mass1)
-        child = Particle('child', point2, mass2)
-
-        pinjoint = PinJoint('pinjoint', parent, child)
-        assert pinjoint.parent = parent
-        assert pinjoint.child = child
-        assert
-
     def test_pinjoint_parameters(self):
-        self.pinjoint = PinJoint('pinjoint', self.parent, self.child,
-                                 (1, 0, 0), (0, 1, 0), parent_axis='x', child_axis='y')
+        self.pinjoint = PinJoint('pinjoint', self.parent, self.child, par_point_vec_tuple=(1, 0, 0),
+                                 child_point_vec_tuple=(0, 1, 0), parent_axis='x', child_axis='y')
         assert self.pinjoint.parent_axis == self.parent.frame.x
         assert self.pinjoint.child_axis == self.child.frame.y
         point1 = self.parent.masscenter.locatenew(self.parent.frame, self.parent.frame.x)
@@ -113,10 +99,10 @@ class TestPinJoint():
 
     def test_pinjoint_tuple_vector(self):
         a, b, c, d, e, f = symbols('a b c d e f')
-        pinjoint = PinJoint('pinjoint', self.parent, self.child,
-                            (a, b, c), (d, e, f), parent_axis='x', child_axis='y')
-
-
+        pinjoint = PinJoint('pinjoint', self.parent, self.child, par_point_vec_tuple=(a, b, c),
+                            child_point_vec_tuple=(d, e, f), parent_axis='x', child_axis='y')
+        assert pinjoint.parent_joint_vector == a * self.parent.frame.x + b * self.parent.frame.y + c * self.parent.frame.z
+        assert pinjoint.child_joint_vector == d * self.child.frame.x + e * self.child.frame.y + f * self.child.frame.z
 
     def test_pinjoint_functions(self):
 
@@ -151,7 +137,7 @@ class TestPinJoint():
         #                         cross(parent_axis, child_axis)])
         assert acos(dot(parent_axis, child_axis)/(parent_axis.magnitude() * child_axis.magnitude())) == 0
 
-        # part 4 adding angular velocity to child w.r.t parent
+        # part 4 adding angular velocity to child w.r.t parent.
         assert self.child.frame.ang_vel_in(self.parent.frame) != 0
 
     def test_pinjoint_apply_joint(self):
@@ -193,8 +179,8 @@ class TestSlidingJoint():
 
     def test_slidingjoint_paramters(self):
         # custom parameters
-        self.slidingjoint = SlidingJoint('slidingjoint', self.parent, self.child,
-                                         (1,0,0), (0,1,0), direction1='x', direction2='y')
+        self.slidingjoint = SlidingJoint('slidingjoint', self.parent, self.child, par_point_vec_tuple=(1,0,0),
+                                         child_point_vec_tuple=(0,1,0), direction1='x', direction2='y')
         assert self.pinjoint.direction1 == self.parent.frame.x
         assert self.pinjoint.direction2 == self.child.frame.y
         point1 = self.parent.masscenter.locatenew(self.parent.frame, self.parent.frame.x)
@@ -226,8 +212,64 @@ class TestSlidingJoint():
         child_axis = self.pinjoint.child_axis
         assert acos(dot(parent_axis, child_axis)/(parent_axis.magnitude() * child_axis.magnitude())) == 0
 
+        # Similar to Pinjoint but have a velocity instead of angular velocity.
         assert self.child_point.vel(self.parent.frame) != 0
 
-
 class TestCylindricalJoint():
+    # Note all the functionalitites are similar to other PinJoint and SlidingJoint.Only CylindricalJoint's specific
+    # tests are written.
     def setup(self):
+        self.parent = Body('parent')
+        self.child = Body('child')
+        self.cylindricaljoint = CylindricalJoint('cylindricaljoint', self.parent, self.child, par_point_vec_tuple=(1,1,1),
+                                                 child_point_vec_tuple=(0,0,1), parent_direction='x + 2*y', child_direction = 'z')
+                                                 #Similar approach can be used in other joints as well.
+
+    def test_cylindricaljoint_parameters_assignment(self):
+        assert self.cylindricaljoint.parent == self.parent
+        assert self.cylindricaljoint.child == self.child
+        assert self.cylindricaljoint.parent_joint_vector == self.parent.frame.x + self.parent.frame.y + self.parent.frame.z
+        assert self.cylindricaljoint.child_joint_vector == self.child.frame.z
+        assert self.cylindricaljoint.parent_direction == self.parent.frame.x + 2*self.parent.frame.y
+        assert self.cylindricaljoint.child_direction == self.child.frame.z
+
+    def test_cylindricaljoint_apply_joint(self):
+        assert self.child_point.vel(self.parent.frame) != 0
+        parent_axis = self.pinjoint.parent_direction
+        child_axis = self.pinjoint.child_direction
+        assert acos(dot(parent_axis, child_axis)/(parent_axis.magnitude() * child_axis.magnitude())) == 0
+
+
+class TestSphericalJoint():
+    def setup(self):
+        self.parent = Body('parent')
+        self.child = Body('child')
+        self.sphericaljoint = SphericalJoint(self.parent, self.child, par_point_vec_tuple=(0,2,0),
+                                             child_point_vec_tuple=(0,1,1), parent_plane='x*y', child_plane='y*z + 2*z*x')
+                                             # yz is y-z plane
+        # Note: Refer to SphericalJoint's docstring for information about implementation using planes.
+
+    def test_spehricaljoint_paramters_assignment(self):
+        assert self.sphericaljoint.parent == self.parent
+        assert self.sphericaljoint.child == self.child
+        assert self.sphericaljoint.parent_joint_vector == 2 * self.parent.frame.y
+        assert self.sphericaljoint.child_joint_vector == self.child.frame.y + self.child.frame.z
+        assert self.sphericaljoint.parent_plane == # TODO
+        assert self.sphericaljoint.child_plane == # TODO
+
+
+class PlanarJoint():
+    def setup(self):
+        self.parent = Body('parent')
+        self.child = Body('child')
+        self.planarjoint = PlanarJoint(self.parent, self.child, par_point_vec_tuple=(0,1,0),
+                                       child_point_vec_tuple=(1,0,0), parent_plane='xy', child_plance='yz + zx')
+        # Note: Refer to SphericalJoint's docstring for information about implementation using planes.
+
+    def test_planarjoint_parameters_assignment(self):
+        assert self.planarjoint.parent == self.parent
+        assert self.planarjoint.child == self.child
+        assert self.planarjoint.parent_joint_vector == self.parent.frame.y
+        assert self.planarjoint.child_joint_vector == self.child.frame.x
+        assert self.planarjoint.parent_plane == # TODO
+        assert self.planarjoint.child_plance == # TODO
