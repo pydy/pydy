@@ -120,7 +120,7 @@ class SphericalJoint(Joint):
     parent_plane and child_plane needs to be discussed.
     """
     def __init__(self, name, parent, child, par_point_vec_tuple=None,
-                 child_point,vec_tuple=None, parent_plane=None, child_plane=None):
+                 child_point,vec_tuple=None, parent_plane_normal=None, child_plane_normal=None):
     # TODO
 
     def _apply_joint(self):
@@ -129,7 +129,7 @@ class SphericalJoint(Joint):
 
 class PlanarJoint(Joint):
     def __init__(self, name, parent, child, par_point_vec_tuple=None,
-                 child_point,vec_tuple=None, parent_plane=None, child_plane=None):
+                 child_point,vec_tuple=None, parent_plane_normal=None, child_plane_normal=None):
     # TODO
 
     def _apply_joint(self):

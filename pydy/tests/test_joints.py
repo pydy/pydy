@@ -245,17 +245,17 @@ class TestSphericalJoint():
         self.parent = Body('parent')
         self.child = Body('child')
         self.sphericaljoint = SphericalJoint(self.parent, self.child, par_point_vec_tuple=(0,2,0),
-                                             child_point_vec_tuple=(0,1,1), parent_plane='x*y', child_plane='y*z + 2*z*x')
-                                             # yz is y-z plane
-        # Note: Refer to SphericalJoint's docstring for information about implementation using planes.
+                                             child_point_vec_tuple=(0,1,1), parent_plane_normal='x', child_plane_normal='x + y')
+                                             # x is normal to y-z plane
 
     def test_spehricaljoint_paramters_assignment(self):
         assert self.sphericaljoint.parent == self.parent
         assert self.sphericaljoint.child == self.child
         assert self.sphericaljoint.parent_joint_vector == 2 * self.parent.frame.y
         assert self.sphericaljoint.child_joint_vector == self.child.frame.y + self.child.frame.z
-        assert self.sphericaljoint.parent_plane == # TODO
-        assert self.sphericaljoint.child_plane == # TODO
+        assert self.sphericaljoint.parent_plane_normal == self.parent.frame.x
+        assert self.sphericaljoint.child_plane_normal == self.child.frame.x + self.child.frame.x + self.child.frame.y
+
 
 
 class PlanarJoint():
@@ -263,7 +263,7 @@ class PlanarJoint():
         self.parent = Body('parent')
         self.child = Body('child')
         self.planarjoint = PlanarJoint(self.parent, self.child, par_point_vec_tuple=(0,1,0),
-                                       child_point_vec_tuple=(1,0,0), parent_plane='xy', child_plance='yz + zx')
+                                       child_point_vec_tuple=(1,0,0), parent_plane_normal='xy', child_plance='yz + zx')
         # Note: Refer to SphericalJoint's docstring for information about implementation using planes.
 
     def test_planarjoint_parameters_assignment(self):
