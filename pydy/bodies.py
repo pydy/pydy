@@ -8,7 +8,7 @@ __all__ = ['Body', 'Ground']
 class Body(object):
     """
 
-    Paramters
+    Parameters
     ---------
     name: string
         defines the name of the body. It is used as the base for defining body specific
@@ -30,7 +30,10 @@ class Body(object):
         self.parent = None
         self.child = None
         self.force_list = []
-        self.body = None
+        self.body = None # TODO assign a better name.
+        self.coordinates = []
+        self.speeds = []
+
         # TODO define properties for RigidBody.
 
         # is user passes masscenter and mass then a particle is created otherwise a rigidbody.
@@ -55,8 +58,16 @@ class Body(object):
         """
         # TODO
 
+    def add_coordinate(self, coordinate):
+        # TODO
+        self.coordinates.append(coordinate)
+
+    def add_speed(self, speed):
+        # TODO
+        self.speeds.append(speed)
+
 
 class Ground(Body):
-    def __init__(self, name, masscenter=None, frame=None, mass=None, inertia=None):
-        # TODO change properties of Body.
+    def __init__(self):
+        # TODO create defualt attributes for Ground.
         super(Ground, self).__init__(*args, **kwargs)

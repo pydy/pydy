@@ -4,7 +4,7 @@
 # external libraries
 from sympy import Symbol
 from sympy.physics.vector import Point, Dyadic
-from sympy.physics.mechanics import ReferenceFrame, Particle, RigidBody
+from sympy.physics.mechanics import ReferenceFrame, Particle, RigidBody, dynamicsymbols
 
 # local
 from ..bodies import Body, Ground
@@ -56,12 +56,25 @@ class TestBody():
         assert len(self.body.force_list) == 1
         assert self.body.force_list[0] == [force_tuple]
 
+    def test_body_coordinates(self):
+        assert self.body.coordinates == []
+        q1 = dynamicsymbols('q1')
+        self.body.add_coordinate(q1)
+        assert q1 in self.body.coordinates
+
+    def test_body_speeds(self):
+        assert self.body.speeds == []
+        u1 = dynamicsymbols('u1')
+        self.body.add_speed(u1)
+        assert u1 in self.body.speeds
+
 
 class TestGround():
     def setup(self):
-        self.ground = Ground('ground')
+        self.ground = Ground()
 
     def test_ground_init(self):
         assert hasattr(self.ground, 'origin')
-        assert self.ground.origin == Point(self.ground.name + ' Origin')
+        assert self.ground.masscenter == Point(self.ground.name + '_Origin')
         assert self.ground.parent is None
+        assert self.ground.frame == ReferenceFrame(self.ground.name + '_Frame')
