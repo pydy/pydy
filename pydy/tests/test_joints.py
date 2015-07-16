@@ -6,11 +6,11 @@ from ..bodies import Body
 from ..joints import Joint, PinJoint, SlidingJoint, CylindricalJoint, SphericalJoint, PlanarJoint
 
 
-class TestJoints():
+class TestJoint():
     def setup(self):
         self.parent = Body('parent')
         self.child = Body('child')
-        self.joint = Joint('joint', self.parent, self.parent.frame.x, self.child, 0)
+        self.joint = Joint('joint', self.parent, self.child, self.parent.frame.x, 0)
 
     def test_joint_init(self):
         assert self.joint.name == 'joint'
@@ -86,8 +86,8 @@ class TestPinJoint():
         assert self.child_point.vel(self.child.frame) == 0
 
     def test_pinjoint_parameters(self):
-        self.pinjoint = PinJoint('pinjoint', self.parent, self.child, par_point_vec_tuple=(1, 0, 0),
-                                 child_point_vec_tuple=(0, 1, 0), parent_axis='x', child_axis='y')
+        self.pinjoint = PinJoint('pinjoint', self.parent, child=(1, 0, 0), parent_point_pos=(1, 0, 0),
+                                 child_point_pos=(0, 1, 0))
         assert self.pinjoint.parent_axis == self.parent.frame.x
         assert self.pinjoint.child_axis == self.child.frame.y
         point1 = self.parent.masscenter.locatenew(self.parent.frame, self.parent.frame.x)
@@ -99,8 +99,8 @@ class TestPinJoint():
 
     def test_pinjoint_tuple_vector(self):
         a, b, c, d, e, f = symbols('a b c d e f')
-        pinjoint = PinJoint('pinjoint', self.parent, self.child, par_point_vec_tuple=(a, b, c),
-                            child_point_vec_tuple=(d, e, f), parent_axis='x', child_axis='y')
+        pinjoint = PinJoint('pinjoint', self.parent, child=(a, b, c), parent_point_pos=(a, b, c),
+                            child_point_pos=(d, e, f))
         assert pinjoint.parent_joint_vector == a * self.parent.frame.x + b * self.parent.frame.y + c * self.parent.frame.z
         assert pinjoint.child_joint_vector == d * self.child.frame.x + e * self.child.frame.y + f * self.child.frame.z
 
@@ -143,7 +143,7 @@ class TestPinJoint():
     def test_pinjoint_apply_joint(self):
         # apply_joint() should do everything done above by calling specific funtions
         self.new_pinjoint = PinJoint('pinjoint', self.parent, self.child)
-        self.new_pinjoint._apply_joint()
+        self.new_pinjoint.apply_joint()
         # part 1
         assert self.child.parent == self.parent
         assert self.parent.child == self.child
@@ -179,8 +179,8 @@ class TestSlidingJoint():
 
     def test_slidingjoint_paramters(self):
         # custom parameters
-        self.slidingjoint = SlidingJoint('slidingjoint', self.parent, self.child, par_point_vec_tuple=(1,0,0),
-                                         child_point_vec_tuple=(0,1,0), direction1='x', direction2='y')
+        self.slidingjoint = SlidingJoint('slidingjoint', self.parent, child=(1, 0, 0), parent_point_pos=(1, 0, 0),
+                                         child_point_pos=(0, 1, 0))
         assert self.pinjoint.direction1 == self.parent.frame.x
         assert self.pinjoint.direction2 == self.child.frame.y
         point1 = self.parent.masscenter.locatenew(self.parent.frame, self.parent.frame.x)
@@ -244,8 +244,8 @@ class TestSphericalJoint():
     def setup(self):
         self.parent = Body('parent')
         self.child = Body('child')
-        self.sphericaljoint = SphericalJoint(self.parent, self.child, par_point_vec_tuple=(0,2,0),
-                                             child_point_vec_tuple=(0,1,1), parent_plane_normal='x', child_plane_normal='x + y')
+        self.sphericaljoint = SphericalJoint(self.parent, self.child, child=(0, 1, 1), parent_point_pos=(0, 2, 0),
+                                             child_point_pos='x')
                                              # x is normal to y-z plane
 
     def test_spehricaljoint_paramters_assignment(self):
@@ -262,8 +262,8 @@ class PlanarJoint():
     def setup(self):
         self.parent = Body('parent')
         self.child = Body('child')
-        self.planarjoint = PlanarJoint(self.parent, self.child, par_point_vec_tuple=(0,1,0),
-                                       child_point_vec_tuple=(1,0,0), parent_plane_normal='xy', child_plance='yz + zx')
+        self.planarjoint = PlanarJoint(self.parent, self.child, child=(1, 0, 0), parent_point_pos=(0, 1, 0),
+                                       child_point_pos='xy')
         # Note: Refer to SphericalJoint's docstring for information about implementation using planes.
 
     def test_planarjoint_parameters_assignment(self):
