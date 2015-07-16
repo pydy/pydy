@@ -1,8 +1,8 @@
-from sympy import Symbol, oo
+from sympy import Symbol
 from sympy.physics.mechanics import RigidBody, Particle, ReferenceFrame, outer
 from sympy.physics.vector import Point
 
-__all__ = ['Body', 'Ground']
+__all__ = ['Body']
 
 
 class Body(object):
@@ -142,7 +142,8 @@ class Body(object):
         """
         point_vector = self._convert_tuple_to_vector(point_vector)
         force_vector = self._convert_tuple_to_vector(force_vector)
-        point = self._masscenter.locatenew(self.name + '_point' + self._counter, point_vector)
+        point = self._masscenter.locatenew(self.name + '_point' + self._counter,
+                                           point_vector)
         self.force_list.append((point, force_vector))
         self._counter += 1
 
