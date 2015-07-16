@@ -140,29 +140,18 @@ class Body(object):
         >>> body.add_force((1,0,0), (0,1,0))
 
         """
-        point_vector = self.convert_tuple_into_vector(point_vector)
-        force_vector = self.convert_tuple_into_vector(force_vector)
+        point_vector = self._convert_tuple_to_vector(point_vector)
+        force_vector = self._convert_tuple_to_vector(force_vector)
         point = self._masscenter.locatenew(self.name + '_point' + self._counter, point_vector)
         self.force_list.append((point, force_vector))
         self._counter += 1
 
-    def convert_tuple_into_vector(self, values_tuple):
-        vector = 0
-        vector += vector + values_tuple[0] * self.frame.x
-        vector += vector + values_tuple[1] * self.frame.y
-        vector += vector + values_tuple[2] * self.frame.z
-        return vector
-
-
-class Ground(Body):
-    """
-    A Ground Body
-
-    It has infinite mass and an origin.
-    """
-    def __init__(self):
-        name = 'ground'
-        masscenter = Point('origin')
-        mass = oo
-        # TODO Discuss if Ground needs to be RigidBody or Particle is fine?
-        super(Ground, self).__init__(name, masscenter, mass)
+    def _convert_tuple_to_vector(self, pos_tuple):
+        if len(pos_tuple) == 3:
+            unit_vectors = [self.frame.x, self.frame.y, self.frame.z]
+            vector = 0
+            for i in range(3):
+                vector += pos_tuple[i] * unit_vectors[i]
+            return vector
+        else:
+            raise TypeError('position tuple must be of length 3')

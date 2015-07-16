@@ -8,7 +8,7 @@ from sympy.physics.mechanics import ReferenceFrame, Particle, RigidBody, dynamic
 
 # local
 from ..bodies import Body, Ground
-from ..force import Force
+
 
 class TestBody():
     def setup(self):
