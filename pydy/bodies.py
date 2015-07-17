@@ -1,6 +1,6 @@
 from sympy import Symbol
 from sympy.physics.mechanics import RigidBody, Particle, ReferenceFrame, outer
-from sympy.physics.vector import Point
+from sympy.physics.vector import Point, Vector
 
 __all__ = ['Body']
 
@@ -95,7 +95,7 @@ class Body(object):
         else:
             self._frame = frame
 
-        if inertia is None:
+        if inertia is None and mass is None:
             inertia = outer(self._frame.x, self._frame.x)  # tensor product
             self._inertia = (inertia, self._masscenter)
         else:
@@ -142,15 +142,15 @@ class Body(object):
         """
         point_vector = self._convert_tuple_to_vector(point_vector)
         force_vector = self._convert_tuple_to_vector(force_vector)
-        point = self._masscenter.locatenew(self.name + '_point' + self._counter,
+        point = self._masscenter.locatenew(self.name + '_point' + str(self._counter),
                                            point_vector)
         self.force_list.append((point, force_vector))
         self._counter += 1
 
     def _convert_tuple_to_vector(self, pos_tuple):
         if len(pos_tuple) == 3:
-            unit_vectors = [self.frame.x, self.frame.y, self.frame.z]
-            vector = 0
+            unit_vectors = [self._frame.x, self._frame.y, self._frame.z]
+            vector = Vector(0)
             for i in range(3):
                 vector += pos_tuple[i] * unit_vectors[i]
             return vector
