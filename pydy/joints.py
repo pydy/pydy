@@ -1,3 +1,6 @@
+from sympy.physics.vector import cross
+from sympy.physics.mechanics import dynamicssymbols
+
 __all__ = ['Joint', 'PinJoint', 'SlidingJoint', 'CylindricalJoint',
            'SphericalJoint', 'PlanarJoint']
 
@@ -52,7 +55,9 @@ class Joint(object):
             self.child.frame,
             self.child_point_pos)
 
+        self.child.masscenter.set_pos(self.parent.masscenter, 0)
         self._set_parent_child_rel()
+        self._locate_joint_point()
         self.apply_joint()
 
     def _set_parent_child_rel(self):
@@ -87,11 +92,27 @@ class Joint(object):
 
 class PinJoint(Joint):
     def __init__(self, name, parent, child, parent_point_pos=None,
-                 child_point_pos=None):
+                 child_point_pos=None, parent_axis=None, child_axis=None):
         super(Joint, self).__init__()
 
+        if parent_axis is None:
+            self.parent_axis = self.parent.z
+        else:
+            self.parent_axis = parent_axis
+
+        if child_axis is None:
+            self.child_axis = self.child.z
+        else:
+            self.child_axis = child_axis
+
     def apply_joint(self):
-        # TODO
+        theta = dynamicssymbols('theta')
+        omega = dynamicssymbols('omega')
+        self.child.add_coordinate(theta)
+        self.child.add_speed(omega)
+        self.child.frame.orient(self.parent.frame, 'Axis',
+                                [theta, self.parent.frame.x])
+        self.child.frame.set_ang_vel(self.parent.frame, omega * self.parent.frame.x)
 
 
 class SlidingJoint(Joint):
@@ -99,7 +120,7 @@ class SlidingJoint(Joint):
         super(Joint, self).__init__()
 
     def apply_joint(self):
-        # TODO
+
 
 
 class CylindricJoint(Joint):
