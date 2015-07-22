@@ -1,11 +1,12 @@
 from sympy import Symbol
-from sympy.physics.mechanics import RigidBody, Particle, ReferenceFrame, outer
+from sympy.physics.mechanics import RigidBody, Particle, ReferenceFrame, \
+    outer, inertia
 from sympy.physics.vector import Point, Vector
 
 __all__ = ['Body']
 
 
-class Body(object):
+class Body(RigidBody, Particle):
     """
     A Body which can be connected by joints.
 
@@ -31,8 +32,8 @@ class Body(object):
         The ReferenceFrame which the rigid body is fixed in.
     mass : Sympifyable (optional)
         The body's mass.
-    inertia : (Dyadic, Point) (optional)
-        The body's inertia about a point; stored in a tuple as shown above.
+    body_inertia : Dyadic (instance of inertia)
+        The body's inertia about center of mass.
 
     Example:
     --------
@@ -46,14 +47,13 @@ class Body(object):
      RigidBody can be passed while creating a Body too.
 
     >>> from sympy import Symbol
-    >>> from sympy.physics.mechanics import ReferenceFrame, Point
+    >>> from sympy.physics.mechanics import ReferenceFrame, Point, inertia
     >>> from pydy.bodies import Body
     >>> mass = Symbol('mass')
     >>> masscenter = Point('masscenter')
     >>> frame = ReferenceFrame('frame')
-    >>> I = outer (A.x, A.x)
-    >>> inertia_tuple = (I, P)
-    >>> body = Body('name_of_body', masscenter, mass, frame, inertia_tuple)
+    >>> body_inertia = inertia(frame, 1, 0, 0)
+    >>> body = Body('name_of_body', masscenter, mass, frame, body_inertia)
 
     3. Creating a Particle. If masscenter and mass are passed, and inertia is
      not then a Particle is created.
@@ -62,58 +62,47 @@ class Body(object):
     >>> from sympy import Point
     >>> from pydy.bodies import Body
     >>> mass = Symbol('mass')
-    >>> masscenter = Symbol('masscenter')
+    >>> masscenter = Point('masscenter')
     >>> body = Body('name_of_body', masscenter, mass)
 
     Similarly, A frame can also be passed while creating a Particle.
 
     """
     def __init__(self, name, masscenter=None, mass=None, frame=None,
-                 inertia=None):
+                 body_inertia=None):
 
-        self.name = name
+        _name = name
         self.parent = None
         self.child = None
         self.force_list = []
-        self.body = None  # TODO assign a better name.
-        self._coordinates = []
-        self._speeds = []
         self._counter = 0
 
         if masscenter is None:
-            self._masscenter = Point(self.name + '_masscenter')
+            self._masscenter = Point(_name + '_masscenter')
         else:
             self._masscenter = masscenter
 
         if mass is None:
-            self._mass = Symbol(self.name + '_mass')
+            _mass = Symbol(_name + '_mass')
         else:
-            self._mass = mass
+            _mass = mass
 
         if frame is None:
-            self._frame = ReferenceFrame(self.name + '_frame')
+            self._frame = ReferenceFrame(_name + '_frame')
         else:
             self._frame = frame
 
-        if inertia is None and mass is None:
-            inertia = outer(self._frame.x, self._frame.x)  # tensor product
-            self._inertia = (inertia, self._masscenter)
+        if body_inertia is None and mass is None:
+            _inertia = (inertia(self._frame, 1, 1, 1), self._masscenter)
         else:
-            self._inertia = inertia
+            _inertia = (body_inertia, self._masscenter)
 
         # If user passes masscenter and mass then a particle is created
         # otherwise a rigidbody. As a result a body may or may not have inertia.
-        if inertia is None and mass is not None:
-            self.body = Particle(self.name, self._masscenter, self._mass)
+        if body_inertia is None and mass is not None:
+            Particle.__init__(self, name, self._masscenter, _mass)
         else:
-            self.body = RigidBody(self.name, self._masscenter, self._frame,
-                                  self._mass, self._inertia)
-
-    def add_coordinate(self, coordinate):
-        self._coordinates.append(coordinate)
-
-    def add_speed(self, speed):
-        self._speeds.append(speed)
+            RigidBody.__init__(self, _name, self._masscenter, self._frame, _mass, _inertia)
 
     def add_force(self, point_vector, force_vector):
         """
@@ -140,19 +129,27 @@ class Body(object):
         >>> body.add_force((1,0,0), (0,1,0))
 
         """
-        point_vector = self._convert_tuple_to_vector(point_vector)
-        force_vector = self._convert_tuple_to_vector(force_vector)
-        point = self._masscenter.locatenew(self.name + '_point' + str(self._counter),
+        if not isinstance(point_vector, tuple):
+            raise TypeError("Point Vector must be a tuple of length 3")
+        else:
+            point_vector = self._convert_tuple_to_vector(point_vector)
+
+        if not isinstance(force_vector, tuple):
+            raise TypeError("Force vector must be a tuple of length 3")
+        else:
+            force_vector = self._convert_tuple_to_vector(force_vector)
+
+        point = self._masscenter.locatenew(self._name + '_point' + str(self._counter),
                                            point_vector)
         self.force_list.append((point, force_vector))
         self._counter += 1
 
     def _convert_tuple_to_vector(self, pos_tuple):
-        if len(pos_tuple) == 3:
+        if len(pos_tuple) != 3:
+            raise TypeError('position tuple must be of length 3')
+        else:
             unit_vectors = [self._frame.x, self._frame.y, self._frame.z]
             vector = Vector(0)
             for i in range(3):
                 vector += pos_tuple[i] * unit_vectors[i]
             return vector
-        else:
-            raise TypeError('position tuple must be of length 3')

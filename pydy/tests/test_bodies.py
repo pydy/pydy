@@ -3,22 +3,20 @@
 
 # external libraries
 from sympy import Symbol
-from sympy.physics.vector import Point, Dyadic, ReferenceFrame
-from sympy.physics.mechanics import Particle, RigidBody,\
-    dynamicsymbols, outer
+from sympy.physics.vector import Point, ReferenceFrame
+from sympy.physics.mechanics import Particle, RigidBody, inertia
+
 
 # local
 from ..bodies import Body
 
-
-def test_points(point1, point2):
+def check_points(point1, point2):
     assert point1.name == point2.name
     assert point1._pos_dict == point2._pos_dict
     assert point1._vel_dict == point2._vel_dict
     assert point1._acc_dict == point2._acc_dict
 
-
-def test_referenceframes(frame1, frame2):
+def check_reference_frames(frame1, frame2):
     assert frame1.name == frame2.name
     assert frame1.str_vecs == frame2.str_vecs
     assert frame1.indices == frame2.indices
@@ -28,85 +26,65 @@ def test_referenceframes(frame1, frame2):
     assert frame1._ang_acc_dict == frame2._ang_acc_dict
     assert frame1._dcm_dict == frame2._dcm_dict
 
+
 class TestBody():
+
+    def setup(self):
+        # Body with RigidBody.
+        self.rigidbody_masscenter = Point('rigidbody_masscenter')
+        self.rigidbody_mass = Symbol('rigidbody_mass')
+        self.rigidbody_frame = ReferenceFrame('rigidbody_frame')
+        self.body_inertia = inertia(self.rigidbody_frame, 1, 0, 0)
+        self.rigid_body = Body('rigidbody_body', self.rigidbody_masscenter, self.rigidbody_mass,
+                               self.rigidbody_frame, self.body_inertia)
+        #  Body with Particle
+        self.particle_masscenter = Point('particle_masscenter')
+        self.particle_mass = Symbol('particle_mass')
+        self.particle_frame = ReferenceFrame('particle_frame')
+        self.particle_body = Body('particle_body', self.particle_masscenter, self.particle_mass,
+                                  self.particle_frame)
+
     def test_default(self):
         body = Body('body')
-        assert body.name == 'body'
+        assert body._name == 'body'
         assert body.parent is None
         assert body.child is None
         assert body.force_list == []
-        assert body._coordinates == []
-        assert body._speeds == []
-        test_points(body._masscenter, Point('body_masscenter'))
-        assert body._mass == Symbol('body_mass')
-        test_referenceframes(body._frame, ReferenceFrame('body_frame'))
-        assert body._inertia == (outer(body._frame.x, body._frame.x),
-                                 body._masscenter)
-        assert isinstance(body.body, RigidBody)
-
-        rigidbody = body.body
-        test_points(rigidbody.masscenter, body._masscenter)
-        assert rigidbody.mass == body._mass
-        test_referenceframes(rigidbody.frame, body._frame)
-        assert rigidbody.inertia == body._inertia
+        check_points(body.get_masscenter(), Point('body_masscenter'))
+        assert body.get_mass() == Symbol('body_mass')
+        check_reference_frames(body.get_frame(), ReferenceFrame('body_frame'))
+        assert body.get_inertia() == (inertia(body.get_frame(), 1, 1, 1), body.get_masscenter())
 
     def test_custom_rigid_body(self):
-        masscenter = Point('rigidbody_masscenter')
-        mass = Symbol('rigidbody_mass')
-        frame = ReferenceFrame('rigidbody_frame')
-        inertia = outer(frame.x, frame.x)
-        inertia_tuple = (inertia, masscenter)
-        self.rigidbody_body = Body('rigidbody_body', masscenter, mass, frame,
-                                   inertia_tuple)
-        test_points(self.rigidbody_body._masscenter, masscenter)
-        assert self.rigidbody_body._mass == mass
-        test_referenceframes(self.rigidbody_body._frame, frame)
-        assert self.rigidbody_body._inertia == inertia_tuple
-        assert isinstance(self.rigidbody_body.body, RigidBody)
+        check_points(self.rigid_body.get_masscenter(), self.rigidbody_masscenter)
+        assert self.rigid_body.get_mass() == self.rigidbody_mass
+        check_reference_frames(self.rigid_body.get_frame(), self.rigidbody_frame)
+        assert self.rigid_body.get_inertia() == (self.body_inertia, self.rigidbody_masscenter)
 
     def test_particle_body(self):
-        masscenter = Point('particle_masscenter')
-        mass = Symbol('particle_mass')
-        frame = ReferenceFrame('particle_frame')
-        self.particle_body = Body('particle_body', masscenter, mass, frame)
-        test_points(self.particle_body._masscenter, masscenter)
-        assert self.particle_body._mass == mass
-        test_referenceframes(self.particle_body._frame, frame)
-        assert self.particle_body._inertia is None
-        assert isinstance(self.particle_body.body, Particle)
-
-    def test_add_coordinates(self):
-        for body in [self.rigidbody_body, self.particle_body]:
-            assert body._coordinates == []
-            q1 = dynamicsymbols('q1')
-            body.add_coordinate(q1)
-            assert q1 in body._coordinates
-
-    def test_add_speeds(self):
-        for body in [self.rigidbody_body, self.particle_body]:
-            assert body._speeds == []
-            u1 = dynamicsymbols('u1')
-            body.add_speed(u1)
-            assert u1 in body._speeds
+        check_points(self.particle_body.get_masscenter(), self.particle_masscenter)
+        assert self.particle_body.get_mass() == self.particle_mass
+        check_reference_frames(self.particle_body.get_frame(), self.particle_frame)
+        assert not hasattr(self.particle_body, "_inertia")
 
     def test_particle_body_add_force(self):
         a = Symbol('a')
-        self.particle_body.add_force((0,0,0), (a,0,0))
+        self.particle_body.add_force((0, 0, 0), (a, 0, 0))
         assert len(self.particle_body.force_list) == 1
-        point = self.particle_body._masscenter.locatenew(
-            self.particle_body.name + '_point0', 0)
-        force_vector = a * self.particle_body._frame.x
-        test_points(self.particle_body.force_list[0][0], point)
+        point = self.particle_body.get_masscenter().locatenew(
+            self.particle_body._name + '_point0', 0)
+        force_vector = a * self.particle_body.get_frame().x
+        check_points(self.particle_body.force_list[0][0], point)
         assert self.particle_body.force_list[0][1] == force_vector
 
     def test_body_add_force(self):
         l = Symbol('l')
         Fa = Symbol('Fa')
-        point = self.rigidbody_body._masscenter.locatenew(
+        point = self.rigid_body.get_masscenter().locatenew(
             'rigidbody_body_point0',
-            l * self.rigidbody_body._frame.x)
-        self.rigidbody_body.add_force((l,0,0), (0,0,Fa))
-        assert len(self.rigidbody_body.force_list) == 1
-        force_vector = Fa * self.rigidbody_body._frame.z
-        test_points(self.rigidbody_body.force_list[0][0], point)
-        assert self.rigidbody_body.force_list[0][1] == force_vector
+            l * self.rigid_body.get_frame().x)
+        self.rigid_body.add_force((l, 0, 0), (0, 0, Fa))
+        assert len(self.rigid_body.force_list) == 1
+        force_vector = Fa * self.rigid_body.get_frame().z
+        check_points(self.rigid_body.force_list[0][0], point)
+        assert self.rigid_body.force_list[0][1] == force_vector
