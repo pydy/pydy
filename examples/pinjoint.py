@@ -1,94 +1,135 @@
-import sympy as sm
-from sympy.physics.vector import *
+from sympy import symbols, Symbol, acos
 from sympy.physics.mechanics import *
+from sympy.physics.vector import dot
+
 from numpy import linspace
 from pydy.system import System
-from numpy import pi
+from numpy import pi, sqrt
+
 from pydy.viz.shapes import Cylinder, Sphere
 from pydy.viz.scene import Scene
 from pydy.viz.visualization_frame import VisualizationFrame
 
-# Body----------------------------------------------
-parent_masscenter = Point('parent_masscenter')
+# Body
+# -----------------------------------------------------------------------------
+# Ground/ Root Body
+root_frame = ReferenceFrame('root_frame')
+origin = Point('origin')
+origin.set_vel(root_frame, 0)
+
+# Parent Body
 parent_frame = ReferenceFrame('parent_frame')
-parent_mass = sm.Symbol('parent_mass')
+parent_frame.set_ang_vel(root_frame, 0)
+parent_masscenter = Point('parent_masscenter')
+parent_mass = Symbol('parent_mass')
+parent = Particle('ParP', parent_masscenter, parent_mass)
 
-parent_masscenter.set_vel(parent_frame, 0)
-parent = Particle('parent', parent_masscenter, parent_mass)
 
-child_masscenter = Point('child_masscenter')
+# Child Body
 child_frame = ReferenceFrame('child_frame')
-child_mass = sm.Symbol('child_mass')
+child_masscenter = Point('child_masscenter')
+child_mass = Symbol('child_mass')
+child = Particle('ParR', child_masscenter, child_mass)
 
-child_masscenter.set_vel(child_frame, 0)
-child = Particle('child', child_masscenter, child_mass)
+# Connecting ground and parent (without a Joint)
+# -----------------------------------------------------------------------------
+parent_frame.orient(root_frame, 'Axis', [0, root_frame.z])
+# Here, parent is at origin, but user will be able to add a pinjoint between
+# origin i.e. Ground and parent too.
+parent_masscenter.set_pos(origin, 0)
+parent_masscenter.v2pt_theory(origin, root_frame, parent_frame)
 
-print "Finished creating Bodies"
-# Joint----------------------------------------------
-
-# join parent and child frames
-child_frame.orient(parent_frame, 'Axis', [0, parent_frame.x])
-
-coordinate = dynamicsymbols('theta')
-coordinated = dynamicsymbols('theta', 1)
+# PinJoint between parent and child.
+# -----------------------------------------------------------------------------
+theta = dynamicsymbols('theta')
+thetad = dynamicsymbols('theta', 1)
 omega = dynamicsymbols('omega')
+omegad = dynamicsymbols('omega', 1)
+g = symbols('g')
 
-a, b, c, d, e, f, g = sm.symbols('a b c d e f g')
+child_frame.orient(root_frame, 'Axis', [theta, root_frame.z])
+child_frame.set_ang_vel(root_frame, omega * root_frame.z)
 
-child_joint_loc = (a, b, c)
-parent_joint_loc = (d, e, f)
-
-parent_joint_point = parent.get_point().locatenew(
+parent_joint_point = parent_masscenter.locatenew(
     'parent_joint',
-    a * parent_frame.x + b * parent_frame.y + c * parent_frame.z)
+    parent_frame.x + parent_frame.y + parent_frame.z)
 
-child_joint_point = child.get_point().locatenew(
+child_joint_point = child_masscenter.locatenew(
     'child_joint',
-    e * child_frame.x + d * child_frame.y + f * child_frame.z)
+    child_frame.x + child_frame.y + child_frame.z)
 
 child_joint_point.set_pos(parent_joint_point, 0)
+child_masscenter.v2pt_theory(parent_masscenter, root_frame, child_frame)
 
+# JointsMethod generating equations of motion
+# -----------------------------------------------------------------------------
 
-child_frame.orient(parent_frame, 'Axis', [coordinate, parent_frame.x])
-child_frame.set_ang_vel(parent_frame, omega * parent_frame.x)
-
-child.get_point().v2pt_theory(parent.get_point(), parent_frame, child_frame)
-
-print "Finished creating Joints"
-# JointsMethod----------------------------------------------------
+kd = [thetad - omega]
+FL = [(child_masscenter, child_mass * g * child_frame.y)]
 BL = [parent, child]
-FL = [(parent.get_point(), parent.get_mass() * g * parent_frame.x), (child.get_point(), child.get_mass() * g * parent_frame.x)]
-kd = [coordinated - omega]
 
-KM = KanesMethod(parent_frame, q_ind=[coordinate], u_ind=[omega], kd_eqs=kd)
-(fr, frstar) = KM.kanes_equations(FL, BL)
-print "###########", fr
-print "###########", frstar
+KM = KanesMethod(root_frame, q_ind=[theta], u_ind=[omega], kd_eqs=kd)
+KM.kanes_equations(FL, BL)
+# Numerical part
+# -----------------------------------------------------------------------------
 
-print "Finished JointsMethod"
-# Numeric part---------------------------------------------------
-constants = {parent_mass: 1.0, child_mass: 1.0, a: 1.0, b: 1.0, c: 1.0, d: 1.0, e: 1.0, f: 1.0, g: 9.8}
-#constants = {g: 9.8}
-initial_conditions = {coordinate: 0.0, omega: 0.0}
+constants = {child_mass: 10.0, g: 9.81}
+
+initial_conditions = {theta: 1.0, omega: 0.0}
+
 sys = System(KM, constants=constants, initial_conditions=initial_conditions)
 
 frames_per_sec = 60
-final_time = 5
+final_time = 5.0
 
 times = linspace(0.0, final_time, final_time * frames_per_sec)
 sys.times = times
 x = sys.integrate()
 
-print "Numeric part"
-# Visualization part-------------------------------------------
-parent_sphere = Sphere(name='sphere', radius=1.0)
-child_sphere = Sphere(name='sphere', radius=1.0)
+# Visualization part
+# -----------------------------------------------------------------------------
+link1 = Cylinder(name='link1', radius=0.1,
+                 length=sqrt(3), color='red')
+link2 = Cylinder(name='link2', radius=0.1,
+                 length=sqrt(3), color='red')
+joint_link = Cylinder(name='joint_link', radius=0.05, length=0.5, color='blue')
+sphere = Sphere(name='sphere', radius=0.2, color='green')
+joint_link_sphere = Sphere(name='sphere', radius=0.1, color='blue')
 
-sphereP_viz_frame = VisualizationFrame('sphereP', parent_frame, parent_masscenter, parent_sphere)
-sphereR_viz_frame = VisualizationFrame('sphereR', child_frame, child_masscenter, child_sphere)
+# parent
+sphereP_viz_frame = VisualizationFrame('sphereP', root_frame, parent_masscenter,
+                                       sphere)
 
-scene = Scene(parent_frame, parent_masscenter, sphereP_viz_frame, sphereR_viz_frame)
+# parent to joint link
+parent_joint_vec = parent_joint_point.pos_from(parent_masscenter)
+parent_angle = acos(dot(parent_frame.y, parent_joint_vec)/parent_joint_vec.magnitude())
+linkR_frame = parent_frame.orientnew('frameR', 'Axis', [-parent_angle, cross(parent_joint_vec, root_frame.y)])
+linkR_link_half = parent_masscenter.locatenew('originP', parent_joint_vec/2)
+link_parent_joint = VisualizationFrame('linkP_joint', linkR_frame, linkR_link_half, link1)
+
+# joint to child link
+child_joint_vec = child_masscenter.pos_from(child_joint_point)
+child_angle = acos(dot(child_frame.y, child_joint_vec)/child_joint_vec.magnitude())
+tmp = cross(child_joint_vec, child_frame.y)
+linkJ_frame = child_frame.orientnew('frameJ', 'Axis', [-child_angle, tmp])
+child_joint_vec = child_masscenter.pos_from(child_joint_point)
+linkJ_link_half = parent_joint_point.locatenew('originJ', child_joint_vec/2)
+link_joint_child = VisualizationFrame('linkJ_joint', linkJ_frame, linkJ_link_half, link1)
+
+# joint link
+joint_link_vec = cross(parent_joint_vec, child_joint_vec)
+joint_link_angle = acos(dot(parent_frame.y, joint_link_vec)/joint_link_vec.magnitude())
+link_joint_frame = child_frame.orientnew('frame_joint', 'Axis', [joint_link_angle, child_frame.y])
+link_joint = VisualizationFrame('joint_link', root_frame, parent_joint_point,
+                                joint_link_sphere)
+
+# child
+sphereR_viz_frame = VisualizationFrame('sphereR', root_frame, child_masscenter,
+                                       sphere)
+
+world_frame = root_frame.orientnew('world', 'Axis', [0, root_frame.z])
+scene = Scene(world_frame, origin, link_parent_joint, link_joint, link_joint_child,
+              sphereP_viz_frame, sphereR_viz_frame)
+
 scene.generate_visualization_json_system(sys)
-
 scene.display()
-

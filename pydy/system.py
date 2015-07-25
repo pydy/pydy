@@ -609,4 +609,5 @@ class System(object):
             constants = set(self.eom_method._find_othersymbols(
                 *self._Kane_inlist_insyms()))
         constants.remove(dynamicsymbols._t)
+        print constants
         return constants
