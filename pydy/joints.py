@@ -150,11 +150,45 @@ class PinJoint(Joint):
 
 
 class SlidingJoint(Joint):
-    def __init__(self, name, parent, child, parent_point_pos, child_point_pos):
+    def __init__(self, name, parent, child, parent_point_pos, child_point_pos,
+                 parent_dir=None, child_dir=None):
         super(Joint, self).__init__()
 
-    def apply_joint(self):
+        if parent_dir is None:
+            self.parent_direction = self.parent.get_frame().z
+        else:
+            self.parent_direction = parent_dir
 
+        if child_dir is None:
+            self.child_direction = self.child.get_frame().z
+        else:
+            self.child_direction = child_dir
+
+    def align_directions(self):
+        """Rotates child_frame such that child_axis is aligned to parent_axis.
+        """
+        angle = self.get_angle(self.parent_direction, self.child_direction)
+        self.child.get_frame().orient(
+            'Axis',
+            [angle, cross(self.child_direction, self.parent_direction)])
+
+    def apply_joint(self):
+        self.align_directions()
+        dis = dynamicssymbols('dis')
+        vel = dynamicssymbols('vel')
+        self.add_coordinate(dis)
+        self.add_speed(vel)
+        self.child.get_frame().orient(self.parent.get_frame(), 'Axis',
+                                      [0, self.parent.get_frame().z])
+        self._locate_joint_point()
+        self.parent_joint_vector.set_vel(self.parent.get_frame(), 0)
+        self.child_joint_point.set_vel(self.child.get_frame(), 0)
+        self.child_joint_point.set_pos(self.parent_joint_point,
+                                       dis * self.parent_direction)
+        self.child_joint_point.set_vel(self.parent.get_frame(),
+                                       vel * self.parent_direction)
+        self.child.get_masscenter().set_vel(self.parent.get_frame(),
+                                            vel * self.parent_direction)
 
 
 class CylindricJoint(Joint):
