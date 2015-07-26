@@ -1,4 +1,5 @@
-from sympy.physics.vector import cross
+from sympy import acos
+from sympy.physics.vector import cross, dot
 from sympy.physics.mechanics import dynamicssymbols
 
 __all__ = ['Joint', 'PinJoint', 'SlidingJoint', 'CylindricalJoint',
@@ -39,6 +40,8 @@ class Joint(object):
         self.name = name
         self.parent = parent
         self.child = child
+        self._coordinates = []
+        self._speed = []
 
         if parent_point_pos is None:
             parent_point_pos = (0,0,0)  # Center of mass
@@ -49,13 +52,13 @@ class Joint(object):
         self.child_point_pos = child_point_pos
 
         self.parent_joint_vector = self._convert_tuple_to_vector(
-            self.parent.frame,
+            self.parent.get_frame(),
             self.parent_point_pos)
         self.child_joint_vector = self._convert_tuple_to_vector(
-            self.child.frame,
+            self.child.get_frame(),
             self.child_point_pos)
 
-        self.child.masscenter.set_pos(self.parent.masscenter, 0)
+        self.child.get_masscenter().set_pos(self.parent.get_masscenter(), 0)
         self._set_parent_child_rel()
         self._locate_joint_point()
         self.apply_joint()
@@ -75,12 +78,29 @@ class Joint(object):
             raise TypeError('position tuple must be of length 3')
 
     def _locate_joint_point(self):
-        self.parent_joint_point = self.parent.masscenter.locatenew(
+        self.parent_joint_point = self.parent.get_masscenter().locatenew(
             self.name + '_parent_joint',
             self.parent_joint_vector)
-        self.child_joint_point = self.child.masscenter.locatenew(
+        self.child_joint_point = self.child.get_masscenter().locatenew(
             self.name + '_child_joint',
             self.child_joint_vector)
+
+    def get_angle(self, vec1, vec2):
+        mag1 = vec1.magnitude()
+        mag2 = vec2.magnitude()
+        return acos(dot(vec1, vec2)/(mag1 * mag2))
+
+    def add_coordinate(self, coordinate):
+        self._coordinates.append(coordinate)
+
+    def get_coordinates(self):
+        return self._coordinates
+
+    def add_speed(self, speed):
+        self._speed.append(speed)
+
+    def get_speed(self):
+        return self._speed
 
     def apply_joint(self):
         """To create a custom joint, define a subclass of Joint class and
@@ -105,14 +125,28 @@ class PinJoint(Joint):
         else:
             self.child_axis = child_axis
 
+    def align_axes(self):
+        """Rotates child_frame such that child_axis is aligned to parent_axis.
+        """
+        angle = self.get_angle(self.parent_axis, self.child_axis)
+        self.child.get_frame().orient(
+            'Axis',
+            [angle, cross(self.child_axis, self.parent_axis)])
+
     def apply_joint(self):
+        self.align_axes()
         theta = dynamicssymbols('theta')
         omega = dynamicssymbols('omega')
-        self.child.add_coordinate(theta)
-        self.child.add_speed(omega)
-        self.child.frame.orient(self.parent.frame, 'Axis',
-                                [theta, self.parent.frame.x])
-        self.child.frame.set_ang_vel(self.parent.frame, omega * self.parent.frame.x)
+        self.add_coordinate(theta)
+        self.add_speed(omega)
+        self.child.get_frame().orient(self.parent.get_frame(), 'Axis',
+                                [theta, self.parent_axis])
+        self.child.get_frame().set_ang_vel(self.parent.get_frame(), omega * self.parent_axis)
+        self._locate_joint_point()
+        self.child_joint_point.set_pos(self.parent_joint_point, 0)
+        self.child.get_masscenter().v2pt_theory(self.parent.get_masscenter(),
+                                                self.parent.get_frame(),
+                                                self.child.get_frame())
 
 
 class SlidingJoint(Joint):
