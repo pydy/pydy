@@ -4,7 +4,7 @@ from sympy.physics.vector import dot
 
 from numpy import linspace
 from pydy.system import System
-from numpy import pi, sqrt
+from numpy import sqrt
 
 from pydy.viz.shapes import Cylinder, Sphere
 from pydy.viz.scene import Scene
