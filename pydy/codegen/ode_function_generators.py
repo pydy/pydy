@@ -711,8 +711,6 @@ r : dictionary
             def base_rhs(*args):
 
                 M, F = self.eval_arrays(*args)
-                print M
-                print F
                 return self._solve_linear_system(M, F)
 
             self._base_rhs = base_rhs
