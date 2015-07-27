@@ -4,15 +4,15 @@
 problem with no kinematic loops or nonholonomic constraints."""
 
 import numpy as np
-from scipy.integrate import odeint
 import sympy as sm
 import sympy.physics.mechanics as me
 from pydy.system import System
-from pydy.codegen.ode_function_generators import generate_ode_function
 from pydy.viz import Plane, Cube, Sphere, VisualizationFrame, Scene
 
-q = me.dynamicsymbols('q:10')
-u = me.dynamicsymbols('u:10')
+q = me.dynamicsymbols('q:8')
+u = me.dynamicsymbols('u:8')
+
+conical_length = sm.symbols('l_c')
 
 plate_mass = sm.symbols('m_{pl}')
 plate_length = sm.symbols('l_{pl}')
@@ -24,7 +24,7 @@ pendulum_bob_mass = sm.symbols('m_{p2}')
 block_length = sm.symbols('l_b')
 block_mass = sm.symbols('m_b')
 
-k4, k5, k6, k7, k8 = sm.symbols('k4, k5, k6, k7, k8')
+k2, k3, k4, k5, k6 = sm.symbols('k2, k3, k4, k5, k6')
 
 g = sm.symbols('g')
 
@@ -41,9 +41,11 @@ kin_diff_eqs = {q_i.diff(): u_i for q_i, u_i in zip(q, u)}
 # plate's plane.
 
 newtonian_fr = me.ReferenceFrame('N')
-conical_fr = newtonian_fr.orientnew('A', 'Quaternion', q[:4])
-plate_fr = conical_fr.orientnew('B', 'Axis', (q[5], conical_fr.z))
-pendulum_fr = plate_fr.orientnew('C', 'Axis', (q[9], plate_fr.y))
+# NOTE : This does not allow for rotation about the pendulum shaft's axes,
+# which is a more general spherical joint.
+conical_fr = newtonian_fr.orientnew('A', 'Body', (q[0], q[1], 0), 'XYZ')
+plate_fr = conical_fr.orientnew('B', 'Axis', (q[3], conical_fr.z))
+pendulum_fr = plate_fr.orientnew('C', 'Axis', (q[7], plate_fr.y))
 
 ## Set angular velocities.
 # Here we ensure that the velocities are all expressed in terms of the
@@ -54,14 +56,14 @@ pendulum_fr = plate_fr.orientnew('C', 'Axis', (q[9], plate_fr.y))
 conical_ang_vel = conical_fr.ang_vel_in(newtonian_fr)
 conical_ang_vel = conical_ang_vel.subs(kin_diff_eqs)
 conical_fr.set_ang_vel(newtonian_fr, conical_ang_vel)
-plate_fr.set_ang_vel(conical_fr, u[5] * conical_fr.z)
-pendulum_fr.set_ang_vel(plate_fr, u[9] * plate_fr.y)
+plate_fr.set_ang_vel(conical_fr, u[3] * conical_fr.z)
+pendulum_fr.set_ang_vel(plate_fr, u[7] * plate_fr.y)
 
 # Define the positions of all the important points.
 conical_base_pt = me.Point('O')
-plate_mass_center = conical_base_pt.locatenew('P1', q[4] * conical_fr.z)
-block_mass_center = plate_mass_center.locatenew('P2', q[6] * plate_fr.x + q[7] * plate_fr.z)
-pendulum_base_pt = plate_mass_center.locatenew('P3', q[8] * plate_fr.x)
+plate_mass_center = conical_base_pt.locatenew('P1', (conical_length + q[2]) * conical_fr.z)
+block_mass_center = plate_mass_center.locatenew('P2', q[4] * plate_fr.x + q[5] * plate_fr.z)
+pendulum_base_pt = plate_mass_center.locatenew('P3', q[6] * plate_fr.x)
 pendulum_bob_pt = pendulum_base_pt.locatenew('P4', pendulum_length * pendulum_fr.z)
 
 # Set linear velocities.
@@ -69,9 +71,9 @@ conical_base_pt.set_vel(newtonian_fr, 0)
 
 v1= plate_mass_center.pos_from(conical_base_pt).diff(me.dynamicsymbols._t, newtonian_fr).subs(kin_diff_eqs)
 plate_mass_center.set_vel(newtonian_fr, v1)
-v2 = v1 + u[6] * plate_fr.x + u[7] * plate_fr.z
+v2 = v1 + u[4] * plate_fr.x + u[5] * plate_fr.z
 block_mass_center.set_vel(newtonian_fr, v2)
-v3 = v2 + u[8] * plate_fr.x
+v3 = v2 + u[6] * plate_fr.x
 pendulum_base_pt.set_vel(newtonian_fr, v3)
 pendulum_bob_pt.v2pt_theory(pendulum_base_pt, newtonian_fr, pendulum_fr)
 
@@ -89,17 +91,17 @@ loads.append((pendulum_bob_pt, pendulum_bob_mass * g * newtonian_fr.z))
 
 # The plate is attached to the conical pendulum shaft by a linear and
 # torsional spring.
-loads.append((plate_mass_center, -k4 * q[4] * conical_fr.z))
-loads.append((plate_fr, -k5 * q[5] * conical_fr.z))
+loads.append((plate_mass_center, -k2 * q[2] * conical_fr.z))
+loads.append((plate_fr, -k3 * q[3] * conical_fr.z))
 
 # The block is attached to the plate by two springs.
-loads.append((block_mass_center, -k6 * q[6] * plate_fr.x - k7 * q[7] * plate_fr.z))
-loads.append((plate_mass_center, k6 * q[6] * plate_fr.x + k7 * q[7] * plate_fr.z))
+loads.append((block_mass_center, -k4 * q[4] * plate_fr.x - k5 * q[5] * plate_fr.z))
+loads.append((plate_mass_center, k4 * q[4] * plate_fr.x + k5 * q[5] * plate_fr.z))
 
 # The base of the simple pendulum slides in a slot on the plate and is
 # attached to the plate by a spring.
-loads.append((pendulum_base_pt, -k8 * q[8] * plate_fr.x))
-loads.append((plate_mass_center, k8 * q[8] * plate_fr.x))
+loads.append((pendulum_base_pt, -k6 * q[6] * plate_fr.x))
+loads.append((plate_mass_center, k6 * q[6] * plate_fr.x))
 
 # inertia
 
@@ -128,41 +130,40 @@ fr, frstar = kane.kanes_equations(loads, bodies)
 
 constants = {plate_mass: 1.0,
              plate_length: 5.0,
+             conical_length: 4.0,
              pendulum_length: 2.0,
              pendulum_base_mass: 1.0,
              pendulum_bob_mass: 1.0,
              block_length: 0.5,
              block_mass: 1.0,
-             k4: 0.01,
-             k5: 0.01,
-             k6: 0.01,
-             k7: 0.01,
-             k8: 0.01,
+             k2: 50.0,
+             k3: 50.0,
+             k4: 80.0,
+             k5: 80.0,
+             k6: 80.0,
              g: 9.81}
 
-# NOTE : If the symbolic mass matrix and forcing vector are used and the
-# solve is done numerically, I'm getting a singular matrix. Using
-# quaternions may result in DAE that is not invertible. This following call
-# takes forever with cython because of cse likely.
-print('Generating right hand side function.')
-rhs = generate_ode_function(kane.rhs(), q, u, constants.keys()) #, generator='cython')
-print('Done generating right hand side function.')
+initial_conditions = {x_i: 0.0 for x_i in q + u}
 
-initial_conditions = np.array([0.0 for x in q + u])
-initial_conditions[9] = np.deg2rad(5.0)
+initial_conditions[q[0]] = np.deg2rad(1.0)
+initial_conditions[q[1]] = np.deg2rad(1.0)
+initial_conditions[q[4]] = -1.0
+initial_conditions[q[5]] = 1.0
+initial_conditions[q[6]] = 1.0
+initial_conditions[q[7]] = np.deg2rad(5.0)
 
 time = np.linspace(0.0, 10.0, num=1000)
 
-x = odeint(rhs, initial_conditions, time, args=(constants.values(),))
+sys = System(kane, constants=constants,
+             initial_conditions=initial_conditions, times=time)
+sys.generate_ode_function(generator='cython')
 
 frs = []
-frs.append(VisualizationFrame(plate, Plane(length=plate_length, width=plate_length)))
+frs.append(VisualizationFrame(plate_fr.orientnew('R', 'Axis', (np.pi / 2, plate_fr.x)), plate.masscenter, Plane(length=plate_length, width=plate_length)))
 frs.append(VisualizationFrame(block, Cube(block_length)))
 frs.append(VisualizationFrame(newtonian_fr, pend_base, Sphere(radius=0.25)))
 frs.append(VisualizationFrame(newtonian_fr, pend_bob, Sphere(radius=0.25)))
 
-scene = Scene(newtonian_fr, conical_base_pt, *frs, times=time,
-              constants=constants, state_symbols=q + u,
-              state_trajectories=x)
+scene = Scene(newtonian_fr, conical_base_pt, *frs, system=sys)
 
 scene.display()
