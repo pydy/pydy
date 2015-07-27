@@ -541,7 +541,7 @@ class System(object):
         x_history = self.ode_solver(
             self.evaluate_ode_function,
             initial_conditions_in_proper_order,
-            self.times,
+           self.times,
             args=args)
 
         return x_history
@@ -609,5 +609,4 @@ class System(object):
             constants = set(self.eom_method._find_othersymbols(
                 *self._Kane_inlist_insyms()))
         constants.remove(dynamicsymbols._t)
-        print constants
         return constants
