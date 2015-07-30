@@ -69,7 +69,7 @@ class TestBody():
 
     def test_particle_body_add_force(self):
         a = Symbol('a')
-        self.particle_body.add_force((0, 0, 0), (a, 0, 0))
+        self.particle_body.add_force((a, 0, 0), (0, 0, 0))
         assert len(self.particle_body.force_list) == 1
         point = self.particle_body.get_masscenter().locatenew(
             self.particle_body._name + '_point0', 0)
@@ -83,7 +83,7 @@ class TestBody():
         point = self.rigid_body.get_masscenter().locatenew(
             'rigidbody_body_point0',
             l * self.rigid_body.get_frame().x)
-        self.rigid_body.add_force((l, 0, 0), (0, 0, Fa))
+        self.rigid_body.add_force((0, 0, Fa), (l, 0, 0))
         assert len(self.rigid_body.force_list) == 1
         force_vector = Fa * self.rigid_body.get_frame().z
         check_points(self.rigid_body.force_list[0][0], point)

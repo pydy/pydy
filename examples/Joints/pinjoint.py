@@ -69,7 +69,8 @@ FL = [(child_masscenter, child_mass * g * child_frame.y)]
 BL = [parent, child]
 
 KM = KanesMethod(root_frame, q_ind=[theta], u_ind=[omega], kd_eqs=kd)
-KM.kanes_equations(FL, BL)
+print KM.kanes_equations(FL, BL)
+
 # Numerical part
 # -----------------------------------------------------------------------------
 

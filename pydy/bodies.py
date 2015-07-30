@@ -1,6 +1,6 @@
 from sympy import Symbol
 from sympy.physics.mechanics import RigidBody, Particle, ReferenceFrame, \
-    outer, inertia
+    inertia
 from sympy.physics.vector import Point, Vector
 
 __all__ = ['Body']
@@ -97,6 +97,8 @@ class Body(RigidBody, Particle):
         else:
             _inertia = (body_inertia, self._masscenter)
 
+        self._masscenter.set_vel(self._frame, 0)
+
         # If user passes masscenter and mass then a particle is created
         # otherwise a rigidbody. As a result a body may or may not have inertia.
         if body_inertia is None and mass is not None:
@@ -104,7 +106,7 @@ class Body(RigidBody, Particle):
         else:
             RigidBody.__init__(self, _name, self._masscenter, self._frame, _mass, _inertia)
 
-    def add_force(self, point_vector, force_vector):
+    def add_force(self, force_vector, point=None):
         """
         Adds force to the body by adding Force's instance to the force_list.
         force_list is used by system to get the tuples from the instance and
@@ -125,22 +127,20 @@ class Body(RigidBody, Particle):
         To add a force of magnitude 1 in y direction on a point at distance of
         1 in x direction. All the directions are w.r.t body's frame.
 
+        >>> from sympy import Symbol
+        >>> from pydy.bodies import Body
         >>> body = Body('body')
-        >>> body.add_force((1,0,0), (0,1,0))
+        >>> g = Symbol('g')
+        >>> body.add_force((body.get_mass() * g, 0, 0), body.get_masscenter())
 
         """
-        if not isinstance(point_vector, tuple):
-            raise TypeError("Point Vector must be a tuple of length 3")
-        else:
-            point_vector = self._convert_tuple_to_vector(point_vector)
+        if point is None:
+            point = self._masscenter  # masscenter
 
         if not isinstance(force_vector, tuple):
             raise TypeError("Force vector must be a tuple of length 3")
         else:
             force_vector = self._convert_tuple_to_vector(force_vector)
-
-        point = self._masscenter.locatenew(self._name + '_point' + str(self._counter),
-                                           point_vector)
         self.force_list.append((point, force_vector))
         self._counter += 1
 
