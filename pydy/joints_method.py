@@ -41,15 +41,28 @@ class JointsMethod(object):
         self.q_ind = []
         self.u_ind = []
         for joint in self.joints:
-            self.kd.append(joint.kd)
-            self.q_ind.append(joint.q_ind)
-            self.u_ind.append(joint.u_ind)
+            kds = joint.get_kds()
+            for kd in kds:
+                self.kd.append(kd)
+
+            coordinates = joint.get_coordinates()
+            for coordinate in coordinates:
+                self.q_ind.append(coordinate)
+
+            speeds = joint.get_speeds()
+            for speed in speeds:
+                self.u_ind.append(speed)
 
     def get_kanes(self):
         self.get_all_bodies()
         self.get_force_list()
         self.get_joints_details()
-        self.KM = KanesMethod(self.root_body, q_ind=self.q_ind, u_ind=self.u_ind,
+        KM = KanesMethod(self.root_body.get_frame(), q_ind=self.q_ind, u_ind=self.u_ind,
                               kd_eqs=self.kd)
-        self.KM.kanes_equations(self.force_list, self.bodies)
-        return self.KM
+        (fr, frstar) = KM.kanes_equations(self.force_list, self.bodies)
+        print self.bodies
+        print self.force_list
+        print self.kd
+        print self.q_ind
+        print self.u_ind
+        return (fr, frstar)
