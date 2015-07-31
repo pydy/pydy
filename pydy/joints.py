@@ -1,4 +1,4 @@
-from sympy import acos
+from sympy import acos, sympify
 from sympy.physics.vector import cross, dot, Vector
 from sympy.physics.mechanics import dynamicsymbols
 
@@ -49,7 +49,7 @@ class Joint(object):
         self.parent_point_pos = parent_point_pos
 
         if child_point_pos is None:
-            child_point_pos = (0,0,0)  # Center of mass
+            child_point_pos = (0, 0, 0)  # Center of mass
         self.child_point_pos = child_point_pos
 
         self.parent_joint_vector = self._convert_tuple_to_vector(
@@ -59,7 +59,6 @@ class Joint(object):
             self.child.get_frame(),
             self.child_point_pos)
 
-        self.child.get_masscenter().set_pos(self.parent.get_masscenter(), 0)
         self._set_parent_child_rel()
         self._locate_joint_point()
         self.apply_joint()
@@ -79,8 +78,6 @@ class Joint(object):
             return vector
 
     def _locate_joint_point(self):
-        print "##parent-joint-vector: ", self.parent_joint_vector
-        print "##child-joint-vector: ", self.child_joint_vector
         self.parent_joint_point = self.parent.get_masscenter().locatenew(
             self.name + '_parent_joint',
             self.parent_joint_vector)
@@ -165,38 +162,44 @@ class PinJoint(Joint):
 class SlidingJoint(Joint):
     def __init__(self, name, parent, child, parent_point_pos, child_point_pos,
                  parent_dir=None, child_dir=None):
-        super(SlidingJoint, self).__init__(name, parent, child, parent_point_pos,
-                                           child_point_pos)
 
         if parent_dir is None:
-            self.parent_direction = self.parent.get_frame().z
+            self.parent_direction = parent.get_frame().x
         else:
             self.parent_direction = parent_dir
 
         if child_dir is None:
-            self.child_direction = self.child.get_frame().z
+            self.child_direction = child.get_frame().x
         else:
             self.child_direction = child_dir
+
+        super(SlidingJoint, self).__init__(name, parent, child, parent_point_pos,
+                                           child_point_pos)
 
     def align_directions(self):
         """Rotates child_frame such that child_axis is aligned to parent_axis.
         """
         angle = self.get_angle(self.parent_direction, self.child_direction)
-        self.child.get_frame().orient(
-            'Axis',
-            [angle, cross(self.child_direction, self.parent_direction)])
+        if angle is not sympify(0):
+            axis = cross(self.child_direction, self.parent_direction)
+            self.child.get_frame().orient(
+                self.parent.get_frame(), 'Axis', [angle, axis])
 
     def apply_joint(self):
-        self.align_directions()
         dis = dynamicsymbols('dis')
+        disd = dynamicsymbols('dis', 1)
         vel = dynamicsymbols('vel')
         self.add_coordinate(dis)
         self.add_speed(vel)
+        self.add_kd([disd - vel])
         self.child.get_frame().orient(self.parent.get_frame(), 'Axis',
                                       [0, self.parent.get_frame().z])
+        self.align_directions()
         self._locate_joint_point()
-        self.parent_joint_vector.set_vel(self.parent.get_frame(), 0)
+
+        self.parent_joint_point.set_vel(self.parent.get_frame(), 0)
         self.child_joint_point.set_vel(self.child.get_frame(), 0)
+
         self.child_joint_point.set_pos(self.parent_joint_point,
                                        dis * self.parent_direction)
         self.child_joint_point.set_vel(self.parent.get_frame(),

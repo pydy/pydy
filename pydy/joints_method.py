@@ -22,13 +22,10 @@ class JointsMethod(object):
 
     def get_all_bodies(self):
         self.bodies = []
-        for joint in self.joints:
-            parent = joint.parent
-            if parent not in self.bodies:
-                self.bodies.append(parent)
-            child = joint.child
-            if child not in self.bodies:
-                self.bodies.append(child)
+        body = self.root_body
+        while body:
+            self.bodies.append(body)
+            body = body.child
 
     def get_force_list(self):
         self.force_list = []

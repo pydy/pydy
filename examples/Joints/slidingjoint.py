@@ -76,7 +76,7 @@ child_masscenter.set_vel(root_frame, vel*direction)
 
 kd = [disd - vel]
 FL = [(child_masscenter, child_mass * g * root_frame.x),
-      (child_masscenter, -0.001 * dis * root_frame.x)]
+      (child_masscenter, -0.001 * dis * (root_frame.x + root_frame.y))]
 BL = [parent, child]
 
 KM = KanesMethod(root_frame, q_ind=[dis], u_ind=[vel], kd_eqs=kd)
