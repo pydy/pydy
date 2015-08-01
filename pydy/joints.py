@@ -151,7 +151,8 @@ class PinJoint(Joint):
         self.add_kd(thetad - omega)
         self.child.get_frame().orient(self.parent.get_frame(), 'Axis',
                                       [theta, self.parent_axis])
-        self.child.get_frame().set_ang_vel(self.parent.get_frame(), omega * self.parent_axis)
+        self.child.get_frame().set_ang_vel(self.parent.get_frame(),
+                                           omega * self.parent_axis)
         self.align_axes()
         self.child_joint_point.set_pos(self.parent_joint_point, 0)
         self.child.get_masscenter().v2pt_theory(self.parent.get_masscenter(),
@@ -173,7 +174,8 @@ class SlidingJoint(Joint):
         else:
             self.child_direction = child_dir
 
-        super(SlidingJoint, self).__init__(name, parent, child, parent_point_pos,
+        super(SlidingJoint, self).__init__(name, parent, child,
+                                           parent_point_pos,
                                            child_point_pos)
 
     def align_directions(self):
@@ -206,3 +208,71 @@ class SlidingJoint(Joint):
                                        vel * self.parent_direction)
         self.child.get_masscenter().set_vel(self.parent.get_frame(),
                                             vel * self.parent_direction)
+
+
+class CylindricalJoint(Joint):
+    def __init__(self, name, parent, child, parent_point_pos=None,
+                 child_point_pos=None, parent_axis=None, child_axis=None):
+
+        if parent_axis is None:
+            self.parent_axis = parent.get_frame().x
+        else:
+            self.parent_axis = parent_axis
+
+        if child_axis is None:
+            self.child_axis = child.get_frame().x
+        else:
+            self.child_axis = child_axis
+
+        super(CylindricalJoint, self).__init__(name, parent, child,
+                                               parent_point_pos,
+                                               child_point_pos)
+
+    def align_axes(self):
+        """Rotates child_frame such that child_axis is aligned to parent_axis.
+        """
+        angle = self.get_angle(self.parent_axis, self.child_axis)
+        axis = cross(self.child_axis, self.parent_axis)
+        if axis != Vector(0):
+            self.child.get_frame().orient(
+                self.parent.get_frame(), 'Axis', [angle, axis])
+
+    def apply_joint(self):
+        dis = dynamicsymbols('dis')
+        disd = dynamicsymbols('dis', 1)
+        vel = dynamicsymbols('vel')
+
+        theta = dynamicsymbols('theta')
+        thetad = dynamicsymbols('theta', 1)
+        omega = dynamicsymbols('omega')
+
+        self.add_coordinate(dis)
+        self.add_speed(vel)
+        self.add_kd([disd - vel])
+
+        self.add_coordinate(theta)
+        self.add_speed(omega)
+        self.add_kd(thetad - omega)
+
+        self.child.get_frame().orient(self.parent.get_frame(), 'Axis',
+                                      [0, self.parent.get_frame().z])
+        self.align_axes()
+        self._locate_joint_point()
+        self.child.get_frame().orient(self.parent.get_frame(), 'Axis',
+                                      [theta, self.parent_axis])
+        self.child.get_frame().set_ang_vel(self.parent.get_frame(),
+                                           omega * self.parent_axis)
+
+        self.parent_joint_point.set_vel(self.parent.get_frame(), 0)
+        self.child_joint_point.set_vel(self.child.get_frame(), 0)
+
+        self.child_joint_point.set_pos(self.parent_joint_point,
+                                       dis * self.parent_axis)
+        self.child_joint_point.set_vel(self.parent.get_frame(),
+                                       vel * self.parent_axis)
+        self.child.get_masscenter().set_vel(self.parent.get_frame(),
+                                            vel * self.parent_axis)
+        self.child_joint_point.set_pos(self.parent_joint_point, 0)
+        self.child.get_masscenter().v2pt_theory(self.parent.get_masscenter(),
+                                                self.parent.get_frame(),
+                                                self.child.get_frame())
