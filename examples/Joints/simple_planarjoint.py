@@ -21,16 +21,18 @@ c_mass = Symbol(c_name + '_mass')
 c_inertia = (inertia(c_frame, 1, 1, 1), c_masscenter)
 child = RigidBody(c_name, c_masscenter, c_frame, c_mass, c_inertia)
 
-# Cylindrical joint
-dis = dynamicsymbols('dis')
-disd = dynamicsymbols('dis', 1)
-vel = dynamicsymbols('vel')
-theta = dynamicsymbols('theta')
+# planar joint
+# ------------
+# generalized coordinates in specific order.
+theta = dynamicsymbols('theta')  # rotation around z axis.
 thetad = dynamicsymbols('theta', 1)
 omega = dynamicsymbols('omega')
-
-p_axis = p_frame.x
-c_axis = c_frame.x
+disx = dynamicsymbols('disx')  # translation along x axis.
+disxd = dynamicsymbols('disx', 1)
+velx = dynamicsymbols('velxx')
+disy = dynamicsymbols('disy')  # translation along y axis.
+disyd = dynamicsymbols('disy', 1)
+vely = dynamicsymbols('vely')
 
 c_frame.orient(p_frame, 'Axis', [0, p_frame.x])
 
@@ -42,26 +44,32 @@ c_joint_point = c_masscenter.locatenew(
     c_name + '_child_joint',
     c_frame.x + c_frame.y + c_frame.z)
 
-c_frame.orient(p_frame, 'Axis', [theta, p_axis])
-c_frame.set_ang_vel(p_frame, omega * p_axis)
-
-c_joint_point.set_pos(p_joint_point, dis * p_axis)
-c_joint_point.set_vel(p_frame, vel * p_axis)
-c_masscenter.set_vel(p_frame, vel * p_axis)
-
 c_joint_point.set_pos(p_joint_point, 0)
+
+# Adding rotation
+c_frame.orient(p_frame, 'Axis', [theta, p_frame.z])
+c_frame.set_ang_vel(p_frame, omega * p_frame.z)
+
+# Adding translation along x axis.
+c_joint_point.set_pos(p_joint_point, disx * p_frame.x)
+c_joint_point.set_vel(p_frame, velx * p_frame.x)
+
+# Adding translation along y axis
+c_joint_point.set_pos(p_joint_point, disy * p_frame.y)
+c_joint_point.set_vel(p_frame, vely * p_frame.y)
+
 c_masscenter.v2pt_theory(p_masscenter, p_frame, c_frame)
 
-# JointsMethod
-q_ind = [theta, dis]
-u_ind = [omega, vel]
-kd = [thetad - omega, disd - vel]
+#Joints Method
+# ---------------
+q_ind = [theta, disx, disy]
+u_ind = [omega, velx, vely]
+
+kd = [thetad - omega, disxd - velx, disyd - vely]
 BL = [parent, child]
-gravity = Symbol('gravity')
-spring_constant = Symbol('k')
-FL = [(c_masscenter, c_mass * gravity * c_frame.y),
-      (c_masscenter, c_mass * gravity * c_frame.x),
-      (c_masscenter, spring_constant * dis * (c_frame.x + c_frame.y))]
+k = Symbol('k')
+FL = [(c_masscenter, k * disx * p_frame.x),
+      (c_masscenter, k * disy * p_frame.y)]
 
 KM = KanesMethod(p_frame, q_ind=q_ind, u_ind=u_ind, kd_eqs=kd)
 print BL
