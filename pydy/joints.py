@@ -115,6 +115,15 @@ class Joint(object):
                                   " override apply_joint method in Joint's" +
                                   " subclass.")
 
+    def add_decoration(self, decoration=None):
+        """
+        Adds decoration for visualization for the body, if no decoration is
+        passed then a default is added
+        """
+        raise NotImplementedError("To define decoration for custom pydy.Joints" +
+                                  ", You need to overrid add_decoration in " +
+                                  "Joint's subclass.")
+
 
 class PinJoint(Joint):
     def __init__(self, name, parent, child, parent_point_pos=None,
@@ -126,7 +135,7 @@ class PinJoint(Joint):
             self.parent_axis = parent_axis
 
         if child_axis is None:
-            self.child_axis = child.get_frame().x
+            self.child_axis = self.child.get_frame().x
         else:
             self.child_axis = child_axis
 
@@ -170,7 +179,7 @@ class SlidingJoint(Joint):
             self.parent_direction = parent_dir
 
         if child_dir is None:
-            self.child_direction = child.get_frame().x
+            self.child_direction = self.child.get_frame().x
         else:
             self.child_direction = child_dir
 
@@ -193,7 +202,7 @@ class SlidingJoint(Joint):
         vel = dynamicsymbols('vel')
         self.add_coordinate(dis)
         self.add_speed(vel)
-        self.add_kd([disd - vel])
+        self.add_kd(disd - vel)
         self.child.get_frame().orient(self.parent.get_frame(), 'Axis',
                                       [0, self.parent.get_frame().z])
         self.align_directions()
@@ -220,7 +229,7 @@ class CylindricalJoint(Joint):
             self.parent_axis = parent_axis
 
         if child_axis is None:
-            self.child_axis = child.get_frame().x
+            self.child_axis = self.child.get_frame().x
         else:
             self.child_axis = child_axis
 
@@ -248,7 +257,7 @@ class CylindricalJoint(Joint):
 
         self.add_coordinate(dis)
         self.add_speed(vel)
-        self.add_kd([disd - vel])
+        self.add_kd(disd - vel)
 
         self.add_coordinate(theta)
         self.add_speed(omega)
@@ -276,3 +285,75 @@ class CylindricalJoint(Joint):
         self.child.get_masscenter().v2pt_theory(self.parent.get_masscenter(),
                                                 self.parent.get_frame(),
                                                 self.child.get_frame())
+
+
+class PlanarJoint(Joint):
+    def __init__(self, name, parent, child, parent_point_pos=None,
+                 child_point_pos=None, parent_axis=None, child_axis=None):
+
+        if parent_axis is None:
+            self.parent_axis = parent.get_frame().x
+        else:
+            self.parent_axis = parent_axis
+
+        if child_axis is None:
+            self.child_axis = self.child.get_frame().x
+        else:
+            self.child_axis = child_axis
+
+        super(PlanarJoint, self).__init__(name, parent, child,
+                                               parent_point_pos,
+                                               child_point_pos)
+
+    def align_axes(self):
+        """Rotates child_frame such that child_axis is aligned to parent_axis.
+        """
+        angle = self.get_angle(self.parent_axis, self.child_axis)
+        axis = cross(self.child_axis, self.parent_axis)
+        if axis != Vector(0):
+            self.child.get_frame().orient(
+                self.parent.get_frame(), 'Axis', [angle, axis])
+
+    def apply_joint(self):
+        # generalized coordinates in specific order.
+        theta = dynamicsymbols('theta')  # rotation around z axis.
+        thetad = dynamicsymbols('theta', 1)
+        omega = dynamicsymbols('omega')
+        disx = dynamicsymbols('disx')  # translation along x axis.
+        disxd = dynamicsymbols('disx', 1)
+        velx = dynamicsymbols('velxx')
+        disy = dynamicsymbols('disy')  # translation along y axis.
+        disyd = dynamicsymbols('disy', 1)
+        vely = dynamicsymbols('vely')
+
+        self.add_coordinate(theta)
+        self.add_speed(omega)
+        self.add_kd(thetad - omega)
+
+        self.add_coordinate(disx)
+        self.add_speed(velx)
+        self.add_kd(disxd - velx)
+
+        self.add_coordinate(disy)
+        self.add_speed(vely)
+        self.add_kd(disyd - vely)
+        
+        self.child.get_frame().orient(self.parent.get_frame(), 'Axis', [0, self.parent.get_frame().x])
+        
+        self.child_joint_point.set_pos(self.parent_joint_point, 0)
+
+        self.align_axes()
+
+        # Adding rotation
+        self.child.get_frame().orient(self.parent.get_frame(), 'Axis', [theta, self.parent.get_frame().z])
+        self.child.get_frame().set_ang_vel(self.parent.get_frame(), omega * self.parent.get_frame().z)
+        
+        # Adding translation along x axis.
+        self.child_joint_point.set_pos(self.parent_joint_point, disx * self.parent.get_frame().x)
+        self.child_joint_point.set_vel(self.parent.get_frame(), velx * self.parent.get_frame().x)
+        
+        # Adding translation along y axis
+        self.child_joint_point.set_pos(self.parent_joint_point, disy * self.parent.get_frame().y)
+        self.child_joint_point.set_vel(self.parent.get_frame(), vely * self.parent.get_frame().y)
+        
+        self.child.get_masscenter().v2pt_theory(self.parent.get_masscenter(), self.parent.get_frame(), self.child.get_frame())
