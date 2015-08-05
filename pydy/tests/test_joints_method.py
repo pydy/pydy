@@ -14,7 +14,7 @@ class TestJointsMethod():
         # you can add joints even after instantiating JointsMethod.
         self.body_2 = Body('second_body')
         self.slidingjoint_1 = SlidingJoint('slidingjoint', self.body_1, self.body_2, (1,-1,0))
-        self.joints_method.get_all_bodies()
+        self.joints_method.bodylist()
         assert self.joints_method.bodies == [self.ground, self.body_1, self.body_2]
 
     def test_get_equations(self):

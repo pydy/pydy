@@ -121,7 +121,7 @@ class Joint(object):
         passed then a default is added
         """
         raise NotImplementedError("To define decoration for custom pydy.Joints" +
-                                  ", You need to overrid add_decoration in " +
+                                  ", You need to override add_decoration in " +
                                   "Joint's subclass.")
 
 
@@ -136,7 +136,7 @@ class PinJoint(Joint):
                                                              parent_axis)
 
         if child_axis is None:
-            self.child_axis = self.child.get_frame().x
+            self.child_axis = child.get_frame().x
         else:
             self.child_axis = self._convert_tuple_to_vector(child.get_frame(),
                                                             child_axis)
