@@ -13,8 +13,8 @@ k = Symbol('k')
 disx = planar_joint.get_coordinates()[1]
 disy = planar_joint.get_coordinates()[2]
 
-child.add_force(child.get_masscenter(), k * disx * parent.get_frame().x)
-child.add_force(child.get_masscenter(), k * disy * parent.get_frame().y)
+child.add_force((k * disx, 0, 0), child.get_masscenter())
+child.add_force((0, k * disy, 0), child.get_masscenter())
 
 JM = JointsMethod([planar_joint], parent)
 print JM.get_kanes()

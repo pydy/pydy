@@ -1,5 +1,5 @@
 from sympy import Symbol
-from sympy.physics.vector import ReferenceFrame, Point
+from sympy.physics.vector import ReferenceFrame, Point, Vector
 from sympy.physics.mechanics import inertia, RigidBody, KanesMethod, \
     dynamicsymbols
 
@@ -52,7 +52,7 @@ c_frame.set_ang_vel(p_frame, omega * p_axis)
 
 p_joint_point = p_masscenter.locatenew(
     p_name + '_parent_joint',
-    p_frame.x + p_frame.y + p_frame.z)
+    Vector(0))
 
 c_joint_point = c_masscenter.locatenew(
     c_name + '_child_joint',
@@ -67,7 +67,7 @@ u_ind = [omega]
 kd = [thetad - omega]
 BL = [parent, child]
 gravity = Symbol('gravity')
-FL = [(c_masscenter, c_mass * gravity * c_frame.y)]
+FL = [(c_masscenter, c_mass * gravity * p_frame.y)]
 
 KM = KanesMethod(p_frame, q_ind=q_ind, u_ind=u_ind, kd_eqs=kd)
 print BL

@@ -21,20 +21,17 @@ c_mass = Symbol(c_name + '_mass')
 c_inertia = (inertia(c_frame, 1, 1, 1), c_masscenter)
 child = RigidBody(c_name, c_masscenter, c_frame, c_mass, c_inertia)
 
-# planar joint
-# ------------
-# generalized coordinates in specific order.
-theta = dynamicsymbols('theta')  # rotation around z axis.
-thetad = dynamicsymbols('theta', 1)
-omega = dynamicsymbols('omega')
-disx = dynamicsymbols('disx')  # translation along x axis.
-disxd = dynamicsymbols('disx', 1)
-velx = dynamicsymbols('velxx')
-disy = dynamicsymbols('disy')  # translation along y axis.
-disyd = dynamicsymbols('disy', 1)
-vely = dynamicsymbols('vely')
+# spherical joint
+thetax = dynamicsymbols('thetax')
+thetay = dynamicsymbols('thetay')
+thetaz = dynamicsymbols('thetaz')
+thetaxd = dynamicsymbols('thetax', 1)
+thetayd = dynamicsymbols('thetay', 1)
+thetazd = dynamicsymbols('thetaz', 1)
+omegax = dynamicsymbols('omegax')
+omegay = dynamicsymbols('omegay')
+omegaz = dynamicsymbols('omegaz')
 
-c_frame.orient(p_frame, 'Axis', [0, p_frame.x])
 
 p_joint_point = p_masscenter.locatenew(
     p_name + '_parent_joint',
@@ -46,30 +43,24 @@ c_joint_point = c_masscenter.locatenew(
 
 c_joint_point.set_pos(p_joint_point, 0)
 
-# Adding rotation
-c_frame.orient(p_frame, 'Axis', [theta, p_frame.z])
-c_frame.set_ang_vel(p_frame, omega * p_frame.z)
+c_frame.orient(p_frame, 'Axis', [thetax, p_frame.x])
+c_frame.set_ang_vel(p_frame, omegax * p_frame.x)
 
-# Adding translation along x axis.
-c_joint_point.set_pos(p_joint_point, disx * p_frame.x)
-c_joint_point.set_vel(p_frame, velx * p_frame.x)
+c_frame.orient(p_frame, 'Axis', [thetay, p_frame.y])
+c_frame.set_ang_vel(p_frame, omegay * p_frame.y)
 
-# Adding translation along y axis
-c_joint_point.set_pos(p_joint_point, disy * p_frame.y)
-c_joint_point.set_vel(p_frame, vely * p_frame.y)
+c_frame.orient(p_frame, 'Axis', [thetaz, p_frame.z])
+c_frame.set_ang_vel(p_frame, omegaz * p_frame.z)
 
 c_masscenter.v2pt_theory(p_masscenter, p_frame, c_frame)
 
-#Joints Method
-# ---------------
-q_ind = [theta, disx, disy]
-u_ind = [omega, velx, vely]
-
-kd = [thetad - omega, disxd - velx, disyd - vely]
+# JointsMethod
+q_ind = [thetax, thetay, thetaz]
+u_ind = [omegax, omegay, omegaz]
+kd = [thetaxd - omegax, thetayd - omegay, thetazd - omegaz]
 BL = [parent, child]
-k = Symbol('k')
-FL = [(c_masscenter, k * disx * c_frame.x),
-      (c_masscenter, k * disy * c_frame.y)]
+gravity = Symbol('gravity')
+FL = [(c_masscenter, c_mass * gravity * p_frame.y)]
 
 KM = KanesMethod(p_frame, q_ind=q_ind, u_ind=u_ind, kd_eqs=kd)
 print BL

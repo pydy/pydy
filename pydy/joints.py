@@ -132,12 +132,14 @@ class PinJoint(Joint):
         if parent_axis is None:
             self.parent_axis = parent.get_frame().x
         else:
-            self.parent_axis = parent_axis
+            self.parent_axis = self._convert_tuple_to_vector(parent.get_frame(),
+                                                             parent_axis)
 
         if child_axis is None:
             self.child_axis = self.child.get_frame().x
         else:
-            self.child_axis = child_axis
+            self.child_axis = self._convert_tuple_to_vector(child.get_frame(),
+                                                            child_axis)
 
         super(PinJoint, self).__init__(name, parent, child, parent_point_pos,
                                        child_point_pos)
@@ -176,12 +178,14 @@ class SlidingJoint(Joint):
         if parent_dir is None:
             self.parent_direction = parent.get_frame().x
         else:
-            self.parent_direction = parent_dir
+            self.parent_direction = self._convert_tuple_to_vector(parent.get_frame(),
+                                                             parent_dir)
 
         if child_dir is None:
             self.child_direction = self.child.get_frame().x
         else:
-            self.child_direction = child_dir
+            self.child_direction = self._convert_tuple_to_vector(child.get_frame(),
+                                                            child_dir)
 
         super(SlidingJoint, self).__init__(name, parent, child,
                                            parent_point_pos,
@@ -226,12 +230,14 @@ class CylindricalJoint(Joint):
         if parent_axis is None:
             self.parent_axis = parent.get_frame().x
         else:
-            self.parent_axis = parent_axis
+            self.parent_axis = self._convert_tuple_to_vector(parent.get_frame(),
+                                                             parent_axis)
 
         if child_axis is None:
             self.child_axis = self.child.get_frame().x
         else:
-            self.child_axis = child_axis
+            self.child_axis = self._convert_tuple_to_vector(child.get_frame(),
+                                                            child_axis)
 
         super(CylindricalJoint, self).__init__(name, parent, child,
                                                parent_point_pos,
@@ -294,12 +300,14 @@ class PlanarJoint(Joint):
         if parent_axis is None:
             self.parent_axis = parent.get_frame().x
         else:
-            self.parent_axis = parent_axis
+            self.parent_axis = self._convert_tuple_to_vector(parent.get_frame(),
+                                                             parent_axis)
 
         if child_axis is None:
             self.child_axis = self.child.get_frame().x
         else:
-            self.child_axis = child_axis
+            self.child_axis = self._convert_tuple_to_vector(child.get_frame(),
+                                                            child_axis)
 
         super(PlanarJoint, self).__init__(name, parent, child,
                                                parent_point_pos,
@@ -357,3 +365,84 @@ class PlanarJoint(Joint):
         self.child_joint_point.set_vel(self.parent.get_frame(), vely * self.parent.get_frame().y)
         
         self.child.get_masscenter().v2pt_theory(self.parent.get_masscenter(), self.parent.get_frame(), self.child.get_frame())
+
+
+class SphericalJoint(Joint):
+    def __init__(self, name, parent, child, parent_point_pos=None,
+                 child_point_pos=None, parent_axis=None, child_axis=None):
+
+        if parent_axis is None:
+            self.parent_axis = parent.get_frame().x
+        else:
+            self.parent_axis = self._convert_tuple_to_vector(parent.get_frame(),
+                                                             parent_axis)
+
+        if child_axis is None:
+            self.child_axis = self.child.get_frame().x
+        else:
+            self.child_axis = self._convert_tuple_to_vector(child.get_frame(),
+                                                            child_axis)
+
+        super(SphericalJoint, self).__init__(name, parent, child, parent_point_pos,
+                                       child_point_pos)
+
+    def align_axes(self):
+        """Rotates child_frame such that child_axis is aligned to parent_axis.
+        """
+        angle = self.get_angle(self.parent_axis, self.child_axis)
+        axis = cross(self.child_axis, self.parent_axis)
+        if axis != Vector(0):
+            self.child.get_frame().orient(
+                self.parent.get_frame(), 'Axis', [angle, axis])
+
+    def apply_joint(self):
+        thetax = dynamicsymbols('thetax')
+        thetay = dynamicsymbols('thetay')
+        thetaz = dynamicsymbols('thetaz')
+        thetaxd = dynamicsymbols('thetax', 1)
+        thetayd = dynamicsymbols('thetay', 1)
+        thetazd = dynamicsymbols('thetaz', 1)
+        omegax = dynamicsymbols('omegax')
+        omegay = dynamicsymbols('omegay')
+        omegaz = dynamicsymbols('omegaz')
+
+        self.add_coordinate(thetax)
+        self.add_speed(omegax)
+        self.add_kd(thetaxd - omegax)
+
+        self.add_coordinate(thetay)
+        self.add_speed(omegay)
+        self.add_kd(thetayd - omegay)
+
+        self.add_coordinate(thetaz)
+        self.add_speed(omegaz)
+        self.add_kd(thetazd - omegaz)
+        
+        self.parent_joint_point = self.parent.get_masscenter().locatenew(
+            p_name + '_parent_joint',
+            Vector(0))
+
+        self.child_joint_point = self.child.get_masscenter().locatenew(
+            c_name + '_child_joint',
+            self.child.get_frame().x + self.child.get_frame().y + self.child.get_frame().z)
+        
+        self.child_joint_point.set_pos(self.parent_joint_point, 0)
+        
+        self.child.get_frame().orient(self.parent.get_frame(), 'Axis',
+                                      [thetax, self.parent.get_frame().x])
+        self.child.get_frame().set_ang_vel(self.parent.get_frame(),
+                                           omegax * self.parent.get_frame().x)
+        
+        self.child.get_frame().orient(self.parent.get_frame(), 'Axis',
+                                      [thetay, self.parent.get_frame().y])
+        self.child.get_frame().set_ang_vel(self.parent.get_frame(),
+                                           omegay * self.parent.get_frame().y)
+        
+        self.child.get_frame().orient(self.parent.get_frame(), 'Axis',
+                                      [thetaz, self.parent.get_frame().z])
+        self.child.get_frame().set_ang_vel(self.parent.get_frame(),
+                                           omegaz * self.parent.get_frame().z)
+        
+        self.child.get_masscenter().v2pt_theory(self.parent.get_masscenter(),
+                                                self.parent.get_frame(),
+                                                self.child.get_frame())
