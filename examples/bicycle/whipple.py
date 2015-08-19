@@ -27,9 +27,6 @@ from dtk import bicycle
 # Reference Frames
 ##################
 
-print('Defining reference frames.')
-
-
 class ReferenceFrame(mec.ReferenceFrame):
     """Subclass that enforces the desired unit vector indice style."""
 
@@ -47,6 +44,8 @@ class ReferenceFrame(mec.ReferenceFrame):
                                                      tex.format(lab, '2'),
                                                      tex.format(lab, '3')),
                                              **kwargs)
+
+print('Defining reference frames.')
 
 # Newtonian Frame
 N = ReferenceFrame('N')
@@ -207,7 +206,7 @@ print('Defining holonomic constraints.')
 holonomic = fn.pos_from(dn).dot(A['3'])
 #holonomic = sm.trigsimp(holonomic)
 
-print('The holonomic constraint is a function of these dynamice variables:')
+print('The holonomic constraint is a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(holonomic))))
 
 ####################################
@@ -244,7 +243,6 @@ print('Defining linear velocities.')
 no.set_vel(N, 0.0 * N['1'])
 
 # mass centers
-# THIS CHANGE WAS THE FUCKING MAIN ERROR!
 #do.set_vel(N, do.pos_from(no).dt(N))
 do.v2pt_theory(no, N, D)
 co.v2pt_theory(do, N, C)
@@ -274,9 +272,8 @@ nonholonomic = [fn.vel(N).dot(A['1']),
                                                     #q5.diff(t), q7.diff(t)],
                                       #dict=True)[0])
 
-print('The nonholonomic constraints are a function of these dynamice variables:')
-for expr in nonholonomic:
-    print(list(sm.ordered(mec.find_dynamicsymbols(expr))))
+print('The nonholonomic constraints are a function of these dynamic variables:')
+print(list(sm.ordered(mec.find_dynamicsymbols(sm.Matrix(nonholonomic)))))
 
 #########
 # Inertia
@@ -437,7 +434,7 @@ rhs_of_kin_diffs = sm.Matrix([kane.kindiffdict()[k] for k in kane.q.diff(t)])
 g = CythonODEFunctionGenerator(forcing_vector,
                                kane.q[:],
                                kane.u[:],
-                               constant_substitutions.keys(),
+                               list(constant_substitutions.keys()),
                                mass_matrix=mass_matrix,
                                coordinate_derivatives=rhs_of_kin_diffs,
                                specifieds=[T4, T6, T7],
@@ -449,7 +446,7 @@ rhs = g.generate()
 state_vals = np.array([dynamic_substitutions[x] for x in kane.q[:] +
                        kane.u[:]])
 specified_vals = np.zeros(3)
-constants_vals = np.array(constant_substitutions.values())
+constants_vals = np.array(list(constant_substitutions.values()))
 
 xd_from_gen = rhs(state_vals, 0.0, specified_vals, constants_vals)
 print('The state derivatives from code gen:')
@@ -464,7 +461,7 @@ speed_deriv_names = [str(speed)[:-3] + 'p' for speed in kane.u[:]]
 moore_output_from_sub = {k: v for k, v in zip(speed_deriv_names,
                                               list(xd_from_sub))}
 moore_output_from_gen = {k: v for k, v in zip(speed_deriv_names,
-                                              list(xd_from_gen))}
+    list(xd_from_gen)[g.num_coordinates:])}
 
 # compute u1' and u2' manually
 u1 = -rr * u6 * sm.cos(q3)
@@ -472,20 +469,19 @@ u1p = u1.diff(t)
 u2 = -rr * u6 * sm.sin(q3)
 u2p = u2.diff(t)
 
-moore_output_from_sub['u1p'] = u1p.subs({u6.diff(t):
-                                         moore_output_from_sub['u6p']}).subs(
-                                             kane.kindiffdict()).subs(substitutions)
-moore_output_from_sub['u2p'] = u2p.subs({u6.diff(t):
-                                         moore_output_from_sub['u6p']}).subs(
-                                             kane.kindiffdict()).subs(substitutions)
+moore_output_from_sub['u1p'] = u1p.subs(
+        {u6.diff(t): moore_output_from_sub['u6p']}).subs(
+                kane.kindiffdict()).subs(substitutions)
+moore_output_from_sub['u2p'] = u2p.subs(
+        {u6.diff(t): moore_output_from_sub['u6p']}).subs(
+                kane.kindiffdict()).subs(substitutions)
 
-moore_output_from_gen['u1p'] = u1p.subs({u6.diff(t):
-                                         moore_output_from_gen['u6p']}).subs(
-                                             kane.kindiffdict()).subs(substitutions)
-moore_output_from_gen['u2p'] = u2p.subs({u6.diff(t):
-                                         moore_output_from_gen['u6p']}).subs(
-                                             kane.kindiffdict()).subs(substitutions)
-
+moore_output_from_gen['u1p'] = u1p.subs(
+        {u6.diff(t): moore_output_from_gen['u6p']}).subs(
+                kane.kindiffdict()).subs(substitutions)
+moore_output_from_gen['u2p'] = u2p.subs(
+        {u6.diff(t): moore_output_from_gen['u6p']}).subs(
+                kane.kindiffdict()).subs(substitutions)
 
 moore_output_from_sub.update(moore_input)
 moore_output_from_gen.update(moore_input)
