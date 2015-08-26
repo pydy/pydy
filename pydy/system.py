@@ -98,8 +98,6 @@ class System(object):
     """
     def __init__(self, eom_method, constants=None, specifieds=None,
                  ode_solver=None, initial_conditions=None, times=None):
-        msg = ('PyDy System is experimental and may change in the future.')
-        warnings.warn(msg, PyDyFutureWarning)
 
         self._eom_method = eom_method
 
