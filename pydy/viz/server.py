@@ -115,8 +115,7 @@ class Server(object):
 
         """
         res = raw_input("Shutdown this visualization server ([y]/n)? ")
-        res = res.lower()[0]
-        if res == '' or res == 'y':
+        if not res or res[0].lower() == 'y':
             print("Shutdown confirmed")
             print("Shutting down server...")
             self.httpd.stop()
