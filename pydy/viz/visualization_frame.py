@@ -225,13 +225,10 @@ class VisualizationFrame(object):
         """
         rotation_matrix = self.reference_frame.dcm(reference_frame)
         self._transform = Identity(4).as_mutable()
-        self._transform[0:3, 0:3] = rotation_matrix[0:3, 0:3]
+        self._transform[0:3, 0:3] = rotation_matrix
 
-        _point_vector = self.origin.pos_from(point).express(reference_frame)
-
-        self._transform[3, 0] = _point_vector.dot(reference_frame.x)
-        self._transform[3, 1] = _point_vector.dot(reference_frame.y)
-        self._transform[3, 2] = _point_vector.dot(reference_frame.z)
+        point_vector = self.origin.pos_from(point)
+        self._transform[3, :3] = point_vector.to_matrix(reference_frame).T
         return self._transform
 
     def generate_numeric_transform_function(self, dynamic_variables,
@@ -252,19 +249,30 @@ class VisualizationFrame(object):
 
         Returns
         =======
-        numeric_transform : function
-            A function which returns the numerical transformation matrix.
+        numeric_transform : list of functions
+            A list of functions which return the numerical transformation
+            for each element in the transformation matrix.
 
         """
 
         dummy_symbols = [Dummy() for i in dynamic_variables]
         dummy_dict = dict(zip(dynamic_variables, dummy_symbols))
-        transform = self._transform.subs(dummy_dict)
+        transform = self._transform.subs(dummy_dict).reshape(16, 1)
         dummy_symbols.extend(constant_variables)
 
-        self._numeric_transform = lambdify(dummy_symbols, transform,
-                                           modules="numpy")
-
+        # Create a numeric transformation for each element in the transformation
+        # matrix. We cannot lambdify the transformation matrix as calling
+        # lambdify of a constant expression returns a scalar, even if the
+        # lambdify function arguments are sequences:
+        # https://github.com/sympy/sympy/issues/5642
+        self._numeric_transform = []
+        for i in range(16):
+            t = transform[i]
+            if t.has(Dummy):
+                f = lambdify(dummy_symbols, t, modules='numpy')
+            else:
+                f = lambdify(constant_variables, t, modules='numpy')
+            self._numeric_transform.append(f)
         return self._numeric_transform
 
     def evaluate_transformation_matrix(self, dynamic_values, constant_values):
@@ -279,28 +287,39 @@ class VisualizationFrame(object):
 
         Returns
         -------
-        transform_matrix : numpy.array, shape(n, 4, 4)
+        transform_matrix : numpy.array, shape(n, 16)
             A 4 x 4 transformation matrix for each time step.
 
         """
         #If states is instance of numpy array, well and good.
         #else convert it to one:
 
-        states = np.array(dynamic_values)
+        states = np.squeeze(np.array(dynamic_values))
         if not isinstance(constant_values, Iterator):
-            constant_values = list(constant_values)
+            constant_values = np.array(list(constant_values), dtype=np.float)
         if len(states.shape) > 1:
             n = states.shape[0]
-            new = np.zeros((n, 4, 4))
-            for i, time_instance in enumerate(states):
-                args = np.hstack((time_instance, constant_values))
-                new[i, :, :] = self._numeric_transform(*args)
+            args = []
+            for a in np.split(states, states.shape[1], 1):
+                args.append(np.squeeze(a))
+            for a in constant_values:
+                args.append(np.repeat(a, n))
         else:
             n = 1
             args = np.hstack((states, constant_values))
-            new = self._numeric_transform(*args)
 
-        self._visualization_matrix = new.reshape(n, 16).tolist()
+        new = np.zeros((n, 16))
+        for i, t in enumerate(self._numeric_transform):
+            if callable(t):
+                try:
+                    new[:, i] = t(*args)
+                except TypeError:
+                    # dynamic values are not necessary so pass only constant
+                    # values into transform function
+                    new[:, i] = np.repeat(t(*constant_values), n)
+            else:
+                new[:, i] = np.repeat(t, n)
+        self._visualization_matrix = new.tolist()
         return self._visualization_matrix
 
 
