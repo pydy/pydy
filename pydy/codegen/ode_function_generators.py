@@ -918,15 +918,21 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
 
         self.define_inputs()
 
-        # This affects compilation and removes the input check at each step.
-        theano.config.check_input = False
+        old_check_input = theano.config.check_input
+        old_allow_gc = theano.config.allow_gc
+        try:
+            # This affects compilation and removes the input check at each step.
+            theano.config.check_input = False
 
-        # Disable Theano garbage collection to lower the number of allocations.
-        theano.config.allow_gc = False
+            # Disable Theano garbage collection to lower the number of allocations.
+            theano.config.allow_gc = False
 
-        f_imp = theano_function(self.inputs, outputs,
-                                on_unused_input='ignore',
-                                mode=theano.Mode(linker='c'))
+            f_imp = theano_function(self.inputs, outputs,
+                                    on_unused_input='ignore',
+                                    mode=theano.Mode(linker='c'))
+        finally:
+            theano.config.check_input = old_check_input
+            theano.config.allow_gc = old_allow_gc
 
         # While denoting an input as trusted lowers Theano overhead:
         #     f.trust_input = True
