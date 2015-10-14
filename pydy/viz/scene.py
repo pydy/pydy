@@ -45,11 +45,11 @@ try:
         from IPython.html import widgets
         from IPython.display import display, Javascript
     else:
-    	# Everything above IPython3 is Jupyter now.
-    	# All the ever-changing IPython code can be updated here.
-    	ipython_less_than_3 = False
-    	import ipywidgets as widgets
-    	from IPython.display import display, Javascript
+        # Everything above IPython3 is Jupyter now.
+        # All the ever-changing IPython code can be updated here.
+        ipython_less_than_3 = False
+        import ipywidgets as widgets
+        from IPython.display import display, Javascript
 
 
 except ImportError:
