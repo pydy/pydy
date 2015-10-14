@@ -225,10 +225,17 @@ class VisualizationFrame(object):
         """
         rotation_matrix = self.reference_frame.dcm(reference_frame)
         self._transform = Identity(4).as_mutable()
-        self._transform[0:3, 0:3] = rotation_matrix
+        self._transform[:3, :3] = rotation_matrix
 
         point_vector = self.origin.pos_from(point)
-        self._transform[3, :3] = point_vector.to_matrix(reference_frame).T
+        try:
+            self._transform[3, :3] = point_vector.to_matrix(reference_frame).T
+        except AttributeError:
+            # In earlier versions of sympy, 'Vector' object has no attribute
+            # 'to_matrix'.
+            self._transform[3, 0] = point_vector.dot(reference_frame.x)
+            self._transform[3, 1] = point_vector.dot(reference_frame.y)
+            self._transform[3, 2] = point_vector.dot(reference_frame.z)
         return self._transform
 
     def generate_numeric_transform_function(self, dynamic_variables,
