@@ -22,7 +22,7 @@ install:
   - source activate test-env
   - if [[ $DEP_VERSIONS == "oldest" ]]; then
       if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then
-        conda install numpy=1.7 scipy=0.11 sympy=0.7.4 cython=0.17 theano=0.7;
+        conda install numpy=1.9 scipy=0.14 sympy=0.7.4 cython=0.17 theano=0.7;
       else
         conda install numpy=1.9 scipy=0.14 sympy=0.7.5 cython=0.20 theano=0.7;
       fi
