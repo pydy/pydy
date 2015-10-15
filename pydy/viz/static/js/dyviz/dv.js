@@ -66,7 +66,7 @@ DynamicsVisualizer = Class.create({
         });
 
 
-        self._slider = jQuery("#time-slider").slider({min:0,max:100,step:1, handle:"square", value:0});
+        self._slider = jQuery("#time-slider").slider({min:0, max:100, step:1, handle:"square", value:0});
         self._slider.on('slide',function(ev) {
             var val = ev.value;
             var len = self._timeArray.length;
@@ -79,7 +79,6 @@ DynamicsVisualizer = Class.create({
             self.currentTime = self._timeArray[i];
             self.Scene.setAnimationTime(self._timeArray[i]);
         });
-
 
         jQuery("#resetControls").click(function(){
             self.scene._resetControls();
@@ -121,7 +120,6 @@ DynamicsVisualizer = Class.create({
 
         });
         console.log("[PyDy INFO]: Activated UI controls");
-
 
     },
 

@@ -78,14 +78,14 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
           * simulation data.
         **/
         var self = this;
-        var _NtimeSteps = self.model.timeSteps;
+        var timeSteps = self.model.timeSteps;
         var timeDelta = self.model.timeDelta;
-        var time=0;
+        var time = self.model.startTime;
         self._timeArray = [];
 
-        for(var i=0;i<_NtimeSteps; i++){
+        for(var i = 0; i < timeSteps; i++){
             self._timeArray.push(time);
-            time+=timeDelta;
+            time += timeDelta;
         }
         self._finalTime = self._timeArray.slice(-1)[0];
         console.log("[PyDy INFO]: Created Time Array");
