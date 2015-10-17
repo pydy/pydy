@@ -408,15 +408,23 @@ class Scene(object):
         self._generate_scene_dict()
 
         self._scene_info["simulationData"] = self._simulation_json_file
+
+        times = None
         if self.times is not None:
-            # Assume that times is evenly spaced and monotonic.
-            # TODO: Interpolate if times are not evenly spaced.
-            total_time = self.times[-1] - self.times[0]
-            self._scene_info["timeDelta"] = total_time / (num_time_steps - 1)
-            self._scene_info["startTime"] = self.times[0]
-        else:
+            times = self.times
+        elif self.system.times is not None:
+            times = self.system.times
+
+        if times is None:
             self._scene_info["timeDelta"] = 1.0 / self.frames_per_second
             self._scene_info["startTime"] = 0.0
+        else:
+            # Assume that times is evenly spaced and monotonic.
+            # TODO: Interpolate if times are not evenly spaced.
+            total_time = times[-1] - times[0]
+            self._scene_info["timeDelta"] = total_time / (num_time_steps - 1)
+            self._scene_info["startTime"] = times[0]
+
         self._scene_info["fps"] = self.frames_per_second
         self._scene_info["speedup"] = (self.frames_per_second *
                                        self._scene_info["timeDelta"])
