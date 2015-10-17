@@ -5,6 +5,8 @@ import time
 
 # external libraries
 from numpy import hstack, ones, pi, linspace, array, zeros, zeros_like
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from pydy.models import n_link_pendulum_on_cart
 from sympy import symbols
