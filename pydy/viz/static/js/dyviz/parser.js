@@ -64,7 +64,7 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
             },
             onComplete: function(){
                 self.createTimeArray();
-
+                self.Scene.setAnimationTime(self.model.startTime);
             },
             onFailure: function() { alert('[PyDy ALERT]: Simulation File not loaded!'); },
             on404: function(){ alert("[PyDy ALERT]: Simulation File Not Found! Error:404"); }
