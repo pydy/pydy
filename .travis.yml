@@ -32,6 +32,7 @@ install:
       conda install numpy scipy cython theano;
       pip install https://github.com/sympy/sympy/archive/master.zip;
     fi
+  - conda install matplotlib
 before_script:
   - conda info
   - conda list
@@ -52,3 +53,5 @@ script:
   - cd docs && make html && cd ..
   # Make sure the library installs.
   - python setup.py install
+  # Run benchmark
+  - python bin/benchmark_pydy_code_gen.py 1 10
