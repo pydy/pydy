@@ -32,6 +32,7 @@ install:
       conda install numpy scipy cython theano;
       pip install https://github.com/sympy/sympy/archive/master.zip;
     fi
+  - conda install matplotlib
 before_script:
   - conda info
   - conda list
