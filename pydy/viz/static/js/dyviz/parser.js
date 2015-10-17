@@ -64,7 +64,7 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
         catch(err){
           var path = self.model.simulationData;
         }
-        
+
         console.log(path);
         new Ajax.Request(path, {
             method:'get',
