@@ -124,5 +124,8 @@ def test_n_link_pendulum_on_cart_regression():
     datafile = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             'n_link_pendulum_on_cart_regression.npy')
     expected_x = np.load(datafile)
-    np.testing.assert_allclose(x, expected_x)
+
+    rtol = 1e-7
+    atol = 1e-7
+    np.testing.assert_allclose(x, expected_x, rtol, atol)
 
