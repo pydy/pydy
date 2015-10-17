@@ -100,7 +100,12 @@ class TestCode():
         rhs_args = {'constants': constants_map,
                     'specified': {specifieds[0]: F}}
 
-        backends = ['lambdify', 'theano', 'cython']
+        backends = ['lambdify']
+        from ..ode_function_generators import theano, Cython
+        if theano:
+            backends.append('theano')
+        if Cython:
+            backends.append('cython')
 
         for backend in backends:
             rhs = generate_ode_function(mass_matrix, forcing_vector,
