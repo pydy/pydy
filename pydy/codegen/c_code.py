@@ -46,7 +46,7 @@ void evaluate(
 }}\
 """
 
-    def __init__(self, arguments, matrices):
+    def __init__(self, arguments, matrices, cse=True):
         """
 
         Parameters
@@ -60,6 +60,8 @@ void evaluate(
             A sequence of the matrices that should be evaluated in the
             function. The expressions should contain only sympy.Symbol or
             sympy.Function that are functions of me.dynamicsymbols._t.
+        cse : bool
+            Find and replace common sub-expressions in ``matrices`` if True.
 
         """
 
@@ -84,7 +86,10 @@ void evaluate(
         self.matrices = matrices
         self.arguments = arguments
 
-        self._generate_cse()
+        if cse:
+            self._generate_cse()
+        else:
+            self._ignore_cse()
         self._generate_code_blocks()
 
     def _generate_cse(self):
@@ -110,6 +115,10 @@ void evaluate(
             idx += length
 
         self.simplified_matrices = tuple(simplified_matrices)
+
+    def _ignore_cse(self):
+        self.subexprs = []
+        self.simplified_matrices = self.matrices
 
     def _generate_pydy_c_printer(self):
         """Returns a subclass of sympy.printing.CCodePrinter to print
