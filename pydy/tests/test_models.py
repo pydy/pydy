@@ -88,15 +88,9 @@ def test_multi_mass_spring_damper_double():
 
 
 def test_n_link_pendulum_on_cart_regression():
-    num_time_steps = 1000
+    num_time_steps = 1e7
     n = 3
     method = 'lambdify'
-    from ..codegen.ode_function_generators import Cython, theano
-    # use faster ode integrators if available
-    if Cython:
-        method = 'cython'
-    elif theano:
-        method = 'theano'
 
     parameter_vals = [9.81, 0.01 / n]
     m = sm.symbols('m:{}'.format(n + 1))
@@ -104,7 +98,7 @@ def test_n_link_pendulum_on_cart_regression():
     g = sm.symbols('g')
 
     sys = n_link_pendulum_on_cart(n, cart_force=False)
-    sys.times = np.linspace(0, 10, num_time_steps)
+    sys.times = np.linspace(0, 3, num_time_steps)
 
     x0 = np.hstack(
         (0,
@@ -119,7 +113,8 @@ def test_n_link_pendulum_on_cart_regression():
     sys.constants = dict(zip(constants, np.array(parameter_vals)))
     sys.generate_ode_function(generator=method)
     x = sys.integrate()
-    #np.save('n_link_pendulum_on_cart_regression.npy', x)
+    #np.save(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+    #                     'n_link_pendulum_on_cart_regression.npy'), x[::1000])
 
     datafile = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             'n_link_pendulum_on_cart_regression.npy')
@@ -127,5 +122,9 @@ def test_n_link_pendulum_on_cart_regression():
 
     rtol = 1e-7
     atol = 1e-7
-    np.testing.assert_allclose(x, expected_x, rtol, atol)
+    x = x[::1000] # compare every 1000th sample
+    np.testing.assert_allclose(x[:, :n+1], expected_x[:, :n+1], rtol, atol)
 
+    # allow greater tolerance in speeds
+    np.testing.assert_allclose(x[:, n+1:], expected_x[:, n+1:],
+                               rtol*100, atol*100)
