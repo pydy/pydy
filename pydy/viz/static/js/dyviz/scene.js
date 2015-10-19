@@ -378,8 +378,9 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         jQuery("#pause-animation").prop('disabled', false);
         jQuery("#stop-animation").prop('disabled', false);
 
+        var startTime = self.model.startTime;
         if(!self.animationPaused){
-          self.currentTime = 0;
+          self.currentTime = startTime;
         }
 
         self.animationPaused = false;
@@ -387,13 +388,12 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
         self.animationID = window.setInterval(function(){
                 self.setAnimationTime(self.currentTime);
-                self.currentTime+=timeDelta;
-                if(self.currentTime>=self._finalTime && jQuery("#play-looped").is(":checked")){
-                  self.currentTime = 0;
-                }
-                if(self.currentTime>=self._finalTime && !jQuery("#play-looped").is(":checked")){
-                  self.stopAnimation();
-                  self.currenTime = 0;
+                self.currentTime += timeDelta;
+                if(self.currentTime >= self._finalTime){
+                  self.currentTime = startTime;
+                  if(!jQuery("#play-looped").is(":checked")){
+                    self.stopAnimation();
+                  }
                 }
             },
         timeDelta*1000);
@@ -406,7 +406,8 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * corresponding to that time value.
         **/
         var self = this;
-        var percent = (currentTime/self._finalTime*100).toFixed(3);
+        var t0 = self.model.startTime;
+        var percent = (100*(currentTime - t0)/(self._finalTime - t0)).toFixed(3);
 
         var time_index = self._timeArray.indexOf(currentTime);
         var _children = self._scene.children;
@@ -422,7 +423,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
             }
           }
         }
-        jQuery("#time-slider").slider("setValue",percent);
+        jQuery("#time-slider").slider("setValue", percent);
         jQuery("#time").html(" " + currentTime.toFixed(3) + " s");
 
     },
@@ -434,9 +435,9 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
        **/
        var self = this;
        console.log("[PyDy INFO]: Pausing Animation");
-        jQuery("#play-animation").prop('disabled', false);
-        jQuery("#pause-animation").prop('disabled', true);
-        jQuery("#stop-animation").prop('disabled', false);
+       jQuery("#play-animation").prop('disabled', false);
+       jQuery("#pause-animation").prop('disabled', true);
+       jQuery("#stop-animation").prop('disabled', false);
        window.clearInterval(self.animationID);
        self.animationPaused = true;
 
@@ -451,8 +452,8 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         if(!self.animationPaused){
           window.clearInterval(self.animationID);
         }
-        self.currentTime = 0;
-        self.setAnimationTime(0);
+        self.currentTime = self.model.startTime;
+        self.setAnimationTime(self.currentTime);
         jQuery("#play-animation").prop('disabled', false);
         jQuery("#pause-animation").prop('disabled', true);
         jQuery("#stop-animation").prop('disabled', true);
