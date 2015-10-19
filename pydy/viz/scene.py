@@ -421,14 +421,17 @@ class Scene(object):
             times = self.system.times
 
         if times is None:
+            tf = (num_time_steps - 1)/self.frames_per_second
             self._scene_info["timeDelta"] = 1.0 / self.frames_per_second
             self._scene_info["startTime"] = 0.0
+            self._scene_info["endTime"] = tf
         else:
             # Assume that times is evenly spaced and monotonic.
             # TODO: Interpolate if times are not evenly spaced.
             total_time = times[-1] - times[0]
             self._scene_info["timeDelta"] = total_time / (num_time_steps - 1)
             self._scene_info["startTime"] = times[0]
+            self._scene_info["endTime"] = times[-1]
 
         self._scene_info["fps"] = self.frames_per_second
         self._scene_info["speedup"] = (self.frames_per_second *
