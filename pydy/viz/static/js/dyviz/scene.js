@@ -380,7 +380,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
         var t0 = self.model.startTime;
         var tf = self.model.endTime;
-        var dt = self.model.timeDelta;
+        var dt = self.model.timeStep;
 
         if(!self.animationPaused){
           self.currentTime = t0;
@@ -412,7 +412,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var tf = self.model.endTime;
         var percent = (100*(currentTime - t0)/(tf - t0)).toFixed(3);
 
-        var time_index = Math.round((currentTime - t0)/self.model.timeDelta);
+        var time_index = Math.round((currentTime - t0)/self.model.timeStep);
         var _children = self._scene.children;
         for(var i=0;i<_children.length;i++){
           if(!(_children[i] instanceof (THREE.OrthoGraphicCamera || THREE.PerspectiveCamera))){
