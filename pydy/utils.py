@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import re
 import textwrap
 
 from pkg_resources import parse_version
@@ -38,9 +39,15 @@ def wrap_and_indent(lines, indentation=4, width=79):
     # TODO : This will indent any lines that only contain a new line. Which
     # may not be preferable.
     new_lines = []
+
+    # add whitespace before and after [*/] binary operands between
+    # subexpressions and input/output
+    pattern = re.compile('(\w\])([*/])(\w)')
     for line in lines:
         if line != '\n':
-            wrapped = textwrap.wrap(line, width=width-indentation)
+            line = pattern.sub(lambda m: ' '.join(m.groups()), line)
+            wrapped = textwrap.wrap(line, width=width-indentation,
+                                    break_long_words=False)
         else:
             wrapped = [line]
         new_lines += wrapped

@@ -191,11 +191,11 @@ input_3[6] : [f0(t), f1(t), f2(t), f3(t), f4(t), f5(t)]\
     double pydy_5 = input_3[3];
     double pydy_6 = input_3[4];
     double pydy_7 = input_3[5];
-    double pydy_8 = input_0[6]*input_0[15];
-    double pydy_9 = input_0[6]*input_0[16];
-    double pydy_10 = input_0[6]*input_0[17];
-    double pydy_11 = input_0[6]*input_0[18];
-    double pydy_12 = input_0[6]*input_0[14] + pydy_10 + pydy_11 + pydy_4 +
+    double pydy_8 = input_0[6] * input_0[15];
+    double pydy_9 = input_0[6] * input_0[16];
+    double pydy_10 = input_0[6] * input_0[17];
+    double pydy_11 = input_0[6] * input_0[18];
+    double pydy_12 = input_0[6] * input_0[14] + pydy_10 + pydy_11 + pydy_4 +
     pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9 + input_3[1];\
 """
 
@@ -239,17 +239,17 @@ input_3[6] : [f0(t), f1(t), f2(t), f3(t), f4(t), f5(t)]\
     output_0[34] = input_0[18];
     output_0[35] = input_0[18];
 
-    output_1[0] = -input_0[0]*input_2[0] + input_0[6]*input_0[13] -
-    input_0[7]*input_1[0] + pydy_12 + input_3[0];
-    output_1[1] = -input_0[1]*input_2[1] - input_0[8]*input_1[1] + pydy_12;
-    output_1[2] = -input_0[2]*input_2[2] - input_0[9]*input_1[2] + pydy_10 +
-    pydy_11 + pydy_4 + pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9;
-    output_1[3] = -input_0[3]*input_2[3] - input_0[10]*input_1[3] + pydy_10 +
-    pydy_11 + pydy_5 + pydy_6 + pydy_7 + pydy_9;
-    output_1[4] = -input_0[4]*input_2[4] - input_0[11]*input_1[4] + pydy_10 +
-    pydy_11 + pydy_6 + pydy_7;
-    output_1[5] = -input_0[5]*input_2[5] - input_0[12]*input_1[5] + pydy_11 +
-    pydy_7;\
+    output_1[0] = -input_0[0] * input_2[0] + input_0[6] * input_0[13] -
+    input_0[7] * input_1[0] + pydy_12 + input_3[0];
+    output_1[1] = -input_0[1] * input_2[1] - input_0[8] * input_1[1] + pydy_12;
+    output_1[2] = -input_0[2] * input_2[2] - input_0[9] * input_1[2] + pydy_10
+    + pydy_11 + pydy_4 + pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9;
+    output_1[3] = -input_0[3] * input_2[3] - input_0[10] * input_1[3] + pydy_10
+    + pydy_11 + pydy_5 + pydy_6 + pydy_7 + pydy_9;
+    output_1[4] = -input_0[4] * input_2[4] - input_0[11] * input_1[4] + pydy_10
+    + pydy_11 + pydy_6 + pydy_7;
+    output_1[5] = -input_0[5] * input_2[5] - input_0[12] * input_1[5] + pydy_11
+    + pydy_7;\
 """
 
         self.generator._generate_cse()
@@ -332,25 +332,27 @@ input_3[6] : [f0(t), f1(t), f2(t), f3(t), f4(t), f5(t)]\
     output_0[34] = input_0[18];
     output_0[35] = input_0[18];
 
-    output_1[0] = -input_0[0]*input_2[0] + input_0[6]*input_0[13] +
-    input_0[6]*input_0[14] + input_0[6]*input_0[15] + input_0[6]*input_0[16] +
-    input_0[6]*input_0[17] + input_0[6]*input_0[18] - input_0[7]*input_1[0] +
-    input_3[0] + input_3[1] + input_3[2] + input_3[3] + input_3[4] +
+    output_1[0] = -input_0[0] * input_2[0] + input_0[6] * input_0[13] +
+    input_0[6] * input_0[14] + input_0[6] * input_0[15] + input_0[6] *
+    input_0[16] + input_0[6] * input_0[17] + input_0[6] * input_0[18] -
+    input_0[7] * input_1[0] + input_3[0] + input_3[1] + input_3[2] + input_3[3]
+    + input_3[4] + input_3[5];
+    output_1[1] = -input_0[1] * input_2[1] + input_0[6] * input_0[14] +
+    input_0[6] * input_0[15] + input_0[6] * input_0[16] + input_0[6] *
+    input_0[17] + input_0[6] * input_0[18] - input_0[8] * input_1[1] +
+    input_3[1] + input_3[2] + input_3[3] + input_3[4] + input_3[5];
+    output_1[2] = -input_0[2] * input_2[2] + input_0[6] * input_0[15] +
+    input_0[6] * input_0[16] + input_0[6] * input_0[17] + input_0[6] *
+    input_0[18] - input_0[9] * input_1[2] + input_3[2] + input_3[3] +
+    input_3[4] + input_3[5];
+    output_1[3] = -input_0[3] * input_2[3] + input_0[6] * input_0[16] +
+    input_0[6] * input_0[17] + input_0[6] * input_0[18] - input_0[10] *
+    input_1[3] + input_3[3] + input_3[4] + input_3[5];
+    output_1[4] = -input_0[4] * input_2[4] + input_0[6] * input_0[17] +
+    input_0[6] * input_0[18] - input_0[11] * input_1[4] + input_3[4] +
     input_3[5];
-    output_1[1] = -input_0[1]*input_2[1] + input_0[6]*input_0[14] +
-    input_0[6]*input_0[15] + input_0[6]*input_0[16] + input_0[6]*input_0[17] +
-    input_0[6]*input_0[18] - input_0[8]*input_1[1] + input_3[1] + input_3[2] +
-    input_3[3] + input_3[4] + input_3[5];
-    output_1[2] = -input_0[2]*input_2[2] + input_0[6]*input_0[15] +
-    input_0[6]*input_0[16] + input_0[6]*input_0[17] + input_0[6]*input_0[18] -
-    input_0[9]*input_1[2] + input_3[2] + input_3[3] + input_3[4] + input_3[5];
-    output_1[3] = -input_0[3]*input_2[3] + input_0[6]*input_0[16] +
-    input_0[6]*input_0[17] + input_0[6]*input_0[18] - input_0[10]*input_1[3] +
-    input_3[3] + input_3[4] + input_3[5];
-    output_1[4] = -input_0[4]*input_2[4] + input_0[6]*input_0[17] +
-    input_0[6]*input_0[18] - input_0[11]*input_1[4] + input_3[4] + input_3[5];
-    output_1[5] = -input_0[5]*input_2[5] + input_0[6]*input_0[18] -
-    input_0[12]*input_1[5] + input_3[5];\
+    output_1[5] = -input_0[5] * input_2[5] + input_0[6] * input_0[18] -
+    input_0[12] * input_1[5] + input_3[5];\
 """
 
         self.generator._ignore_cse()
@@ -403,11 +405,11 @@ void evaluate(
     double pydy_5 = input_3[3];
     double pydy_6 = input_3[4];
     double pydy_7 = input_3[5];
-    double pydy_8 = input_0[6]*input_0[15];
-    double pydy_9 = input_0[6]*input_0[16];
-    double pydy_10 = input_0[6]*input_0[17];
-    double pydy_11 = input_0[6]*input_0[18];
-    double pydy_12 = input_0[6]*input_0[14] + pydy_10 + pydy_11 + pydy_4 +
+    double pydy_8 = input_0[6] * input_0[15];
+    double pydy_9 = input_0[6] * input_0[16];
+    double pydy_10 = input_0[6] * input_0[17];
+    double pydy_11 = input_0[6] * input_0[18];
+    double pydy_12 = input_0[6] * input_0[14] + pydy_10 + pydy_11 + pydy_4 +
     pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9 + input_3[1];
 
     output_0[0] = input_0[13] + pydy_3;
@@ -447,17 +449,17 @@ void evaluate(
     output_0[34] = input_0[18];
     output_0[35] = input_0[18];
 
-    output_1[0] = -input_0[0]*input_2[0] + input_0[6]*input_0[13] -
-    input_0[7]*input_1[0] + pydy_12 + input_3[0];
-    output_1[1] = -input_0[1]*input_2[1] - input_0[8]*input_1[1] + pydy_12;
-    output_1[2] = -input_0[2]*input_2[2] - input_0[9]*input_1[2] + pydy_10 +
-    pydy_11 + pydy_4 + pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9;
-    output_1[3] = -input_0[3]*input_2[3] - input_0[10]*input_1[3] + pydy_10 +
-    pydy_11 + pydy_5 + pydy_6 + pydy_7 + pydy_9;
-    output_1[4] = -input_0[4]*input_2[4] - input_0[11]*input_1[4] + pydy_10 +
-    pydy_11 + pydy_6 + pydy_7;
-    output_1[5] = -input_0[5]*input_2[5] - input_0[12]*input_1[5] + pydy_11 +
-    pydy_7;
+    output_1[0] = -input_0[0] * input_2[0] + input_0[6] * input_0[13] -
+    input_0[7] * input_1[0] + pydy_12 + input_3[0];
+    output_1[1] = -input_0[1] * input_2[1] - input_0[8] * input_1[1] + pydy_12;
+    output_1[2] = -input_0[2] * input_2[2] - input_0[9] * input_1[2] + pydy_10
+    + pydy_11 + pydy_4 + pydy_5 + pydy_6 + pydy_7 + pydy_8 + pydy_9;
+    output_1[3] = -input_0[3] * input_2[3] - input_0[10] * input_1[3] + pydy_10
+    + pydy_11 + pydy_5 + pydy_6 + pydy_7 + pydy_9;
+    output_1[4] = -input_0[4] * input_2[4] - input_0[11] * input_1[4] + pydy_10
+    + pydy_11 + pydy_6 + pydy_7;
+    output_1[5] = -input_0[5] * input_2[5] - input_0[12] * input_1[5] + pydy_11
+    + pydy_7;
 
 }\
 """
