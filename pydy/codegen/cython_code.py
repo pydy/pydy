@@ -213,8 +213,15 @@ setup(name="{prefix}",
             self.write()
             cmd = [sys.executable, self.prefix + '_setup.py', 'build_ext',
                    '--inplace']
-            subprocess.call(cmd, stderr=subprocess.STDOUT,
-                            stdout=subprocess.PIPE)
+            try:
+                DEVNULL = subprocess.DEVNULL
+            except AttributeError:
+                DEVNULL = open(os.devnull, 'wb')
+            subprocess.check_call(cmd, stdout=DEVNULL, stderr=subprocess.STDOUT)
+            try:
+                DEVNULL.close()
+            except Exception:
+                pass
             cython_module = importlib.import_module(self.prefix)
         except:
             raise Exception('Failed to compile and import Cython module.')
