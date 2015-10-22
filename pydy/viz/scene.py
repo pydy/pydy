@@ -16,6 +16,7 @@ from pkg_resources import parse_version
 import numpy as np
 from sympy import latex
 from sympy.physics.mechanics import ReferenceFrame, Point
+import pythreejs as p3js
 
 # local
 from .camera import PerspectiveCamera
@@ -46,6 +47,40 @@ try:
         from IPython.display import display, Javascript
 except ImportError:
     IPython = None
+
+
+def _create_pythreejs_geometery(shape):
+    from . import shapes
+    if type(shape) == shapes.Cube:
+        geo = p3js.BoxGeometry(length=shape.length)
+    elif type(shape) == shapes.Cylinder:
+        geo = p3js.CylinderGeometry(radiusTop=shape.radius,
+                                    radiusBottom=shape.radius,
+                                    height=shape.length)
+    elif type(shape) == shapes.Cone:
+        geo = p3js.CylinderGeometry(radiusTop=0,
+                                    radiusBottom=shape.radius,
+                                    height=shape.length)
+    elif type(shape) == shapes.Sphere:
+        geo = p3js.SphereGeometry(radius=shape.radius)
+    elif type(shape) == shapes.Circle:
+        geo = p3js.CircleGeometry(radius=shape.radius)
+    elif type(shape) == shapes.Plane:
+        geo = p3js.PlaneGeometry(width=shape.width, length=shape.length)
+    elif type(shape) == shapes.Tetrahedron:
+        geo = p3js.TetrahedronGeometry(radius=shape.radius)
+    elif type(shape) == shapes.Octahedron:
+        geo = p3js.OctahedronGeometry(radius=shape.radius)
+    elif type(shape) == shapes.Icosahedron:
+        geo = p3js.IcosahedronGeometry(radius=shape.radius)
+    elif type(shape) == shapes.Torus:
+        geo = p3js.TorusGeometry(radius=shape.radius, tube=shape.tube_radius)
+    elif type(shape) == shapes.TorusKnot:
+        geo = p3js.TorusKnotGeometry(radius=shape.radius,
+                                     tube=shape.tube_radius)
+    else:
+        raise TypeError('No pythreejs geometry for {}'.format(type(shape)))
+    return geo
 
 
 class Scene(object):
@@ -483,9 +518,9 @@ class Scene(object):
             w.append(widgets.FloatText(value=v,
                                        width = 80,
                                        description=latex(k, mode='inline')))
-        self._constant_widget = widgets.HBox(w,
-                                       overflow_x='scroll',
-                                       width='100%')
+        self._constants_widget = widgets.HBox(w,
+                                              overflow_x='scroll',
+                                              width='100%')
 
     def _generate_time_widget(self):
         """Generates an ipywidget.FlexBox containing widgets for simulation time
@@ -520,6 +555,8 @@ class Scene(object):
         proxy = widgets.Button(description='proxy')
         self._play_widget = widgets.HBox()
         self._play_widget.children = (play, pause, stop, loop, proxy, resim)
+        self._play_widget.border_width = 5
+        self._play_widget.border_color = 'white'
 
         proxy.visible = None
         if self.system is None:
@@ -548,6 +585,40 @@ class Scene(object):
         stop.on_click(on_stop_click)
         resim.on_click(on_resim_click)
         on_stop_click(None)
+
+    def _generate_pythreejs_meshes(self):
+        self._meshes = []
+        for obj in self.visualization_frames:
+            geometry = _create_pythreejs_geometery(obj.shape)
+            # TODO: set material
+            material = p3js.LambertMaterial(color=obj.shape.color)
+            self._meshes.append(p3js.Mesh(geometry=geometry,
+                                          material=material))
+
+    def display_pythreejs(self):
+        self._generate_time_widget()
+        self._generate_constants_widget()
+        self._generate_play_widget()
+
+        self._generate_pythreejs_meshes()
+        children = self._meshes + [p3js.AmbientLight(color=0x777777)]
+        # TODO: lights
+        # TODO: cameras
+        c = p3js.PerspectiveCamera(
+                position=[0, 5, 5], up=[0, 0, 1],
+                children=[p3js.DirectionalLight(color='white',
+                                                position=[3, 5, 1],
+                                                intensity=0.5)])
+        self._renderer = p3js.Renderer(camera=c,
+                                 scene=p3js.Scene(children=children),
+                                 controls=[p3js.OrbitControls(controlling=c)])
+        self._widget = widgets.VBox()
+        self._widget.children = (self._constants_widget,
+                                 self._time_widget,
+                                 self._play_widget,
+                                 self._renderer)
+        display(self._widget)
+
 
     def _generate_simulation_dict(self):
         """Returns a dictionary containing all of the simulation
