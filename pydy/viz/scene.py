@@ -547,14 +547,35 @@ class Scene(object):
                                   description='time step'))
 
     def _generate_play_widget(self):
+        from time import sleep
+        from threading import Thread, Event
+
         play = widgets.Button(description='play')
         pause = widgets.Button(description='pause')
         stop = widgets.Button(description='stop')
         loop = widgets.Checkbox(description='loop')
         resim = widgets.Button(description='resimulate')
         proxy = widgets.Button(description='proxy')
-        self._play_widget = widgets.HBox()
-        self._play_widget.children = (play, pause, stop, loop, proxy, resim)
+        controls = widgets.HBox()
+        controls.children = (play, pause, stop, loop, proxy, resim)
+
+        if self._time_widget.children:
+            t0 = self._time_widget.children[0].value
+            tf = self._time_widget.children[1].value
+            dt = self._time_widget.children[2].value
+            slider_type = widgets.FloatSlider
+            desc = 'time:'
+        else:
+            t0 = 0
+            dt = 1
+            tf = self.states_trajectories.shape[0] - 1
+            slider_type = widgets.IntSlider
+            desc = 'step:'
+        time_slider = slider_type(value=t0, min=t0, max=tf, step=dt,
+                                  description=desc)
+
+        self._play_widget = widgets.VBox()
+        self._play_widget.children = (controls, time_slider)
         self._play_widget.border_width = 5
         self._play_widget.border_color = 'white'
 
@@ -562,23 +583,60 @@ class Scene(object):
         if self.system is None:
             resim.visible = None
 
+        class AnimationThread(Thread):
+            def __init__(self):
+                Thread.__init__(self)
+                self.event = Event()
+                self.daemon = True
+
+            def run(self):
+                while not self.event.is_set() and play.disabled:
+                    # TODO: update object transforms
+                    self.event.wait(time_slider.step)
+                    time_slider.value += time_slider.step
+                    if time_slider.value >= time_slider.max:
+                        if loop.value:
+                            time_slider.value = time_slider.min
+                        else:
+                            play.disabled= False
+                            pause.disabled = True
+                            stop.disabled = True
+                if stop.disabled:
+                    time_slider.value = time_slider.min
+
+        self._animation_thread = None
+
         def on_play_click(button):
             play.disabled = True
             pause.disabled = False
             stop.disabled = False
+            self._animation_thread = AnimationThread()
+            self._animation_thread.start()
 
         def on_pause_click(button):
             play.disabled = False
             pause.disabled = True
             stop.disabled = False
+            if self._animation_thread and self._animation_thread.is_alive():
+                self._animation_thread.event.set()
+                self._animation_thread.join()
 
         def on_stop_click(button):
             play.disabled = False
             pause.disabled = True
             stop.disabled = True
+            if self._animation_thread and self._animation_thread.is_alive():
+                self._animation_thread.event.set()
+                self._animation_thread.join()
+            # we may set time value twice when transitioning from play -> stop
+            # as this set below appears to be called before the animation thread
+            # terminates
+            # TODO: update object transformations
+            time_slider.value = time_slider.min
 
         def on_resim_click(button):
             pass
+        resim.disabled = True # TODO
 
         play.on_click(on_play_click)
         pause.on_click(on_pause_click)
@@ -605,13 +663,16 @@ class Scene(object):
         # TODO: lights
         # TODO: cameras
         c = p3js.PerspectiveCamera(
-                position=[0, 5, 5], up=[0, 0, 1],
+                position=[0, 15, 15], up=[0, 0, 1],
                 children=[p3js.DirectionalLight(color='white',
                                                 position=[3, 5, 1],
                                                 intensity=0.5)])
-        self._renderer = p3js.Renderer(camera=c,
-                                 scene=p3js.Scene(children=children),
-                                 controls=[p3js.OrbitControls(controlling=c)])
+        self._renderer = p3js.Renderer(
+                camera=c,
+                scene=p3js.Scene(children=children),
+                controls=[p3js.OrbitControls(controlling=c)],
+                width=700,
+                height=400)
         self._widget = widgets.VBox()
         self._widget.children = (self._constants_widget,
                                  self._time_widget,
