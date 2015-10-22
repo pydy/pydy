@@ -498,7 +498,7 @@ class Scene(object):
             if self.system is None:
                 constants = self.constants
             else:
-                constants = self.system.constants
+                constants = self._system.constants
             object_info = frame.generate_scene_dict(constant_map=constants)
             self._scene_info["objects"].update(object_info)
 
@@ -513,14 +513,14 @@ class Scene(object):
     def _generate_constants_widget(self):
         """Generates an ipywidget.FlexBox containing widgets for all system
         constants, if any."""
-        w = []
+        self._constants_symbol_map = {}
         for k, v in self._system.constants.items():
-            w.append(widgets.FloatText(value=v,
-                                       width = 80,
-                                       description=latex(k, mode='inline')))
-        self._constants_widget = widgets.HBox(w,
-                                              overflow_x='scroll',
-                                              width='100%')
+            w = widgets.FloatText(value=v, width = 80,
+                                  description=latex(k, mode='inline'))
+            self._constants_symbol_map[w] = k
+        self._constants_widget = widgets.HBox(
+                list(self._constants_symbol_map.keys()),
+                overflow_x='scroll', width='100%')
 
     def _generate_time_widget(self):
         """Generates an ipywidget.FlexBox containing widgets for simulation time
@@ -528,8 +528,8 @@ class Scene(object):
         times = None
         if self.times is not None:
             times = self.times
-        elif self.system and self.system.times is not None:
-            times = self.system.times
+        elif self._system and self._system.times is not None:
+            times = self._system.times
 
         self._time_widget = widgets.HBox(width='100%')
         if times is not None:
@@ -580,7 +580,7 @@ class Scene(object):
         self._play_widget.border_color = 'white'
 
         proxy.visible = None
-        if self.system is None:
+        if self._system is None:
             resim.visible = None
 
         class AnimationThread(Thread):
@@ -637,8 +637,9 @@ class Scene(object):
             self._set_animation_frame()
 
         def on_resim_click(button):
-            pass
-        resim.disabled = True # TODO
+            on_stop_click(button)
+            self._resimulate_system()
+            self._update_system_widgets()
 
         play.on_click(on_play_click)
         pause.on_click(on_pause_click)
@@ -665,6 +666,36 @@ class Scene(object):
         time_index = int(round((t.value - t.min)/t.step))
         for mesh in self._meshes:
             self._set_mesh_transform(mesh, time_index)
+
+    def _update_system_widgets(self):
+        # this should only be called if the system has been resimulated
+        # which requires the system attribute to be set
+
+        # setting the constants widget properties shouldn't be necessary
+        # as we use the values in the widget when we call resimulate
+        times = self._system.times
+        t0 = times[0]
+        tf = times[-1]
+        dt = (tf - t0) / (len(times) - 1)
+
+        # end time may not match as we use np.arange to calculate the time array
+        end_time = self._time_widget.children[1]
+        end_time.value = tf
+
+        time_slider = self._play_widget.children[1]
+        time_slider.min = t0
+        time_slider.max = tf
+        time_slider.step = dt
+        time_slider.value = t0
+        self._set_animation_frame()
+
+    def _resimulate_system(self):
+        # get parameter changes
+        for w, sym in self._constants_symbol_map.items():
+            self._system.constants[sym] = w.value
+        t = self._time_widget.children
+        self._system.times = np.arange(t[0].value, t[1].value, t[2].value)
+        self._generate_simulation_dict()
 
     def display_pythreejs(self):
         if not hasattr(self, 'simulation_info'):
