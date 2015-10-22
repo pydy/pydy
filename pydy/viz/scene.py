@@ -412,7 +412,7 @@ class Scene(object):
         times = None
         if self.times is not None:
             times = self.times
-        elif self.system.times is not None:
+        elif self.system and self.system.times is not None:
             times = self.system.times
 
         if times is None:
