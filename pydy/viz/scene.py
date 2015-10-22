@@ -584,14 +584,15 @@ class Scene(object):
             resim.visible = None
 
         class AnimationThread(Thread):
-            def __init__(self):
+            def __init__(self, scene):
                 Thread.__init__(self)
                 self.event = Event()
                 self.daemon = True
+                self.scene = scene
 
             def run(self):
                 while not self.event.is_set() and play.disabled:
-                    # TODO: update object transforms
+                    self.scene._set_animation_frame()
                     self.event.wait(time_slider.step)
                     time_slider.value += time_slider.step
                     if time_slider.value >= time_slider.max:
@@ -603,6 +604,7 @@ class Scene(object):
                             stop.disabled = True
                 if stop.disabled:
                     time_slider.value = time_slider.min
+                    self.scene._set_animation_frame()
 
         self._animation_thread = None
 
@@ -610,7 +612,7 @@ class Scene(object):
             play.disabled = True
             pause.disabled = False
             stop.disabled = False
-            self._animation_thread = AnimationThread()
+            self._animation_thread = AnimationThread(self)
             self._animation_thread.start()
 
         def on_pause_click(button):
@@ -631,8 +633,8 @@ class Scene(object):
             # we may set time value twice when transitioning from play -> stop
             # as this set below appears to be called before the animation thread
             # terminates
-            # TODO: update object transformations
             time_slider.value = time_slider.min
+            self._set_animation_frame()
 
         def on_resim_click(button):
             pass
@@ -646,19 +648,33 @@ class Scene(object):
 
     def _generate_pythreejs_meshes(self):
         self._meshes = []
+        self._mesh_map = {}
         for obj in self.visualization_frames:
             geometry = _create_pythreejs_geometery(obj.shape)
             # TODO: set material
             material = p3js.LambertMaterial(color=obj.shape.color)
-            self._meshes.append(p3js.Mesh(geometry=geometry,
-                                          material=material))
+            mesh = p3js.Mesh(geometry=geometry, material=material)
+            self._meshes.append(mesh)
+            self._mesh_map[mesh] = obj
+
+    def _set_mesh_transform(self, mesh, time_index):
+        mesh.set_matrix(self._mesh_map[mesh]._visualization_matrix[time_index])
+
+    def _set_animation_frame(self):
+        t = self._play_widget.children[1]
+        time_index = int(round((t.value - t.min)/t.step))
+        for mesh in self._meshes:
+            self._set_mesh_transform(mesh, time_index)
 
     def display_pythreejs(self):
+        if not hasattr(self, 'simulation_info'):
+            self._generate_simulation_dict()
+
+        self._generate_pythreejs_meshes()
         self._generate_time_widget()
         self._generate_constants_widget()
         self._generate_play_widget()
 
-        self._generate_pythreejs_meshes()
         children = self._meshes + [p3js.AmbientLight(color=0x777777)]
         # TODO: lights
         # TODO: cameras
