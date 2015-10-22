@@ -475,6 +475,80 @@ class Scene(object):
             object_info = light.generate_scene_dict()
             self._scene_info["lights"].update(object_info)
 
+    def _generate_constants_widget(self):
+        """Generates an ipywidget.FlexBox containing widgets for all system
+        constants, if any."""
+        w = []
+        for k, v in self._system.constants.items():
+            w.append(widgets.FloatText(value=v,
+                                       width = 80,
+                                       description=latex(k, mode='inline')))
+        self._constant_widget = widgets.HBox(w,
+                                       overflow_x='scroll',
+                                       width='100%')
+
+    def _generate_time_widget(self):
+        """Generates an ipywidget.FlexBox containing widgets for simulation time
+        parameters."""
+        times = None
+        if self.times is not None:
+            times = self.times
+        elif self.system and self.system.times is not None:
+            times = self.system.times
+
+        self._time_widget = widgets.HBox(width='100%')
+        if times is not None:
+            t0 = times[0]
+            tf = times[-1]
+            #TODO: assumes 'times' is evenly spaced.
+            dt = (tf - t0) / (len(times) - 1)
+            width = 80
+            self._time_widget.children = (
+                widgets.FloatText(value=t0, width=width,
+                                  description='start time'),
+                widgets.FloatText(value=tf, width=width,
+                                  description='end time'),
+                widgets.FloatText(value=dt, width=width,
+                                  description='time step'))
+
+    def _generate_play_widget(self):
+        play = widgets.Button(description='play')
+        pause = widgets.Button(description='pause')
+        stop = widgets.Button(description='stop')
+        loop = widgets.Checkbox(description='loop')
+        resim = widgets.Button(description='resimulate')
+        proxy = widgets.Button(description='proxy')
+        self._play_widget = widgets.HBox()
+        self._play_widget.children = (play, pause, stop, loop, proxy, resim)
+
+        proxy.visible = None
+        if self.system is None:
+            resim.visible = None
+
+        def on_play_click(button):
+            play.disabled = True
+            pause.disabled = False
+            stop.disabled = False
+
+        def on_pause_click(button):
+            play.disabled = False
+            pause.disabled = True
+            stop.disabled = False
+
+        def on_stop_click(button):
+            play.disabled = False
+            pause.disabled = True
+            stop.disabled = True
+
+        def on_resim_click(button):
+            pass
+
+        play.on_click(on_play_click)
+        pause.on_click(on_pause_click)
+        stop.on_click(on_stop_click)
+        resim.on_click(on_resim_click)
+        on_stop_click(None)
+
     def _generate_simulation_dict(self):
         """Returns a dictionary containing all of the simulation
         information. It consists of all the simulation data along with
