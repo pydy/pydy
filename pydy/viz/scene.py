@@ -10,6 +10,7 @@ import distutils
 import distutils.dir_util
 import datetime
 from collections import OrderedDict
+from math import sqrt
 
 # external
 from pkg_resources import parse_version
@@ -22,6 +23,7 @@ import pythreejs as p3js
 from .camera import PerspectiveCamera
 from .server import Server
 from .light import PointLight
+from .trajectory_link import trajectory_link
 from ..system import System
 from ..utils import PyDyImportWarning, PyDyDeprecationWarning
 
@@ -45,8 +47,33 @@ try:
         ipython_less_than_3 = False
         from IPython.html import widgets
         from IPython.display import display, Javascript
+        from IPython.utils.traitlets import CFloat, List
 except ImportError:
     IPython = None
+
+
+def quaternion_from_rotation(m):
+    """
+    m is a 3 by 3 matrix, as a list of rows.  The columns of this matrix are
+    the vectors x, y, and z
+    """
+    x = m[0:3]
+    y = m[3:6]
+    z = m[6:9]
+    trace = x[0]+y[1]+z[2]
+    if (trace>0):
+        s = 0.5/sqrt(trace+1)
+        quaternion = [(y[2]-z[1])*s, (z[0]-x[2])*s, (x[1]-y[0])*s, 0.25/s]
+    elif (x[0]>y[1] and x[0]>z[2]):
+        s = 2.0*sqrt(1.0+x[0]-y[1]-z[2])
+        quaternion = [0.25*s, (y[0]+x[1])/s, (z[0]+x[2])/s, (y[2]-z[1])/s]
+    elif (y[1]>z[2]):
+        s = 2.0*sqrt(1.0+y[1]-x[0]-z[2])
+        quaternion = [(y[0]+x[1])/s, 0.25*s, (z[1]+y[2])/s, (z[0]-x[2])/s]
+    else:
+        s = 2.0*sqrt(1.0+z[2]-x[0]-y[1])
+        quaternion = [(z[0]+x[2])/s, (z[1]+y[2])/s, 0.25*s, (x[1]-y[0])/s]
+    return quaternion
 
 
 def _create_pythreejs_geometery(shape):
@@ -513,13 +540,14 @@ class Scene(object):
     def _generate_constants_widget(self):
         """Generates an ipywidget.FlexBox containing widgets for all system
         constants, if any."""
-        self._constants_symbol_map = {}
+        constants_widgets = []
         for k, v in self._system.constants.items():
             w = widgets.FloatText(value=v, width = 80,
                                   description=latex(k, mode='inline'))
-            self._constants_symbol_map[w] = k
+            w._symbol = k
+            constants_widgets.append(w)
         self._constants_widget = widgets.HBox(
-                list(self._constants_symbol_map.keys()),
+                constants_widgets,
                 overflow_x='scroll', width='100%')
 
     def _generate_time_widget(self):
@@ -547,7 +575,6 @@ class Scene(object):
                                   description='time step'))
 
     def _generate_play_widget(self):
-        from time import sleep
         from threading import Thread, Event
 
         play = widgets.Button(description='play')
@@ -592,8 +619,11 @@ class Scene(object):
 
             def run(self):
                 while not self.event.is_set() and play.disabled:
-                    self.scene._set_animation_frame()
-                    self.event.wait(time_slider.step)
+                    if type(widgets.FloatSlider):
+                        wait_time = time_slider.step
+                    else:
+                        wait_time = 1/self.frames_per_second
+                    self.event.wait(wait_time)
                     time_slider.value += time_slider.step
                     if time_slider.value >= time_slider.max:
                         if loop.value:
@@ -604,7 +634,6 @@ class Scene(object):
                             stop.disabled = True
                 if stop.disabled:
                     time_slider.value = time_slider.min
-                    self.scene._set_animation_frame()
 
         self._animation_thread = None
 
@@ -634,7 +663,7 @@ class Scene(object):
             # as this set below appears to be called before the animation thread
             # terminates
             time_slider.value = time_slider.min
-            self._set_animation_frame()
+            #self._set_animation_frame()
 
         def on_resim_click(button):
             on_stop_click(button)
@@ -649,23 +678,24 @@ class Scene(object):
 
     def _generate_pythreejs_meshes(self):
         self._meshes = []
-        self._mesh_map = {}
         for obj in self.visualization_frames:
             geometry = _create_pythreejs_geometery(obj.shape)
             # TODO: set material
             material = p3js.LambertMaterial(color=obj.shape.color)
             mesh = p3js.Mesh(geometry=geometry, material=material)
+            mesh.visualization_frame = obj
             self._meshes.append(mesh)
-            self._mesh_map[mesh] = obj
 
-    def _set_mesh_transform(self, mesh, time_index):
-        mesh.set_matrix(self._mesh_map[mesh]._visualization_matrix[time_index])
-
-    def _set_animation_frame(self):
-        t = self._play_widget.children[1]
-        time_index = int(round((t.value - t.min)/t.step))
-        for mesh in self._meshes:
-            self._set_mesh_transform(mesh, time_index)
+    def _generate_mesh_trajectories(self):
+        for i, mesh in enumerate(self._meshes):
+            position = []
+            quaternion = []
+            for transform in mesh.visualization_frame._visualization_matrix:
+                position.append(transform[12:15])
+                R = transform[0:3] + transform[4:7] + transform[8:11]
+                quaternion.append(quaternion_from_rotation(R))
+            self._trajectory_links[i].position = position
+            self._trajectory_links[i].quaternion = quaternion
 
     def _update_system_widgets(self):
         # this should only be called if the system has been resimulated
@@ -687,15 +717,16 @@ class Scene(object):
         time_slider.max = tf
         time_slider.step = dt
         time_slider.value = t0
-        self._set_animation_frame()
+        #self._set_animation_frame()
 
     def _resimulate_system(self):
         # get parameter changes
-        for w, sym in self._constants_symbol_map.items():
-            self._system.constants[sym] = w.value
+        for w in self._constants_widget.children:
+            self._system.constants[w._symbol] = w.value
         t = self._time_widget.children
         self._system.times = np.arange(t[0].value, t[1].value, t[2].value)
         self._generate_simulation_dict()
+        self._generate_mesh_trajectories()
 
     def display_pythreejs(self):
         if not hasattr(self, 'simulation_info'):
@@ -705,6 +736,12 @@ class Scene(object):
         self._generate_time_widget()
         self._generate_constants_widget()
         self._generate_play_widget()
+
+        self._trajectory_links = []
+        for mesh in self._meshes:
+            self._trajectory_links.append(
+                    trajectory_link(self._play_widget.children[1], mesh))
+        self._generate_mesh_trajectories()
 
         children = self._meshes + [p3js.AmbientLight(color=0x777777)]
         # TODO: lights
