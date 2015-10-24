@@ -23,7 +23,7 @@ import pythreejs as p3js
 from .camera import PerspectiveCamera
 from .server import Server
 from .light import PointLight
-from .trajectory_link import trajectory_link
+from .trajectory_link import trajectory_link, play_link
 from ..system import System
 from ..utils import PyDyImportWarning, PyDyDeprecationWarning
 
@@ -575,16 +575,13 @@ class Scene(object):
                                   description='time step'))
 
     def _generate_play_widget(self):
-        from threading import Thread, Event
-
-        play = widgets.Button(description='play')
-        pause = widgets.Button(description='pause')
-        stop = widgets.Button(description='stop')
+        play = widgets.ToggleButton(description='play')
+        speedup = widgets.FloatText(description='speedup', value=1.0, width=40)
         loop = widgets.Checkbox(description='loop')
         resim = widgets.Button(description='resimulate')
-        proxy = widgets.Button(description='proxy')
+        proxy = widgets.Button(description='proxy', width=5)
         controls = widgets.HBox()
-        controls.children = (play, pause, stop, loop, proxy, resim)
+        controls.children = (play, loop, proxy, speedup, resim)
 
         if self._time_widget.children:
             t0 = self._time_widget.children[0].value
@@ -605,76 +602,16 @@ class Scene(object):
         self._play_widget.children = (controls, time_slider)
         self._play_widget.border_width = 5
         self._play_widget.border_color = 'white'
+        self._play_link = play_link(play, loop, time_slider, speedup)
 
         proxy.visible = None
         if self._system is None:
             resim.visible = None
 
-        class AnimationThread(Thread):
-            def __init__(self, scene):
-                Thread.__init__(self)
-                self.event = Event()
-                self.daemon = True
-                self.scene = scene
-
-            def run(self):
-                while not self.event.is_set() and play.disabled:
-                    if type(widgets.FloatSlider):
-                        wait_time = time_slider.step
-                    else:
-                        wait_time = 1/self.frames_per_second
-                    self.event.wait(wait_time)
-                    time_slider.value += time_slider.step
-                    if time_slider.value >= time_slider.max:
-                        if loop.value:
-                            time_slider.value = time_slider.min
-                        else:
-                            play.disabled= False
-                            pause.disabled = True
-                            stop.disabled = True
-                if stop.disabled:
-                    time_slider.value = time_slider.min
-
-        self._animation_thread = None
-
-        def on_play_click(button):
-            play.disabled = True
-            pause.disabled = False
-            stop.disabled = False
-            self._animation_thread = AnimationThread(self)
-            self._animation_thread.start()
-
-        def on_pause_click(button):
-            play.disabled = False
-            pause.disabled = True
-            stop.disabled = False
-            if self._animation_thread and self._animation_thread.is_alive():
-                self._animation_thread.event.set()
-                self._animation_thread.join()
-
-        def on_stop_click(button):
-            play.disabled = False
-            pause.disabled = True
-            stop.disabled = True
-            if self._animation_thread and self._animation_thread.is_alive():
-                self._animation_thread.event.set()
-                self._animation_thread.join()
-            # we may set time value twice when transitioning from play -> stop
-            # as this set below appears to be called before the animation thread
-            # terminates
-            time_slider.value = time_slider.min
-            #self._set_animation_frame()
-
         def on_resim_click(button):
-            on_stop_click(button)
+            play.value = False
             self._resimulate_system()
             self._update_system_widgets()
-
-        play.on_click(on_play_click)
-        pause.on_click(on_pause_click)
-        stop.on_click(on_stop_click)
-        resim.on_click(on_resim_click)
-        on_stop_click(None)
 
     def _generate_pythreejs_meshes(self):
         self._meshes = []

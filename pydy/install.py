@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# this is copied from here: https://github.com/jovyan/pythreejs
 
 import argparse
 from os.path import dirname, abspath, join
@@ -9,7 +10,7 @@ except ImportError:  # IPython 3.x
 
 def install(user=False, symlink=False, **kwargs):
     """Install the pythreejs nbextension.
-    
+
     Parameters
     ----------
     user: bool
@@ -23,7 +24,7 @@ def install(user=False, symlink=False, **kwargs):
     install_nbextension(directory, destination='pydyviz',
                         symlink=symlink, user=user, **kwargs)
 
-    
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Installs the pythreejs widget")
     parser.add_argument("-u", "--user",
