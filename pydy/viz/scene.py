@@ -612,6 +612,7 @@ class Scene(object):
             play.value = False
             self._resimulate_system()
             self._update_system_widgets()
+        resim.on_click(on_resim_click)
 
     def _generate_pythreejs_meshes(self):
         self._meshes = []
