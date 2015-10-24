@@ -708,23 +708,23 @@ class Scene(object):
         tf = times[-1]
         dt = (tf - t0) / (len(times) - 1)
 
-        # end time may not match as we use np.arange to calculate the time array
-        end_time = self._time_widget.children[1]
-        end_time.value = tf
+        # time step may not match as we use np.linspace to calculate the time
+        # array
+        self._time_widget.children[2].value = dt
 
         time_slider = self._play_widget.children[1]
         time_slider.min = t0
         time_slider.max = tf
         time_slider.step = dt
         time_slider.value = t0
-        #self._set_animation_frame()
 
     def _resimulate_system(self):
         # get parameter changes
         for w in self._constants_widget.children:
             self._system.constants[w._symbol] = w.value
         t = self._time_widget.children
-        self._system.times = np.arange(t[0].value, t[1].value, t[2].value)
+        n = (t[1].value - t[0].value) / (t[2].value) + 1
+        self._system.times = np.linspace(t[0].value, t[1].value, n)
         self._generate_simulation_dict()
         self._generate_mesh_trajectories()
 
