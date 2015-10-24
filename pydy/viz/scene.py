@@ -91,7 +91,7 @@ def _create_pythreejs_geometery(shape):
     elif type(shape) == shapes.Sphere:
         geo = p3js.SphereGeometry(radius=shape.radius)
     elif type(shape) == shapes.Circle:
-        geo = p3js.CircleGeometry(radius=shape.radius)
+        geo = p3js.CircleGeometry(radius=shape.radius, segments=32)
     elif type(shape) == shapes.Plane:
         geo = p3js.PlaneGeometry(width=shape.width, length=shape.length)
     elif type(shape) == shapes.Tetrahedron:
