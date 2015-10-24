@@ -576,7 +576,7 @@ class Scene(object):
 
     def _generate_play_widget(self):
         play = widgets.ToggleButton(description='play')
-        speedup = widgets.FloatText(description='speedup', value=1.0, width=40)
+        speedup = widgets.FloatText(description='speedup', value=1.0, width=80)
         loop = widgets.Checkbox(description='loop')
         resim = widgets.Button(description='resimulate')
         proxy = widgets.Button(description='proxy', width=5)

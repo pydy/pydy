@@ -94,33 +94,50 @@ define([
                 if (control && slider && speedup && loop) {
                     var go = control.get("value");
                     if (!go) {
-                        window.clearTimeout(this.animationId);
+                        window.clearInterval(this.animationId);
                     } else {
-                        var t0 = slider.get("min");
-                        var tf = slider.get("max");
                         var dt = slider.get("step");
-                        var end = Math.round((tf - t0) / dt);
-                        this.animationId = window.setInterval(function () {
-                            var time = slider.get("value");
-                            // make sure we don't exceed the length of the
-                            // trajectory
-                            var index = Math.round((time - t0) / dt);
-                            if (index >= end) {
-                                slider.set("value", t0);
-                                if (!loop.get("value")) {
-                                    window.clearTimeout(this.animationId);
-                                    control.set("value", false);
-                                }
-                            } else {
-                                slider.set("value", time + dt);
-                            }
-                            slider.save_changes();
-                        }, dt * speedup.get("value") * 1000);
+                        this.t_last = new Date().getTime();
+                        this.animate(control, slider, speedup, loop);
                     }
                 }
             } finally {
                 this.updating = false;
             }
+        },
+
+        animate: function(control, slider, speedup, loop) {
+            var self = this;
+            this.requestId = window.requestAnimationFrame(
+                    function() {
+                        self.animate(control, slider, speedup, loop);
+                    });
+            var now = new Date().getTime();
+            var dt_wall = (now - this.t_last) / 1000;
+            this.t_last = now;
+            var time = slider.get("value")  + dt_wall * speedup.get("value");
+
+            var t0 = slider.get("min");
+            var tf = slider.get("max");
+            var dt = slider.get("step");
+            var end = Math.round((tf - t0) / dt);
+
+            // make sure we don't exceed the length of the
+            // trajectory
+            var index = Math.round((time - t0) / dt);
+
+            if (index >= end) {
+                if (loop.get("value")) {
+                    slider.set("value", time - tf);
+                } else {
+                    slider.set("value", t0);
+                    window.cancelAnimationFrame(this.requestId);
+                    control.set("value", false);
+                }
+            } else {
+                slider.set("value", time);
+            }
+            slider.save_changes();
         },
 
         cleanup: function() {
