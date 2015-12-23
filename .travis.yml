@@ -12,7 +12,7 @@ before_install:
   - sudo apt-get update
   - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
-  - ./miniconda.sh -b
+  - ./miniconda.sh -b -p $HOME/miniconda
   - export PATH=/home/travis/miniconda/bin:$PATH
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
@@ -40,7 +40,7 @@ before_script:
   - pip freeze
 script:
   # Run Python and Javascript tests.
-  - nosetests -v --with-coverage --cover-package=pydy
+  - THEANO_FLAGS='gcc.cxxflags="-march=core2"' nosetests -v --with-coverage --cover-package=pydy
   # JS tests
   - cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html
   - cd -  # It should not be combined with above command
