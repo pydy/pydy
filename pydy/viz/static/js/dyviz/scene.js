@@ -378,25 +378,27 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         jQuery("#pause-animation").prop('disabled', false);
         jQuery("#stop-animation").prop('disabled', false);
 
-        var startTime = self.model.startTime;
+        var t0 = self.model.startTime;
+        var tf = self.model.endTime;
+        var dt = self.model.timeStep;
+
         if(!self.animationPaused){
-          self.currentTime = startTime;
+          self.currentTime = t0;
         }
 
         self.animationPaused = false;
-        var timeDelta = self.model.timeDelta;
 
         self.animationID = window.setInterval(function(){
                 self.setAnimationTime(self.currentTime);
-                self.currentTime += timeDelta;
-                if(self.currentTime >= self._finalTime){
-                  self.currentTime = startTime;
+                self.currentTime += dt;
+                if(self.currentTime >= tf){
+                  self.currentTime = t0;
                   if(!jQuery("#play-looped").is(":checked")){
                     self.stopAnimation();
                   }
                 }
             },
-        timeDelta*1000);
+        dt*1000);
     },
 
     setAnimationTime: function(currentTime){
@@ -407,9 +409,10 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/
         var self = this;
         var t0 = self.model.startTime;
-        var percent = (100*(currentTime - t0)/(self._finalTime - t0)).toFixed(3);
+        var tf = self.model.endTime;
+        var percent = (100*(currentTime - t0)/(tf - t0)).toFixed(3);
 
-        var time_index = self._timeArray.indexOf(currentTime);
+        var time_index = Math.round((currentTime - t0)/self.model.timeStep);
         var _children = self._scene.children;
         for(var i=0;i<_children.length;i++){
           if(!(_children[i] instanceof (THREE.OrthoGraphicCamera || THREE.PerspectiveCamera))){
