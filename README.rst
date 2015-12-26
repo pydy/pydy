@@ -59,19 +59,19 @@ PyDy has hard dependencies on the following software\ [#]_:
 
 - Python >= 2.7, >= 3.3
 - setuptools\ [#]_
-- NumPy_ >= 1.9
-- SciPy_ >= 0.14
-- SymPy_ >= 0.7.4 (>= 0.7.5 with Python >= 3.3)
+- NumPy_ >= 1.8.1
+- SciPy_ >= 0.13.3
+- SymPy_ >= 0.7.4.1
 
-.. [#] We only test PyDy with these minimum dependencies. Previous versions may
-   work.
+.. [#] We only test PyDy with these minimum dependencies; these module versions
+    are provided in the Ubuntu 14.04 packages. Previous versions may work.
 .. [#] setuptools >= 8.0 is required if development versions of SymPy are used.
 
 PyDy has optional dependencies on these packages:
 
-- IPython_ >= 0.3.0
-- Theano_ >= 0.7
-- Cython_ >= 0.17 (>= 0.20 with Python >= 3.3)
+- IPython_ >= 3.0.0
+- Theano_ >= 0.7.0
+- Cython_ >= 0.20.1
 
 .. _Theano: http://deeplearning.net/software/theano/
 .. _Cython: http://cython.org/
