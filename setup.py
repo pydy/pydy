@@ -31,7 +31,7 @@ setup(
                     'codegen': ['Cython>=0.20.1',
                                 'Theano>=0.7.0'],
                     'examples': ['matplotlib>=0.99',
-                                 'ipython[notebook]>=0.3.0'],
+                                 'ipython[notebook]>=3.0.0'],
                     },
     tests_require=['nose>=1.3.0'],
     test_suite='nose.collector',

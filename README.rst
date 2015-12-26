@@ -69,7 +69,7 @@ PyDy has hard dependencies on the following software\ [#]_:
 
 PyDy has optional dependencies on these packages:
 
-- IPython_ >= 0.3.0
+- IPython_ >= 3.0.0
 - Theano_ >= 0.7.0
 - Cython_ >= 0.20.1
 
