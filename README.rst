@@ -2,14 +2,14 @@
 PyDy
 ====
 
-|pypi| |binstar| |rtd-docs| |travis-build| |Gitter Badge|
+|pypi| |anaconda| |rtd-docs| |travis-build| |Gitter Badge|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pydy.svg
    :target: https://pypi.python.org/pypi/pydy
    :alt: Latest Released Version
 
-.. |binstar| image:: https://binstar.org/pydy/pydy/badges/version.svg
-   :target: https://binstar.org/pydy/pydy
+.. |anaconda| image:: https://binstar.org/pydy/pydy/badges/version.svg
+   :target: https://anaconda.org/pydy/pydy
 
 .. |rtd-docs| image:: https://readthedocs.org/projects/pydy/badge/?version=latest
    :target: http://pydy.readthedocs.org/en/latest
@@ -37,13 +37,13 @@ that can provide the user with their desired workflow, including:
 
 We started by building the SymPy_ `mechanics package`_ which provides an API
 for building models and generating the symbolic equations of motion for complex
-multibody systems. More recently we developed two packages, `pydy.codegen`
-and `pydy.viz`, for simulation and visualization of the models, respectively.
-This Python package contains these two packages and other tools for working
-with SymPy mechanics. The remaining tools currently used in the PyDy workflow
-are popular scientific Python packages such as NumPy_, SciPy_, IPython_, and
-matplotlib_ (i.e. the SciPy stack) which provide additional code for numerical
-analyses, simulation, and visualization.
+multibody systems. More recently we developed two packages, `pydy.codegen` and
+`pydy.viz`, for simulation and visualization of the models, respectively.  This
+Python package contains these two packages and other tools for working with
+mathematical models generated from SymPy mechanics. The remaining tools
+currently used in the PyDy workflow are popular scientific Python packages such
+as NumPy_, SciPy_, IPython_, and matplotlib_ (i.e. the SciPy stack) which
+provide additional code for numerical analyses, simulation, and visualization.
 
 .. _SymPy: http://sympy.org
 .. _mechanics package: http://docs.sympy.org/latest/modules/physics/mechanics/index.html
@@ -57,24 +57,30 @@ Installation
 
 PyDy has hard dependencies on the following software\ [#]_:
 
+.. [#] We only test PyDy with these minimum dependencies; these module versions
+    are provided in the Ubuntu 14.04 packages. Previous versions may work.
+
 - Python >= 2.7, >= 3.3
 - setuptools\ [#]_
 - NumPy_ >= 1.8.1
 - SciPy_ >= 0.13.3
 - SymPy_ >= 0.7.4.1
 
-.. [#] We only test PyDy with these minimum dependencies; these module versions
-    are provided in the Ubuntu 14.04 packages. Previous versions may work.
 .. [#] setuptools >= 8.0 is required if development versions of SymPy are used.
 
 PyDy has optional dependencies on these packages:
 
-- IPython_ >= 3.0.0
+- IPython_ >= 3.0.0 (plus ipywidgets_ >= 4.0.0 if IPython >= 4.0.0) [#]_
 - Theano_ >= 0.7.0
 - Cython_ >= 0.20.1
 
+.. [#] Note that ipywidgets will have to be installed separately until the fix
+   for `this change <https://github.com/ipython/ipython/issues/8905>`_ is
+   included in IPython 4.0.
+
 .. _Theano: http://deeplearning.net/software/theano/
 .. _Cython: http://cython.org/
+.. _ipywidgets: https://pypi.python.org/pypi/ipywidgets
 
 The examples may require these dependencies:
 
@@ -93,11 +99,16 @@ can be downloaded from PyPi\ [#]_::
 
    $ wget https://pypi.python.org/packages/source/p/pydy/pydy-X.X.X.tar.gz
 
+.. [#] Change ``X.X.X`` to the latest version number.
+
 and extracted and installed\ [#]_::
 
    $ tar -zxvf pydy-X.X.X.tar.gz
    $ cd pydy-X.X.X
    $ python setup.py install
+
+.. [#] For system wide installs you may need root permissions (perhaps prepend
+   commands with ``sudo``).
 
 Or if you have the pip package manager installed you can simply type::
 
@@ -107,10 +118,10 @@ Or if you have conda you can type::
 
    $ conda install -c pydy pydy
 
-.. [#] Change ``X.X.X`` to the latest version number.
+Also, a simple way to install all of the optional dependencies is to install
+the ``pydy-examples`` metapackage using conda::
 
-.. [#] For system wide installs you may need root permissions (perhaps prepend
-   commands with ``sudo``).
+   $ conda install -c pydy-examples
 
 Usage
 =====
@@ -273,7 +284,7 @@ The following installation assumes you have virtualenvwrapper_ in addition to
 virtualenv and all the dependencies needed to build the various packages::
 
    $ mkvirtualenv pydy-dev
-   (pydy-dev)$ pip install numpy scipy cython nose theano sympy ipython[all]
+   (pydy-dev)$ pip install numpy scipy cython nose theano sympy ipython[all] ipywidgets
    (pydy-dev)$ pip install matplotlib # make sure to do this after numpy
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
@@ -283,7 +294,7 @@ virtualenv and all the dependencies needed to build the various packages::
 
 Or with conda_::
 
-   $ conda create -n pydy-dev setuptools numpy scipy ipython ipython-notebook cython nose theano sympy matplotlib
+   $ conda create -n pydy-dev setuptools numpy scipy ipython ipython-notebook ipywidgets cython nose theano sympy matplotlib
    $ source activate pydy-dev
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
@@ -348,6 +359,17 @@ an `issue`_ on Github.
 
 Release Notes
 =============
+
+0.3.1
+-----
+
+- Updated installation details to work with IPython/Jupyter 4.0
+- Removed uneccesary deprecation warning from System.
+- Bumped dependency versions to match Ubuntu 14.04 LTS.
+- Increased Theano backend speed.
+- CSE is now optional in the C matrix generator.
+- Correct time is displayed on the animation slider.
+- Python 3.5 support.
 
 0.3.0
 -----
