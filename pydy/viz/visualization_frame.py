@@ -104,7 +104,7 @@ class VisualizationFrame(object):
 
         try:
             self._reference_frame = args[i].get_frame()
-            self._origin = args[i].get_masscenter()
+            self._origin = args[i].masscenter
 
         except AttributeError:
             #It is not a rigidbody, hence this arg should be a
@@ -119,7 +119,7 @@ class VisualizationFrame(object):
 
             #Now next arg can either be a Particle or point
             try:
-                self._origin = args[i].get_point()
+                self._origin = args[i].point
 
             except AttributeError:
                 self._origin = args[i]
