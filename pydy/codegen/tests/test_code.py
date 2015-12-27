@@ -2,12 +2,16 @@
 # -*- coding: utf-8 -*-
 
 # external libraries
+import warnings
 import sympy as sm
 import numpy as np
 from numpy import testing
 
 # local libraries
-from ..code import generate_ode_function
+with warnings.catch_warnings():
+    from ...utils import PyDyDeprecationWarning
+    warnings.simplefilter('ignore', PyDyDeprecationWarning)
+    from ..code import generate_ode_function
 from ...models import multi_mass_spring_damper, n_link_pendulum_on_cart
 
 # TODO : Remove these tests before PyDy 0.4.0. They are just here to make
