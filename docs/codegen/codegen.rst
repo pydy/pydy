@@ -25,6 +25,15 @@ We currently support three backends:
    This generates C code that can be called from Python, using
    SymPy's C code printer utilities and Cython.
 
+On Windows
+==========
+
+For the Cython backend to work on Windows you must install a suitable compiler.
+See this `Cython wiki page
+<https://github.com/cython/cython/wiki/CythonExtensionsOnWindows>`_ for
+instructions on getting a compiler installed. The easiest solution is to use
+the Microsoft Visual C++ Compiler for Python 2.7.
+
 Example Use
 ===========
 
