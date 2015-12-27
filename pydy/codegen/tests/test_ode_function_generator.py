@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from random import choice
+import warnings
 
 import numpy as np
 import scipy as sp
@@ -14,6 +15,9 @@ from ..ode_function_generators import (ODEFunctionGenerator,
                                        LambdifyODEFunctionGenerator,
                                        CythonODEFunctionGenerator,
                                        TheanoODEFunctionGenerator)
+from ...utils import PyDyImportWarning
+
+warnings.simplefilter('once', PyDyImportWarning)
 
 
 class TestODEFunctionGenerator(object):
@@ -113,9 +117,19 @@ class TestODEFunctionGenerator(object):
 
 class TestODEFunctionGeneratorSubclasses(object):
 
-    ode_function_subclasses = [LambdifyODEFunctionGenerator,
-                               CythonODEFunctionGenerator,
-                               TheanoODEFunctionGenerator]
+    ode_function_subclasses = [LambdifyODEFunctionGenerator]
+
+    if Cython:
+        ode_function_subclasses.append(CythonODEFunctionGenerator)
+    else:
+        warnings.warn("Cython was not found so the related tests are being"
+                      " skipped.", PyDyImportWarning)
+
+    if theano:
+        ode_function_subclasses.append(TheanoODEFunctionGenerator)
+    else:
+        warnings.warn("Theano was not found so the related tests are being"
+                      " skipped.", PyDyImportWarning)
 
     def setup(self):
 

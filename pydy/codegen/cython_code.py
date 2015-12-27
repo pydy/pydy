@@ -181,7 +181,7 @@ setup(name="{prefix}",
         with open(os.path.join(path, self.prefix + '.pyx'), 'w') as f:
             f.write(pyx)
 
-    def compile(self, tmp_dir=None):
+    def compile(self, tmp_dir=None, verbose=False):
         """Returns a function which evaluates the matrices.
 
         Parameters
@@ -189,6 +189,9 @@ setup(name="{prefix}",
         tmp_dir : string
             The path to an existing or non-existing directory where all of
             the generated files will be stored.
+        verbose : boolean
+            If true the output of the completed compilation steps will be
+            printed.
 
         """
 
@@ -213,15 +216,9 @@ setup(name="{prefix}",
             self.write()
             cmd = [sys.executable, self.prefix + '_setup.py', 'build_ext',
                    '--inplace']
-            try:
-                DEVNULL = subprocess.DEVNULL
-            except AttributeError:
-                DEVNULL = open(os.devnull, 'wb')
-            subprocess.check_call(cmd, stdout=DEVNULL, stderr=subprocess.STDOUT)
-            try:
-                DEVNULL.close()
-            except Exception:
-                pass
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            if verbose:
+                print(output.decode())
             cython_module = importlib.import_module(self.prefix)
         except:
             raise Exception('Failed to compile and import Cython module.')
@@ -230,7 +227,12 @@ setup(name="{prefix}",
             CythonMatrixGenerator._module_counter += 1
             os.chdir(workingdir)
             if tmp_dir is None:
-                shutil.rmtree(codedir)
+                # rmtree fails on Windows with permissions errors, so skip the
+                # removal on Windows.
+                try:
+                    shutil.rmtree(codedir)
+                except OSError:
+                    pass
 
         self.prefix = base_prefix
 

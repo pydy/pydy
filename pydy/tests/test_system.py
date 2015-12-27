@@ -1,17 +1,21 @@
 #!/usr/bin/env python
 
+import warnings
+
 import numpy as np
 from numpy import testing
 import sympy as sm
 from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
+theano = sm.external.import_module('theano')
 
 from ..system import System
 from ..models import multi_mass_spring_damper, n_link_pendulum_on_cart
-from ..utils import sympy_equal_to_or_newer_than
+from ..utils import sympy_equal_to_or_newer_than, PyDyImportWarning
 
 SYMPY_VERSION = sm.__version__
 
+warnings.simplefilter('once', PyDyImportWarning)
 
 class TestSystem():
 
@@ -385,10 +389,14 @@ class TestSystem():
 
         # Test a generator other than lambdify.
         # -------------------------------------
-        sys.generate_ode_function(generator='theano')
-        sys.times = times
-        x_06 = sys.integrate()
-        testing.assert_allclose(x_04, x_06)
+        if theano:
+            sys.generate_ode_function(generator='theano')
+            sys.times = times
+            x_06 = sys.integrate()
+            testing.assert_allclose(x_04, x_06)
+        else:
+            warnings.warn("Theano was not found so the related tests are being"
+                          " skipped.", PyDyImportWarning)
 
         # Unrecognized generator.
         # -----------------------
