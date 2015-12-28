@@ -42,7 +42,12 @@ try:
         ipython_less_than_3 = True
     else:
         ipython_less_than_3 = False
-        from IPython.html import widgets
+        # If IPython >= 4.0 use ipywidgets if installed to avoid the
+        # deprecation warning.
+        try:
+            import ipywidgets as widgets
+        except ImportError:
+            from IPython.html import widgets
         from IPython.display import display, Javascript
 except ImportError:
     IPython = None
