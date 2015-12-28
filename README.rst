@@ -373,6 +373,9 @@ Release Notes
 - CSE is now optional in the C matrix generator.
 - Correct time is displayed on the animation slider.
 - Python 3.5 support.
+- The Cython backend now compiles on Windows. [PR `#313`_]
+
+.. _#313: https://github.com/pydy/pydy/pull/313
 
 0.3.0
 -----
