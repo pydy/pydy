@@ -120,12 +120,8 @@ def eval(
         expected_setup_py_source = """\
 #!/usr/bin/env python
 
-try:
-    from setuptools import setup
-    from setuptools import Extension
-except ImportError:
-    from distutils.core import setup
-    from distutils.extension import Extension
+from setuptools import setup
+from setuptools import Extension
 
 from Cython.Build import cythonize
 import numpy
