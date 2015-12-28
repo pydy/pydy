@@ -85,6 +85,9 @@ PyDy has optional dependencies on these packages:
 The examples may require these dependencies:
 
 - matplotlib_
+- version_information_
+
+.. _version_information: https://pypi.python.org/pypi/version_information
 
 It's best to install the SciPy Stack dependencies using the instructions_
 provided on the SciPy website first. We recommend the conda_ package manager
@@ -284,7 +287,7 @@ The following installation assumes you have virtualenvwrapper_ in addition to
 virtualenv and all the dependencies needed to build the various packages::
 
    $ mkvirtualenv pydy-dev
-   (pydy-dev)$ pip install numpy scipy cython nose theano sympy ipython[all] ipywidgets
+   (pydy-dev)$ pip install numpy scipy cython nose theano sympy ipython[all] ipywidgets version_information
    (pydy-dev)$ pip install matplotlib # make sure to do this after numpy
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
@@ -294,7 +297,7 @@ virtualenv and all the dependencies needed to build the various packages::
 
 Or with conda_::
 
-   $ conda create -n pydy-dev setuptools numpy scipy ipython ipython-notebook ipywidgets cython nose theano sympy matplotlib
+   $ conda create -c pydy -n pydy-dev setuptools numpy scipy ipython ipython-notebook ipywidgets cython nose theano sympy matplotlib version_information
    $ source activate pydy-dev
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
