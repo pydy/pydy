@@ -127,7 +127,7 @@ Or if you have conda you can type::
 Also, a simple way to install all of the optional dependencies is to install
 the ``pydy-examples`` metapackage using conda::
 
-   $ conda install -c pydy-examples
+   $ conda install -c pydy pydy-examples
 
 Usage
 =====
