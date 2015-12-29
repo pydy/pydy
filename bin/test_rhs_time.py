@@ -1,0 +1,72 @@
+import timeit
+from random import choice
+
+import numpy as np
+import scipy as sp
+import sympy as sm
+
+from pydy import models
+from pydy.codegen.ode_function_generators import LambdifyODEFunctionGenerator
+
+sys = models.n_link_pendulum_on_cart(3, True, True)
+
+right_hand_side = sys.eom_method.rhs()
+
+constants = list(sm.ordered(sys.constants_symbols))
+
+specifieds = list(sm.ordered(sys.specifieds_symbols))
+
+constants_arg_types = [None, 'array', 'dictionary']
+specifieds_arg_types = [None, 'array', 'function', 'dictionary']
+
+p_array = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
+p_dct = dict(zip(constants, p_array))
+
+p = {}
+p[None] = choice([p_array, p_dct])
+p['array'] = p_array
+p['dictionary'] = p_dct
+
+r_array = np.array([1.0, 2.0, 3.0, 4.0])
+r_dct_1 = dict(zip(specifieds, r_array))
+r_dct_2 = {tuple(specifieds):
+           lambda x, t: r_array}
+r_dct_3 = {specifieds[0]: lambda x, t: np.ones(1),
+           (specifieds[3], specifieds[1]):
+           lambda x, t: np.array([4.0, 2.0]),
+           specifieds[2]: 3.0 * np.ones(1)}
+r_func = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
+
+r = {}
+r[None] = choice([r_array, r_dct_1, r_dct_2, r_dct_3, r_func])
+r['array'] = r_array
+r['dictionary'] = choice([r_dct_1, r_dct_2, r_dct_3])
+r['function'] = r_func
+
+x = np.random.random(len(sys.states))
+
+itr = 1
+print('The time taken by rhs function in {} iterations'.format(itr))
+
+for p_arg_type in constants_arg_types:
+  for r_arg_type in specifieds_arg_types:
+
+    g = LambdifyODEFunctionGenerator(right_hand_side,
+                                     sys.coordinates,
+                                     sys.speeds,
+                                     constants,
+                                     specifieds=specifieds,
+                                     constants_arg_type=p_arg_type,
+                                     specifieds_arg_type=r_arg_type)
+
+    rhs = g.generate()
+    
+    time = timeit.repeat("rhs(x, 0.0, r[r_arg_type], p[p_arg_type])",
+                         "from __main__ import rhs,x,r,p,r_arg_type,p_arg_type", 
+                         number = itr)
+
+    print('For constants argument type - "{p_arg}" and '
+          'specifieds argument type - "{r_arg}" is '
+          .format(p_arg=p_arg_type, r_arg=r_arg_type))
+
+    print(sum(time)/3)
