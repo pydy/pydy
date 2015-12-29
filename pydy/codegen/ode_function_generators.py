@@ -459,10 +459,10 @@ r : dictionary
         else:
             # More efficient.
             try:
-                self._specifieds_values[:] = r(x, t)
+                self._specifieds_values = r(x, t)
             except TypeError:  # not callable.
                 # If not callable, then it should be a float or ndarray.
-                self._specifieds_values[:] = r
+                self._specifieds_values = r
 
         return x, t, self._specifieds_values, p
 
