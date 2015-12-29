@@ -2,7 +2,7 @@
 PyDy
 ====
 
-|pypi| |anaconda| |rtd-docs| |travis-build| |Gitter Badge|
+|pypi| |anaconda| |rtd-docs| |travis-build| |appveyor| |gitter|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pydy.svg
    :target: https://pypi.python.org/pypi/pydy
@@ -18,7 +18,10 @@ PyDy
 .. |travis-build| image:: https://travis-ci.org/pydy/pydy.png?branch=master
    :target: https://travis-ci.org/pydy/pydy
 
-.. |Gitter Badge| image:: https://badges.gitter.im/Join%20Chat.svg
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/orj87gyb0c1wqc6j/branch/master?svg=true
+   :targety: https://ci.appveyor.com/project/moorepants/pydy/branch/master
+
+.. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/pydy/pydy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 PyDy_, short for Python Dynamics, is a tool kit written in the Python
