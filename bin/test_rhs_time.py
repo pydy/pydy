@@ -1,3 +1,18 @@
+"""
+This is a script to test the time taken by the generated 
+rhs function in ode_function_generators.
+
+We allow the user to specify what type, the extra args
+should be for both the constants and the specifieds. The constants
+can be None, 'array', or 'dictionary'. The specifieds can be None,
+'array', 'function', or 'dictionary'. Thus, we have 12 permutations.
+
+The script outputs the average time taken to numerically
+evaluate the right hand side of the first order differential 
+equation for each of the 12 permutations.
+
+"""
+
 import timeit
 from random import choice
 
@@ -45,7 +60,7 @@ r['function'] = r_func
 
 x = np.random.random(len(sys.states))
 
-itr = 1
+itr = 1000
 print('The time taken by rhs function in {} iterations'.format(itr))
 
 for p_arg_type in constants_arg_types:
