@@ -29,15 +29,14 @@ constants = list(sm.ordered(sys.constants_symbols))
 
 specifieds = list(sm.ordered(sys.specifieds_symbols))
 
-constants_arg_types = [None, 'array', 'dictionary']
-specifieds_arg_types = [None, 'array', 'function', 'dictionary']
+constants_arg_types = ['array', 'dictionary']
+specifieds_arg_types = ['array', 'function', 'dictionary']
 
 p_array = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
 p_dct = dict(zip(constants, p_array))
 
 p = {}
-# for p[None] 'array' argument type has been assumed
-p[None] = p_array
+
 p['array'] = p_array
 p['dictionary'] = p_dct
 
@@ -52,8 +51,7 @@ r_dct_3 = {specifieds[0]: lambda x, t: np.ones(1),
 r_func = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
 
 r = {}
-# for r[None] 'array' argument type has been assumed
-r[None] = r_array
+
 r['array'] = r_array
 r['dictionary'] = r_dct_3
 r['function'] = r_func
