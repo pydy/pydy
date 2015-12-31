@@ -2,7 +2,7 @@
 PyDy
 ====
 
-|pypi| |anaconda| |rtd-docs| |travis-build| |Gitter Badge|
+|pypi| |anaconda| |rtd-docs| |travis-build| |appveyor| |gitter|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pydy.svg
    :target: https://pypi.python.org/pypi/pydy
@@ -18,7 +18,10 @@ PyDy
 .. |travis-build| image:: https://travis-ci.org/pydy/pydy.png?branch=master
    :target: https://travis-ci.org/pydy/pydy
 
-.. |Gitter Badge| image:: https://badges.gitter.im/Join%20Chat.svg
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/orj87gyb0c1wqc6j/branch/master?svg=true
+   :target: https://ci.appveyor.com/project/moorepants/pydy/branch/master
+
+.. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/pydy/pydy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 PyDy_, short for Python Dynamics, is a tool kit written in the Python
@@ -124,7 +127,7 @@ Or if you have conda you can type::
 Also, a simple way to install all of the optional dependencies is to install
 the ``pydy-examples`` metapackage using conda::
 
-   $ conda install -c pydy-examples
+   $ conda install -c pydy pydy-examples
 
 Usage
 =====
@@ -374,8 +377,11 @@ Release Notes
 - Correct time is displayed on the animation slider.
 - Python 3.5 support.
 - The Cython backend now compiles on Windows. [PR `#313`_]
+- CI testing is now run on appveyor with Windows VMs. [PR `#315`_]
+- Added a verbose option to the Cython compilation. [PR `#315`_]
 
 .. _#313: https://github.com/pydy/pydy/pull/313
+.. _#315: https://github.com/pydy/pydy/pull/315
 
 0.3.0
 -----
