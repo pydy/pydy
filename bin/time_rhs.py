@@ -14,7 +14,6 @@ equation for each of the 12 permutations.
 """
 
 import timeit
-from random import choice
 
 import numpy as np
 import sympy as sm
@@ -30,21 +29,21 @@ constants = list(sm.ordered(sys.constants_symbols))
 
 specifieds = list(sm.ordered(sys.specifieds_symbols))
 
-constants_arg_types = [None, 'array', 'dictionary']
-specifieds_arg_types = [None, 'array', 'function', 'dictionary']
+constants_arg_types = ['array', 'dictionary']
+specifieds_arg_types = ['array', 'function', 'dictionary']
 
 p_array = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
 p_dct = dict(zip(constants, p_array))
 
 p = {}
-p[None] = choice([p_array, p_dct])
+
 p['array'] = p_array
 p['dictionary'] = p_dct
 
 r_array = np.array([1.0, 2.0, 3.0, 4.0])
-r_dct_1 = dict(zip(specifieds, r_array))
-r_dct_2 = {tuple(specifieds):
-           lambda x, t: r_array}
+# r_dct_1 = dict(zip(specifieds, r_array))
+# r_dct_2 = {tuple(specifieds):
+#           lambda x, t: r_array}
 r_dct_3 = {specifieds[0]: lambda x, t: np.ones(1),
            (specifieds[3], specifieds[1]):
            lambda x, t: np.array([4.0, 2.0]),
@@ -52,13 +51,13 @@ r_dct_3 = {specifieds[0]: lambda x, t: np.ones(1),
 r_func = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
 
 r = {}
-r[None] = choice([r_array, r_dct_1, r_dct_2, r_dct_3, r_func])
+
 r['array'] = r_array
-r['dictionary'] = choice([r_dct_1, r_dct_2, r_dct_3])
+r['dictionary'] = r_dct_3
 r['function'] = r_func
 
-x = np.random.random(len(sys.states))
-
+x = np.array([0.125, 0.250, 0.375, 0.456,
+              0.123, 0.457, 0.999, 0.192])
 itr = 1000
 print('The time taken by rhs function in {} iterations'.format(itr))
 
