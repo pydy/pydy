@@ -501,7 +501,7 @@ r : dictionary
                 'num_specified': self.num_specifieds,
                 'specified_list': self.list_syms(8, self.specifieds)}
             template_values['specifieds_explanation'] = \
-                self._specifieds_doc_templates[self.constants_arg_type].format(
+                self._specifieds_doc_templates[self.specifieds_arg_type].format(
                     **specified_template_values)
 
         return self._rhs_doc_template.format(**template_values)
