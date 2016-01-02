@@ -219,6 +219,9 @@ class TestScene(object):
                                      'far': 1000.0,
                                      'simulation_id': camera_id,
                                      'near': 1.0,
+                                     'color': 'grey',
+                                     'material': 'default',
+                                     'reference_frame_name': 'N',
                                      'init_orientation':
                                          [1.0, 0.0, 0.0, 0.0,
                                           0.0, 1.0, 0.0, 0.0,
