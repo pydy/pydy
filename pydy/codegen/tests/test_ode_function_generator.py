@@ -43,7 +43,6 @@ class TestODEFunctionGenerator(object):
         assert g.num_states == 4
         assert g.system_type == 'full rhs'
 
-
     def test_init_full_mass_matrix(self):
 
         g = ODEFunctionGenerator(self.sys.eom_method.forcing_full,
@@ -384,3 +383,99 @@ class TestODEFunctionGeneratorSubclasses(object):
                     pass
 
                 last_xdot = xdot
+
+    def test_rhs_docstring(self):
+
+        sys = models.n_link_pendulum_on_cart(2, True, True)
+        right_hand_side = sys.eom_method.rhs()
+
+        constants = list(sm.ordered(sys.constants_symbols))
+        specifieds = list(sm.ordered(sys.specifieds_symbols))
+
+        constants_arg_types = [None, 'array', 'dictionary']
+        specifieds_arg_types = [None, 'array', 'function', 'dictionary']
+
+        rhs_doc_template = \
+"""\
+Returns the derivatives of the states, i.e. numerically evaluates the right
+hand side of the first order differential equation.
+
+x' = f(x, t,{specified_call_sig} p)
+
+Parameters
+==========
+x : ndarray, shape(6,)
+    The state vector is ordered as such:
+        - q0(t)
+        - q1(t)
+        - q2(t)
+        - u0(t)
+        - u1(t)
+        - u2(t)
+t : float
+    The current time.{specifieds_explanation}{constants_explanation}
+Returns
+=======
+dx : ndarray, shape(6,)
+    The derivative of the state vector.
+
+"""
+
+        constants_doc_templates = {}
+
+        constants_doc_templates['dictionary'] = \
+"""
+p : dictionary len(6)
+    A dictionary that maps the constants symbols to their numerical values
+    with at least these keys:
+        - g
+        - l0
+        - l1
+        - m0
+        - m1
+        - m2
+"""
+
+        constants_doc_templates['array'] = \
+"""
+p : ndarray shape(6,)
+    A ndarray of floats that give the numerical values of the constants in
+    this order:
+        - g
+        - l0
+        - l1
+        - m0
+        - m1
+        - m2
+"""
+
+        constants_doc_templates[None] = \
+"""
+p : dictionary len(6) or ndarray shape(6,)
+    Either a dictionary that maps the constants symbols to their numerical
+    values or an array with the constants in the following order:
+        - g
+        - l0
+        - l1
+        - m0
+        - m1
+        - m2
+"""
+
+        for p_arg_type in constants_arg_types:
+
+            _rhs_doc_template = rhs_doc_template.format(**{
+                'specified_call_sig': '',
+                'specifieds_explanation': '',
+                'constants_explanation': constants_doc_templates[p_arg_type]
+                })
+
+            g = LambdifyODEFunctionGenerator(right_hand_side,
+                                             sys.coordinates,
+                                             sys.speeds,
+                                             constants,
+                                             constants_arg_type=p_arg_type)
+
+            rhs = g.generate()
+            
+            assert (_rhs_doc_template == rhs.__doc__)
