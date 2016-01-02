@@ -71,7 +71,7 @@ p : dictionary len({num_constants}) or ndarray shape({num_constants},)
 p : ndarray shape({num_constants},)
     A ndarray of floats that give the numerical values of the constants in
     this order:
-    {constant_list}\
+{constant_list}\
 """
 
     _constants_doc_templates['dictionary'] = \
