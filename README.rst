@@ -379,9 +379,11 @@ Release Notes
 - The Cython backend now compiles on Windows. [PR `#313`_]
 - CI testing is now run on appveyor with Windows VMs. [PR `#315`_]
 - Added a verbose option to the Cython compilation. [PR `#315`_]
+- Improved the camera code through inheritance [PR `#319`_]
 
 .. _#313: https://github.com/pydy/pydy/pull/313
 .. _#315: https://github.com/pydy/pydy/pull/315
+.. _#319: https://github.com/pydy/pydy/pull/319
 
 0.3.0
 -----
