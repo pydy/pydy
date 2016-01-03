@@ -22,7 +22,7 @@ class PerspectiveCamera(VisualizationFrame):
 
     """
 
-    def __init__(self, *args, fov=45.0, near=1.0, far=1000.0):
+    def __init__(self, *args, **kwargs):
         """Initialises a PerspectiveCamera object. To initialize a
         PerspectiveCamera, one needs to supply a name (optional), a reference
         frame, a point, field of view (fov) (optional), near plane distance
@@ -90,9 +90,12 @@ class PerspectiveCamera(VisualizationFrame):
 
         super(PerspectiveCamera, self).__init__(*args)
 
-        self.fov = fov
-        self.near = near
-        self.far = far
+        self.fov = 45.0
+        self.near = 1.0
+        self.far = 1000.0
+
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     def __str__(self):
         return 'PerspectiveCamera: ' + self.name
@@ -162,7 +165,7 @@ class OrthoGraphicCamera(VisualizationFrame):
 
     """
 
-    def __init__(self, *args, near=1.0, far=1000.0):
+    def __init__(self, *args, **kwargs):
         """Initialises a OrthoGraphicCameraCamera object. To initialize a
         OrthoGraphicCameraCamera, one needs to supply a name (optional), a
         reference frame, a point, field of view (fov) (optional), near plane
@@ -226,8 +229,11 @@ class OrthoGraphicCamera(VisualizationFrame):
 
         super(OrthoGraphicCamera, self).__init__(*args)
 
-        self.near = near
-        self.far = far
+        self.near = 1.0
+        self.far = 1000.0
+
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     def __str__(self):
         return self.__class__.__name__ + ': ' + self.name
