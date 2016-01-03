@@ -71,7 +71,7 @@ p : dictionary len({num_constants}) or ndarray shape({num_constants},)
 p : ndarray shape({num_constants},)
     A ndarray of floats that give the numerical values of the constants in
     this order:
-    {constant_list}\
+{constant_list}\
 """
 
     _constants_doc_templates['dictionary'] = \
@@ -141,6 +141,7 @@ r : function
     _specifieds_doc_templates['dictionary'] = \
 """
 r : dictionary
+
     A dictionary that maps the specified functions of time to floats,
     ndarrays, or functions that produce ndarrays. The keys can be a single
     specified symbolic function of time or a tuple of symbols. The total
@@ -501,7 +502,7 @@ r : dictionary
                 'num_specified': self.num_specifieds,
                 'specified_list': self.list_syms(8, self.specifieds)}
             template_values['specifieds_explanation'] = \
-                self._specifieds_doc_templates[self.constants_arg_type].format(
+                self._specifieds_doc_templates[self.specifieds_arg_type].format(
                     **specified_template_values)
 
         return self._rhs_doc_template.format(**template_values)
