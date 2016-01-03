@@ -390,9 +390,9 @@ class TestODEFunctionGeneratorSubclasses(object):
         right_hand_side = sys.eom_method.rhs()
 
         constants = list(sm.ordered(sys.constants_symbols))
-        
+
         constants_arg_types = [None, 'array', 'dictionary']
-        
+
         rhs_doc_template = \
 """\
 Returns the derivatives of the states, i.e. numerically evaluates the right
@@ -475,7 +475,7 @@ p : dictionary len(6) or ndarray shape(6,)
                                              constants_arg_type=p_arg_type)
 
             rhs = g.generate()
-            
+
             assert (_rhs_doc_template == rhs.__doc__)
 
         sys = models.n_link_pendulum_on_cart(2, True, True)
@@ -519,7 +519,7 @@ r : dictionary; ndarray, shape(3,); function
         - F(t)
         - T1(t)
         - T2(t)"""
-    
+
         specifieds_doc_templates['array'] = \
 """
 r : ndarray, shape(3,)
