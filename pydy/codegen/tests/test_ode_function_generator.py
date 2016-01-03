@@ -386,15 +386,13 @@ class TestODEFunctionGeneratorSubclasses(object):
 
     def test_rhs_docstring(self):
 
-        sys = models.n_link_pendulum_on_cart(2, True, True)
+        sys = models.n_link_pendulum_on_cart(2, False, False)
         right_hand_side = sys.eom_method.rhs()
 
         constants = list(sm.ordered(sys.constants_symbols))
-        specifieds = list(sm.ordered(sys.specifieds_symbols))
-
+        
         constants_arg_types = [None, 'array', 'dictionary']
-        specifieds_arg_types = [None, 'array', 'function', 'dictionary']
-
+        
         rhs_doc_template = \
 """\
 Returns the derivatives of the states, i.e. numerically evaluates the right
@@ -479,3 +477,113 @@ p : dictionary len(6) or ndarray shape(6,)
             rhs = g.generate()
             
             assert (_rhs_doc_template == rhs.__doc__)
+
+        sys = models.n_link_pendulum_on_cart(2, True, True)
+        right_hand_side = sys.eom_method.rhs()
+
+        constants = list(sm.ordered(sys.constants_symbols))
+        specifieds = list(sm.ordered(sys.specifieds_symbols))
+
+        specifieds_arg_types = [None, 'array', 'function', 'dictionary']
+
+        specifieds_doc_templates = {}
+
+        specifieds_doc_templates[None] = \
+"""
+r : dictionary; ndarray, shape(3,); function
+
+    There are three options for this argument. (1) is more flexible but
+    (2) and (3) are much more efficient.
+
+    (1) A dictionary that maps the specified functions of time to floats,
+    ndarrays, or functions that produce ndarrays. The keys can be a single
+    specified symbolic function of time or a tuple of symbols. The total
+    number of symbols must be equal to 3. If the value is a
+    function it must be of the form g(x, t), where x is the current state
+    vector ndarray and t is the current time float and it must return an
+    ndarray of the correct shape. For example::
+
+      r = {a: 1.0,
+           (d, b) : np.array([1.0, 2.0]),
+           (e, f) : lambda x, t: np.array(x[0], x[1]),
+           c: lambda x, t: np.array(x[2])}
+
+    (2) A ndarray with the specified values in the correct order and of the
+    correct shape.
+
+    (3) A function that must be of the form g(x, t), where x is the current
+    state vector and t is the current time and it must return an ndarray of
+    the correct shape.
+
+    The specified inputs are, in order:
+        - F(t)
+        - T1(t)
+        - T2(t)"""
+    
+        specifieds_doc_templates['array'] = \
+"""
+r : ndarray, shape(3,)
+
+    A ndarray with the specified values in the correct order and of the
+    correct shape.
+
+    The specified inputs are, in order:
+        - F(t)
+        - T1(t)
+        - T2(t)"""
+
+        specifieds_doc_templates['dictionary'] = \
+"""
+r : dictionary
+
+    A dictionary that maps the specified functions of time to floats,
+    ndarrays, or functions that produce ndarrays. The keys can be a single
+    specified symbolic function of time or a tuple of symbols. The total
+    number of symbols must be equal to 3. If the value is a
+    function it must be of the form g(x, t), where x is the current state
+    vector ndarray and t is the current time float and it must return an
+    ndarray of the correct shape. For example::
+
+      r = {a: 1.0,
+           (d, b) : np.array([1.0, 2.0]),
+           (e, f) : lambda x, t: np.array(x[0], x[1]),
+           c: lambda x, t: np.array(x[2])}
+
+    The specified inputs are, in order:
+        - F(t)
+        - T1(t)
+        - T2(t)"""
+
+        specifieds_doc_templates['function'] = \
+"""
+r : function
+
+    A function that must be of the form g(x, t), where x is the current
+    state vector and t is the current time and it must return an ndarray of
+    shape(3,).
+
+    The specified inputs are, in order:
+        - F(t)
+        - T1(t)
+        - T2(t)"""
+
+        for p_arg_type in constants_arg_types:
+            for r_arg_type in specifieds_arg_types:
+
+                _rhs_doc_template = rhs_doc_template.format(**{
+                    'specified_call_sig': ' r,',
+                    'specifieds_explanation': specifieds_doc_templates[r_arg_type],
+                    'constants_explanation': constants_doc_templates[p_arg_type]
+                    })
+
+                g = LambdifyODEFunctionGenerator(right_hand_side,
+                                                 sys.coordinates,
+                                                 sys.speeds,
+                                                 constants,
+                                                 specifieds=specifieds,
+                                                 constants_arg_type=p_arg_type,
+                                                 specifieds_arg_type=r_arg_type)
+
+                rhs = g.generate()
+
+                assert (_rhs_doc_template == rhs.__doc__)
