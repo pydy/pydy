@@ -141,6 +141,7 @@ r : function
     _specifieds_doc_templates['dictionary'] = \
 """
 r : dictionary
+
     A dictionary that maps the specified functions of time to floats,
     ndarrays, or functions that produce ndarrays. The keys can be a single
     specified symbolic function of time or a tuple of symbols. The total
