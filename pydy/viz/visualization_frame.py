@@ -93,25 +93,26 @@ class VisualizationFrame(object):
         if isinstance(args[-1], Shape):
             self._shape = args[-1]
         else:
-            raise TypeError('''Please provide a valid shape object''')
+            raise TypeError("Please provide a valid shape object as the last "
+                            " positional argument.")
         i = 0
-        #If first arg is not str, name the visualization frame 'unnamed'
+        # If first arg is not str, name the visualization frame 'unnamed'
         if isinstance(args[i], str):
-            self._name = args[i]
+            self.name = args[i]
             i += 1
         else:
-            self._name = 'unnamed'
+            self.name = 'unnamed'
 
         try:
-            self._reference_frame = args[i].get_frame()
-            self._origin = args[i].masscenter
+            self.reference_frame = args[i].get_frame()
+            self.origin = args[i].masscenter
 
         except AttributeError:
             #It is not a rigidbody, hence this arg should be a
             #reference frame
             try:
                 dcm = args[i]._dcm_dict
-                self._reference_frame = args[i]
+                self.reference_frame = args[i]
                 i += 1
             except AttributeError:
                 raise TypeError(''' A ReferenceFrame is to be supplied
@@ -119,14 +120,14 @@ class VisualizationFrame(object):
 
             #Now next arg can either be a Particle or point
             try:
-                self._origin = args[i].point
+                self.origin = args[i].point
 
             except AttributeError:
-                self._origin = args[i]
+                self.origin = args[i]
 
     #setting attributes ..
     def __str__(self):
-        return 'VisualizationFrame ' + self._name
+        return 'VisualizationFrame ' + self.name
 
     def __repr__(self):
         return 'VisualizationFrame'
@@ -363,9 +364,19 @@ class VisualizationFrame(object):
         """
         scene_dict = { id(self): {} }
         scene_dict[id(self)] = self.shape.generate_dict(constant_map=constant_map)
-        scene_dict[id(self)]["init_orientation"] = self._visualization_matrix[0]
-        scene_dict[id(self)]["reference_frame_name"] = str(self._reference_frame)
+        scene_dict[id(self)]['name'] = self.name
+        scene_dict[id(self)]["reference_frame_name"] = str(self.reference_frame)
         scene_dict[id(self)]["simulation_id"] = id(self)
+
+        try:
+            scene_dict[id(self)]["init_orientation"] = self._visualization_matrix[0]
+        except:
+            raise RuntimeError("Cannot generate visualization data " + \
+                                "because numerical transformation " + \
+                               "has not been performed, " + \
+                                "Please call the numerical " + \
+                               "transformation methods, " + \
+                               "before generating visualization dict")
 
         return scene_dict
 
