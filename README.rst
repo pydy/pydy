@@ -369,19 +369,45 @@ Release Notes
 0.3.1
 -----
 
-- Updated installation details to work with IPython/Jupyter 4.0
-- Removed uneccesary deprecation warning from System.
-- Bumped dependency versions to match Ubuntu 14.04 LTS.
-- Increased Theano backend speed.
-- CSE is now optional in the C matrix generator.
-- Correct time is displayed on the animation slider.
-- Python 3.5 support.
+- Removed the general deprecation warning from System. [PR `#262`_]
+- Don't assume user enters input in server shutdown. [PR `#264`_]
+- Use vectorized operations to compute transformations. [PR `#266`_]
+- Speedup theano generators. [PR `#267`_]
+- Correct time is displayed on the animation slider. [PR `#272`_]
+- Test optional dependencies only if installed. [PR `#276`_]
+- Require benchmark to run in Travis. [PR `#277`_]
+- Fix dependency minimum versions in setup.py [PR `#279`_]
+- Make CSE optional in CMatrixGenerator. [PR `#284`_]
+- Fix codegen line break. [PR `#292`_]
+- Don't assume Scene always has a System. [PR `#295`_]
+- Python 3.5 support and testing against Python 3.5 on Travis. [PR `#305`_]
+- Set minimum dependency versions to match Ubuntu Trusty 14.04 LTS. [PR `#306`_]
+- Replace sympy.phyics.mechanics deprecated methods. [PR `#309`_]
+- Updated installation details to work with IPython/Jupyter 4.0. [PR `#311`_]
+- Avoid the IPython widget deprecation warning if possible. [PR `#311`_]
+- Updated the mass-spring-damper example to IPy4 and added version_information. [PR `#312`_]
 - The Cython backend now compiles on Windows. [PR `#313`_]
 - CI testing is now run on appveyor with Windows VMs. [PR `#315`_]
 - Added a verbose option to the Cython compilation. [PR `#315`_]
 - Fixed the RHS autogeneration. [PR `#318`_]
 - Improved the camera code through inheritance [PR `#319`_]
 
+.. _#262: https://github.com/pydy/pydy/pull/262
+.. _#264: https://github.com/pydy/pydy/pull/264
+.. _#266: https://github.com/pydy/pydy/pull/266
+.. _#267: https://github.com/pydy/pydy/pull/267
+.. _#272: https://github.com/pydy/pydy/pull/272
+.. _#276: https://github.com/pydy/pydy/pull/276
+.. _#277: https://github.com/pydy/pydy/pull/277
+.. _#279: https://github.com/pydy/pydy/pull/279
+.. _#284: https://github.com/pydy/pydy/pull/284
+.. _#292: https://github.com/pydy/pydy/pull/292
+.. _#295: https://github.com/pydy/pydy/pull/295
+.. _#305: https://github.com/pydy/pydy/pull/305
+.. _#306: https://github.com/pydy/pydy/pull/306
+.. _#309: https://github.com/pydy/pydy/pull/309
+.. _#311: https://github.com/pydy/pydy/pull/311
+.. _#312: https://github.com/pydy/pydy/pull/312
 .. _#313: https://github.com/pydy/pydy/pull/313
 .. _#315: https://github.com/pydy/pydy/pull/315
 .. _#318: https://github.com/pydy/pydy/pull/318
