@@ -7,12 +7,11 @@ from numpy import testing
 import sympy as sm
 from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
+theano = sm.external.import_module('theano')
 
 from ..system import System
 from ..models import multi_mass_spring_damper, n_link_pendulum_on_cart
 from ..utils import sympy_equal_to_or_newer_than, PyDyImportWarning
-
-theano = sm.external.import_module('theano')
 
 SYMPY_VERSION = sm.__version__
 
