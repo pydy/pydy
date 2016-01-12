@@ -7,15 +7,17 @@ from numpy import testing
 import sympy as sm
 from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
-theano = sm.external.import_module('theano')
 
 from ..system import System
 from ..models import multi_mass_spring_damper, n_link_pendulum_on_cart
 from ..utils import sympy_equal_to_or_newer_than, PyDyImportWarning
 
+theano = sm.external.import_module('theano')
+
 SYMPY_VERSION = sm.__version__
 
 warnings.simplefilter('once', PyDyImportWarning)
+
 
 class TestSystem():
 
@@ -262,9 +264,9 @@ class TestSystem():
         sys.integrate()
 
     def test_times(self):
-        times1 = [0,1,2,3,4,5,6,7,8,9]
-        times2 = [0,-2,7,3,-5]
-        times3 = [1,2,7,4,5]
+        times1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        times2 = [0, -2, 7, 3, -5]
+        times3 = [1, 2, 7, 4, 5]
         times4 = 4
 
         sys = System(self.kane, times=times1)
