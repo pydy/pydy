@@ -33,7 +33,7 @@ def sympy_equal_to_or_newer_than(version, installed_version=None):
     return parse_version(v) >= parse_version(version)
 
 
-def wrap_and_indent(lines, indentation=4, width=79):
+def wrap_and_indent(lines, indentation=4, width=79, cont=None):
     """Returns a single string in which the lines have been indented and
     wrapped into a block of text."""
     # TODO : This will indent any lines that only contain a new line. Which
@@ -48,6 +48,10 @@ def wrap_and_indent(lines, indentation=4, width=79):
             line = pattern.sub(lambda m: ' '.join(m.groups()), line)
             wrapped = textwrap.wrap(line, width=width-indentation,
                                     break_long_words=False)
+            if cont:
+                last = wrapped[-1]
+                wrapped = [l + cont for l in wrapped[:-1]]
+                wrapped.append(last)
         else:
             wrapped = [line]
         new_lines += wrapped
