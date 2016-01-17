@@ -123,7 +123,6 @@ generate C and Cython code to evaluate matrices:
 .. code:: pycon
 
    >>> from pydy.codegen.cython_code import CythonMatrixGenerator
-   >>> from pydy.models import multi_mass_spring_damper
    >>> sys = multi_mass_spring_damper()
    >>> q = sys.coordinates
    >>> u = sys.speeds
