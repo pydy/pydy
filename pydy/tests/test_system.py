@@ -269,7 +269,7 @@ class TestSystem():
         times4 = 4
 
         sys = System(self.kane, times=times1)
-        assert sys.times == times1
+        testing.assert_allclose(sys.times, times1)
 
         with testing.assert_raises(ValueError):
             sys.times = times2

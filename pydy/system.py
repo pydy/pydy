@@ -354,10 +354,10 @@ class System(object):
         if len(times.shape) == 0:
             raise TypeError("Times supplied should be in an array_like format.")
 
-        if not all(time >= 0 for time in times):
+        if not np.all(times >= 0):
             raise ValueError("Times supplied must have positive values.")
 
-        if any(time != sort_time for time, sort_time in zip(times, sorted(times))):
+        if not np.all(np.diff(times) >= 0):
             raise ValueError("Times supplied should be in an ascending order.")
 
         return True
