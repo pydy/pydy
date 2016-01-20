@@ -31,16 +31,17 @@ class MatrixGenerator(object):
 
         Parameters
         ==========
-        arguments : sequences of sequences of SymPy Symbol or Function.
-            Each of the sequences will be converted to input arrays in the C
-            function. All of the symbols/functions contained in ``matrices``
-            need to be in the sequences, but the sequences can also contain
-            extra symbols/functions that are not contained in the matrices.
+        arguments : sequence of sequences of SymPy Symbol or Function
+            Each of the sequences will be converted to input arrays in the
+            generated function. All of the symbols/functions contained in
+            ``matrices`` need to be in the sequences, but the sequences can
+            also contain extra symbols/functions that are not contained in the
+            matrices.
         matrices : sequence of SymPy.Matrix
             A sequence of the matrices that should be evaluated in the
             function. The expressions should contain only sympy.Symbol or
             sympy.Function that are functions of me.dynamicsymbols._t.
-        cse : bool
+        cse : boolean
             Find and replace common sub-expressions in ``matrices`` if True.
 
         """
@@ -70,9 +71,10 @@ class MatrixGenerator(object):
             self._generate_cse()
         else:
             self._ignore_cse()
+
         self._generate_code_blocks()
 
-    def _generate_cse(self):
+    def _generate_cse(self, prefix='pydy_'):
 
         # This makes a big long list of every expression in all of the
         # matrices.
@@ -81,7 +83,7 @@ class MatrixGenerator(object):
             exprs += matrix[:]
 
         # Compute the common subexpresions.
-        gen = sm.numbered_symbols('pydy_')
+        gen = sm.numbered_symbols(prefix)
         self.subexprs, simplified_exprs = sm.cse(exprs, symbols=gen)
 
         # Turn the expressions back into matrices of the same type.
@@ -147,32 +149,30 @@ class MatrixGenerator(object):
 
         lines = []
         for i, input_arg in enumerate(self.arguments):
-            lines.append('{}input_{},'.format(self._type_declar,
-                                              i + self._idx_start))
-            self.code_blocks['input_args'] = wrap_and_indent(lines, 14,
-                                                             cont=self._line_contin)[:-1]
+            lines.append('{}input_{}'.format(self._type_declar,
+                                             i + self._idx_start))
+        self.code_blocks['input_args'] = ', '.join(lines)
 
         lines = []
         for i, output_arg in enumerate(self.matrices):
-            lines.append('{}output_{},'.format(self._type_declar,
+            lines.append('{}output_{}'.format(self._type_declar,
                                                i + self._idx_start))
-            self.code_blocks['output_args'] = \
-                wrap_and_indent(lines, 14, cont=self._line_contin)[:-1]  # remove last comma
+        self.code_blocks['output_args'] = ', '.join(lines)
 
         lines = []
         for i, (input_arg, explan) in enumerate(zip(self.arguments,
                                                     self.comma_lists())):
-            lines.append('input_{} : [{}]'.format(i + self._idx_start,
-                                                  explan))
-        self.code_blocks['input_docstring'] = wrap_and_indent(lines, 0, cont=self._line_contin)
+            # TODO : The comment character is unique to Octave/Matlab.
+            lines.append('% input_{} : [{}]'.format(i + self._idx_start, explan))
+        # TODO : This will fail with commented lines when wrapping.
+        self.code_blocks['docstring'] = wrap_and_indent(lines, 0,
+                                                        cont=self._line_contin)
 
         lines = []
         for var, expr in self.subexprs:
-            var_str = printer.doprint(var)
-            expr_str = printer.doprint(expr)
-            lines.append('{}{} = {};'.format(self._type_declar, var_str,
-                                             expr_str))
-        self.code_blocks['subexprs'] = wrap_and_indent(lines, cont=self._line_contin)
+            lines.append(printer.doprint(expr, var))
+        self.code_blocks['subexprs'] = wrap_and_indent(lines,
+                                                       cont=self._line_contin)
 
         outputs = ''
         for i, output in enumerate(self.simplified_matrices):
@@ -188,7 +188,8 @@ class MatrixGenerator(object):
                     assignment = 'output_{}[{}]'.format(i, j)
                     code_lines.append(printer.doprint(element, assignment))
                 code_str = '\n'.join(code_lines)
-            outputs += wrap_and_indent(code_str.split('\n'))
+            outputs += wrap_and_indent(code_str.split('\n'),
+                                       cont=self._line_contin)
             if i != len(self.simplified_matrices) - 1:
                 outputs += '\n\n'  # space between each output
 
@@ -250,14 +251,27 @@ class OctaveMatrixGenerator(MatrixGenerator):
 
     _m_template = """\
 function [{output_args}] = {prefix}({input_args})
+% function [{output_args}] = {prefix}({input_args})
+%
+{docstring}
 
 {subexprs}
 
 {outputs}
-end"""
+
+end
+"""
 
     def doprint(self, prefix='eval_mats'):
+        """Returns a string each for the header and the source files.
 
+        Parameters
+        ==========
+        prefix : string, optional
+            A prefix for the name of the header file. This will cause an
+            include statement to to be added to the source.
+
+        """
         self.code_blocks['prefix'] = prefix
 
         return self._m_template.format(**self.code_blocks)

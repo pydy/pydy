@@ -33,9 +33,15 @@ def sympy_equal_to_or_newer_than(version, installed_version=None):
     return parse_version(v) >= parse_version(version)
 
 
-def wrap_and_indent(lines, indentation=4, width=79, cont=None):
+def wrap_and_indent(lines, indentation=4, width=79, cont=None, commet=None):
     """Returns a single string in which the lines have been indented and
     wrapped into a block of text."""
+
+    if cont is None:
+        cont_len = 0
+    else:
+        cont_len = len(cont)
+
     # TODO : This will indent any lines that only contain a new line. Which
     # may not be preferable.
     new_lines = []
@@ -46,7 +52,7 @@ def wrap_and_indent(lines, indentation=4, width=79, cont=None):
     for line in lines:
         if line != '\n':
             line = pattern.sub(lambda m: ' '.join(m.groups()), line)
-            wrapped = textwrap.wrap(line, width=width-indentation,
+            wrapped = textwrap.wrap(line, width=width-indentation-cont_len,
                                     break_long_words=False)
             if cont:
                 last = wrapped[-1]
