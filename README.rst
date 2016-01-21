@@ -366,6 +366,11 @@ an `issue`_ on Github.
 Release Notes
 =============
 
+0.4.0
+-----
+
+- Adds in more type checks for System.types. [PR `#322`_]
+
 0.3.1
 -----
 
