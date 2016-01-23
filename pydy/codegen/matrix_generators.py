@@ -23,8 +23,11 @@ class MatrixGenerator(object):
     _idx_start = 0
     _idx_delim = "[]"
     _base_printer = CodePrinter
+    # TODO : I opened an issue with SymPy to deal with the type declaration,
+    # https://github.com/sympy/sympy/issues/10446.
     _type_declar = 'double '  # prepended to variable introductions
     _line_contin = None
+    _comment_char = '#'
 
     def __init__(self, arguments, matrices, cse=True):
         """
@@ -147,32 +150,33 @@ class MatrixGenerator(object):
 
         self.code_blocks = {}
 
+        # Creates a string of comma separated inputs.
         lines = []
         for i, input_arg in enumerate(self.arguments):
             lines.append('{}input_{}'.format(self._type_declar,
                                              i + self._idx_start))
         self.code_blocks['input_args'] = ', '.join(lines)
 
+        # Creates a string of comma separated outputs.
         lines = []
         for i, output_arg in enumerate(self.matrices):
             lines.append('{}output_{}'.format(self._type_declar,
-                                               i + self._idx_start))
+                                              i + self._idx_start))
         self.code_blocks['output_args'] = ', '.join(lines)
 
         lines = []
         for i, (input_arg, explan) in enumerate(zip(self.arguments,
                                                     self.comma_lists())):
-            # TODO : The comment character is unique to Octave/Matlab.
-            lines.append('% input_{} : [{}]'.format(i + self._idx_start, explan))
-        # TODO : This will fail with commented lines when wrapping.
+            lines.append('{} input_{} : [{}]'.format(self._comment_char, i +
+                                                     self._idx_start, explan))
         self.code_blocks['docstring'] = wrap_and_indent(lines, 0,
-                                                        cont=self._line_contin)
+                                                        comment=self._comment_char)
 
         lines = []
         for var, expr in self.subexprs:
             lines.append(printer.doprint(expr, var))
         self.code_blocks['subexprs'] = wrap_and_indent(lines,
-                                                       cont=self._line_contin)
+                                                       continuation=self._line_contin)
 
         outputs = ''
         for i, output in enumerate(self.simplified_matrices):
@@ -189,66 +193,28 @@ class MatrixGenerator(object):
                     code_lines.append(printer.doprint(element, assignment))
                 code_str = '\n'.join(code_lines)
             outputs += wrap_and_indent(code_str.split('\n'),
-                                       cont=self._line_contin)
+                                       continuation=self._line_contin)
             if i != len(self.simplified_matrices) - 1:
                 outputs += '\n\n'  # space between each output
 
         self.code_blocks['outputs'] = outputs
 
-    def doprint(self, prefix=None):
-        """Returns a string each for the header and the source files.
-
-        Parameters
-        ==========
-        prefix : string, optional
-            A prefix for the name of the header file. This will cause an
-            include statement to to be added to the source.
-
-        """
-
-        if prefix is not None:
-            filling = {'header_include': '\n#include "{}.h"'.format(prefix)}
-        else:
-            filling = {'header_include': ''}
-
-        filling.update(self.code_blocks)
-
-        c_header = self._c_header_template.format(**filling)
-        c_source = self._c_source_template.format(**filling)
-
-        return c_header, c_source
-
-    def write(self, prefix, path=None):
-        """Writes a header and source file to disk.
-
-        Parameters
-        ==========
-        prefix : string
-            Two files will be generated: ``<prefix>.c`` and
-            ``<prefix>.h``.
-
-        """
-
-        if path is None:
-            path = os.getcwd()
-
-        header, source = self.doprint(prefix=prefix)
-
-        with open(os.path.join(path, prefix + '.h'), 'w') as f:
-            f.write(header)
-
-        with open(os.path.join(path, prefix + '.c'), 'w') as f:
-            f.write(source)
-
 
 class OctaveMatrixGenerator(MatrixGenerator):
+    """This class generates Octave/Matlab source files that simultaneously
+    numerically evaluate any number of SymPy matrices.
+
+    """
 
     _idx_start = 1
     _idx_delim = "()"
     _base_printer = OctaveCodePrinter
     _type_declar = ''  # prepended to variable introductions
     _line_contin = ' ...'
+    _comment_char = '%'
 
+    # TODO : The first two lines will not wrap. For many inputs/outputs it
+    # would be nice to have some wrapping.
     _m_template = """\
 function [{output_args}] = {prefix}({input_args})
 % function [{output_args}] = {prefix}({input_args})
@@ -263,15 +229,25 @@ end
 """
 
     def doprint(self, prefix='eval_mats'):
-        """Returns a string each for the header and the source files.
+        """Returns a string that implements the function.
 
         Parameters
         ==========
         prefix : string, optional
-            A prefix for the name of the header file. This will cause an
-            include statement to to be added to the source.
+            The name of the Octave/Matlab function.
 
         """
         self.code_blocks['prefix'] = prefix
 
         return self._m_template.format(**self.code_blocks)
+
+    def write(self, prefix='eval_mats', path=None):
+        """Writes the <prefix>.m file to disc at the give path location."""
+
+        if path is None:
+            path = os.getcwd()
+
+        text = self.doprint(prefix=prefix)
+
+        with open(os.path.join(path, prefix + '.m'), 'w') as f:
+            f.write(text)
