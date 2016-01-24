@@ -17,6 +17,7 @@ SYMPY_VERSION = sm.__version__
 
 warnings.simplefilter('once', PyDyImportWarning)
 
+
 class TestSystem():
 
     def setup(self):
@@ -51,6 +52,7 @@ class TestSystem():
         assert sys.specifieds == dict()
         assert sys.initial_conditions == dict()
         assert sys.constants == dict()
+        assert sys.times == list()
 
         # Specify a bunch of attributes during construction.
         # --------------------------------------------------
@@ -259,6 +261,24 @@ class TestSystem():
                                   dynamicsymbols('v0'): -1.0}
         sys.times = times
         sys.integrate()
+
+    def test_times(self):
+        times1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        times2 = [0, -2, 7, 3, -5]
+        times3 = [1, 2, 7, 4, 5]
+        times4 = 4
+
+        sys = System(self.kane, times=times1)
+        testing.assert_allclose(sys.times, times1)
+
+        with testing.assert_raises(ValueError):
+            sys.times = times2
+
+        with testing.assert_raises(ValueError):
+            sys.times = times3
+
+        with testing.assert_raises(TypeError):
+            sys.times = times4
 
     def test_ode_solver(self):
 

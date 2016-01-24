@@ -53,6 +53,7 @@ you must call ``generate_ode_function`` on your own::
 import warnings
 from itertools import repeat
 
+import numpy as np
 import sympy as sm
 from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
@@ -340,22 +341,25 @@ class System(object):
         equations of motion are integrated, numerically.
 
         The object should be in a format which the integration module to be
-        used can accept. Since this attribute is not checked for
-        compatibility, the user becomes responsible to supply it correctly.
+        used can accept.
         """
         return self._times
 
     @times.setter
     def times(self, new_times):
-        self._times = new_times
+        self._times = np.asarray(new_times)
+        self._check_times(self._times)
 
     def _check_times(self, times):
-        """
-        Very basic checking.
-        TODO: add more checking
-        """
-        if len(times) == 0:
+        if len(times.shape) == 0:
             raise TypeError("Times supplied should be in an array_like format.")
+
+        if not np.all(times >= 0):
+            raise ValueError("Times supplied must have positive values.")
+
+        if not np.all(np.diff(times) >= 0):
+            raise ValueError("Times supplied should be in an ascending order.")
+
         return True
 
     @property
