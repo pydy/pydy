@@ -4,14 +4,12 @@
 matrices generated from sympy.physics.mechanics."""
 
 import os
-import itertools
 
 import sympy as sm
-import sympy.physics.mechanics as me
 from sympy.printing.ccode import CCodePrinter
 
 from .matrix_generator import MatrixGenerator
-from ..utils import wrap_and_indent, find_dynamicsymbols
+from ..utils import wrap_and_indent
 
 
 class CMatrixGenerator(MatrixGenerator):
