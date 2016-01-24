@@ -366,6 +366,13 @@ an `issue`_ on Github.
 Release Notes
 =============
 
+0.4.0
+-----
+
+- Added an OctaveMatrixGenerator for basic Octave/Matlab printing. [PR `#323`_]
+
+.. _#323: https://github.com/pydy/pydy/pull/323
+
 0.3.1
 -----
 
