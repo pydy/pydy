@@ -133,9 +133,9 @@ class TestCMatrixGenerator():
         assert self.generator.subexprs == expected_subexprs
         assert self.generator.simplified_matrices == expected_simplified_matrices
 
-    def test_generate_pydy_c_printer(self):
+    def test_generate_pydy_printer(self):
 
-        PyDyCCodePrinter = self.generator._generate_pydy_c_printer()
+        PyDyCCodePrinter = self.generator._generate_pydy_printer()
 
         printer = PyDyCCodePrinter()
 
