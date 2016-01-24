@@ -1,12 +1,14 @@
 from sympy import ordered
 
-from pydy.models import multi_mass_spring_damper
-from pydy.codegen.octave_code import OctaveMatrixGenerator
+from ...utils import sympy_equal_to_or_newer_than
+from ...models import multi_mass_spring_damper
+from ..octave_code import OctaveMatrixGenerator
 
+if sympy_equal_to_or_newer_than('0.7.6'):
 
-def test_OctaveMatrixGenerator():
+    def test_OctaveMatrixGenerator():
 
-    expected_m_file = """\
+        expected_m_file = """\
 function [output_1] = eval_mats(input_1, input_2, input_3)
 % function [output_1] = eval_mats(input_1, input_2, input_3)
 %
@@ -36,10 +38,10 @@ function [output_1] = eval_mats(input_1, input_2, input_3)
 end
 """
 
-    sys = multi_mass_spring_damper(3)
-    q = sys.coordinates
-    u = sys.speeds
-    p = list(ordered(sys.constants_symbols))
-    sym_rhs = sys.eom_method.rhs()
-    g = OctaveMatrixGenerator([q, u, p], [sym_rhs])
-    assert g.doprint() == expected_m_file
+        sys = multi_mass_spring_damper(3)
+        q = sys.coordinates
+        u = sys.speeds
+        p = list(ordered(sys.constants_symbols))
+        sym_rhs = sys.eom_method.rhs()
+        g = OctaveMatrixGenerator([q, u, p], [sym_rhs])
+        assert g.doprint() == expected_m_file
