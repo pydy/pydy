@@ -2,8 +2,6 @@
 
 import os
 
-from ..utils import PyDyImportWarning
-
 try:
     from sympy.printing.octave import OctaveCodePrinter
 except ImportError:

@@ -2,9 +2,11 @@ from sympy import ordered
 
 from ...utils import sympy_equal_to_or_newer_than
 from ...models import multi_mass_spring_damper
-from ..octave_code import OctaveMatrixGenerator
+
 
 if sympy_equal_to_or_newer_than('0.7.6'):
+
+    from ..octave_code import OctaveMatrixGenerator
 
     def test_OctaveMatrixGenerator():
 
