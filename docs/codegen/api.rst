@@ -7,8 +7,8 @@ codegen API
 .. automodule:: pydy.codegen.cython_code
    :members:
 
-.. automodule:: pydy.codegen.matrix_generators
+.. automodule:: pydy.codegen.c_code
    :members:
 
-.. automodule:: pydy.codegen.c_code
+.. automodule:: pydy.codegen.octave_code
    :members:

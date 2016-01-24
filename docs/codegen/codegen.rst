@@ -223,7 +223,7 @@ We also support generating Octave/Matlab code as shown below:
 
 .. code:: pycon
 
-   >>> from pydy.codegen.matrix_generators import OctaveMatrixGenerator
+   >>> from pydy.codegen.octave_code import OctaveMatrixGenerator
    >>> sys = multi_mass_spring_damper()
    >>> q = sys.coordinates
    >>> u = sys.speeds

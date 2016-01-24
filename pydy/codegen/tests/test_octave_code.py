@@ -1,7 +1,7 @@
 from sympy import ordered
 
 from pydy.models import multi_mass_spring_damper
-from pydy.codegen.matrix_generators import OctaveMatrixGenerator
+from pydy.codegen.octave_code import OctaveMatrixGenerator
 
 
 def test_OctaveMatrixGenerator():
