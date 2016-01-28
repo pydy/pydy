@@ -4,20 +4,21 @@
 matrices generated from sympy.physics.mechanics."""
 
 import os
-import itertools
 
 import sympy as sm
-import sympy.physics.mechanics as me
 from sympy.printing.ccode import CCodePrinter
 
-from ..utils import wrap_and_indent, find_dynamicsymbols
+from .matrix_generator import MatrixGenerator
+from ..utils import wrap_and_indent
 
 
-class CMatrixGenerator(object):
+class CMatrixGenerator(MatrixGenerator):
     """This class generates C source files that simultaneously numerically
     evaluate any number of SymPy matrices.
 
     """
+
+    _base_printer = CCodePrinter
 
     _c_header_template = """\
 void evaluate(
@@ -46,142 +47,12 @@ void evaluate(
 }}\
 """
 
-    def __init__(self, arguments, matrices, cse=True):
-        """
-
-        Parameters
-        ==========
-        arguments : sequences of sequences of SymPy Symbol or Function.
-            Each of the sequences will be converted to input arrays in the C
-            function. All of the symbols/functions contained in ``matrices``
-            need to be in the sequences, but the sequences can also contain
-            extra symbols/functions that are not contained in the matrices.
-        matrices : sequence of SymPy.Matrix
-            A sequence of the matrices that should be evaluated in the
-            function. The expressions should contain only sympy.Symbol or
-            sympy.Function that are functions of me.dynamicsymbols._t.
-        cse : bool
-            Find and replace common sub-expressions in ``matrices`` if True.
-
-        """
-
-        required_args = set()
-
-        for matrix in matrices:
-            # TODO : SymPy 0.7.4 does not have Matrix.free_symbols so we
-            # manually compute them instead of calling:
-            # required_args |= matrix.free_symbols
-            required_args |= set().union(*[i.free_symbols for i in matrix])
-            required_args |= find_dynamicsymbols(matrix)
-
-        required_args.remove(me.dynamicsymbols._t)
-
-        all_arguments = set(itertools.chain(*arguments))
-
-        for required_arg in required_args:
-            if required_arg not in all_arguments:
-                msg = "{} is missing from the argument sequences."
-                raise ValueError(msg.format(required_arg))
-
-        self.matrices = matrices
-        self.arguments = arguments
-
-        if cse:
-            self._generate_cse()
-        else:
-            self._ignore_cse()
-        self._generate_code_blocks()
-
-    def _generate_cse(self):
-
-        # This makes a big long list of every expression in all of the
-        # matrices.
-        exprs = []
-        for matrix in self.matrices:
-            exprs += matrix[:]
-
-        # Compute the common subexpresions.
-        gen = sm.numbered_symbols('pydy_')
-        self.subexprs, simplified_exprs = sm.cse(exprs, symbols=gen)
-
-        # Turn the expressions back into matrices of the same type.
-        simplified_matrices = []
-        idx = 0
-        for matrix in self.matrices:
-            num_rows, num_cols = matrix.shape
-            length = num_rows * num_cols
-            m = type(matrix)(simplified_exprs[idx:idx + length])
-            simplified_matrices.append(m.reshape(num_rows, num_cols))
-            idx += length
-
-        self.simplified_matrices = tuple(simplified_matrices)
-
-    def _ignore_cse(self):
-        self.subexprs = []
-        self.simplified_matrices = self.matrices
-
-    def _generate_pydy_c_printer(self):
-        """Returns a subclass of sympy.printing.CCodePrinter to print
-        appropriate C array index calls for all of the symbols in the
-        equations of motion.
-
-        Examples
-        --------
-
-        >>> from sympy import symbols
-        >>> from sympy.physics.mechanics import dynamicsymbols
-        >>> from pydy.codegen.c_code import CMatrixGenerator
-        >>> generator = CMatrixGenerator(...)
-        >>> PyDyCCodePrinter = generator._generate_pydy_c_printer()
-        >>> printer = PyDyCCodePrinter()
-        >>> m = symbols('m') # m is the first constant in the EoMs
-        >>> printer.doprint(m)
-        input_0[0]
-        >>> q = dynamicsymbols('q') # q is the second coordinate in the EoMs
-        >>> printer.doprint(q)
-        input_1[1]
-        >>> F = dynamicsymbols('F') # F is the third specified in the EoMs
-        >>> printer.doprint(F)
-        input_3[2]
-
-        """
-
-        array_index_map = {}
-        for i, arg_set in enumerate(self.arguments):
-            for j, var in enumerate(arg_set):
-                array_index_map[var] = r'input_{}[{}]'.format(i, j)
-
-        class PyDyCCodePrinter(CCodePrinter):
-
-            def _print_Function(self, e):
-                if e in array_index_map.keys():
-                    return array_index_map[e]
-                else:
-                    return super(PyDyCCodePrinter, self)._print_Function(e)
-
-            def _print_Symbol(self, e):
-                if e in array_index_map.keys():
-                    return array_index_map[e]
-                else:
-                    return super(PyDyCCodePrinter, self)._print_Symbol(e)
-
-        return PyDyCCodePrinter
-
-    def comma_lists(self):
-        """Returns a string output for each of the sequences of SymPy
-        arguments."""
-
-        comma_lists = []
-
-        for i, arg_set in enumerate(self.arguments):
-            comma_lists.append(', '.join([str(s) for s in arg_set]))
-
-        return tuple(comma_lists)
-
     def _generate_code_blocks(self):
         """Writes the blocks of code for the C file."""
 
-        printer = self._generate_pydy_c_printer()()
+        # TODO : This could use the super classes method with some tweaks.
+
+        printer = self._generate_pydy_printer()()
 
         self.code_blocks = {}
 

@@ -62,7 +62,7 @@ setup(name="{prefix}",
 
     _module_counter = 0
 
-    def __init__(self, arguments, matrices, prefix='pydy_codegen'):
+    def __init__(self, arguments, matrices, prefix='pydy_codegen', cse=True):
         """
 
         Parameters
@@ -79,6 +79,8 @@ setup(name="{prefix}",
             sympy.Function that are functions of me.dynamicsymbols._t.
         prefix : string, optional
             The desired prefix for the generated files.
+        cse : boolean
+            Find and replace common sub-expressions in ``matrices`` if True.
 
         """
 
@@ -87,7 +89,8 @@ setup(name="{prefix}",
         self.arguments = arguments
         self.num_matrices = len(matrices)
         self.num_arguments = len(arguments)
-        self.c_matrix_generator = CMatrixGenerator(arguments, matrices)
+        self.c_matrix_generator = CMatrixGenerator(arguments, matrices,
+                                                   cse=cse)
 
         self._generate_code_blocks()
 

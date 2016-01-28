@@ -9,3 +9,6 @@ codegen API
 
 .. automodule:: pydy.codegen.c_code
    :members:
+
+.. automodule:: pydy.codegen.octave_code
+   :members:

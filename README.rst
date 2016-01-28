@@ -369,7 +369,11 @@ Release Notes
 0.4.0
 -----
 
-- Adds in more type checks for System.types. [PR `#322`_]
+- Adds in more type checks for System.times. [PR `#322`_]
+- Added an OctaveMatrixGenerator for basic Octave/Matlab printing. [PR `#323`_]
+
+.. _#322: https://github.com/pydy/pydy/pull/322
+.. _#323: https://github.com/pydy/pydy/pull/323
 
 0.3.1
 -----
