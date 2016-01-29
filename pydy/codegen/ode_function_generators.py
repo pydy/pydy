@@ -460,10 +460,10 @@ r : dictionary
         else:
             # More efficient.
             try:
-                self._specifieds_values[:] = r(x, t)
+                self._specifieds_values = r(x, t)
             except TypeError:  # not callable.
                 # If not callable, then it should be a float or ndarray.
-                self._specifieds_values[:] = r
+                self._specifieds_values = r
 
         return x, t, self._specifieds_values, p
 
@@ -511,30 +511,10 @@ r : dictionary
         """Returns a function in the form expected by scipy.integrate.odeint
         that computes the derivatives of the states."""
 
-        # This god awful mess below exists because of the need to optimize
-        # the speed of the rhs evaluation. We unfortunately support way too
-        # many ways to pass in extra arguments to the generated rhs
-        # function. The default behavior is to parse the arguments passed
-        # into the rhs function which can add a lot of computational
-        # overhead. So we allow the user to specify what type the extra args
-        # should be for both the constants and the specifieds. The constants
-        # can be None, 'array', or 'dictionary'. The specifieds can be None,
-        # 'array', 'function', or 'dictionary'. Thus we have 12 permutations
-        # of this "switch".
-
         p_arg_type = self.constants_arg_type
         r_arg_type = self.specifieds_arg_type
 
-        def slice_x(x):
-            q = x[:self.num_coordinates]
-            u = x[self.num_coordinates:]
-            return q, u
-
         if p_arg_type is None and r_arg_type is None:
-
-            # This is the only rhs that will properly check for the
-            # pre-0.3.0 rhs args for backwards compatibility.
-
             def rhs(*args):
                 # args: x, t, p
                 # or
@@ -542,158 +522,48 @@ r : dictionary
 
                 args = self._parse_all_args(*args)
 
-                q, u = slice_x(args[0])
+                q = args[0][:self.num_coordinates]
+                u = args[0][self.num_coordinates:]
 
                 xdot = self._base_rhs(q, u, *args[2:])
 
                 return xdot
 
-        elif p_arg_type == 'array' and r_arg_type is None:
+            rhs.__doc__ = self._generate_rhs_docstring()
 
-            # This could be combined with:
-            # elif p_arg_type == 'array' and r_arg_type == 'array':
+            return rhs
 
-            def rhs(*args):
-                # args: x, t, p
-                # or
-                # args: x, t, r, p
+        if p_arg_type is 'dictionary':
+            p = lambda *li : self._convert_constants_dict_to_array(li[-1])
 
-                if self.specifieds is not None:
-                    args = self._parse_specifieds(*args)
+        else:
+            p = lambda *li : self._parse_constants(*li)[-1]
 
-                q, u = slice_x(args[0])
+        if r_arg_type is None:
+            if self.specifieds is not None:
+                r = lambda *li : self._parse_specifieds(*li)[-2]
 
-                return self._base_rhs(q, u, *args[2:])
+        elif r_arg_type is 'array':
+            r = lambda *li : (li)[-2]
 
-        elif p_arg_type == 'dictionary' and r_arg_type is None:
+        elif r_arg_type is 'dictionary':
+            r = lambda *li : self._convert_specifieds_dict_to_array(*li[:3])
 
-            # This could be combined with:
-            # elif p_arg_type == 'dictionary' and r_arg_type == 'array':
+        elif r_arg_type is 'function':
+            r = lambda *li: li[2](*li[2:])
 
-            def rhs(*args):
-                # args: x, t, p
-                # or
-                # args: x, t, r, p
+        def rhs(*args):
+            # args: x, t, p
+            # or
+            # args: x, t, r, p
 
-                if self.specifieds is not None:
-                    args = self._parse_specifieds(*args)
+            q = args[0][:self.num_coordinates]
+            u = args[0][self.num_coordinates:]
 
-                p = self._convert_constants_dict_to_array(args[-1])
-
-                q, u = slice_x(args[0])
-
-                xdot = self._base_rhs(q, u, *(args[2:-1] + (p,)))
-
-                return xdot
-
-        # All of the cases below must have specifieds, so the number of args
-        # is known. r_arg_type is forces to be None if self.specifieds is
-        # None.
-
-        elif p_arg_type is None and r_arg_type == 'array':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                args = self._parse_constants(*args)
-
-                q, u = slice_x(args[0])
-
-                return self._base_rhs(q, u, *args[2:])
-
-        elif p_arg_type == 'array' and r_arg_type == 'array':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                q, u = slice_x(args[0])
-
-                return self._base_rhs(q, u, *args[2:])
-
-        elif p_arg_type == 'dictionary' and r_arg_type == 'array':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                p = self._convert_constants_dict_to_array(args[-1])
-
-                q, u = slice_x(args[0])
-
-                return self._base_rhs(q, u, *(args[2:-1] + (p,)))
-
-        elif p_arg_type is None and r_arg_type == 'dictionary':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                args = self._parse_constants(*args)
-
-                q, u = slice_x(args[0])
-
-                r = self._convert_specifieds_dict_to_array(*args[:3])
-
-                return self._base_rhs(q, u, r, args[-1])
-
-        elif p_arg_type == 'array' and r_arg_type == 'dictionary':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                q, u = slice_x(args[0])
-
-                r = self._convert_specifieds_dict_to_array(*args[:3])
-
-                return self._base_rhs(q, u, r, args[-1])
-
-        elif p_arg_type == 'dictionary' and r_arg_type == 'dictionary':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                q, u = slice_x(args[0])
-
-                p = self._convert_constants_dict_to_array(args[-1])
-
-                r = self._convert_specifieds_dict_to_array(*args[:3])
-
-                return self._base_rhs(q, u, r, p)
-
-        elif p_arg_type is None and r_arg_type == 'function':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                q, u = slice_x(args[0])
-
-                args = self._parse_constants(*args)
-
-                r = args[2](*args[:2])
-
-                return self._base_rhs(q, u, r, args[-1])
-
-        elif p_arg_type == 'array' and r_arg_type == 'function':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                q, u = slice_x(args[0])
-
-                r = args[2](*args[:2])
-
-                return self._base_rhs(q, u, r, args[-1])
-
-        elif p_arg_type == 'dictionary' and r_arg_type == 'function':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                q, u = slice_x(args[0])
-
-                p = self._convert_constants_dict_to_array(args[-1])
-
-                r = args[2](*args[:2])
-
-                return self._base_rhs(q, u, r, p)
+            if self.specifieds is None:
+                return self._base_rhs(q, u, p(*args))
+            else:
+                return self._base_rhs(q, u, r(*args), p(*args))
 
         rhs.__doc__ = self._generate_rhs_docstring()
 
