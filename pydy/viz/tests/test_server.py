@@ -28,23 +28,32 @@ class TestStoppableHttpServer(object):
         assert not self.stoppable_http_server.run
 
 
-# class TestServer(object):
-#
-#     def __init__(self):
-#         self.test_server = Server(directory="../static/",
-#                 scene_file="js/tests/sample_data/scene_desc.json")
-#
-#     def test_run_server(self):
-#         assert self.test_server.directory == "../static/"
-#         assert self.test_server.port == 8000
-#
-#         process = Process(target=self.test_server.run_server())
-#         process.run()
-#
-#         sa = self.test_server.httpd.socket.getsockname()
-#         assert sa[0] == "127.0.0.1"
-#         assert self.test_server.httpd.run
-#
-#         process.terminate()
-#         process.terminate()
-#         assert not self.test_server.httpd.run
+class TestServer(object):
+
+    def __init__(self):
+        self.test_server = Server(directory="../static/",
+                scene_file="js/tests/sample_data/scene_desc.json")
+
+    def test_run_server(self):
+        assert self.test_server.directory == "../static/"
+        assert self.test_server.port == 8000
+
+        proc = subprocess.Popen(self.test_server.run_server(),
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+
+        (stdout, stderr) = proc.communicate()
+        sa = self.test_server.httpd.socket.getsockname()
+        assert sa[0] == "127.0.0.1"
+        assert self.test_server.httpd.run
+
+        proc.communicate(signal.SIGINT, timeout=1)
+        (stdout, stderr) = proc.communicate()
+
+        proc.communicate("y", timeout=1)
+        (stdout, stderr) = proc.communicate()
+
+        proc.terminate()
+
+        assert not self.test_server.httpd.run
