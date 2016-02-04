@@ -76,7 +76,7 @@ class Server(object):
         self.port = port
         self.directory = directory
 
-    def run_server(self):
+    def run_server(self, headless=False):
         # Change dir to static first.
         os.chdir(self.directory)
         print(os.getcwd())
@@ -95,7 +95,8 @@ class Server(object):
         url = "http://localhost:"+str(sa[1]) + "/index.html?load=" + \
               self.scene_file
         print(url)
-        webbrowser.open(url)
+        if not headless:
+            webbrowser.open(url)
         print("Hit Ctrl+C to stop the server...")
         signal.signal(signal.SIGINT, self._stop_server)
         self.httpd.serve()
