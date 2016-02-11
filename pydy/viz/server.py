@@ -71,10 +71,14 @@ class Server(object):
     >>> server.run_server()
 
     """
-    def __init__(self, scene_file, directory="static/", port=8000):
+    def __init__(self, scene_file, directory="static/", port=8000,
+                 hard_stop=False):
         self.scene_file = scene_file
         self.port = port
         self.directory = directory
+        self.httpd = None
+        self._thread = None
+        self.hard_stop = hard_stop
 
     def run_server(self):
         # Change dir to static first.
@@ -114,10 +118,15 @@ class Server(object):
             Required by signal.signal
 
         """
-        res = raw_input("Shutdown this visualization server ([y]/n)? ")
-        if not res or res[0].lower() == 'y':
-            print("Shutdown confirmed")
-            print("Shutting down server...")
-            self.httpd.stop()
+        if not self.hard_stop:
+            res = raw_input("Shutdown this visualization server ([y]/n)? ")
+            if not res or res[0].lower() == 'y':
+                print("Shutdown confirmed")
+                print("Shutting down server...")
+                self.httpd.stop()
+                self._thread.join()
+            else:
+                print("Resuming operations...")
         else:
-            print("Resuming operations...")
+            self.httpd.stop()
+            self._thread.join()
