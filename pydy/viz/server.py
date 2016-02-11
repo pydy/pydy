@@ -7,6 +7,10 @@ import socket
 import threading
 import webbrowser
 
+if os.name == 'nt': # windows
+    import win32api
+    import win32con
+
 # For python 2 and python 3 compatibility
 if sys.version_info < (3, 0):
     from SimpleHTTPServer import SimpleHTTPRequestHandler
@@ -88,11 +92,13 @@ class Server(object):
         self.directory = directory
         self.httpd = None
         self._thread = None
+        self._sigint_handler = None
 
     def run_server(self, headless=False):
         # Change dir to static first.
         os.chdir(self.directory)
         print(os.getcwd())
+
         # Get a free port
         while self._check_port(self.port):
             self.port += 1
@@ -107,30 +113,58 @@ class Server(object):
         sa = self.httpd.socket.getsockname()
         print("Serving HTTP on", sa[0], "port", sa[1], "...")
         print("To view visualization, open:\n")
-        url = "http://localhost:"+str(sa[1]) + "/index.html?load=" + \
-              self.scene_file
+        url = ("http://localhost:" + str(sa[1]) + "/index.html?load=" +
+               self.scene_file)
         print(url)
         if not headless:
             webbrowser.open(url)
-        print("Hit Ctrl+C to stop the server...")
-        signal.signal(signal.SIGINT, self._stop_server)
+
+        print("Press Ctrl+C to stop server...")
+        self._register_sigint_handler()
         self._thread = threading.Thread(target=self.httpd.serve)
         self._thread.start()
+
+    def _windows_ctrl_handle(self, event):
+        if event == win32con.CTRL_C_EVENT:
+            self._stop_server(signal.SIGINT, None)
+            return 1 # don't call other handlers
+        return 0
+
+    def _register_sigint_handler(self):
+        if os.name == 'nt': # windows
+            def handle(event):
+                if event == win32con.CTRL_C_EVENT:
+                    self._stop_server(signal.CTRL_C_EVENT, None)
+                    return 1 # don't call other handlers
+                return 0
+            self._handle = handle
+            win32api.SetConsoleCtrlHandler(self._handle, 1)
+        else:
+            self._sigint_handler = signal.getsignal(signal.SIGINT)
+            signal.signal(signal.SIGINT, self._stop_server)
 
     def _check_port(self, port):
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         result = soc.connect_ex(('127.0.0.1', port))
         return result == 0
 
-    def _stop_server(self, signal, frame):
+    def _stop_server(self, signalnum, frame):
         """
         Confirms and stops the visualization server
-        signal:
-            Required by signal.signal
+        signalnum:
+            signal number
         frame:
-            Required by signal.signal
+            None or a frame object
 
         """
+        # restore previous SIGINT handler
+        if os.name == 'nt': # windows
+            win32api.SetConsoleCtrlHandler(self._handle, 0)
+        else:
+            if self._sigint_handler is not None:
+                signal.signal(signal.SIGINT, self._sigint_handler)
+                self._sigint_handler = None
+
         res = raw_input("Shutdown this visualization server ([y]/n)? ")
         if not res or res[0].lower() == 'y':
             print("Shutdown confirmed")
@@ -139,3 +173,4 @@ class Server(object):
             self._thread.join()
         else:
             print("Resuming operations...")
+            self._register_sigint_handler()
