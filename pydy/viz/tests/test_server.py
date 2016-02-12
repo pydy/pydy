@@ -32,15 +32,16 @@ class TestStoppableHttpServer(object):
 class TestServer(object):
 
     def __init__(self):
-        directory = os.path.join(os.path.dirname(__file__), '../static')
+        directory = os.path.join(os.path.dirname(os.path.abspath(
+                                            __file__)), os.pardir, 'static')
         self.test_server = Server(directory=directory,
-                scene_file="js/tests/sample_data/scene_desc.json")
+                            scene_file="js/tests/sample_data/scene_desc.json")
 
     def test_run_server(self):
         self.test_server.run_server(headless=True)
         assert self.test_server.httpd.running
 
-        os.kill(os.getpid(), signal.SIGINT)
         sys.stdin = io.StringIO(u'y')
+        os.kill(os.getpid(), signal.SIGINT)
         assert not self.test_server.httpd.running
         assert not self.test_server._thread.is_alive()
