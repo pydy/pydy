@@ -730,8 +730,6 @@ class Scene(object):
             # Construct a container that holds all of the constants input
             # text widgets.
             self._constants_container = widgets.Box()
-            self._constants_container._css = [("canvas", "width", "100%")]
-
             self._constants_text_widgets = OrderedDict()
             self._fill_constants_widgets()
             # Add all of the constants widgets to the container.
@@ -753,5 +751,10 @@ class Scene(object):
                                                  self._scene_json_file))
 
         self._html_widget = widgets.HTML(value=html)
+        # NOTE : This overrides the width of the simulation canvas so that it
+        # stays within the borders of the IPython notebook.
+        self._html_widget._css = [("canvas", "width", "100%"),
+                                  ("canvas", "padding-right", "10px")]
+
 
         display(self._html_widget)
