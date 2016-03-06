@@ -290,6 +290,9 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         var material = self.Materials.getMaterial(object.material);
         material.color = new THREE.Color(object.color);
         var mesh = new THREE.Mesh(geometry, material);
+        if(type == 'Plane'){
+            mesh.material.side = THREE.DoubleSide;
+        }
         var element = new Float32Array(object.init_orientation);
         var initMatrix = new THREE.Matrix4();
         initMatrix.elements = element;
