@@ -1,7 +1,12 @@
-This example can be run via the script::
+This is an example of a simple two body pendulum that exhibits chaotic
+behavior. The following diagram describes the system:
 
-   python chaos_pendulum.py
+![free body diagram](chaos_pendulum.svg)
 
-or the Jupyter notebook::
+This example can be run with::
 
-   jupyter notebook
+   python run.py
+
+or withing a Jupyter notebook with::
+
+   python run.py --notebook
