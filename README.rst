@@ -369,6 +369,7 @@ Release Notes
 0.4.0
 -----
 
+- The initial conditions can now be adjusted in the notebook GUI. [PR `#333`_]
 - The width of the viz canvas is now properly bounded in the notebook. [PR `#332`_]
 - Planes now render both sides in the visualization GUI. [PR `#330`_]
 - Adds in more type checks for System.times. [PR `#322`_]
@@ -376,6 +377,7 @@ Release Notes
 - Simplified the right hand side evaluation code in the ODEFunctionGenerator.
   Note that this change comes with some performance hits. [PR `#301`_]
 
+.. _#333: https://github.com/pydy/pydy/pull/333
 .. _#332: https://github.com/pydy/pydy/pull/332
 .. _#330: https://github.com/pydy/pydy/pull/330
 .. _#322: https://github.com/pydy/pydy/pull/322
