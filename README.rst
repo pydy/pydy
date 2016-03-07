@@ -369,7 +369,7 @@ Release Notes
 0.4.0
 -----
 
-- The width of the viz canvas is no properly bounded in the notebook. [PR `#332`_]
+- The width of the viz canvas is now properly bounded in the notebook. [PR `#332`_]
 - Planes now render both sides in the visualization GUI. [PR `#330`_]
 - Adds in more type checks for System.times. [PR `#322`_]
 - Added an OctaveMatrixGenerator for basic Octave/Matlab printing. [PR `#323`_]
