@@ -7,7 +7,7 @@ from pkg_resources import parse_version
 import IPython
 
 parser = argparse.ArgumentParser()
-parser.add_argument("notebook", action='store_false',
+parser.add_argument("-n", "--notebook", action='store_true',
                     help="Launches the example in a Jupyter notebook.")
 args = parser.parse_args()
 
