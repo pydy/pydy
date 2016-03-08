@@ -19,7 +19,7 @@ function InstallCondaPackages ($python_home, $spec) {
 
 function main () {
     UpdateConda $env:PYTHON
-    InstallCondaPackages $env:PYTHON "numpy scipy sympy cython nose coverage"
+    InstallCondaPackages $env:PYTHON "numpy scipy sympy cython pywin32 nose coverage"
 }
 
 main

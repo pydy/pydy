@@ -12,6 +12,14 @@ exec(open('pydy/version.py').read())
 # line is added.
 os.environ["MPLCONFIGDIR"] = "."
 
+
+install_requires=['numpy>=1.8.1',
+                  'scipy>=0.13.3',
+                  'sympy>=0.7.4.1']
+
+if os.name == 'nt':
+    install_requires.append('PyWin32>=219')
+
 setup(
     name='pydy',
     version=__version__,
@@ -23,10 +31,7 @@ setup(
     keywords="multibody dynamics",
     license='LICENSE.txt',
     packages=find_packages(),
-    install_requires=['numpy>=1.8.1',
-                      'scipy>=0.13.3',
-                      'sympy>=0.7.4.1',
-                      ],
+    install_requires=install_requires,
     extras_require={'doc': ['sphinx', 'numpydoc'],
                     'codegen': ['Cython>=0.20.1',
                                 'Theano>=0.7.0'],
