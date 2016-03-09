@@ -748,17 +748,19 @@ class Scene(object):
         if self._system is not None:
 
             self._initial_conditions_container = widgets.Box()
+            self._initial_conditions_container.padding = "10px"
             self._initial_conditions_text_widgets = OrderedDict()
             self._fill_initial_conditions_widgets()
-            self._initial_conditions_container.children = \
-                ((widgets.HTML('<strong>Initial Conditions</strong>'), ) +
+            title = widgets.HTML('<h4 style="margin-left: 5ex;">Initial Conditions</h4>')
+            self._initial_conditions_container.children = ((title, ) +
                  tuple(v for v in self._initial_conditions_text_widgets.values()))
 
             self._constants_container = widgets.Box()
+            self._constants_container.padding = "20px"
             self._constants_text_widgets = OrderedDict()
             self._fill_constants_widgets()
-            self._constants_container.children = \
-                ((widgets.HTML('<strong>Constants</strong>'), ) +
+            title = widgets.HTML('<h4 style="margin-left: 5ex;">Constants</h4>')
+            self._constants_container.children = ((title, ) +
                  tuple(v for v in self._constants_text_widgets.values()))
 
             self._initialize_rerun_button()
