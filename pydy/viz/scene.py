@@ -421,18 +421,21 @@ class Scene(object):
             times = self.system.times
 
         if times is None:
-            self._scene_info["timeDelta"] = 1.0 / self.frames_per_second
+            tf = (num_time_steps - 1)/self.frames_per_second
+            self._scene_info["timeStep"] = 1.0 / self.frames_per_second
             self._scene_info["startTime"] = 0.0
+            self._scene_info["endTime"] = tf
         else:
             # Assume that times is evenly spaced and monotonic.
             # TODO: Interpolate if times are not evenly spaced.
             total_time = times[-1] - times[0]
-            self._scene_info["timeDelta"] = total_time / (num_time_steps - 1)
+            self._scene_info["timeStep"] = total_time / (num_time_steps - 1)
             self._scene_info["startTime"] = times[0]
+            self._scene_info["endTime"] = times[-1]
 
         self._scene_info["fps"] = self.frames_per_second
         self._scene_info["speedup"] = (self.frames_per_second *
-                                       self._scene_info["timeDelta"])
+                                       self._scene_info["timeStep"])
         self._scene_info["timeSteps"] = num_time_steps
         self._scene_info["constant_map"] = constant_map_for_json
 
@@ -654,8 +657,12 @@ class Scene(object):
         original_sim_file = self._simulation_json_file
         original_constants = self.system.constants.copy()
         try:
-            self.system.constants = {s: w.value for s, w in
-                                     self._constants_text_widgets.items()}
+            d = {s: w.value for s, w in self._constants_text_widgets.items()}
+            t0 = d.pop('start time')
+            tf = d.pop('end time')
+            dt = d.pop('time step')
+            self.system.constants = d
+            self.system.times = np.arange(t0, tf, dt)
             pydy_dir = os.path.join(os.getcwd(), self.pydy_directory)
             self._generate_json(directory=pydy_dir)
         except:
@@ -692,6 +699,15 @@ class Scene(object):
                                             description=desc)
 
             self._constants_text_widgets[sym] = text_widget
+
+        # add in time parameters
+        for k in ['start time', 'time step', 'end time']:
+            # TODO: don't set time values both here and in _scene_info
+            k1, k2 = k.split()
+            key = '{}{}'.format(k1, k2.capitalize())
+            w = widgets.FloatText(value=self._scene_info[key],
+                                  description=k)
+            self._constants_text_widgets[k] = w
 
     def _initialize_rerun_button(self):
         """Construct a button for controlling rerunning the simulations."""

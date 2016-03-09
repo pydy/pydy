@@ -63,31 +63,10 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
                 self.simData = jQuery.parseJSON(transport.responseText);
             },
             onComplete: function(){
-                self.createTimeArray();
                 self.Scene.setAnimationTime(self.model.startTime);
             },
             onFailure: function() { alert('[PyDy ALERT]: Simulation File not loaded!'); },
             on404: function(){ alert("[PyDy ALERT]: Simulation File Not Found! Error:404"); }
         });
     },
-
-    createTimeArray: function(){
-        /**
-          * Creates a time array from
-          * the information inferred from
-          * simulation data.
-        **/
-        var self = this;
-        var timeSteps = self.model.timeSteps;
-        var timeDelta = self.model.timeDelta;
-        var time = self.model.startTime;
-        self._timeArray = [];
-
-        for(var i = 0; i < timeSteps; i++){
-            self._timeArray.push(time);
-            time += timeDelta;
-        }
-        self._finalTime = self._timeArray.slice(-1)[0];
-        console.log("[PyDy INFO]: Created Time Array");
-    }
 });
