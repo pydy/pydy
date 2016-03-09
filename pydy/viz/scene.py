@@ -15,7 +15,7 @@ from collections import OrderedDict
 from pkg_resources import parse_version
 import numpy as np
 from sympy import latex
-from sympy.physics.mechanics import ReferenceFrame, Point
+from sympy.physics.mechanics import ReferenceFrame, Point, dynamicsymbols
 
 # local
 from .camera import PerspectiveCamera
@@ -653,9 +653,12 @@ class Scene(object):
         original_scene_file = self._scene_json_file
         original_sim_file = self._simulation_json_file
         original_constants = self.system.constants.copy()
+        original_initial_conditions = self.system.initial_conditions.copy()
         try:
             self.system.constants = {s: w.value for s, w in
                                      self._constants_text_widgets.items()}
+            self.system.initial_conditions = {s: w.value for s, w in
+                                              self._initial_conditions_text_widgets.items()}
             pydy_dir = os.path.join(os.getcwd(), self.pydy_directory)
             self._generate_json(directory=pydy_dir)
         except:
@@ -669,7 +672,9 @@ class Scene(object):
             self._scene_json_file = original_scene_file
             self._simulation_json_file = original_sim_file
             self.system.constants = original_constants
+            self.system.initial_conditions = original_initial_conditions
             self._fill_constants_widgets()
+            self._fill_initial_conditions_widgets()
 
         js_tmp = 'jQuery("#json-input").val("{}/{}");'
         js = js_tmp.format(self.pydy_directory, self._scene_json_file)
@@ -692,6 +697,21 @@ class Scene(object):
                                             description=desc)
 
             self._constants_text_widgets[sym] = text_widget
+
+    def _fill_initial_conditions_widgets(self):
+
+        for sym in self._system.coordinates + self._system.speeds:
+
+            val = self._system.initial_conditions[sym]
+
+            sym_0 = sym.xreplace({dynamicsymbols._t: self._system.times[0]})
+
+            desc = latex(sym_0, mode='inline')
+
+            text_widget = widgets.FloatText(value=val,
+                                            description=desc)
+
+            self._initial_conditions_text_widgets[sym] = text_widget
 
     def _initialize_rerun_button(self):
         """Construct a button for controlling rerunning the simulations."""
@@ -727,18 +747,29 @@ class Scene(object):
         # button if the scene was generated with a System.
         if self._system is not None:
 
-            # Construct a container that holds all of the constants input
-            # text widgets.
+            self._initial_conditions_container = widgets.Box()
+            self._initial_conditions_container.padding = "10px"
+            self._initial_conditions_text_widgets = OrderedDict()
+            self._fill_initial_conditions_widgets()
+            title = widgets.HTML('<h4 style="margin-left: 5ex;">Initial Conditions</h4>')
+            self._initial_conditions_container.children = ((title, ) +
+                 tuple(v for v in self._initial_conditions_text_widgets.values()))
+
             self._constants_container = widgets.Box()
+            self._constants_container.padding = "20px"
             self._constants_text_widgets = OrderedDict()
             self._fill_constants_widgets()
-            # Add all of the constants widgets to the container.
-            self._constants_container.children = \
-                tuple(v for v in self._constants_text_widgets.values())
+            title = widgets.HTML('<h4 style="margin-left: 5ex;">Constants</h4>')
+            self._constants_container.children = ((title, ) +
+                 tuple(v for v in self._constants_text_widgets.values()))
 
             self._initialize_rerun_button()
 
-            display(self._constants_container)
+            parameter_input_container = \
+                widgets.HBox(children=(self._initial_conditions_container,
+                                       self._constants_container))
+
+            display(parameter_input_container)
             display(self._rerun_button)
 
         ipython_static_url = os.path.relpath(self.pydy_directory, os.getcwd())
