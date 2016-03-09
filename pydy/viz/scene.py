@@ -15,7 +15,7 @@ from collections import OrderedDict
 from pkg_resources import parse_version
 import numpy as np
 from sympy import latex
-from sympy.physics.mechanics import ReferenceFrame, Point
+from sympy.physics.mechanics import ReferenceFrame, Point, dynamicsymbols
 
 # local
 from .camera import PerspectiveCamera
@@ -695,23 +695,21 @@ class Scene(object):
 
             text_widget = widgets.FloatText(value=init_val,
                                             description=desc)
-            # NOTE : These widgets overlap each other in the HBox and this
-            # width setting (the default) keeps them from overlapping.
-            text_widget.width = 'auto'
 
             self._constants_text_widgets[sym] = text_widget
 
     def _fill_initial_conditions_widgets(self):
 
-        for sym, val in self._system.initial_conditions.items():
+        for sym in self._system.coordinates + self._system.speeds:
 
-            desc = latex(sym, mode='inline')
+            val = self._system.initial_conditions[sym]
+
+            sym_0 = sym.xreplace({dynamicsymbols._t: self._system.times[0]})
+
+            desc = latex(sym_0, mode='inline')
 
             text_widget = widgets.FloatText(value=val,
                                             description=desc)
-            # NOTE : These widgets overlap each other in the HBox and this
-            # width setting (the default) keeps them from overlapping.
-            text_widget.width = 'auto'
 
             self._initial_conditions_text_widgets[sym] = text_widget
 
