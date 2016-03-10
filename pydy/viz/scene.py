@@ -704,9 +704,13 @@ class Scene(object):
 
             val = self._system.initial_conditions[sym]
 
-            sym_0 = sym.xreplace({dynamicsymbols._t: self._system.times[0]})
-
-            desc = latex(sym_0, mode='inline')
+            # TODO : There should be a better way to do this. It would be nice
+            # to format the float in a away that always prints compactly and
+            # gives enough information even if the number is a very small or
+            # very large value.
+            desc = latex(sym, mode='inline')
+            desc = desc.replace(r'\left ({} \right )'.format(dynamicsymbols._t),
+                                '({:1.2f})'.format(self._system.times[0]))
 
             text_widget = widgets.FloatText(value=val,
                                             description=desc)
