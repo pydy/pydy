@@ -5,7 +5,7 @@ import warnings
 import numpy as np
 from numpy import testing
 import sympy as sm
-from sympy.physics.mechanics import dynamicsymbols
+import sympy.physics.mechanics as me
 from scipy.integrate import odeint
 theano = sm.external.import_module('theano')
 
@@ -45,7 +45,7 @@ class TestSystem():
         assert (sys.constants_symbols ==
                 set(sm.symbols('k0, m0, g, c0')))
         assert sys.specifieds_symbols == {self.specified_symbol}
-        assert sys.states == dynamicsymbols('x0, v0')
+        assert sys.states == me.dynamicsymbols('x0, v0')
         assert sys.evaluate_ode_function is None
         assert sys.eom_method is self.kane
         assert sys.ode_solver is odeint
@@ -56,7 +56,7 @@ class TestSystem():
 
         # Specify a bunch of attributes during construction.
         # --------------------------------------------------
-        ic = {dynamicsymbols('x0'): 3.6, dynamicsymbols('v0'): 4.3}
+        ic = {me.dynamicsymbols('x0'): 3.6, me.dynamicsymbols('v0'): 4.3}
         sys = System(self.kane,
                      ode_solver=odeint,
                      specifieds={self.specified_symbol: np.ones(1)},
@@ -64,7 +64,7 @@ class TestSystem():
                      constants=self.constant_map)
 
         assert sys.eom_method is self.kane
-        assert list(sys.specifieds.keys()) == [dynamicsymbols('f0')]
+        assert list(sys.specifieds.keys()) == [me.dynamicsymbols('f0')]
         testing.assert_allclose(list(sys.specifieds.values()),
                                 [np.ones(1)])
         assert sys.initial_conditions.keys() == ic.keys()
@@ -137,7 +137,7 @@ class TestSystem():
         testing.assert_allclose(list(sys.constants.values()), [9.3])
 
         # Putting in a non-constant key does not raise exception.
-        sys.constants[dynamicsymbols('v0')] = 9.8
+        sys.constants[me.dynamicsymbols('v0')] = 9.8
         # Then, if we integrate, we do error-checking and we get an exception.
         sys.times = [0.0, 1.0]
         with testing.assert_raises(ValueError):
@@ -146,26 +146,26 @@ class TestSystem():
         # Provide a constant that isn't actually a constant.
         # --------------------------------------------------
         with testing.assert_raises(ValueError):
-            sys.constants = {dynamicsymbols('x0'): 1.3}
+            sys.constants = {me.dynamicsymbols('x0'): 1.3}
         with testing.assert_raises(ValueError):
-            sys.constants = {dynamicsymbols('f0'): 1.8}
+            sys.constants = {me.dynamicsymbols('f0'): 1.8}
 
     def test_specifieds(self):
 
         sys = System(self.kane)
         assert sys.specifieds == dict()
-        sys.specifieds = {dynamicsymbols('f0'): 5.9}
-        assert list(sys.specifieds.keys()) == [dynamicsymbols('f0')]
+        sys.specifieds = {me.dynamicsymbols('f0'): 5.9}
+        assert list(sys.specifieds.keys()) == [me.dynamicsymbols('f0')]
         testing.assert_allclose(list(sys.specifieds.values()), [5.9])
 
         # Using the property as a dict.
         # -----------------------------
         # Modifying the dict directly does change the dict.
-        sys.specifieds[dynamicsymbols('f0')] = 5.1
-        assert list(sys.specifieds.keys()) == [dynamicsymbols('f0')]
+        sys.specifieds[me.dynamicsymbols('f0')] = 5.1
+        assert list(sys.specifieds.keys()) == [me.dynamicsymbols('f0')]
         testing.assert_allclose(list(sys.specifieds.values()), [5.1])
         # Putting in a non-specified key does not raise exception.
-        sys.specifieds[dynamicsymbols('v0')] = 3.5
+        sys.specifieds[me.dynamicsymbols('v0')] = 3.5
         # Then, if we integrate, we do error-checking and we get an exception.
         sys.times = [0.0, 1.0]
         with testing.assert_raises(ValueError):
@@ -173,7 +173,7 @@ class TestSystem():
 
         sys = System(self.kane)
         # Putting in a value of the wrong length does not raise exception.
-        sys.specifieds[dynamicsymbols('f0')] = 3.1 * np.ones(2)
+        sys.specifieds[me.dynamicsymbols('f0')] = 3.1 * np.ones(2)
         # Then, if we integrate, we do error-checking and we get an exception.
         # TODO actually, this does not seem to throw an exception.
         # TODO with testing.assert_raises(ValueError):
@@ -186,7 +186,7 @@ class TestSystem():
         with testing.assert_raises(ValueError):
             sys.specifieds = {sm.symbols('m0'): 5.4}
         with testing.assert_raises(ValueError):
-            sys.specifieds = {dynamicsymbols('x0'): 5.1}
+            sys.specifieds = {me.dynamicsymbols('x0'): 5.1}
 
         # Complex error-checking when using property as a dict.
         # -----------------------------------------------------
@@ -240,7 +240,7 @@ class TestSystem():
             sys.specifieds = {'symbols': [sm.symbols('T2, T2')],
                               'values': [1, 2]}
         with testing.assert_raises(ValueError):
-            sys.specifieds = {'symbols': [dynamicsymbols('T2')],
+            sys.specifieds = {'symbols': [me.dynamicsymbols('T2')],
                               'values': [1.0]}
 
         # Reordering causes issues!
@@ -257,8 +257,8 @@ class TestSystem():
 
         # Test with no specifieds.
         sys = multi_mass_spring_damper(1, apply_gravity=True)
-        sys.initial_conditions = {dynamicsymbols('x0'): 0.1,
-                                  dynamicsymbols('v0'): -1.0}
+        sys.initial_conditions = {me.dynamicsymbols('x0'): 0.1,
+                                  me.dynamicsymbols('v0'): -1.0}
         sys.times = times
         sys.integrate()
 
@@ -294,7 +294,7 @@ class TestSystem():
     def test_initial_conditions(self):
 
         # Partially provided ic's.
-        ic = {dynamicsymbols('v0'): 6.1}
+        ic = {me.dynamicsymbols('v0'): 6.1}
 
         # Using the constructor.
         # ----------------------
@@ -315,8 +315,8 @@ class TestSystem():
         # -----------------------------
         # Modifying hte dict directly does change the dict.
         sys = System(self.kane, times=[0.0, 1.0])
-        sys.initial_conditions[dynamicsymbols('x0')] = 5.8
-        assert list(sys.initial_conditions.keys()) == [dynamicsymbols('x0')]
+        sys.initial_conditions[me.dynamicsymbols('x0')] = 5.8
+        assert list(sys.initial_conditions.keys()) == [me.dynamicsymbols('x0')]
         testing.assert_allclose(list(sys.initial_conditions.values()), [5.8])
         # Putting in a non-state key does not raise exception.
         sys.initial_conditions[sm.symbols('m0')] = 7.9
@@ -387,7 +387,7 @@ class TestSystem():
         # -----------------------------------------
         constants_dict = dict(zip(sm.symbols('m0, k0, c0, g'),
                                   [1.0, 1.0, 1.0, 1.0]))
-        specified_dict = {dynamicsymbols('f0'): 0.0}
+        specified_dict = {me.dynamicsymbols('f0'): 0.0}
         x_03 = sys.ode_solver(sys.evaluate_ode_function, [0, 0], sys.times,
                               args=(specified_dict, constants_dict))
         testing.assert_allclose(x_02, x_03)
@@ -397,7 +397,7 @@ class TestSystem():
         sys = System(self.kane, times=times)
         # I know that this is the order of the states.
         x0 = [5.1, 3.7]
-        ic = {dynamicsymbols('x0'): x0[0], dynamicsymbols('v0'): x0[1]}
+        ic = {me.dynamicsymbols('x0'): x0[0], me.dynamicsymbols('v0'): x0[1]}
         sys.initial_conditions = ic
         x_04 = sys.integrate()
         x_05 = sys.ode_solver(
@@ -423,3 +423,55 @@ class TestSystem():
         sys = System(self.kane, times=times)
         with testing.assert_raises(NotImplementedError):
             sys.generate_ode_function(generator='made-up')
+
+def test_specifying_coordinate():
+    """This test ensures that you can use derivatives as specified values."""
+
+    import numpy as np
+    import sympy.physics.mechanics as me
+    from pydy.system import System
+
+    beta = me.dynamicsymbols('beta')
+    q1, q2, q3, q4 = me.dynamicsymbols('q1, q2, q3, q4')
+    u1, u2, u3, u4 = me.dynamicsymbols('u1, u2, u3, u4')
+
+    N = me.ReferenceFrame('N')
+    A = N.orientnew('A', 'Axis', (q1, N.x))
+    B = A.orientnew('B', 'Axis', (beta, A.y))
+
+    No = me.Point('No')
+    Ao = No.locatenew('Ao', q2 * N.x + q3 * N.y + q4 * N.z)
+    Bo = Ao.locatenew('Bo', 10 * A.x + 10 * A.y + 10 * A.z)
+
+    A.set_ang_vel(N, u1 * N.x)
+    B.ang_vel_in(N) # compute it automatically
+
+    No.set_vel(N, 0)
+    Ao.set_vel(N, u2 * N.x + u3 * N.y + u4 * N.z)
+    Bo.v2pt_theory(Ao, N, B)
+
+    # q1 will be a gc and q2 will be specified
+    body_A = me.RigidBody('A', Ao, A, 1.0, (me.inertia(A, 1, 2, 3), Ao))
+    body_B = me.RigidBody('B', Bo, B, 1.0, (me.inertia(A, 3, 2, 1), Bo))
+
+    bodies= [body_A, body_B]
+    # TODO : This should be able to be simple an empty iterable.
+    loads = [(No, 0 * N.x)]
+
+    kdes = (u1 - q1.diff(),
+            u2 - q2.diff(),
+            u3 - q3.diff(),
+            u4 - q4.diff())
+
+    kane = me.KanesMethod(N, q_ind=(q1, q2, q3, q4),
+                          u_ind=(u1, u2, u3, u4), kd_eqs=kdes)
+    fr, frstar = kane.kanes_equations(loads, bodies)
+
+    sys = System(kane)
+
+    sys.specifieds = {(beta, beta.diff(), beta.diff().diff()):
+                      lambda x, t: np.array([1.0, 1.0, 1.0])}
+
+    sys.times = np.linspace(0, 10, 20)
+
+    sys.integrate()
