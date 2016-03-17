@@ -431,6 +431,7 @@ def test_specifying_coordinate():
     import sympy.physics.mechanics as me
     from pydy.system import System
 
+    # beta will be a specified angle
     beta = me.dynamicsymbols('beta')
     q1, q2, q3, q4 = me.dynamicsymbols('q1, q2, q3, q4')
     u1, u2, u3, u4 = me.dynamicsymbols('u1, u2, u3, u4')
@@ -444,27 +445,26 @@ def test_specifying_coordinate():
     Bo = Ao.locatenew('Bo', 10 * A.x + 10 * A.y + 10 * A.z)
 
     A.set_ang_vel(N, u1 * N.x)
-    B.ang_vel_in(N) # compute it automatically
+    B.ang_vel_in(N)  # compute it automatically
 
     No.set_vel(N, 0)
     Ao.set_vel(N, u2 * N.x + u3 * N.y + u4 * N.z)
     Bo.v2pt_theory(Ao, N, B)
 
-    # q1 will be a gc and q2 will be specified
     body_A = me.RigidBody('A', Ao, A, 1.0, (me.inertia(A, 1, 2, 3), Ao))
     body_B = me.RigidBody('B', Bo, B, 1.0, (me.inertia(A, 3, 2, 1), Bo))
 
-    bodies= [body_A, body_B]
+    bodies = [body_A, body_B]
     # TODO : This should be able to be simple an empty iterable.
     loads = [(No, 0 * N.x)]
 
-    kdes = (u1 - q1.diff(),
+    kdes = [u1 - q1.diff(),
             u2 - q2.diff(),
             u3 - q3.diff(),
-            u4 - q4.diff())
+            u4 - q4.diff()]
 
-    kane = me.KanesMethod(N, q_ind=(q1, q2, q3, q4),
-                          u_ind=(u1, u2, u3, u4), kd_eqs=kdes)
+    kane = me.KanesMethod(N, q_ind=[q1, q2, q3, q4],
+                          u_ind=[u1, u2, u3, u4], kd_eqs=kdes)
     fr, frstar = kane.kanes_equations(loads, bodies)
 
     sys = System(kane)
