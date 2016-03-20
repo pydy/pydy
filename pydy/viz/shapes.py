@@ -205,6 +205,11 @@ class Shape(object):
                                 'must provide a mapping to numerical values.')
         return data_dict
 
+def check_valid_input(dimensions):
+    for dimension in dimensions:
+        if not isinstance(dimension, int) and not isinstance(dimension, float):
+            raise TypeError('Dimensions should be integer or float values.')
+
 
 class Cube(Shape):
     """Instantiates a cube of a given size.
@@ -245,6 +250,8 @@ class Cube(Shape):
     """
 
     def __init__(self, length, **kwargs):
+        check_valid_input([length])
+            #raise TypeError('Dimensions should be integer or float values.')
         super(Cube, self).__init__(**kwargs)
         self.geometry_attrs.append('length')
         self.length = length
@@ -297,6 +304,7 @@ class Cylinder(Shape):
 
     """
     def __init__(self, length, radius, **kwargs):
+        check_valid_input([length, radius])
         super(Cylinder, self).__init__(**kwargs)
         self.geometry_attrs += ['length', 'radius']
         self.length = length
@@ -350,6 +358,7 @@ class Cone(Shape):
 
     """
     def __init__(self, length, radius, **kwargs):
+        check_valid_input([length, radius])
         super(Cone, self).__init__(**kwargs)
         self.geometry_attrs += ['length', 'radius']
         self.length = length
@@ -395,6 +404,7 @@ class Sphere(Shape):
     """
 
     def __init__(self, radius=10.0, **kwargs):
+        check_valid_input([radius])
         super(Sphere, self).__init__(**kwargs)
         self.geometry_attrs += ['radius']
         self.radius = radius
@@ -486,6 +496,7 @@ class Plane(Shape):
 
     """
     def __init__(self, length=10.0, width=5.0, **kwargs):
+        check_valid_input([length, width])
         super(Plane, self).__init__(**kwargs)
         self.geometry_attrs += ['length', 'width']
         self.length = length
@@ -660,6 +671,7 @@ class Torus(Shape):
     """
 
     def __init__(self, radius, tube_radius, **kwargs):
+        check_valid_input([radius, tube_radius])
         super(Torus, self).__init__(**kwargs)
         self.geometry_attrs += ['radius', 'tube_radius']
         self.radius = radius
@@ -779,6 +791,7 @@ class Tube(Shape):
     """
 
     def __init__(self, radius, points, **kwargs):
+        check_valid_input([radius])
         super(Tube, self).__init__(**kwargs)
         self.geometry_attrs += ['radius', 'points']
         self.radius = radius
