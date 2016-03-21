@@ -251,7 +251,6 @@ class Cube(Shape):
 
     def __init__(self, length, **kwargs):
         check_valid_input([length])
-            #raise TypeError('Dimensions should be integer or float values.')
         super(Cube, self).__init__(**kwargs)
         self.geometry_attrs.append('length')
         self.length = length

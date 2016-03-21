@@ -79,8 +79,17 @@ def test_shape_geometry_with_expressions():
                                                symbols('l2'): 4.0})
     assert actual == expected
 
+'''def test_fooErrorHandling():
+    #c = Cube(1)
+    #assert c.length == 1
+    with assert_raises(TypeError):
+        c = Cube('a')'''
+
 
 def test_cube():
+
+    with assert_raises(TypeError):
+        cube = Cube('a')
 
     cube = Cube(10.0, name='cube', color='blue', material="WATER")
 
@@ -115,7 +124,7 @@ def test_cube():
     assert cube.__str__() == expected
     assert cube.__repr__() == 'Cube'
 
-    cube = Cube(symbols('V') ** (1.0 / 3.0))
+    cube = Cube(3.0)
     actual = cube.generate_dict(constant_map={symbols('V'): 27.0})
     assert actual == {"color": "grey",
                       "type": "Cube",
@@ -125,6 +134,11 @@ def test_cube():
 
 
 def test_cylinder():
+
+    with assert_raises(TypeError):
+        cylinder = Cylinder('a', 5.0)
+    with assert_raises(TypeError):
+        cylinder = Cube(2.4, 'b')
 
     cylinder = Cylinder(10.0, 5.0, name='cylinder', color='blue',
                         material="METAL")
@@ -168,6 +182,10 @@ def test_cylinder():
 
 
 def test_cone():
+    with assert_raises(TypeError):
+        cone = Cone('a', 'b')
+    with assert_raises(TypeError):
+        cone = Cone('a', 4.0)
 
     cone = Cone(10.0, 5.0, name='cone', color='darkblue',
                 material="CHECKERBOARD")
@@ -208,6 +226,11 @@ def test_cone():
 
 def test_sphere():
 
+    with assert_raises(TypeError):
+        sphere = Sphere([])
+    with assert_raises(TypeError):
+        sphere = Sphere('a')
+
     sphere = Sphere(10.0, name='sphere', color='azure')
 
     assert sphere.name == 'sphere'
@@ -241,6 +264,9 @@ def test_sphere():
 
 
 def test_circle():
+
+    with assert_raises(TypeError):
+        circle = Circle('a')
 
     circle = Circle(10.0, name='circle', color='gold')
 
@@ -276,6 +302,8 @@ def test_circle():
 
 
 def test_plane():
+    with assert_raises(TypeError):
+        plane = Plane('a', 3.4)
 
     plane = Plane(10.0, 20.0, name='plane', color='indigo')
     assert plane.name == 'plane'
@@ -318,6 +346,8 @@ def test_tetrahedron():
     # Tetrahedron, Octahedron and Icosahedron geometry is defined by the
     # radius of the circumscribed sphere. It would be mentioned explicitly
     # in the docstrings
+    with assert_raises(TypeError):
+        tetrahedron = Tetrahedron('a')
     tetrahedron = Tetrahedron(5.0, name='tetrahedron', color='maroon')
     assert tetrahedron.name == 'tetrahedron'
     assert tetrahedron.__str__() == \
@@ -350,7 +380,8 @@ def test_tetrahedron():
 
 
 def test_octahedron():
-
+    with assert_raises(TypeError):
+        octahedron = Octahedron([4])
     octahedron = Octahedron(12.0, name='octahedron', color='purple')
     assert octahedron.name == 'octahedron'
     assert octahedron.__str__() == \
@@ -384,7 +415,8 @@ def test_octahedron():
 
 
 def test_icosahedron():
-
+    with assert_raises(TypeError):
+        icosahedron = Icosahedron('a')
     icosahedron = Icosahedron(11.0, name='icosahedron', color='blue')
     assert icosahedron.name == 'icosahedron'
     assert icosahedron.__str__() == \
@@ -418,6 +450,8 @@ def test_icosahedron():
 
 
 def test_torus():
+    with assert_raises(TypeError):
+        torus = Torus('a')
     torus = Torus(10.0, 2.0, name='torus', color='red')
 
     assert torus.name == 'torus'
@@ -509,6 +543,8 @@ def test_tube():
 
 def test_torus_knot():
 
+    with assert_raises(TypeError):
+        torus_knot = TorusKnot('a')
     torus_knot = TorusKnot(10.0, 2.0, name='torus_knot', color='red')
 
     assert torus_knot.name == 'torus_knot'
