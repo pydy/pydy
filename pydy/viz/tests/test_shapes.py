@@ -57,37 +57,29 @@ def test_shape():
 def test_shape_geometry_with_expressions():
 
     shape = Shape()
-    shape.length = symbols('l')
+    shape.length = 16.0
     shape.geometry_attrs.append('length')
     expected = {"color": "grey",
                 "type": "Shape",
                 "name": "unnamed",
                 "length": 16.0,
                 "material": "default"}
-    actual = shape.generate_dict(constant_map={symbols('l'): 16.0})
+    actual = shape.generate_dict()
     assert actual == expected
 
     shape = Shape()
-    shape.length = symbols('l1') + symbols('l2') ** 2
+    shape.length = 4.0 + 4.0 ** 2
     shape.geometry_attrs.append('length')
     expected = {"color": "grey",
                 "type": "Shape",
                 "name": "unnamed",
                 "length": 20.0,
                 "material": "default"}
-    actual = shape.generate_dict(constant_map={symbols('l1'): 4.0,
-                                               symbols('l2'): 4.0})
+    actual = shape.generate_dict()
     assert actual == expected
-
-'''def test_fooErrorHandling():
-    #c = Cube(1)
-    #assert c.length == 1
-    with assert_raises(TypeError):
-        c = Cube('a')'''
 
 
 def test_cube():
-
     with assert_raises(TypeError):
         cube = Cube('a')
 
@@ -125,7 +117,7 @@ def test_cube():
     assert cube.__repr__() == 'Cube'
 
     cube = Cube(3.0)
-    actual = cube.generate_dict(constant_map={symbols('V'): 27.0})
+    actual = cube.generate_dict()
     assert actual == {"color": "grey",
                       "type": "Cube",
                       "name": "unnamed",
@@ -134,7 +126,6 @@ def test_cube():
 
 
 def test_cylinder():
-
     with assert_raises(TypeError):
         cylinder = Cylinder('a', 5.0)
     with assert_raises(TypeError):
@@ -225,7 +216,6 @@ def test_cone():
 
 
 def test_sphere():
-
     with assert_raises(TypeError):
         sphere = Sphere([])
     with assert_raises(TypeError):
@@ -264,7 +254,6 @@ def test_sphere():
 
 
 def test_circle():
-
     with assert_raises(TypeError):
         circle = Circle('a')
 
@@ -380,8 +369,10 @@ def test_tetrahedron():
 
 
 def test_octahedron():
+
     with assert_raises(TypeError):
         octahedron = Octahedron([4])
+
     octahedron = Octahedron(12.0, name='octahedron', color='purple')
     assert octahedron.name == 'octahedron'
     assert octahedron.__str__() == \
@@ -417,6 +408,7 @@ def test_octahedron():
 def test_icosahedron():
     with assert_raises(TypeError):
         icosahedron = Icosahedron('a')
+
     icosahedron = Icosahedron(11.0, name='icosahedron', color='blue')
     assert icosahedron.name == 'icosahedron'
     assert icosahedron.__str__() == \
@@ -542,9 +534,9 @@ def test_tube():
 
 
 def test_torus_knot():
-
     with assert_raises(TypeError):
         torus_knot = TorusKnot('a')
+
     torus_knot = TorusKnot(10.0, 2.0, name='torus_knot', color='red')
 
     assert torus_knot.name == 'torus_knot'
