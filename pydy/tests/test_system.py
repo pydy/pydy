@@ -424,12 +424,9 @@ class TestSystem():
         with testing.assert_raises(NotImplementedError):
             sys.generate_ode_function(generator='made-up')
 
-def test_specifying_coordinate():
-    """This test ensures that you can use derivatives as specified values."""
 
-    import numpy as np
-    import sympy.physics.mechanics as me
-    from pydy.system import System
+def test_specifying_coordinate_issue_339():
+    """This test ensures that you can use derivatives as specified values."""
 
     # beta will be a specified angle
     beta = me.dynamicsymbols('beta')
