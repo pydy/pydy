@@ -14,7 +14,7 @@ import numpy.linalg
 import scipy.linalg
 import sympy as sm
 import sympy.physics.mechanics as me
-from sympy.core.function import UndefinedFunction
+from sympy.core.function import UndefinedFunction, Derivative
 Cython = sm.external.import_module('Cython')
 theano = sm.external.import_module('theano')
 if theano:
@@ -439,7 +439,8 @@ r : dictionary
 
         for k, v in r.items():
             # TODO : Not sure if this is the best check here.
-            if isinstance(type(k), UndefinedFunction):
+            if (isinstance(type(k), UndefinedFunction) or
+                isinstance(k, Derivative)):
                 k = (k,)
             idx = [self.specifieds.index(symmy) for symmy in k]
             try:
