@@ -1,4 +1,4 @@
-Please edit below based on the type of PR.
+Please edit below based on the type of PR. It is then the duty of reviewers to check off the items as they are completed. If any questions are not relevant to your particular pull request, a reviewer will simply check it off as done.
 
 New Feature
 -----------
