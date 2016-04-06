@@ -120,16 +120,15 @@ class System(object):
             self.states = coordinates + speeds
             self.force = eom_method.forcing_full
             self.mass = eom_method.mass_matrix_full
-        elif len(args)+len(kwargs)==3:
-            sig = signature(lambda states, force, mass: None)
-            bound_args = sig.bind(*args,**kwargs)
-            states = bound_args.arguments['states']
-            force = bound_args.arguments['force']
-            mass = bound_args.arguments['mass']
+        elif len(args)+len(kwargs)==2 or len(args)+len(kwargs)==3:
+            ba = signature(lambda states, force, mass=None: None).bind(*args,**kwargs)
+            self.states = ba.arguments.pop('states')
+            self.force = ba.arguments.pop('force')
+            self.mass = ba.arguments.pop('mass', sm.Matrix([]))
 
 
         # TODO : What if user adds symbols after constructing a System?
-        self._constants_symbols = self._constant_symbols()
+        self._constants_symbols = self._undefined_symbols()
         self._specifieds_symbols = self._undefined_dynamicsymbols()
 
         if constants is None:
@@ -440,8 +439,10 @@ class System(object):
         if not specifieds:
             specifieds = None
 
-        kwargs = {'mass_matrix': self.mass,
-                  'specifieds': specifieds}
+        kwargs = {'specifieds': specifieds}
+
+        if len(self.mass) > 0:
+            kwargs['mass_matrix'] = self.mass
 
         return kwargs
 
@@ -555,7 +556,7 @@ class System(object):
                     (self.force[:] + self.mass[:]), set(self.states)
                 ))
 
-    def _constant_symbols(self):
+    def _undefined_symbols(self):
         """Similar to ``_find_othersymbols()``, except it checks all syms used in
         the system.
 
