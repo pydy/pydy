@@ -700,7 +700,7 @@ class Scene(object):
 
     def _fill_initial_conditions_widgets(self):
 
-        for sym in self._system.coordinates + self._system.speeds:
+        for sym in self._system.states:
 
             val = self._system.initial_conditions[sym]
 
