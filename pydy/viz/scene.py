@@ -752,35 +752,28 @@ class Scene(object):
             self._initial_conditions_text_widgets = OrderedDict()
             self._fill_initial_conditions_widgets()
             title = widgets.HTML('<h4 style="margin-left: 5ex;">Initial Conditions</h4>')
-            if len(self._initial_conditions_text_widgets) > 5:
-                _itemList = []
-                _initial_item = []
-                for item in self._initial_conditions_text_widgets:
-                    _itemList.append(widgets.Text(description=item.name, value=self._system.initial_conditions[item.name]))
-                _initial_item = widgets.Box(children = itemList)
-                self._initial_conditions_container = widgets.Accordion(children=[_initial_item])
-                self._initial_conditions_container.set_title(0, 'Initial Conditions')
-            else :
-                self._initial_conditions_container.children = ((title, ) +
-                    tuple(v for v in self._initial_conditions_text_widgets.values()))
+            _itemList = []
+            _initial_item = []
+            for item in self._initial_conditions_text_widgets:
+                _itemList.append(widgets.Text(description=item.name))
+            _initial_item = widgets.Box(children = itemList)
+            self._initial_conditions_container = widgets.Accordion(children=[_initial_item])
+            self._initial_conditions_container.set_title(0, 'Initial Conditions')
+
 
             self._constants_container = widgets.Box()
             self._constants_container.padding = "20px"
             self._constants_text_widgets = OrderedDict()
             self._fill_constants_widgets()
             title = widgets.HTML('<h4 style="margin-left: 5ex;">Constants</h4>')
-            if len(self._constants_text_widgets) > 5:
-                _itemList = []
-                _constants_item = []
-                for item in self._constants_text_widgets:
-                    _itemList.append(widgets.Text(description=item.name))
-                _constants_item = widgets.Box(children = _itemList)
-                self._constants_container = widgets.Accordion(children=[_constants_item])
-                self._constants_container.padding = "60px"
-                self._constants_container.set_title(0, 'Constants')
-            else :
-                self._constants_container.children = ((title, ) +
-                    tuple(v for v in self._constants_text_widgets.values()))
+            _itemList = []
+            _constants_item = []
+            for item in self._constants_text_widgets:
+                _itemList.append(widgets.Text(description=item.name))
+            _constants_item = widgets.Box(children = _itemList)
+            self._constants_container = widgets.Accordion(children=[_constants_item])
+            self._constants_container.padding = "60px"
+            self._constants_container.set_title(0, 'Constants')
 
             self._initialize_rerun_button()
 
