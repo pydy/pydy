@@ -23,7 +23,7 @@ if theano:
 import pydy
 from ..utils import PyDyDeprecationWarning
 from .cython_code import CythonMatrixGenerator
-
+from ..backend import USE_SYMENGINE
 
 warnings.simplefilter('once', PyDyDeprecationWarning)
 
@@ -713,6 +713,7 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
         # done) but there may be some limitations on number of args.
         subs = {}
         vec_inputs = []
+        inputs = []
         if self.specifieds is None:
             def_vecs = ['q', 'u', 'p']
         else:
@@ -722,6 +723,7 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
             v = sm.DeferredVector(vec_name)
             for i, sym in enumerate(syms):
                 subs[sym] = v[i]
+                inputs.append(v[i])
             vec_inputs.append(v)
 
         try:
@@ -729,10 +731,14 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
         except AttributeError:
             # msubs doesn't exist in SymPy < 0.7.6.
             outputs = [output.subs(subs) for output in outputs]
-
-        modules = [{'ImmutableMatrix': np.array}, 'numpy']
-
-        return sm.lambdify(vec_inputs, outputs, modules=modules)
+        print((inputs, len(outputs)))
+        if USE_SYMENGINE:
+            import symengine
+            callbacks = [symengine.Lambdify(inputs, output) for output in outputs]
+            return lambda *args: [callback(np.concatenate(args).ravel()) for callback in callbacks]
+        else:
+            modules = [{'ImmutableMatrix': np.array}, 'numpy']
+            return sm.lambdify(vec_inputs, outputs, modules=modules)
 
     def generate_full_rhs_function(self):
 

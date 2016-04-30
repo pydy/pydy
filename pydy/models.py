@@ -5,10 +5,10 @@
 examples."""
 
 # external libraries
-import sympy as sm
 import sympy.physics.mechanics as me
 
 # local
+from .backend import sm
 from .system import System
 
 

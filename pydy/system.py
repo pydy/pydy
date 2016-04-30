@@ -54,7 +54,7 @@ import warnings
 from itertools import repeat
 
 import numpy as np
-import sympy as sm
+from .backend import sm
 from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
 
@@ -539,7 +539,6 @@ class System(object):
             args = (self._constants_padded_with_defaults(),)
         else:
             args = (specified_value, self._constants_padded_with_defaults())
-
         x_history = self.ode_solver(
             self.evaluate_ode_function,
             initial_conditions_in_proper_order,
