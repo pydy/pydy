@@ -1,5 +1,9 @@
 # Simple Pendulum Example
 
+## Dependencies
+
+- sympy 1.0
+
 ## Problem
 
 This code determines the equation of motion for a simple pendulum. The pendulum

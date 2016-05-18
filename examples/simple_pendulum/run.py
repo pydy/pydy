@@ -1,3 +1,5 @@
+# This code requires sympy 1.0 to run
+
 from sympy import *
 from sympy.physics.mechanics import LagrangesMethod, Lagrangian
 from sympy.physics.mechanics import ReferenceFrame, Particle, Point
