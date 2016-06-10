@@ -42,6 +42,12 @@ RHS = mm_full.inv()*f_full
 coordinates = (x1, x2)
 speeds = (u1, u2)
 
+# Form the kinetic energy to attach to one of the EOM instances as an output
+# equation
+
+KE = 0.5 * (m1*u1**2 + m2*u2**2)
+out_eqns = {"kinetic_energy": KE}
+
 # Initialize the equation of motion class using the three forms accepted by
 # ODEFunctionGenerator
 #    [1] x' = F(x, t, r, p)
@@ -51,10 +57,14 @@ speeds = (u1, u2)
 #    [3] M(q, p) u' = F(q, u, t, r, p)
 #        q' = G(q, u, t, r, p)
 
-eom1 = eombase.EOM(coordinates, speeds, rhs=RHS)
+eom1 = eombase.EOM(coordinates, speeds, rhs=RHS, output_eqns=out_eqns)
 eom2 = eombase.EOM(coordinates, speeds, mass_matrix_full=mm_full,
                    forcing_full=f_full)
 eom3 = eombase.EOM(coordinates, speeds, mass_matrix=mm, forcing=f, kinematics=G)
+
+# Display the kinetic energy from the first EOM class
+
+print(eom1.kinetic_energy)
 
 # Pass the equations of motion to system for simulations
 
