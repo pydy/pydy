@@ -6,9 +6,9 @@
 
 ## Problem
 
-This code takes manually entered equations of motion and uses
-pydy.system.System to simulate the time response. The diagram and defining
-coordinates are given in the following figure.
+This code demonstrates methods for manually entering the equations of motion
+and uses pydy.system.System to simulate the time response. The diagram and
+defining coordinates are given in the following figure.
 
 <div align="center">
 <table class="image">
