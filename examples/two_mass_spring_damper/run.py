@@ -41,6 +41,7 @@ RHS = mm_full.inv()*f_full
 
 coordinates = (x1, x2)
 speeds = (u1, u2)
+states = (x1, x2, u1, u2)
 
 # Form the kinetic energy to attach to one of the EOM instances as an output
 # equation
@@ -57,14 +58,10 @@ out_eqns = {"kinetic_energy": KE}
 #    [3] M(q, p) u' = F(q, u, t, r, p)
 #        q' = G(q, u, t, r, p)
 
-eom1 = eombase.EOM(coordinates, speeds, rhs=RHS, output_eqns=out_eqns)
-eom2 = eombase.EOM(coordinates, speeds, mass_matrix_full=mm_full,
-                   forcing_full=f_full)
-eom3 = eombase.EOM(coordinates, speeds, mass_matrix=mm, forcing=f, kinematics=G)
-
-# Display the kinetic energy from the first EOM class
-
-print(eom1.kinetic_energy)
+eom1 = eombase.EOM(coordinates=coordinates, speeds=speeds, rhs=RHS,
+                   output_eqns=out_eqns)
+eom2 = eombase.EOM(states=states, mass_matrix_full=mm_full, forcing_full=f_full)
+eom3 = eombase.EOM(states=states, mass_matrix=mm, forcing=f, kinematics=G)
 
 # Pass the equations of motion to system for simulations
 
@@ -79,6 +76,13 @@ sys.initial_conditions = {x1: 1.0, x2: 0.0, u1: 0.0, u2: 0.0}
 # Simulate the system
 
 out = sys.integrate()
+
+
+# Display the kinetic energy from the first EOM class
+# Returns a dictionary whith the same keys as output_eqns but the values are the
+# numerical results of the simulation
+
+print(eom1.output_eqns_results)
 
 # Graph the results
 plt.plot(sys.times, out[:, 1])  # Don't know output format of sys.integrate()
