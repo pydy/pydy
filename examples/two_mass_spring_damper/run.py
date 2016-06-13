@@ -60,7 +60,8 @@ out_eqns = {"kinetic_energy": KE}
 
 eom1 = eombase.EOM(coordinates=coordinates, speeds=speeds, rhs=RHS,
                    output_eqns=out_eqns)
-eom2 = eombase.EOM(states=states, mass_matrix_full=mm_full, forcing_full=f_full)
+eom2 = eombase.EOM(states=states, mass_matrix_full=mm_full, forcing_full=f_full,
+                   num_coordinates=2)
 eom3 = eombase.EOM(states=states, mass_matrix=mm, forcing=f, kinematics=G)
 
 # Pass the equations of motion to system for simulations
@@ -88,3 +89,6 @@ print(eom1.output_eqns_results)
 plt.plot(sys.times, out[:, 1])  # Don't know output format of sys.integrate()
 plt.plot(sys.times, out[:, 2])
 plt.show()
+
+# Showcase System's ability to plot the coordinates
+sys.plot_coordinates()

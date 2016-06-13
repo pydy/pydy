@@ -55,3 +55,6 @@ out = sys.integrate()
 # Display the kinetic energy change in time (obtained from the particle in the
 # bodies list)
 KE = sys.body_kinetic_energies()
+
+# Plot the coordinate outputs
+sys.plot_coordinates()
