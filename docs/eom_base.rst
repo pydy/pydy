@@ -94,11 +94,16 @@ matplotlib. ::
     >>> plt.plot(sys.times, out[:, 2])
     >>> plt.show()
 
-System also has the ability to display the trajectories of the coordinates or
-states without you having to call matplotlib yourself. ::
+System also has multiple plotting capabilities built into the class. ::
 
     >>> sys.plot_coordinates()
+    >>> sys.plot_speeds()
     >>> sys.plot_states()
+    >>> sys.plot_trajectories(x1, x2, u2, "kinetic energy", c1*x1+c2*x2)
+
+The method `plot_trajectories()` can take as input different symbols contained
+in the system, expressions using symbols defined in the system or keys of the
+output equations dictionary.
 
 =========================================
 Simple Pendulum (x,y) Coordinates Example
