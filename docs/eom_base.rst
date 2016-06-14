@@ -41,7 +41,7 @@ Next step is to define the equations of motion in multiple forms:
     ...                  -(k1+k2)*x1 + k2*x2 - (c1+c2)*u1 + c2*u2,
     ...                  k2*x1 - k2*x2 + c2*u1 - c2*u2])
     >>> G = Matrix([u1, u2])
-    >>> RHS = mm_full.inv()*f_full
+    >>> RHS = mm_full.LUsolve(f_full)
 
 Now the various forms of varible entry to `eombase` will be initiated ::
 
@@ -59,16 +59,15 @@ whole system is going to be determined. ::
 The `eombase` instances are now ready to be initialized. To showcase possible
 input combinations, all three of the equations of motion forms will be used. ::
 
-    >>> eom1 = eombase.EOM(coordinates=coordinates, speeds=speeds, rhs=RHS,
+    >>> eom1 = eombase.EOM(coordinates, RHS, speeds=speeds, 
     ...                    output_eqns=out_eqns)
-    >>> eom2 = eombase.EOM(states=states, mass_matrix_full=mm_full,
-    ...                    forcing_full=f_full, num_coordinates=2)
-    >>> eom3 = eombase.EOM(states=states, mass_matrix=mm, forcing=f,
-    ...                    kinematics=G)
+    >>> eom2 = eombase.EOM(states, f_full, mass_matrix_full=mm_full,
+    ...                     num_coordinates=2)
+    >>> eom3 = eombase.EOM(states, f, mass_matrix=mm, coordinate_derivatives=G)
 
 The system instance will now be initialized and set up to perform simulation. ::
 
-    >>> sys = System(eom2)
+    >>> sys = System(eom1)
     >>> sys.times = linspace(0, 10, num=100)
     >>> sys.constants = {m1: 10.0, c1: 10.0, k1: 10.0, m2: 5.0, c2: 5.0, k2:
     ...                  5.0}
@@ -78,15 +77,15 @@ Now the actual system simulation is ready to be run. ::
 
     >>> out = sys.integrate()
     >>> out
-    numpy.array([[1.0, 0.0, 0.0, 0.0],
-                 [...]])
+    array([[1.0, 0.0, 0.0, 0.0], [...], ...])
 
 The user specified output equations should be able to be determine now that the
 time simulation of the states is complete. ::
 
     >>> sys.output_eqns()
+    {"kinetic energy": array([[0.0], [...], ...])}
     >>> eom1.output_eqns_results
-    {"kinetic energy": numpy.array([[0.0], [...], ...])}
+    {"kinetic energy": array([[0.0], [...], ...])}
 
 With the simulation completed the output trajectories can be plotted using
 matplotlib. ::
@@ -139,7 +138,7 @@ Next step is to define the equations of motion in multiple forms:
     ...                   [0, 0, 0, 0, l**2/m]])
     >>> f_full = Matrix([u, v, 0, 0, u**2 + v**2 - g*y])
     >>> G = Matrix([u, v])
-    >>> RHS = mm_full.inv()*f_full
+    >>> RHS = mm_full.LUsolve(f_full)
 
 The equations of motion are in the form of a differential algebraic equation
 (DAE) and DAE solvers need to know which of the equations are the algebraic
@@ -157,11 +156,16 @@ An iterable containing the states now needs to be created for the solvers. ::
 Now the equations of motion instances can be created using the above mentioned
 equations of motion formats. ::
 
-    >>> eom1 = eombase.EOM(states=states, rhs=RHS, alg_con=alg_con_full)
-    >>> eom2 = eombase.EOM(states=states, mass_matrix_full=mm_full,
-    ...                    forcing_full=f_full, alg_con=alg_con_full)
-    >>> eom3 = eombase.EOM(states=states, mass_matrix=mm, forcing=f,
-    ...                    kinematics=G, alg_con=alg_con)
+    >>> eom1 = eombase.EOM(states, RHS, alg_con=alg_con_full)
+    >>> eom2 = eombase.EOM(states, f_full, mass_matrix_full=mm_full,
+    ...                    alg_con=alg_con_full)
+    >>> eom3 = eombase.EOM(states, f, mass_matrix=mm, coordinate_derivatives=G,
+    ...                    alg_con=alg_con)
+
+Lastly here are some attributes accessible from the `EOM` class. ::
+
+    >>> eom1.states
+    (x, y, u, v, lam)
 
 ========================================
 Simple Pendulum Theta Coordinate Example
@@ -215,19 +219,32 @@ Now the lagrangian and force list can be created and with these an instance of
 
 The `LagrangesMethod` instance can pass an instance of eombase using its
 `.to_eom()` method. This allows the class to handle all of the formatting for
-eombase rather than making the user pass everything in manually. ::
+eombase rather than making the user pass everything in manually. For instance
+it will automatically change the equations to first order form. ::
 
-    >>> sys = System(l.to_eom())
+    >>> EOM = l.to_eom()
+    >>> sys = System(EOM)
 
 Now that the system is set up, a simple time simulation will be performed. ::
 
     >>> sys.times = linspace(0, 10, num=100)
     >>> sys.constants = {m: 10, l: 5, g: 9.8}
     >>> sys.initial_conditions = {theta: 60, thetad: 0}
-    >>> out = sys.integrate()
+    >>> sys.integrate()
+    array([[60.0, 0.0], [...], ...])
 
 Display the kinetic energy change in time (obtained from the particle in the
 bodies list). The kinetic energies are displayed in the order listed in the
-`bodies` list ::
+`bodies` list. The last column is the kinetic energy of the whole system and is
+simply the addition of all the other kinetic energies in the array at each time
+step. ::
 
-    >>> KE = sys.body_kinetic_energies()
+    >>> sys.body_kinetic_energies()
+    array([[0.0, 0.0], [...], ...])
+
+Here are some additional attributes accessible from the `eombase.EOM` class. ::
+
+    >>> EOM.bodies
+    [Pa]
+    >>> EOM.loads
+    [(P, g * m * N.x)]
