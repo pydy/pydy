@@ -106,122 +106,128 @@ Simple Pendulum (x,y) Coordinates Example
 =========================================
 
 This code will go over the manual input of the equations of motion for the
-simple pendulum into eombase using x and y coordinates instead of theta
+simple pendulum into eombase using x and y coordinates instead of theta.
 
-`# The equations of motion are formed at
-# http://nbviewer.jupyter.org/github/bmcage/odes/blob/master/docs/ipython/Planar%20Pendulum%20as%20DAE.ipynb`
-from sympy import symbols, Matrix
-from sympy.physics.mechanics import dynamicsymbols, eombase
+The equations of motion are formed at
+http://nbviewer.jupyter.org/github/bmcage/odes/blob/master/docs/ipython/Planar%20Pendulum%20as%20DAE.ipynb` ::
 
-`# Define the dynamic symbols`
-x, y, u, v, lam = dynamicsymbols('x y u v lambda')
+    >>> from sympy import symbols, Matrix
+    >>> from sympy.physics.mechanics import dynamicsymbols, eombase
 
-`# Define the constant symbols` 
-m, l, g = symbols('m l g')
+The first step will be to initialize all of the dynamic and constant symbols. ::
 
-`# Define the mass matrix and forcing vector`
-mm = Matrix([[1, 0, -x/m],
-             [0, 1, -y/m],
-             [0, 0, l**2/m]])
-f = Matrix([0, 0, u**2 + v**2 - g*y])
+    >>> x, y, u, v, lam = dynamicsymbols('x y u v lambda')
+    >>> m, l, g = symbols('m l g')
 
-mm_full = Matrix([[1, 0, 0, 0, 0],
-                  [0, 1, 0, 0, 0],
-                  [0, 0, 1, 0, -x/m],
-                  [0, 0, 0, 1, -y/m],
-                  [0, 0, 0, 0, l**2/m]])
-f_full = Matrix([u, v, 0, 0, u**2 + v**2 - g*y])
+Next step is to define the equations of motion in multiple forms:
 
-`# Form the rhs of q' = G(q, u, t, r, p). Kinematic equation`
-G = Matrix([u, v])
+[1] x' = F(x, t, r, p)
 
-`# Form the rhs of the dynamics equations`
-RHS = mm_full.inv()*f_full
+[2] M(x, p) x' = F(x, t, r, p)
 
-`# Create a list specifing the rows conatining algebraic rather than differential
-# constraints`
-alg_con = [2]
-alg_con_full = [4]
+[3] M(q, p) u' = F(q, u, t, r, p)
+    q' = G(q, u, t, r, p) ::
 
-`# Create the interable of states, coordinates and speeds`
-states = (x, y, u, v, lam)
+    >>> mm = Matrix([[1, 0, -x/m],
+    ...              [0, 1, -y/m],
+    ...              [0, 0, l**2/m]])
+    >>> f = Matrix([0, 0, u**2 + v**2 - g*y])
+    >>> mm_full = Matrix([[1, 0, 0, 0, 0],
+    ...                   [0, 1, 0, 0, 0],
+    ...                   [0, 0, 1, 0, -x/m],
+    ...                   [0, 0, 0, 1, -y/m],
+    ...                   [0, 0, 0, 0, l**2/m]])
+    >>> f_full = Matrix([u, v, 0, 0, u**2 + v**2 - g*y])
+    >>> G = Matrix([u, v])
+    >>> RHS = mm_full.inv()*f_full
 
-`# Initialize the equation of motion class using the three forms accepted by
-# ODEFunctionGenerator
-#    [1] x' = F(x, t, r, p)
-#
-#    [2] M(x, p) x' = F(x, t, r, p)
-#
-#    [3] M(q, p) u' = F(q, u, t, r, p)
-#        q' = G(q, u, t, r, p)`
+The equations of motion are in the form of a differential algebraic equation
+(DAE) and DAE solvers need to know which of the equations are the algebraic
+expressions. This information is passed into `eombase` as a list specifying
+which rows are the algebraic equations. In this example it is a different row
+based on the chosen equations of motion format. ::
 
-eom1 = eombase.EOM(states=states, rhs=RHS, alg_con=alg_con_full)
-eom2 = eombase.EOM(states=states, mass_matrix_full=mm_full, forcing_full=f_full,
-                   alg_con=alg_con_full)
-eom3 = eombase.EOM(states=states, mass_matrix=mm, forcing=f, kinematics=G,
-                   alg_con=alg_con)
+    >>> alg_con = [2]
+    >>> alg_con_full = [4]
+
+An iterable containing the states now needs to be created for the solvers. ::
+
+    >>> states = (x, y, u, v, lam)
+
+Now the equations of motion instances can be created using the above mentioned
+equations of motion formats. ::
+
+    >>> eom1 = eombase.EOM(states=states, rhs=RHS, alg_con=alg_con_full)
+    >>> eom2 = eombase.EOM(states=states, mass_matrix_full=mm_full,
+    ...                    forcing_full=f_full, alg_con=alg_con_full)
+    >>> eom3 = eombase.EOM(states=states, mass_matrix=mm, forcing=f,
+    ...                    kinematics=G, alg_con=alg_con)
 
 ========================================
 Simple Pendulum Theta Coordinate Example
 ========================================
 
-from sympy import *
-from sympy.physics.mechanics import LagrangesMethod, Lagrangian
-from sympy.physics.mechanics import ReferenceFrame, Particle, Point
-from sympy.physics.mechanics import dynamicsymbols
-from pydy.system import System
+This example walks through the same dynamical setup as ther previous but
+defines the system by the angle theta instead of using x and y coordinates.
+This results in an ODE system for the equations of motion rather than a DAE
+system. Also the equations of motion will be formed by `LagrangesMethod` class
+rather than being input manually. ::
 
-`# System state variables`
-theta = dynamicsymbols('theta')
-thetad = dynamicsymbols('theta', 1)
+    >>> from sympy import *
+    >>> from sympy.physics.mechanics import LagrangesMethod, Lagrangian
+    >>> from sympy.physics.mechanics import ReferenceFrame, Particle, Point
+    >>> from sympy.physics.mechanics import dynamicsymbols
+    >>> from pydy.system import System
 
-`# Other system variables`
-m, l, g = symbols('m l g')
+The first step is to create the dynamic and constant symbols used by the
+system. ::
 
-`# Set up the reference frames
-# Reference frame A set up in the plane perpendicular to the page containing
-# segment OP`
-N = ReferenceFrame('N')
-A = N.orientnew('A', 'Axis', [theta, N.z])
+    >>> theta = dynamicsymbols('theta')
+    >>> thetad = dynamicsymbols('theta', 1)
+    >>> m, l, g = symbols('m l g')
 
-`# Set up the points and particles`
-O = Point('O')
-P = O.locatenew('P', l * A.x)
+Now the reference frames need to be set up. Reference frame A is set in the
+plane perpendicular to the page containing segment OP. ::
 
-Pa = Particle('Pa', P, m)
+    >>> N = ReferenceFrame('N')
+    >>> A = N.orientnew('A', 'Axis', [theta, N.z])
 
-`# Set up velocities`
-A.set_ang_vel(N, thetad * N.z)
-O.set_vel(N, 0)
-P.v2pt_theory(O, N, A)
+The next step is to initialize the points and particles that will be used in
+the dynamical system. ::
 
-`# Set up the lagrangian`
-L = Lagrangian(N, Pa)
+    >>> O = Point('O')
+    >>> P = O.locatenew('P', l * A.x)
+    >>> Pa = Particle('Pa', P, m)
 
-`# Create the list of forces acting on the system`
-fl = [(P, g * m * N.x)]
+With the points and reference frames determined, it is time to define how they
+all move with respect to one another. ::
 
-`# Create the equations of motion using lagranges method`
-l = LagrangesMethod(L, [theta], forcelist=fl, frame=N)
+    >>> A.set_ang_vel(N, thetad * N.z)
+    >>> O.set_vel(N, 0)
+    >>> P.v2pt_theory(O, N, A)
 
-pprint(l.form_lagranges_equations())
+Now the lagrangian and force list can be created and with these an instance of
+`LagrangesMethod` can be initialized. ::
 
-`# Create a system from the lagranges equations`
-sys = System(l)
+    >>> L = Lagrangian(N, Pa)
+    >>> fl = [(P, g * m * N.x)]
+    >>> l = LagrangesMethod(L, [theta], forcelist=fl, frame=N)
 
-`# Set up the system for simulation`
-sys.times = linspace(0, 10, num=100)
-sys.constants = {m: 10, l: 5, g: 9.8}
-sys.initial_conditions = {theta: 60, thetad: 0}
+The `LagrangesMethod` instance can pass an instance of eombase using its
+`.to_eom()` method. This allows the class to handle all of the formatting for
+eombase rather than making the user pass everything in manually. ::
 
-`# Simulate the system`
-out = sys.integrate()
+    >>> sys = System(l.to_eom())
+
+Now that the system is set up, a simple time simulation will be performed. ::
+
+    >>> sys.times = linspace(0, 10, num=100)
+    >>> sys.constants = {m: 10, l: 5, g: 9.8}
+    >>> sys.initial_conditions = {theta: 60, thetad: 0}
+    >>> out = sys.integrate()
 
 Display the kinetic energy change in time (obtained from the particle in the
 bodies list). The kinetic energies are displayed in the order listed in the
-`bodies` list
+`bodies` list ::
 
->>> KE = sys.body_kinetic_energies()
-
-`# Plot the coordinate outputs`
-sys.plot_coordinates()
+    >>> KE = sys.body_kinetic_energies()
