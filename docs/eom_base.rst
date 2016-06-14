@@ -50,11 +50,12 @@ Now the various forms of varible entry to `eombase` will be initiated ::
     >>> states = (x1, x2, u1, u2)
 
 This example will also show `system`'s ability to calculate an arbitrary user
-defined functions along with the states. Specifically the kinetic energy of the
-whole system is going to be determined. ::
+defined functions along with the states. Specifically the kinetic energy and
+potential energy  of the whole system is going to be determined. ::
 
     >>> KE = 0.5 * (m1*u1**2 + m2*u2**2)
-    >>> out_eqns = {"kinetic energy": KE}
+    >>> PE = symbols("PE")
+    >>> out_eqns = {"kinetic energy": KE, PE: 0.5*k1*x1**2 + 0.5*k2*(x2-x1)**2}
 
 The `eombase` instances are now ready to be initialized. To showcase possible
 input combinations, all three of the equations of motion forms will be used. ::
