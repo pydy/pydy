@@ -1,0 +1,227 @@
+==============================
+Two Mass Spring Damper Example
+==============================
+
+This example walks through the creation of a two mass spring damper system,
+manually entered to the `eombase` class and numerically simulated using
+`pydy.system.System`. ::
+
+    >>> import matplotlib.pyplot as plt
+    >>> from numpy import linspace
+    >>> from pydy.system import System
+    >>> from sympy import symbols, Matrix
+    >>> from sympy.physics.mechanics import dynamicsymbols, eombase
+
+The first step is to define the dynamic and constant symbols that will be used
+in the system. ::
+
+    >>> x1, x2, u1, u2 = dynamicsymbols('x1 x2 u1 u2')
+    >>> m1, c1, k1 = symbols('m1 c1 k1')
+    >>> m2, c2, k2 = symbols('m2 c2 k2')
+
+Next step is to define the equations of motion in multiple forms:
+
+[1] x' = F(x, t, r, p)
+
+[2] M(x, p) x' = F(x, t, r, p)
+
+[3] M(q, p) u' = F(q, u, t, r, p)
+    q' = G(q, u, t, r, p) ::
+
+    >>> mm = Matrix([[m1,  0],
+    ...             [0,  m2]])
+    >>> f = Matrix([-(k1+k2)*x1 + k2*x2 - (c1+c2)*u1 + c2*u2,
+    ...             k2*x1 - k2*x2 + c2*u1 - c2*u2])
+    >>> mm_full = Matrix([[1, 0,  0,  0],
+    ...                   [0, 1,  0,  0],
+    ...                   [0, 0, m1,  0],
+    ...                   [0, 0,  0, m2]])
+    >>> f_full = Matrix([u1,
+    ...                  u2,
+    ...                  -(k1+k2)*x1 + k2*x2 - (c1+c2)*u1 + c2*u2,
+    ...                  k2*x1 - k2*x2 + c2*u1 - c2*u2])
+    >>> G = Matrix([u1, u2])
+    >>> RHS = mm_full.inv()*f_full
+
+Now the various forms of varible entry to `eombase` will be initiated ::
+
+    >>> coordinates = (x1, x2)
+    >>> speeds = (u1, u2)
+    >>> states = (x1, x2, u1, u2)
+
+This example will also show `system`'s ability to calculate an arbitrary user
+defined functions along with the states. Specifically the kinetic energy of the
+whole system is going to be determined. ::
+
+    >>> KE = 0.5 * (m1*u1**2 + m2*u2**2)
+    >>> out_eqns = {"kinetic energy": KE}
+
+The `eombase` instances are now ready to be initialized. To showcase possible
+input combinations, all three of the equations of motion forms will be used. ::
+
+    >>> eom1 = eombase.EOM(coordinates=coordinates, speeds=speeds, rhs=RHS,
+    ...                    output_eqns=out_eqns)
+    >>> eom2 = eombase.EOM(states=states, mass_matrix_full=mm_full,
+    ...                    forcing_full=f_full, num_coordinates=2)
+    >>> eom3 = eombase.EOM(states=states, mass_matrix=mm, forcing=f,
+    ...                    kinematics=G)
+
+The system instance will now be initialized and set up to perform simulation. ::
+
+    >>> sys = System(eom2)
+    >>> sys.times = linspace(0, 10, num=100)
+    >>> sys.constants = {m1: 10.0, c1: 10.0, k1: 10.0, m2: 5.0, c2: 5.0, k2:
+    ...                  5.0}
+    >>> sys.initial_conditions = {x1: 1.0, x2: 0.0, u1: 0.0, u2: 0.0}
+
+Now the actual system simulation is ready to be run. ::
+
+    >>> out = sys.integrate()
+    >>> out
+    numpy.array([[1.0, 0.0, 0.0, 0.0],
+                 [...]])
+
+The user specified output equations should be able to be determine now that the
+time simulation of the states is complete. ::
+
+    >>> sys.output_eqns()
+    >>> eom1.output_eqns_results
+    {"kinetic energy": numpy.array([[0.0], [...], ...])}
+
+With the simulation completed the output trajectories can be plotted using
+matplotlib. ::
+
+    >>> plt.plot(sys.times, out[:, 1])  
+    >>> plt.plot(sys.times, out[:, 2])
+    >>> plt.show()
+
+System also has the ability to display the trajectories of the coordinates or
+states without you having to call matplotlib yourself. ::
+
+    >>> sys.plot_coordinates()
+    >>> sys.plot_states()
+
+=========================================
+Simple Pendulum (x,y) Coordinates Example
+=========================================
+
+This code will go over the manual input of the equations of motion for the
+simple pendulum into eombase using x and y coordinates instead of theta
+
+`# The equations of motion are formed at
+# http://nbviewer.jupyter.org/github/bmcage/odes/blob/master/docs/ipython/Planar%20Pendulum%20as%20DAE.ipynb`
+from sympy import symbols, Matrix
+from sympy.physics.mechanics import dynamicsymbols, eombase
+
+`# Define the dynamic symbols`
+x, y, u, v, lam = dynamicsymbols('x y u v lambda')
+
+`# Define the constant symbols` 
+m, l, g = symbols('m l g')
+
+`# Define the mass matrix and forcing vector`
+mm = Matrix([[1, 0, -x/m],
+             [0, 1, -y/m],
+             [0, 0, l**2/m]])
+f = Matrix([0, 0, u**2 + v**2 - g*y])
+
+mm_full = Matrix([[1, 0, 0, 0, 0],
+                  [0, 1, 0, 0, 0],
+                  [0, 0, 1, 0, -x/m],
+                  [0, 0, 0, 1, -y/m],
+                  [0, 0, 0, 0, l**2/m]])
+f_full = Matrix([u, v, 0, 0, u**2 + v**2 - g*y])
+
+`# Form the rhs of q' = G(q, u, t, r, p). Kinematic equation`
+G = Matrix([u, v])
+
+`# Form the rhs of the dynamics equations`
+RHS = mm_full.inv()*f_full
+
+`# Create a list specifing the rows conatining algebraic rather than differential
+# constraints`
+alg_con = [2]
+alg_con_full = [4]
+
+`# Create the interable of states, coordinates and speeds`
+states = (x, y, u, v, lam)
+
+`# Initialize the equation of motion class using the three forms accepted by
+# ODEFunctionGenerator
+#    [1] x' = F(x, t, r, p)
+#
+#    [2] M(x, p) x' = F(x, t, r, p)
+#
+#    [3] M(q, p) u' = F(q, u, t, r, p)
+#        q' = G(q, u, t, r, p)`
+
+eom1 = eombase.EOM(states=states, rhs=RHS, alg_con=alg_con_full)
+eom2 = eombase.EOM(states=states, mass_matrix_full=mm_full, forcing_full=f_full,
+                   alg_con=alg_con_full)
+eom3 = eombase.EOM(states=states, mass_matrix=mm, forcing=f, kinematics=G,
+                   alg_con=alg_con)
+
+========================================
+Simple Pendulum Theta Coordinate Example
+========================================
+
+from sympy import *
+from sympy.physics.mechanics import LagrangesMethod, Lagrangian
+from sympy.physics.mechanics import ReferenceFrame, Particle, Point
+from sympy.physics.mechanics import dynamicsymbols
+from pydy.system import System
+
+`# System state variables`
+theta = dynamicsymbols('theta')
+thetad = dynamicsymbols('theta', 1)
+
+`# Other system variables`
+m, l, g = symbols('m l g')
+
+`# Set up the reference frames
+# Reference frame A set up in the plane perpendicular to the page containing
+# segment OP`
+N = ReferenceFrame('N')
+A = N.orientnew('A', 'Axis', [theta, N.z])
+
+`# Set up the points and particles`
+O = Point('O')
+P = O.locatenew('P', l * A.x)
+
+Pa = Particle('Pa', P, m)
+
+`# Set up velocities`
+A.set_ang_vel(N, thetad * N.z)
+O.set_vel(N, 0)
+P.v2pt_theory(O, N, A)
+
+`# Set up the lagrangian`
+L = Lagrangian(N, Pa)
+
+`# Create the list of forces acting on the system`
+fl = [(P, g * m * N.x)]
+
+`# Create the equations of motion using lagranges method`
+l = LagrangesMethod(L, [theta], forcelist=fl, frame=N)
+
+pprint(l.form_lagranges_equations())
+
+`# Create a system from the lagranges equations`
+sys = System(l)
+
+`# Set up the system for simulation`
+sys.times = linspace(0, 10, num=100)
+sys.constants = {m: 10, l: 5, g: 9.8}
+sys.initial_conditions = {theta: 60, thetad: 0}
+
+`# Simulate the system`
+out = sys.integrate()
+
+Display the kinetic energy change in time (obtained from the particle in the
+bodies list). The kinetic energies are displayed in the order listed in the
+`bodies` list
+
+>>> KE = sys.body_kinetic_energies()
+
+`# Plot the coordinate outputs`
+sys.plot_coordinates()
