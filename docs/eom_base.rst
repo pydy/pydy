@@ -62,8 +62,8 @@ input combinations, all three of the equations of motion forms will be used. ::
 
     >>> eom1 = eombase.EOM(coordinates, RHS, speeds=speeds, 
     ...                    output_eqns=out_eqns)
-    >>> eom2 = eombase.EOM(states, f_full, mass_matrix_full=mm_full,
-    ...                     num_coordinates=2)
+    >>> eom2 = eombase.EOM(states, f_full, mass_matrix=mm_full,
+    ...                    num_coordinates=2)
     >>> eom3 = eombase.EOM(states, f, mass_matrix=mm, coordinate_derivatives=G)
 
 The system instance will now be initialized and set up to perform simulation. ::
@@ -86,6 +86,8 @@ time simulation of the states is complete. ::
     >>> sys.output_eqns()
     {"kinetic energy": array([[0.0], [...], ...]),
      PE: array([[5.0], [...], ...])}
+    >>> eom1.output_eqns
+    {"kinetic energy": KE, PE: 0.5*k1*x1**2 + 0.5*k2*(x2-x1)**2}
     >>> eom1.output_eqns_results
     {"kinetic energy": array([[0.0], [...], ...]),
      PE: array([[5.0], [...], ...])}
@@ -148,6 +150,22 @@ Next step is to define the equations of motion in multiple forms:
     >>> G = Matrix([u, v])
     >>> RHS = mm_full.LUsolve(f_full)
 
+`Define bodies and loads`
+Now the reference frames, points and particles will be set up so this
+information can be passed into `eombase.EOM` in the form of a bodies and loads
+iterable. ::
+
+    >>> N = ReferenceFrame('N')
+    >>> A = N.orientnew('A', 'Axis', [theta, N.z])
+    >>> O = Point('O')
+    >>> P = O.locatenew('P', l * A.x)
+    >>> Pa = Particle('Pa', P, m)
+
+Now the bodies and loads iterables need to be initialized. ::
+
+    >>> bodies = [Pa]
+    >>> loads = [(P, g * m * N.x)]
+
 The equations of motion are in the form of a differential algebraic equation
 (DAE) and DAE solvers need to know which of the equations are the algebraic
 expressions. This information is passed into `eombase` as a list specifying
@@ -164,16 +182,35 @@ An iterable containing the states now needs to be created for the solvers. ::
 Now the equations of motion instances can be created using the above mentioned
 equations of motion formats. ::
 
-    >>> eom1 = eombase.EOM(states, RHS, alg_con=alg_con_full)
-    >>> eom2 = eombase.EOM(states, f_full, mass_matrix_full=mm_full,
-    ...                    alg_con=alg_con_full)
+    >>> eom1 = eombase.EOM(states, RHS, alg_con=alg_con_full, bodies=bodies,
+    ...                    loads=loads)
+    >>> eom2 = eombase.EOM(states, f_full, mass_matrix=mm_full,
+    ...                    alg_con=alg_con_full, num_coordinates=2)
     >>> eom3 = eombase.EOM(states, f, mass_matrix=mm, coordinate_derivatives=G,
-    ...                    alg_con=alg_con)
+    ...                    alg_con=alg_con, num_coordinates=2, num_speeds=2)
 
 Lastly here are some attributes accessible from the `EOM` class. ::
 
     >>> eom1.states
     (x, y, u, v, lam)
+    >>> eom2.coordinates
+    (x, y)
+    >>> eom3.speeds
+    (u, v)
+    >>> eom1.rhs
+    Matrix([[u(t)], [v(t)], [(-g*y(t) + u(t)**2 + v(t)**2)*x(t)/l**2], [(-g*y(t) + u(t)**2 + v(t)**2)*y(t)/l**2], [m*(-g*y(t) + u(t)**2 + v(t)**2)/l**2]])
+    >>> eom2.forcing_full
+    Matrix([u, v, 0, 0, u**2 + v**2 - g*y])
+    >>> eom2.mass_matrix_full
+    Matrix([[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0, -x/m], [0, 0, 0, 1, -y/m], [0, 0, 0, 0, l**2/m]])
+    >>> eom3.forcing
+    Matrix([0, 0, u**2 + v**2 - g*y])
+    >>> eom3.mass_matrix
+    Matrix([[1, 0, -x/m], [0, 1, -y/m], [0, 0, l**2/m]])
+    >>> eom1.dynamic_symbols()
+    (x, y, u, v, lam)
+    >>> eom1.constant_symbols()
+    (m, l, g)
 
 ========================================
 Simple Pendulum Theta Coordinate Example
@@ -230,7 +267,7 @@ The `LagrangesMethod` instance can pass an instance of eombase using its
 eombase rather than making the user pass everything in manually. For instance
 it will automatically change the equations to first order form. ::
 
-    >>> EOM = l.to_eom()
+    >>> eom = l.to_eom()
     >>> sys = System(EOM)
 
 Now that the system is set up, a simple time simulation will be performed. ::
@@ -252,7 +289,7 @@ step. ::
 
 Here are some additional attributes accessible from the `eombase.EOM` class. ::
 
-    >>> EOM.bodies
+    >>> eom.bodies
     [Pa]
-    >>> EOM.loads
+    >>> eom.loads
     [(P, g * m * N.x)]
