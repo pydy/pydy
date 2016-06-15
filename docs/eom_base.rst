@@ -66,6 +66,27 @@ input combinations, all three of the equations of motion forms will be used. ::
     ...                    num_coordinates=2)
     >>> eom3 = eombase.EOM(states, f, mass_matrix=mm, coordinate_derivatives=G)
 
+There are some potential problems that can occur during the initialization of
+the eombase.EOM class. First, the class assumes if it recieves
+coordinate_derivatives that the input equations of motion are in form [3]. This
+means it will produce an error if a mass matrix is not recieved. Similarly if a
+mass matrix is recieved and coordinate_derivatives are not specified, the class
+is assuming that the equations of motion have been put in in form [2]. If the
+equations of motion are input in form [1], the class will not have a notion of
+the mass matrix or the forcing vector and as such will return errors if there
+is an attempt to access these attributes. ::
+
+    >>> eom4 = eombase.EOM(states, f, coordinate_derivatives=G)
+    SyntaxError: Need to specify a mass matrix for eom form [3]
+    >>> eom1.mass_matrix
+    AttributeError: Mass matrix is not specified for eom form [1]
+    >>> eom1.mass_matrix_full
+    AttributeError: Mass matrix full is not specified for eom form [1]
+    >>> eom1.forcing
+    AttributeError: Forcing vector is not specified for eom form [1]
+    >>> eom1.forcing_full
+    AttributeError: Full forcing vector is not specified for eom form [1]
+
 The system instance will now be initialized and set up to perform simulation. ::
 
     >>> sys = System(eom1)
@@ -80,9 +101,13 @@ Now the actual system simulation is ready to be run. ::
     >>> out
     array([[1.0, 0.0, 0.0, 0.0], [...], ...])
 
-The user specified output equations should be able to be determine now that the
-time simulation of the states is complete. ::
+The user specified output equations should be able to be determined now that the
+time simulation of the states is complete. These equations are calculated by
+sys.output_eqns and so if there is an attempt to see the results first an error
+will be returned. ::
 
+    >>> eom.output_eqns_results
+    ValueError: The output equations first need to be calculated
     >>> sys.output_eqns()
     {"kinetic energy": array([[0.0], [...], ...]),
      PE: array([[5.0], [...], ...])}
@@ -150,7 +175,6 @@ Next step is to define the equations of motion in multiple forms:
     >>> G = Matrix([u, v])
     >>> RHS = mm_full.LUsolve(f_full)
 
-`Define bodies and loads`
 Now the reference frames, points and particles will be set up so this
 information can be passed into `eombase.EOM` in the form of a bodies and loads
 iterable. ::
@@ -189,6 +213,22 @@ equations of motion formats. ::
     >>> eom3 = eombase.EOM(states, f, mass_matrix=mm, coordinate_derivatives=G,
     ...                    alg_con=alg_con, num_coordinates=2, num_speeds=2)
 
+The `EOM` class determines which of the states are considered coordinates by
+knowing the number of coordinates and assuming that the states were input in
+this order: (coordinates, speeds, other). This means if num_speeds is specified
+and num_coordinates is not, the class will not know which of the states to
+consider speeds and will cause an error This also means that if just the states
+are passed in, the class will not be able to determine which of the states are
+coordinates or speeds. ::
+
+    >>> eom4 = eombase.EOM(states, f_full, mass_matrix=mm_full, num_speeds=2)
+    SyntaxError: Need to specify the number of coordinates if specifying the
+                 number of speeds
+    >>> eom1.coordinates
+    AttributeError: The coordinates were not specified
+    >>> eom2.speeds
+    AttributeError: The speeds were not specified
+
 Lastly here are some attributes accessible from the `EOM` class. ::
 
     >>> eom1.states
@@ -198,19 +238,56 @@ Lastly here are some attributes accessible from the `EOM` class. ::
     >>> eom3.speeds
     (u, v)
     >>> eom1.rhs
-    Matrix([[u(t)], [v(t)], [(-g*y(t) + u(t)**2 + v(t)**2)*x(t)/l**2], [(-g*y(t) + u(t)**2 + v(t)**2)*y(t)/l**2], [m*(-g*y(t) + u(t)**2 + v(t)**2)/l**2]])
+    Matrix([[u(t)], [v(t)], [(-g*y(t) + u(t)**2 + v(t)**2)*x(t)/l**2],
+            [(-g*y(t) + u(t)**2 + v(t)**2)*y(t)/l**2], [m*(-g*y(t) + u(t)**2 +
+             v(t)**2)/l**2]])
     >>> eom2.forcing_full
     Matrix([u, v, 0, 0, u**2 + v**2 - g*y])
     >>> eom2.mass_matrix_full
-    Matrix([[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0, -x/m], [0, 0, 0, 1, -y/m], [0, 0, 0, 0, l**2/m]])
+    Matrix([[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0, -x/m], [0, 0, 0, 1,
+             -y/m], [0, 0, 0, 0, l**2/m]])
     >>> eom3.forcing
     Matrix([0, 0, u**2 + v**2 - g*y])
     >>> eom3.mass_matrix
     Matrix([[1, 0, -x/m], [0, 1, -y/m], [0, 0, l**2/m]])
+    >>> eom1.alg_con
+    [4]
     >>> eom1.dynamic_symbols()
     (x, y, u, v, lam)
     >>> eom1.constant_symbols()
     (m, l, g)
+
+Like coordinates and speeds, the bodies and loads attributes can only be
+accessed if they are specified during initialization of the `EOM` class. ::
+
+    >>> eom2.bodies
+    AttributeError: The bodies were not specified
+    >>> eom2.loads
+    AttributeError: The loads were not specified
+
+Several of the attributes are properties and as such do not support assignment.
+These attributes are given below. ::
+
+    >>> eom1.bodies = 42
+    TypeError: Bodies does not support assignment
+    >>> eom1.coordinates = 42
+    TypeError: Coordinates does not support assignment
+    >>> eom1.forcing = 42
+    TypeError: Forcing does not support assignment
+    >>> eom1.forcing_full
+    TypeError: Forcing full does not support assignment
+    >>> eom1.loads = 42
+    TypeError: Loads does not support assignment
+    >>> eom1.mass_matrix = 42
+    TypeError: Mass matrix does not support assignment
+    >>> eom1.mass_matrix_full = 42
+    TypeError: Mass matrix full does not support assignment
+    >>> eom1.rhs = 42
+    TypeError: rhs does not support assignment
+    >>> eom1.speeds = 42
+    TypeError: Speeds does not support assignment
+    >>> eom1.states = 42
+    TypeError: States does not support assignment
 
 ========================================
 Simple Pendulum Theta Coordinate Example
