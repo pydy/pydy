@@ -84,9 +84,11 @@ The user specified output equations should be able to be determine now that the
 time simulation of the states is complete. ::
 
     >>> sys.output_eqns()
-    {"kinetic energy": array([[0.0], [...], ...])}
+    {"kinetic energy": array([[0.0], [...], ...]),
+     PE: array([[5.0], [...], ...])}
     >>> eom1.output_eqns_results
-    {"kinetic energy": array([[0.0], [...], ...])}
+    {"kinetic energy": array([[0.0], [...], ...]),
+     PE: array([[5.0], [...], ...])}
 
 With the simulation completed the output trajectories can be plotted using
 matplotlib. ::
