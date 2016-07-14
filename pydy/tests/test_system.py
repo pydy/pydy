@@ -431,11 +431,12 @@ class TestSystem():
         # Test pass kwargs to the generators.
         if Cython:
             self.tempdirpath = tempfile.mkdtemp()
+            prefix = 'my_test_file'
             self.sys.generate_ode_function(generator='cython',
-                                           prefix='my_test_file',
+                                           prefix=prefix,
                                            tmp_dir=self.tempdirpath)
-            assert os.path.isfile(os.path.join(self.tempdirpath,
-                                               'my_test_file_0_c.c'))
+            assert [True for f in os.listdir(self.tempdirpath)
+                    if f.startswith(prefix)]
         else:
             warnings.warn("Cython was not found so the related tests are being"
                           " skipped.", PyDyImportWarning)
