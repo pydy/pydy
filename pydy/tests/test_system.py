@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
+import os
 import warnings
+import tempfile
+import shutil
 
 import numpy as np
 from numpy import testing
@@ -8,6 +11,7 @@ import sympy as sm
 import sympy.physics.mechanics as me
 from scipy.integrate import odeint
 theano = sm.external.import_module('theano')
+Cython = sm.external.import_module('Cython')
 
 from ..system import System
 from ..models import multi_mass_spring_damper, n_link_pendulum_on_cart
@@ -423,6 +427,20 @@ class TestSystem():
         sys = System(self.kane, times=times)
         with testing.assert_raises(NotImplementedError):
             sys.generate_ode_function(generator='made-up')
+
+        # Test pass kwargs to the generators.
+        if Cython:
+            self.tempdirpath = tempfile.mkdtemp()
+            self.sys.generate_ode_function(generator='cython',
+                                           prefix='my_test_file',
+                                           tmp_dir=self.tempdirpath)
+            assert os.path.isfile(os.path.join(self.tempdirpath,
+                                               'my_test_file_0_c.c'))
+        else:
+            warnings.warn("Cython was not found so the related tests are being"
+                          " skipped.", PyDyImportWarning)
+    def cleanup(self):
+        shutil.rmtree(self.tempdirpath)
 
 
 def test_specifying_coordinate_issue_339():
