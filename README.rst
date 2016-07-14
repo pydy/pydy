@@ -8,7 +8,7 @@ PyDy
    :target: https://pypi.python.org/pypi/pydy
    :alt: Latest Released Version
 
-.. |anaconda| image:: https://binstar.org/pydy/pydy/badges/version.svg
+.. |anaconda| image:: https://anaconda.org/pydy/pydy/badges/version.svg
    :target: https://anaconda.org/pydy/pydy
 
 .. |rtd-docs| image:: https://readthedocs.org/projects/pydy/badge/?version=latest
