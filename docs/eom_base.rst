@@ -217,26 +217,18 @@ equations of motion formats. ::
     >>> symsystem2 = system.SymbolicSystem(states, comb_implicit_rhs, 
     ...                                    mass_matrix=comb_implicit_mat,
     ...                                    alg_con=alg_con_full,
-    ...                                    num_coordinates=2)
+    ...                                    coord_idxs=(0, 1))
     >>> symsystem3 = system.SymbolicSystem(states, dyn_implicit_rhs, 
     ...                                    mass_matrix=dyn_implicit_mat,
     ...                                    coordinate_derivatives=kin_explicit_rhs,
-    ...                                    alg_con=alg_con, num_coordinates=2, 
-    ...                                    num_speeds=2)
+    ...                                    alg_con=alg_con, coord_idxs=(0, 1), 
+    ...                                    speed_idxs=(2, 3))
 
-The `SymbolicSystem` class determines which of the states are considered
-coordinates by knowing the number of coordinates and assuming that the states
-were input in this order: (coordinates, speeds, other). This means if
-num_speeds is specified and num_coordinates is not, the class will not know
-which of the states to consider speeds and will cause an error This also means
-that if just the states are passed in, the class will not be able to determine
-which of the states are coordinates or speeds. ::
+The `SymbolicSystem` class can determine which of the states are considered
+coordinates or speeds by passing in the indexes of the coordinates and speeds.
+If these indexes are not passed in the object will not be able to differentiate
+between coordinates and speeds. ::
 
-    >>> symsystem4 = system.SymbolicSystem(states, comb_implicit_rhs, 
-    ...                                    mass_matrix=comb_implicit_mat,
-    ...                                    num_speeds=2)
-    SyntaxError: Need to specify the number of coordinates if specifying the
-                 number of speeds
     >>> symsystem1.coordinates
     AttributeError: The coordinates were not specified
     >>> symsystem2.speeds
