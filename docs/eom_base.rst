@@ -111,14 +111,12 @@ time simulation of the states is complete. These equations are calculated by
 sys.output_eqns and so if there is an attempt to see the results first an error
 will be returned. ::
 
-    >>> symsystem1.output_eqns_results
-    ValueError: The output equations first need to be calculated
-    >>> sys.output_eqns()
-    {"kinetic energy": array([[0.0], [...], ...]),
-     PE: array([[5.0], [...], ...])}
     >>> symsystem1.output_eqns
     {"kinetic energy": KE, PE: 0.5*k1*x1**2 + 0.5*k2*(x2-x1)**2}
-    >>> symsystem1.output_eqns_results
+    >>> sys.output_eqns_calculate()
+    {"kinetic energy": array([[0.0], [...], ...]),
+     PE: array([[5.0], [...], ...])}
+    >>> sym.output_eqns_results
     {"kinetic energy": array([[0.0], [...], ...]),
      PE: array([[5.0], [...], ...])}
 
