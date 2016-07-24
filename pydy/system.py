@@ -459,8 +459,8 @@ class System(object):
 
     def generate_ode_function(self, **kwargs):
         """Calls ``pydy.codegen.ode_function_generators.generate_ode_function``
-        with the appropriate arguments, and sets the
-        ``evaluate_ode_function`` attribute to the resulting function.
+        with the appropriate arguments, and sets the ``evaluate_ode_function``
+        attribute to the resulting function.
 
         Parameters
         ----------

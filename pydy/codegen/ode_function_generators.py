@@ -641,6 +641,13 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
 
     def __init__(self, *args, **kwargs):
 
+        self._options = {'tmp_dir': None,
+                         'prefix': 'pydy_codegen',
+                         'cse': True,
+                         'verbose': False}
+        for k, v in self._options.items():
+            self._options[k] = kwargs.pop(k, v)
+
         if Cython is None:
             raise ImportError('Cython must be installed to use this class.')
         else:
@@ -648,9 +655,12 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
 
     __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
 
-    @staticmethod
-    def _cythonize(outputs, inputs):
-        return CythonMatrixGenerator(inputs, outputs).compile()
+    def _cythonize(self, outputs, inputs):
+        g = CythonMatrixGenerator(inputs, outputs,
+                                  prefix=self._options['prefix'],
+                                  cse=self._options['cse'])
+        return g.compile(tmp_dir=self._options['tmp_dir'],
+                         verbose=self._options['verbose'])
 
     def _set_eval_array(self, f):
 
