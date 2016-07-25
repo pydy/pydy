@@ -52,10 +52,11 @@ you must call ``generate_ode_function`` on your own::
 """
 import warnings
 from itertools import repeat
+from inspect import signature
 
 import numpy as np
 import sympy as sm
-from sympy.physics.mechanics import dynamicsymbols
+from sympy.physics.mechanics import dynamicsymbols, KanesMethod
 from scipy.integrate import odeint
 
 from .codegen.ode_function_generators import generate_ode_function
@@ -82,6 +83,9 @@ class System(object):
     eom_method : sympy.physics.mechanics.KanesMethod
         You must have called ``KanesMethod.kanes_equations()`` *before*
         constructing this ``System``.
+
+    OR
+
     constants : dict, optional (default: all 1.0)
         This dictionary maps SymPy Symbol objects to floats.
     specifieds : dict, optional (default: all 0)
@@ -97,14 +101,35 @@ class System(object):
         System.integrate() can be called.
 
     """
-    def __init__(self, eom_method, constants=None, specifieds=None,
-                 ode_solver=None, initial_conditions=None, times=None):
+    def __init__(self, *args, constants=None, specifieds=None, ode_solver=None,
+                 initial_conditions=None, times=None, **kwargs):
 
-        self._eom_method = eom_method
+        if len(args)+len(kwargs)==1:
+            if len(args)==1:
+                eom_method = args[0]
+            else:
+                eom_method = kwargs['eom_method']
+
+            if sympy_equal_to_or_newer_than('0.7.6'):
+                coordinates = eom_method.q[:] # coordinates
+                speeds = eom_method.u[:] # speeds
+            else:
+                coordinates = eom_method._q
+                speeds = eom_method._u
+
+            self.states = coordinates + speeds
+            self.force = eom_method.forcing_full
+            self.mass = eom_method.mass_matrix_full
+        elif len(args)+len(kwargs)==2 or len(args)+len(kwargs)==3:
+            ba = signature(lambda states, force, mass=None: None).bind(*args,**kwargs)
+            self.states = ba.arguments.pop('states')
+            self.force = ba.arguments.pop('force')
+            self.mass = ba.arguments.pop('mass', sm.Matrix([]))
+
 
         # TODO : What if user adds symbols after constructing a System?
-        self._constants_symbols = self._Kane_constant_symbols()
-        self._specifieds_symbols = self._Kane_undefined_dynamicsymbols()
+        self._constants_symbols = self._undefined_symbols()
+        self._specifieds_symbols = self._undefined_dynamicsymbols()
 
         if constants is None:
             self.constants = dict()
@@ -132,43 +157,6 @@ class System(object):
             self._times = times
 
         self._evaluate_ode_function = None
-
-    @property
-    def coordinates(self):
-        """Returns a list of the symbolic functions of time representing the
-        system's generalized coordinates."""
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            return self.eom_method.q[:]
-        else:
-            return self.eom_method._q
-
-    @property
-    def speeds(self):
-        """Returns a list of the symbolic functions of time representing the
-        system's generalized speeds."""
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            return self.eom_method.u[:]
-        else:
-            return self.eom_method._u
-
-    @property
-    def states(self):
-        """Returns a list of the symbolic functions of time representing the
-        system's states, i.e. generalized coordinates plus the generalized
-        speeds. These are in the same order as used in integration (as
-        passed into evaluate_ode_function) and match the order of the mass
-        matrix and forcing vector.
-
-        """
-        return self.coordinates + self.speeds
-
-    @property
-    def eom_method(self):
-        """This is a sympy.physics.mechanics.KanesMethod. The method used to
-        generate the equations of motion. Read-only.
-
-        """
-        return self._eom_method
 
     @property
     def constants(self):
@@ -429,9 +417,8 @@ class System(object):
 
         """
 
-        args = (self.eom_method.forcing_full,
-                self.coordinates,
-                self.speeds,
+        args = (self.force,
+                self.states,
                 self.constants_symbols)
 
         return args
@@ -452,8 +439,10 @@ class System(object):
         if not specifieds:
             specifieds = None
 
-        kwargs = {'mass_matrix': self.eom_method.mass_matrix_full,
-                  'specifieds': specifieds}
+        kwargs = {'specifieds': specifieds}
+
+        if len(self.mass) > 0:
+            kwargs['mass_matrix'] = self.mass
 
         return kwargs
 
@@ -548,32 +537,7 @@ class System(object):
 
         return x_history
 
-    def _Kane_inlist_insyms(self):
-        """TODO temporary."""
-
-        uaux = self.eom_method._uaux[:]
-        uauxdot = [sm.diff(i, dynamicsymbols._t) for i in uaux]
-
-        # Checking for dynamic symbols outside the dynamic differential
-        # equations; throws error if there is.
-
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            # TODO : KanesMethod should provide public attributes for qdot,
-            # udot, uaux, and uauxdot.
-            insyms = set(self.eom_method.q[:] + self.eom_method._qdot[:] +
-                         self.eom_method.u[:] + self.eom_method._udot[:] +
-                         uaux + uauxdot)
-        else:
-            insyms = set(self.eom_method._q + self.eom_method._qdot +
-                         self.eom_method._u + self.eom_method._udot + uaux +
-                         uauxdot)
-
-        inlist = (self.eom_method.forcing_full[:] +
-                  self.eom_method.mass_matrix_full[:])
-
-        return inlist, insyms
-
-    def _Kane_undefined_dynamicsymbols(self):
+    def _undefined_dynamicsymbols(self):
         """Similar to ``_find_dynamicsymbols()``, except that it checks all
         syms used in the system. Code is copied from ``linearize()``.
 
@@ -581,18 +545,18 @@ class System(object):
         interface for obtaining these quantities.
 
         """
-        from_eoms, from_sym_lists = self._Kane_inlist_insyms()
         if sympy_equal_to_or_newer_than('0.7.6'):
             functions_of_time = set()
-            for expr in from_eoms:
+            for expr in (self.force[:] + self.mass[:]):
                 functions_of_time = functions_of_time.union(
                     find_dynamicsymbols(expr))
-            return functions_of_time.difference(from_sym_lists)
+            return functions_of_time.difference(set(self.states))
         else:
-            return set(self.eom_method._find_dynamicsymbols(
-                *self._Kane_inlist_insyms()))
+            return set(KanesMethod._find_dynamicsymbols(
+                    (self.force[:] + self.mass[:]), set(self.states)
+                ))
 
-    def _Kane_constant_symbols(self):
+    def _undefined_symbols(self):
         """Similar to ``_find_othersymbols()``, except it checks all syms used in
         the system.
 
@@ -601,14 +565,13 @@ class System(object):
         TODO temporary.
 
         """
-        from_eoms, from_sym_lists = self._Kane_inlist_insyms()
         if sympy_equal_to_or_newer_than('0.7.6'):
             unique_symbols = set()
-            for expr in from_eoms:
+            for expr in (self.force[:] + self.mass[:]):
                 unique_symbols = unique_symbols.union(expr.free_symbols)
             constants = unique_symbols
         else:
-            constants = set(self.eom_method._find_othersymbols(
-                *self._Kane_inlist_insyms()))
+            constants = set(KanesMethod._find_othersymbols(
+                (self.force[:] + self.mass[:]), set(self.states) ))
         constants.remove(dynamicsymbols._t)
         return constants

@@ -169,8 +169,8 @@ r : dictionary
         full mass matrix
             M(x, p) * x' = f(x, t, r, p)
         min mass matrix
-            M(q, p) * u' = f(q, u, t, r, p)
-            q' = g(q, u, t)
+            M(x, p) * x'_d = f(x, t, r, p)
+            x'_k = g(x, t)
 
         """
 
@@ -183,7 +183,7 @@ r : dictionary
 
         return system_type
 
-    def __init__(self, right_hand_side, coordinates, speeds, constants,
+    def __init__(self, right_hand_side, states, constants,
                  mass_matrix=None, coordinate_derivatives=None,
                  specifieds=None, linear_sys_solver='numpy',
                  constants_arg_type=None, specifieds_arg_type=None):
@@ -195,8 +195,8 @@ r : dictionary
 
             [2] M(x, p) x' = F(x, t, r, p)
 
-            [3] M(q, p) u' = F(q, u, t, r, p)
-                q' = G(q, u, t, r, p)
+            [3] M(x, p) x'_d = F(x, t, r, p)
+                x'_k = G(x, t, r, p)
 
         where
 
@@ -204,8 +204,6 @@ r : dictionary
             t : time
             r : specified (exogenous) inputs
             p : constants
-            q : generalized coordinates
-            u : generalized speeds
             M : mass matrix (full or minimum)
             F : right hand side (full or minimum)
             G : right hand side of the kinematical differential equations
@@ -221,12 +219,9 @@ r : dictionary
             right hand side has been solved for symbolically then only F is
             required, see form [1]; if not then the mass matrix must also be
             supplied, see forms [2, 3].
-        coordinates : sequence of SymPy Functions
-            The generalized coordinates. These must be ordered in the same
+        states : sequence of SymPy Functions
+            The states. These must be ordered in the same
             order as the rows in M, F, and/or G and be functions of time.
-        speeds : sequence of SymPy Functions
-            The generalized speeds. These must be ordered in the same order
-            as the rows in M, F, and/or G and be functions of time.
         constants : sequence of SymPy Symbols
             All of the constants present in the equations of motion. The
             order does not matter.
@@ -285,9 +280,7 @@ r : dictionary
         """
 
         self.right_hand_side = right_hand_side
-        self.coordinates = coordinates
-        self.speeds = speeds
-        self.constants = constants
+        self.states = states
         self.mass_matrix = mass_matrix
         self.coordinate_derivatives = coordinate_derivatives
         self.specifieds = specifieds
@@ -307,9 +300,7 @@ r : dictionary
             mass_matrix=mass_matrix,
             coordinate_derivatives=coordinate_derivatives)
 
-        self.num_coordinates = len(coordinates)
-        self.num_speeds = len(speeds)
-        self.num_states = self.num_coordinates + self.num_speeds
+        self.num_states = len(states)
         self.num_constants = len(constants)
 
         if self.specifieds is None:
@@ -347,9 +338,12 @@ r : dictionary
         if self.system_type == 'min mass matrix':
 
             nr, nc = self.mass_matrix.shape
-            assert self.num_speeds == nr == nc
-            assert self.num_speeds == self.right_hand_side.shape[0]
-            assert self.num_coordinates == self.coordinate_derivatives.shape[0]
+            assert nr == nc
+            assert nr == self.right_hand_side.shape[0]
+            assert self.num_states - nr == self.coordinate_derivatives.shape[0]
+
+            self.num_coordinates = self.coordinate_derivatives.shape[0]
+            self.num_speeds = self.num_states - self.num_coordinates
 
         elif self.system_type == 'full mass matrix':
 
@@ -486,8 +480,7 @@ r : dictionary
     def _generate_rhs_docstring(self):
 
         template_values = {'num_states': self.num_states,
-                           'state_list': self.list_syms(8, self.coordinates
-                                                        + self.speeds),
+                           'state_list': self.list_syms(8, self.states),
                            'specified_call_sig': '',
                            'constants_explanation':
                                self._constants_doc_templates[
@@ -523,10 +516,7 @@ r : dictionary
 
                 args = self._parse_all_args(*args)
 
-                q = args[0][:self.num_coordinates]
-                u = args[0][self.num_coordinates:]
-
-                xdot = self._base_rhs(q, u, *args[2:])
+                xdot = self._base_rhs(args[0], *args[2:])
 
                 return xdot
 
@@ -558,13 +548,10 @@ r : dictionary
             # or
             # args: x, t, r, p
 
-            q = args[0][:self.num_coordinates]
-            u = args[0][self.num_coordinates:]
-
             if self.specifieds is None:
-                return self._base_rhs(q, u, p(*args))
+                return self._base_rhs(args[0], p(*args))
             else:
-                return self._base_rhs(q, u, r(*args), p(*args))
+                return self._base_rhs(args[0], r(*args), p(*args))
 
         rhs.__doc__ = self._generate_rhs_docstring()
 
@@ -572,7 +559,7 @@ r : dictionary
 
     def _create_base_rhs_function(self):
         """Sets the self._base_rhs function. This function accepts arguments
-        in this form: (q, u, p) or (q, u, r, p)."""
+        in this form: (x, p) or (x, r, p)."""
 
         if self.system_type == 'full rhs':
 
@@ -604,10 +591,10 @@ r : dictionary
             self._base_rhs = base_rhs
 
     def define_inputs(self):
-        """Sets self.inputs to the list of sequences [q, u, p] or [q, u, r,
+        """Sets self.inputs to the list of sequences [x, p] or [x, r,
         p]."""
 
-        self.inputs = [self.coordinates, self.speeds, self.constants]
+        self.inputs = [self.states, self.constants]
         if self.specifieds is not None:
             self.inputs.insert(2, self.specifieds)
 
@@ -665,9 +652,9 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
     def _set_eval_array(self, f):
 
         if self.specifieds is None:
-            self.eval_arrays = lambda q, u, p: f(q, u, p, *self._empties)
+            self.eval_arrays = lambda x, p: f(x, p, *self._empties)
         else:
-            self.eval_arrays = lambda q, u, r, p: f(q, u, r, p,
+            self.eval_arrays = lambda x, r, p: f(x, r, p,
                                                     *self._empties)
 
     def generate_full_rhs_function(self):
@@ -699,7 +686,7 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
 
         mass_matrix_result = np.empty(self.num_speeds ** 2, dtype=float)
         rhs_result = np.empty(self.num_speeds, dtype=float)
-        kin_diffs_result = np.empty(self.num_coordinates, dtype=float)
+        kin_diffs_result = np.empty(self.states - self.num_speeds, dtype=float)
         self._empties = (mass_matrix_result, rhs_result, kin_diffs_result)
 
         self._set_eval_array(self._cythonize(outputs, self.inputs))
@@ -714,9 +701,9 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
         subs = {}
         vec_inputs = []
         if self.specifieds is None:
-            def_vecs = ['q', 'u', 'p']
+            def_vecs = ['x', 'p']
         else:
-            def_vecs = ['q', 'u', 'r', 'p']
+            def_vecs = ['x', 'r', 'p']
 
         for syms, vec_name in zip(self.inputs, def_vecs):
             v = sm.DeferredVector(vec_name)
@@ -742,9 +729,9 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
         f = self._lambdify(outputs)
 
         if self.specifieds is None:
-            self.eval_arrays = lambda q, u, p: np.squeeze(f(q, u, p))
+            self.eval_arrays = lambda x, p: np.squeeze(f(x, p))
         else:
-            self.eval_arrays = lambda q, u, r, p: np.squeeze(f(q, u, r, p))
+            self.eval_arrays = lambda x, r, p: np.squeeze(f(x, r, p))
 
     def generate_full_mass_matrix_function(self):
 
@@ -754,11 +741,11 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
         f = self._lambdify(outputs)
 
         if self.specifieds is None:
-            self.eval_arrays = lambda q, u, p: tuple([np.squeeze(o) for o in
-                                                      f(q, u, p)])
+            self.eval_arrays = lambda x, p: tuple([np.squeeze(o) for o in
+                                                      f(x, p)])
         else:
-            self.eval_arrays = lambda q, u, r, p: tuple([np.squeeze(o) for o
-                                                         in f(q, u, r, p)])
+            self.eval_arrays = lambda x, r, p: tuple([np.squeeze(o) for o
+                                                         in f(x, r, p)])
 
     def generate_min_mass_matrix_function(self):
 
@@ -769,11 +756,11 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
         f = self._lambdify(outputs)
 
         if self.specifieds is None:
-            self.eval_arrays = lambda q, u, p: tuple([np.squeeze(o) for o in
-                                                      f(q, u, p)])
+            self.eval_arrays = lambda x, p: tuple([np.squeeze(o) for o in
+                                                      f(x, p)])
         else:
-            self.eval_arrays = lambda q, u, r, p: tuple([np.squeeze(o) for o
-                                                         in f(q, u, r, p)])
+            self.eval_arrays = lambda x, r, p: tuple([np.squeeze(o) for o
+                                                         in f(x, r, p)])
 
 
 class TheanoODEFunctionGenerator(ODEFunctionGenerator):
@@ -793,8 +780,7 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
         specifieds = []
         if self.specifieds is not None:
             specifieds = self.specifieds
-        self.inputs = chain(self.coordinates, self.speeds,
-                            specifieds, self.constants)
+        self.inputs = chain(x, specifieds, self.constants)
 
     def _theanoize(self, outputs):
 

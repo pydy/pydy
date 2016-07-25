@@ -125,7 +125,7 @@ x = sys.integrate()
 
 
 plt.plot(sys.times, x)
-plt.legend([sym.latex(s, mode='inline') for s in sys.coordinates + sys.speeds])
+plt.legend([sym.latex(s, mode='inline') for s in sys.states])
 
 # visualize
 
