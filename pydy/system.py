@@ -54,6 +54,7 @@ import warnings
 from itertools import repeat
 
 import numpy as np
+import sympy
 from .backend import sm
 from sympy.physics.mechanics import dynamicsymbols
 from scipy.integrate import odeint
@@ -61,7 +62,7 @@ from scipy.integrate import odeint
 from .codegen.ode_function_generators import generate_ode_function
 from .utils import sympy_equal_to_or_newer_than, PyDyFutureWarning
 
-SYMPY_VERSION = sm.__version__
+SYMPY_VERSION = sympy.__version__
 
 if sympy_equal_to_or_newer_than('0.7.6'):
     from sympy.physics.mechanics.functions import find_dynamicsymbols
@@ -539,6 +540,7 @@ class System(object):
             args = (self._constants_padded_with_defaults(),)
         else:
             args = (specified_value, self._constants_padded_with_defaults())
+
         x_history = self.ode_solver(
             self.evaluate_ode_function,
             initial_conditions_in_proper_order,

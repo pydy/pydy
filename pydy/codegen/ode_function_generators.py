@@ -6,6 +6,8 @@ if sys.version_info > (3, 0):
 else:
     from collections import Sequence
 from itertools import chain
+from operator import mul
+from functools import reduce
 from pkg_resources import parse_version
 import warnings
 
@@ -731,11 +733,28 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
         except AttributeError:
             # msubs doesn't exist in SymPy < 0.7.6.
             outputs = [output.subs(subs) for output in outputs]
-        print((inputs, len(outputs)))
+
         if USE_SYMENGINE:
             import symengine
-            callbacks = [symengine.Lambdify(inputs, output) for output in outputs]
-            return lambda *args: [callback(np.concatenate(args).ravel()) for callback in callbacks]
+            outputs_ravel = list(chain(*outputs))
+            try:
+                cb = symengine.Lambdify(inputs, outputs_ravel, backend="llvm")
+            except TypeError, ValueError:
+                # TypeError if symengine is old, ValueError if symengine is
+                # not compiled with llvm support
+                cb = symengine.Lambdify(inputs, outputs_ravel)
+            def func(*args):
+                result = []
+                n = np.empty(len(outputs_ravel))
+                cb.unsafe_real(np.concatenate([a.ravel() for a in args]), n)
+                start = 0
+                for output in outputs:
+                    elems = reduce(mul, output.shape)
+                    result.append(n[start : (start + elems)]
+                                        .reshape(output.shape))
+                    start += elems
+                return result
+            return func
         else:
             modules = [{'ImmutableMatrix': np.array}, 'numpy']
             return sm.lambdify(vec_inputs, outputs, modules=modules)
