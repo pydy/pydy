@@ -3,4 +3,4 @@ try:
     USE_SYMENGINE = sm.USE_SYMENGINE
 except:
     import sympy as sm
-    USE_SYMENGINE = false
+    USE_SYMENGINE = False
