@@ -739,7 +739,7 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
             outputs_ravel = list(chain(*outputs))
             try:
                 cb = symengine.Lambdify(inputs, outputs_ravel, backend="llvm")
-            except TypeError, ValueError:
+            except (TypeError, ValueError):
                 # TypeError if symengine is old, ValueError if symengine is
                 # not compiled with llvm support
                 cb = symengine.Lambdify(inputs, outputs_ravel)
