@@ -389,7 +389,7 @@ r : dictionary
         try:
             constants = last_arg['constants']
         # ValueError is needed for older NumPy versions.
-        except (KeyError, IndexError, ValueError):
+        except (KeyError, IndexError, TypeError, ValueError):
             return args
         else:
             warnings.warn("The old style args, i.e. {'constants': , "
@@ -429,7 +429,7 @@ r : dictionary
         p = args[-1]
         try:
             p = self._convert_constants_dict_to_array(p)
-        except IndexError:
+        except (IndexError, TypeError):
             # p is an array so just return the args
             return args
         else:
