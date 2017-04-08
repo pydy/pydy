@@ -112,6 +112,28 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self.height = jQuery(window).height() * 0.83;
     },
 
+    _map_points_to_curve: function(points){
+        /**
+          * Maps points to a THREE.Curve object.
+        **/
+        var self = this;
+        var vector_array = [];
+
+        // NOTE: Due to some issue in THREE.Vector3, we need to parseFloat
+        // coordinates before passing it to Vector3
+        for(var point in points){
+            vector_array.push(
+                new THREE.Vector3(
+                    parseFloat(point[0]), parseFloat(point[1]),
+                    parseFloat(point[2])
+                )
+            );
+        }
+
+        curve = new THREE.SplineCurve3(vector_array);
+        return curve;
+    },
+
     WindowResize: function(renderer, camera, self){
         /**
           * Adds window resize event listener
@@ -283,6 +305,12 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                                           object.radius,
                                           object.tube_radius,100
                                           );
+                break;
+
+            case "Tube":
+                var curve = self._map_points_to_curve(object.points);
+                var geometry = new THREE.TubeGeometry(curve, 64,
+                                                      object.radius, 8, false);
                 break;
 
         }
