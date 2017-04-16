@@ -44,4 +44,5 @@ install:
 build: false
 
 test_script:
-  - "%CMD_IN_ENV% nosetests -v --with-coverage --cover-package=pydy"
+    #- "%CMD_IN_ENV% nosetests -v --with-coverage --cover-package=pydy < N"
+  - "%CMD_IN_ENV% nosetests -v pydy/viz/tests/test_server.py"
