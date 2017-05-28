@@ -38,7 +38,7 @@ before_script:
   - pip freeze
 script:
   # Run Python and Javascript tests.
-  - THEANO_FLAGS='gcc.cxxflags="-march=core2"' nosetests -v --with-coverage --cover-package=pydy
+  - nosetests -v --with-coverage --cover-package=pydy
   # JS tests
   - cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html
   - cd -  # It should not be combined with above command
