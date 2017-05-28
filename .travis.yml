@@ -15,7 +15,8 @@ before_install:
   - ./miniconda.sh -b -p $HOME/miniconda
   - export PATH=/home/travis/miniconda/bin:$PATH
   - conda config --set always_yes yes --set changeps1 no
-  - conda config --add channels pydy conda-forge
+  - conda config --add channels pydy
+  - conda config --add channels conda-forge  # conda-forge has top precedent
   - conda update -q conda
 install:
   - sudo apt-get install phantomjs
