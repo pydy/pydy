@@ -34,7 +34,7 @@ setup(
     install_requires=install_requires,
     extras_require={'doc': ['sphinx', 'numpydoc'],
                     'codegen': ['Cython>=0.23.4',
-                                'Theano>=0.7.0'],
+                                'Theano>=0.8.0'],
                     'examples': ['matplotlib>=1.5.1',
                                  'ipython[notebook]>=3.0.0'],
                     },
