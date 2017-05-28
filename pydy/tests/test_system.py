@@ -472,7 +472,11 @@ def test_specifying_coordinate_issue_339():
 
     kane = me.KanesMethod(N, q_ind=[q1, q2, q3, q4],
                           u_ind=[u1, u2, u3, u4], kd_eqs=kdes)
-    fr, frstar = kane.kanes_equations(loads, bodies)
+
+    if sympy_equal_to_or_newer_than('1.1.0'):
+        fr, frstar = kane.kanes_equations(bodies, loads)
+    else:
+        fr, frstar = kane.kanes_equations(loads, bodies)
 
     sys = System(kane)
 

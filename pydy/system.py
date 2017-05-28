@@ -17,7 +17,7 @@ The simplest usage of this class is as follows. First, we need a
 KanesMethod object on which we have already invoked ``kanes_equations()``::
 
     km = KanesMethod(...)
-    km.kanes_equations(force_list, body_list)
+    km.kanes_equations(body_list, force_list)
     times = np.linspace(0, 5, 100)
     sys = System(km, times=times)
     sys.integrate()
