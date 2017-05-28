@@ -6,9 +6,8 @@ env:
   - DEP_VERSIONS="master"
 python:
   - 2.7
-  - 3.3
-  - 3.4
   - 3.5
+  - 3.6
 before_install:
   - sudo apt-get update
   - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
@@ -16,14 +15,14 @@ before_install:
   - ./miniconda.sh -b -p $HOME/miniconda
   - export PATH=/home/travis/miniconda/bin:$PATH
   - conda config --set always_yes yes --set changeps1 no
-  - conda config --add channels pydy
+  - conda config --add channels pydy conda-forge
   - conda update -q conda
 install:
   - sudo apt-get install phantomjs
   - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION pip coverage nose sphinx numpydoc flake8
   - source activate test-env
   - if [[ $DEP_VERSIONS == "oldest" ]]; then
-      conda install numpy=1.8 scipy=0.13 sympy=0.7.4 cython=0.20 theano=0.7;
+      conda install numpy=1.11 scipy=0.17 sympy=0.7.6 cython=0.23 theano=0.7;
     elif [[ $DEP_VERSIONS == "latest" ]]; then
       conda install numpy scipy sympy cython theano;
     elif [[ $DEP_VERSIONS == "master" ]]; then

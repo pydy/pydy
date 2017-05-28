@@ -15,7 +15,7 @@ Cython = sm.external.import_module('Cython')
 
 from ..system import System
 from ..models import multi_mass_spring_damper, n_link_pendulum_on_cart
-from ..utils import sympy_equal_to_or_newer_than, PyDyImportWarning
+from ..utils import PyDyImportWarning
 
 SYMPY_VERSION = sm.__version__
 
@@ -88,22 +88,13 @@ class TestSystem():
                      constants=self.constant_map)
 
     def test_coordinates(self):
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            assert self.sys.coordinates == self.kane.q[:]
-        else:
-            assert self.sys.coordinates == self.kane._q
+        assert self.sys.coordinates == self.kane.q[:]
 
     def test_speeds(self):
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            assert self.sys.speeds == self.kane.u[:]
-        else:
-            assert self.sys.speeds == self.kane._u
+        assert self.sys.speeds == self.kane.u[:]
 
     def test_states(self):
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            assert self.sys.states == self.kane.q[:] + self.kane.u[:]
-        else:
-            assert self.sys.states == self.kane._q + self.kane._u
+        assert self.sys.states == self.kane.q[:] + self.kane.u[:]
 
     def test_constants(self):
 
