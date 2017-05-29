@@ -8,10 +8,6 @@ env:
   - DEP_VERSIONS="oldest"  # Approximately the versions available in the last LTS release of Ubuntu.
   - DEP_VERSIONS="latest"
   - DEP_VERSIONS="master"  # Run against SymPy master.
-matrix:
-  exclude:  # Python 3.6 wasn't available in Ubuntu 16.04.
-  - python: "3.6"
-    env: DEP_VERSIONS=oldest
 before_install:
   - sudo apt-get update
   - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
