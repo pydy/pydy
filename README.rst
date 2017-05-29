@@ -369,7 +369,7 @@ Release Notes
 -----
 
 - Bumped minimum Jupyter notebook to 4.0 and restricted to < 5.0.
-- Removed several deprecated functions. [PR `#375`]
+- Removed several deprecated functions. [PR `#375`_]
 - Bumped minimum required hard dependencies to Ubuntu 16.04 LTS package
   versions. [PR `#372`_]
 - Implemented ThreeJS Tube Geometry. [PR `#368`_]
