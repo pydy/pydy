@@ -6,7 +6,11 @@ matrices generated from sympy.physics.mechanics."""
 import os
 
 import sympy as sm
-from sympy.printing.ccode import CCodePrinter
+try:
+    from sympy.printing.ccode import C99CodePrinter as CCodePrinter
+except ImportError:
+    # SymPy 1.0 and lower uses this version.
+    from sympy.printing.ccode import CCodePrinter
 
 from .matrix_generator import MatrixGenerator
 from ..utils import wrap_and_indent
