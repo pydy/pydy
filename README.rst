@@ -63,24 +63,18 @@ PyDy has hard dependencies on the following software\ [#]_:
 .. [#] We only test PyDy with these minimum dependencies; these module versions
     are provided in the Ubuntu 14.04 packages. Previous versions may work.
 
-- Python >= 2.7, >= 3.3
-- setuptools\ [#]_
-- NumPy_ >= 1.8.1
-- SciPy_ >= 0.13.3
-- SymPy_ >= 0.7.4.1
+- Python >= 2.7, >= 3.5
+- setuptools >= 20.7.0
+- NumPy_ >= 1.11.0
+- SciPy_ >= 0.17.0
+- SymPy_ >= 0.7.6.1
 - PyWin32 >= 219 (Windows Only)
-
-.. [#] setuptools >= 8.0 is required if development versions of SymPy are used.
 
 PyDy has optional dependencies on these packages:
 
-- IPython_ >= 3.0.0 (plus ipywidgets_ >= 4.0.0 if IPython >= 4.0.0) [#]_
-- Theano_ >= 0.7.0
-- Cython_ >= 0.20.1
-
-.. [#] Note that ipywidgets will have to be installed separately until the fix
-   for `this change <https://github.com/ipython/ipython/issues/8905>`_ is
-   included in IPython 4.0.
+- IPython_ >= 3.0.0 (plus ipywidgets_ >= 4.0.0 if IPython >= 4.0.0)
+- Theano_ >= 0.8.0
+- Cython_ >= 0.23.4
 
 .. _Theano: http://deeplearning.net/software/theano/
 .. _Cython: http://cython.org/
@@ -88,7 +82,7 @@ PyDy has optional dependencies on these packages:
 
 The examples may require these dependencies:
 
-- matplotlib_
+- matplotlib_ >= 1.5.1
 - version_information_
 
 .. _version_information: https://pypi.python.org/pypi/version_information

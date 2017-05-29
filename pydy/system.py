@@ -56,15 +56,14 @@ from itertools import repeat
 import numpy as np
 import sympy as sm
 from sympy.physics.mechanics import dynamicsymbols
+from sympy.physics.mechanics.functions import find_dynamicsymbols
 from scipy.integrate import odeint
 
 from .codegen.ode_function_generators import generate_ode_function
-from .utils import sympy_equal_to_or_newer_than, PyDyFutureWarning
+from .utils import PyDyFutureWarning
 
 SYMPY_VERSION = sm.__version__
 
-if sympy_equal_to_or_newer_than('0.7.6'):
-    from sympy.physics.mechanics.functions import find_dynamicsymbols
 
 warnings.simplefilter('once', PyDyFutureWarning)
 
@@ -137,19 +136,13 @@ class System(object):
     def coordinates(self):
         """Returns a list of the symbolic functions of time representing the
         system's generalized coordinates."""
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            return self.eom_method.q[:]
-        else:
-            return self.eom_method._q
+        return self.eom_method.q[:]
 
     @property
     def speeds(self):
         """Returns a list of the symbolic functions of time representing the
         system's generalized speeds."""
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            return self.eom_method.u[:]
-        else:
-            return self.eom_method._u
+        return self.eom_method.u[:]
 
     @property
     def states(self):
@@ -557,16 +550,11 @@ class System(object):
         # Checking for dynamic symbols outside the dynamic differential
         # equations; throws error if there is.
 
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            # TODO : KanesMethod should provide public attributes for qdot,
-            # udot, uaux, and uauxdot.
-            insyms = set(self.eom_method.q[:] + self.eom_method._qdot[:] +
-                         self.eom_method.u[:] + self.eom_method._udot[:] +
-                         uaux + uauxdot)
-        else:
-            insyms = set(self.eom_method._q + self.eom_method._qdot +
-                         self.eom_method._u + self.eom_method._udot + uaux +
-                         uauxdot)
+        # TODO : KanesMethod should provide public attributes for qdot,
+        # udot, uaux, and uauxdot.
+        insyms = set(self.eom_method.q[:] + self.eom_method._qdot[:] +
+                     self.eom_method.u[:] + self.eom_method._udot[:] + uaux +
+                     uauxdot)
 
         inlist = (self.eom_method.forcing_full[:] +
                   self.eom_method.mass_matrix_full[:])
@@ -582,15 +570,11 @@ class System(object):
 
         """
         from_eoms, from_sym_lists = self._Kane_inlist_insyms()
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            functions_of_time = set()
-            for expr in from_eoms:
-                functions_of_time = functions_of_time.union(
-                    find_dynamicsymbols(expr))
-            return functions_of_time.difference(from_sym_lists)
-        else:
-            return set(self.eom_method._find_dynamicsymbols(
-                *self._Kane_inlist_insyms()))
+        functions_of_time = set()
+        for expr in from_eoms:
+            functions_of_time = functions_of_time.union(
+                find_dynamicsymbols(expr))
+        return functions_of_time.difference(from_sym_lists)
 
     def _Kane_constant_symbols(self):
         """Similar to ``_find_othersymbols()``, except it checks all syms used in
@@ -602,13 +586,9 @@ class System(object):
 
         """
         from_eoms, from_sym_lists = self._Kane_inlist_insyms()
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            unique_symbols = set()
-            for expr in from_eoms:
-                unique_symbols = unique_symbols.union(expr.free_symbols)
-            constants = unique_symbols
-        else:
-            constants = set(self.eom_method._find_othersymbols(
-                *self._Kane_inlist_insyms()))
+        unique_symbols = set()
+        for expr in from_eoms:
+            unique_symbols = unique_symbols.union(expr.free_symbols)
+        constants = unique_symbols
         constants.remove(dynamicsymbols._t)
         return constants
