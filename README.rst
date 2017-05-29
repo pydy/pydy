@@ -173,7 +173,7 @@ Derive the system::
 
    kane = me.KanesMethod(ceiling, q_ind=[position], u_ind=[speed],
                          kd_eqs=kinematic_equations)
-   kane.kanes_equations(forces, particles)
+   kane.kanes_equations(particles, forces)
 
 Create a system to manage integration and specify numerical values for the
 constants and specified quantities. Here, we specify sinusoidal forcing::

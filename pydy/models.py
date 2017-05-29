@@ -10,6 +10,7 @@ import sympy.physics.mechanics as me
 
 # local
 from .system import System
+from .utils import sympy_newer_than
 
 
 def multi_mass_spring_damper(n=1, apply_gravity=False,
@@ -107,7 +108,11 @@ def multi_mass_spring_damper(n=1, apply_gravity=False,
 
     kane = me.KanesMethod(ceiling, q_ind=coordinates, u_ind=speeds,
                           kd_eqs=kinematic_equations)
-    kane.kanes_equations(forces, particles)
+
+    if sympy_newer_than('1.0'):
+        kane.kanes_equations(particles, forces)
+    else:
+        kane.kanes_equations(forces, particles)
 
     return System(kane)
 
@@ -225,6 +230,9 @@ def n_link_pendulum_on_cart(n=1, cart_force=True, joint_torques=False):
         specified.append(F)
 
     kane = me.KanesMethod(I, q_ind=q, u_ind=u, kd_eqs=kindiffs)
-    kane.kanes_equations(forces, particles)
+    if sympy_newer_than('1.0'):
+        kane.kanes_equations(particles, forces)
+    else:
+        kane.kanes_equations(forces, particles)
 
     return System(kane)

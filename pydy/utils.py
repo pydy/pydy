@@ -33,6 +33,12 @@ def sympy_equal_to_or_newer_than(version, installed_version=None):
     return parse_version(v) >= parse_version(version)
 
 
+def sympy_newer_than(version):
+    """Returns true if the installed version of SymPy is newer than the
+    provided version string."""
+    return parse_version(SYMPY_VERSION) > parse_version(version)
+
+
 def wrap_and_indent(lines, indentation=4, width=79, continuation=None,
                     comment=None):
     """Returns a single string in which the lines have been indented and
