@@ -840,9 +840,7 @@ def generate_ode_function(*args, **kwargs):
         return g.generate()
 
 
-_divider = '\n        Notes\n        ====='
 _docstr = ODEFunctionGenerator.__init__.__doc__
-_before_notes, _after_notes = _docstr.split(_divider)
 _extra_parameters_doc = \
 """\
         generator : string or and ODEFunctionGenerator, optional
@@ -857,6 +855,4 @@ _extra_parameters_doc = \
             A function which evaluates the derivaties of the states. See the
             function's docstring for more details after generation.
 """
-generate_ode_function.__doc__ = ('' * 4 + _before_notes +
-                                 _extra_parameters_doc + _divider +
-                                 _after_notes)
+generate_ode_function.__doc__ = ('' * 4 + _docstr + _extra_parameters_doc)
