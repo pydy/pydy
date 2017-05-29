@@ -1,7 +1,7 @@
 This is an example of a simple two body pendulum that exhibits chaotic
 behavior. The following diagram describes the system:
 
-![free body diagram](chaos_pendulum.svg)
+![Free Body Diagram](https://cdn.rawgit.com/pydy/pydy/master/examples/chaos_pendulum/chaos_pendulum.svg)
 
 This example can be run with::
 
