@@ -1,6 +1,7 @@
 from sympy.matrices.expressions import Identity
 
 from .visualization_frame import VisualizationFrame
+from ..utils import sympy_equal_to_or_newer_than
 
 __all__ = ['PointLight']
 
@@ -84,7 +85,11 @@ class PointLight(VisualizationFrame):
             self._name = 'unnamed'
 
         try:
-            self._reference_frame = args[i].get_frame()
+            if sympy_equal_to_or_newer_than('1.0'):
+                self._reference_frame = args[i].frame
+            else:
+                self._reference_frame = args[i].get_frame()
+
             self._origin = args[i].masscenter
 
         except AttributeError:

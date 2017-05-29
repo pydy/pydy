@@ -22,7 +22,7 @@ from .camera import PerspectiveCamera
 from .server import Server
 from .light import PointLight
 from ..system import System
-from ..utils import PyDyImportWarning, PyDyDeprecationWarning
+from ..utils import PyDyImportWarning
 
 if sys.version_info > (3, 0):
     raw_input = input
@@ -30,7 +30,6 @@ if sys.version_info > (3, 0):
 __all__ = ['Scene']
 
 warnings.simplefilter('once', PyDyImportWarning)
-warnings.simplefilter('once', PyDyDeprecationWarning)
 
 try:
     import IPython
@@ -332,47 +331,6 @@ class Scene(object):
                      'states_trajectories']:
             setattr(self, attr, None)
 
-    def generate_visualization_json(self, dynamic_variables,
-                                    constant_variables, dynamic_values,
-                                    constant_values, fps=30,
-                                    outfile_prefix=None):
-        """Creates two JSON files in the current working directory. One
-        contains the scene information and one contains the simulation data.
-
-        Parameters
-        ==========
-        dynamic_variables : sequence of SymPy functions of time, len(m)
-            The variables representing the state of the system. They should
-            be in the same order as ``dynamic_values``.
-        constant_variables : sequence of SymPy symbols, len(p)
-            The variables representing the constants in the system. They
-            should be in the same order as ``constant_variables``.
-        dynamic_values : ndarray, shape(n, m)
-            The trajectories of the states.
-        constant_values : ndarray, shape(p,)
-            The numerical values of the constants.
-        fps : int, optional, default=30
-            Frames per second at which animation should be displayed. Please
-            not that this should not exceed the hardware limit of the
-            display device to be used. Default is 30fps.
-        outfile_prefix : str, optional, default=None
-            A prefix for the JSON files. The files will be named as
-            `outfile_prefix_scene_desc.json` and
-            `outfile_prefix_simulation_data.json`. If not specified a
-            timestamp shall be used as the prefix.
-
-
-        """
-        warnings.warn("This method will be removed in PyDy 0.4.0, set these "
-                      "values through the proper attributes instead.",
-                      PyDyDeprecationWarning)
-
-        self.states_symbols = dynamic_variables
-        self.states_trajectories = dynamic_values
-        self.constants = dict(zip(constant_variables, constant_values))
-        self.frames_per_second = fps
-        self._generate_json(prefix=outfile_prefix)
-
     def _generate_json(self, directory=None, prefix=None):
         """Creates two JSON files and copies all the necessary static files
         in the specified directory. One of the JSON files contains the scene
@@ -523,6 +481,15 @@ class Scene(object):
         system : pydy.system.System
             A fully developed PyDy system that is prepared for the
             ``.integrate()`` method.
+        fps : int, optional, default=30
+            Frames per second at which animation should be displayed. Please
+            not that this should not exceed the hardware limit of the
+            display device to be used. Default is 30fps.
+        outfile_prefix : str, optional, default=None
+            A prefix for the JSON files. The files will be named as
+            `outfile_prefix_scene_desc.json` and
+            `outfile_prefix_simulation_data.json`. If not specified a
+            timestamp shall be used as the prefix.
 
         Notes
         =====
