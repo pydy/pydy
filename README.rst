@@ -76,7 +76,7 @@ PyDy has hard dependencies on the following software\ [#]_:
 PyDy has optional dependencies on these packages:
 
 - 4.0.0 <= `Jupyter Notebook`_ < 5.0.0
-- 4.0.0 <= ipywidgets_ < 5.0
+- 4.0.0 <= ipywidgets_ < 5.0.0
 - Theano_ >= 0.8.0
 - Cython_ >= 0.23.4
 
@@ -368,7 +368,7 @@ Release Notes
 0.4.0
 -----
 
-- Bumped minimum Jupyter notebook to 4.0 and restricted to < 5.0.
+- Bumped minimum Jupyter notebook to 4.0 and restricted to < 5.0. [PR `#381`_]
 - Removed several deprecated functions. [PR `#375`_]
 - Bumped minimum required hard dependencies to Ubuntu 16.04 LTS package
   versions. [PR `#372`_]
@@ -386,6 +386,7 @@ Release Notes
 - Simplified the right hand side evaluation code in the ODEFunctionGenerator.
   Note that this change comes with some performance hits. [PR `#301`_]
 
+.. _#381: https://github.com/pydy/pydy/pull/381
 .. _#375: https://github.com/pydy/pydy/pull/375
 .. _#372: https://github.com/pydy/pydy/pull/372
 .. _#368: https://github.com/pydy/pydy/pull/368
