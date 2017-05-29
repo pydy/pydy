@@ -85,7 +85,7 @@ class PointLight(VisualizationFrame):
             self._name = 'unnamed'
 
         try:
-            if sympy_equal_to_or_newer_than(1.0):
+            if sympy_equal_to_or_newer_than('1.0'):
                 self._reference_frame = args[i].frame
             else:
                 self._reference_frame = args[i].get_frame()
