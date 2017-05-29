@@ -6,8 +6,6 @@ if sys.version_info > (3, 0):
 else:
     from collections import Sequence
 from itertools import chain
-from pkg_resources import parse_version
-import warnings
 
 import numpy as np
 import numpy.linalg
@@ -20,12 +18,7 @@ theano = sm.external.import_module('theano')
 if theano:
     from sympy.printing.theanocode import theano_function
 
-import pydy
-from ..utils import PyDyDeprecationWarning
 from .cython_code import CythonMatrixGenerator
-
-
-warnings.simplefilter('once', PyDyDeprecationWarning)
 
 
 class ODEFunctionGenerator(object):
@@ -272,16 +265,6 @@ r : dictionary
             ``function``, or ``dictionary``. The speed of each, from fast to
             slow, are ``array``, ``function``, ``dictionary``, None.
 
-        Notes
-        =====
-        The generated function still supports the pre-0.3.0 extra argument
-        style, i.e. args = {'constants': ..., 'specified': ...}, but only if
-        ``constants_arg_type`` and ``specifieds_arg_type`` are both set to
-        None. This functionality is deprecated and will be removed in 0.4.0,
-        so it's best to adjust your code to support the new argument types.
-        See the docstring for the generated function for more info on the
-        new style of arguments.
-
         """
 
         self.right_hand_side = right_hand_side
@@ -373,39 +356,6 @@ r : dictionary
         lst = '- ' + ('\n' + indentation + '- ').join([str(s) for s in syms])
         return indentation + lst
 
-    def _parse_old_style_extra_args(self, *args):
-        """Returns the post-0.3.0 style args if the pre-0.3.0 style args are
-        passed in. The pre-0.3.0 style args always have three args: (x, t,
-        d) where d is is a dictionary which should always at least contain
-        the key 'constants'. It may also contain a key 'specified'."""
-
-        # DEPRECATED : Remove before 0.4.0 release.
-        if parse_version(pydy.__version__) > parse_version('0.4.0'):
-            msg = ("The old style args, i.e. {'constants': , 'specified'}, "
-                    "for the generated function is no longer supported as "
-                    "of PyDy 0.4.0. Please remove this function.")
-
-        last_arg = args[-1]
-        try:
-            constants = last_arg['constants']
-        # ValueError is needed for older NumPy versions.
-        except (KeyError, IndexError, ValueError):
-            return args
-        else:
-            warnings.warn("The old style args, i.e. {'constants': , "
-                          "'specified'}, for the generated function will be "
-                          "removed in PyDy 0.4.0.",
-                          PyDyDeprecationWarning)
-
-            new_args = list(args[:-1])  # gets x and t
-
-            if self.specifieds is not None:
-                new_args.append(last_arg['specified'])
-
-            new_args.append(constants)
-
-            return tuple(new_args)
-
     def _convert_constants_dict_to_array(self, p):
         """Returns an array of numerical values from the constants
         dictionary in the correct order."""
@@ -473,8 +423,6 @@ r : dictionary
         the parsers. This is the slowest method and is used by default if no
         information is provided by the user on which type of args will be
         passed in."""
-
-        args = self._parse_old_style_extra_args(*args)
 
         args = self._parse_constants(*args)
 
