@@ -15,7 +15,7 @@ Cython = sm.external.import_module('Cython')
 
 from ..system import System
 from ..models import multi_mass_spring_damper, n_link_pendulum_on_cart
-from ..utils import PyDyImportWarning
+from ..utils import PyDyImportWarning, sympy_newer_than
 
 SYMPY_VERSION = sm.__version__
 
@@ -473,7 +473,7 @@ def test_specifying_coordinate_issue_339():
     kane = me.KanesMethod(N, q_ind=[q1, q2, q3, q4],
                           u_ind=[u1, u2, u3, u4], kd_eqs=kdes)
 
-    if sympy_equal_to_or_newer_than('1.1.0'):
+    if sympy_newer_than('1.0'):
         fr, frstar = kane.kanes_equations(bodies, loads)
     else:
         fr, frstar = kane.kanes_equations(loads, bodies)

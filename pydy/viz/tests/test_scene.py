@@ -16,7 +16,7 @@ from ..visualization_frame import VisualizationFrame
 from ..camera import PerspectiveCamera, OrthoGraphicCamera
 from ..light import PointLight
 from ..scene import Scene
-from ...utils import sympy_equal_to_or_newer_than
+from ...utils import sympy_newer_than
 
 
 class TestScene(object):
@@ -47,7 +47,7 @@ class TestScene(object):
         kane = me.KanesMethod(ceiling, q_ind=[position], u_ind=[speed],
                               kd_eqs=kinematic_equations)
 
-        if sympy_equal_to_or_newer_than('1.1.0'):
+        if sympy_newer_than('1.0'):
             kane.kanes_equations(particles, forces)
         else:
             kane.kanes_equations(forces, particles)
