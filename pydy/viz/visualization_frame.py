@@ -105,7 +105,7 @@ class VisualizationFrame(object):
             self.name = 'unnamed'
 
         try:
-            if sympy_equal_to_or_newer_than(1.0):
+            if sympy_equal_to_or_newer_than('1.0'):
                 self.reference_frame = args[i].frame
             else:
                 self.reference_frame = args[i].get_frame()
