@@ -11,6 +11,7 @@ from sympy.matrices.expressions import Identity
 from sympy.physics.mechanics import Point, ReferenceFrame
 
 from .shapes import Shape
+from ..utils import sympy_equal_to_or_newer_than
 
 
 class VisualizationFrame(object):
@@ -104,7 +105,10 @@ class VisualizationFrame(object):
             self.name = 'unnamed'
 
         try:
-            self.reference_frame = args[i].get_frame()
+            if sympy_equal_to_or_newer_than(1.0):
+                self.reference_frame = args[i].frame
+            else:
+                self.reference_frame = args[i].get_frame()
             self.origin = args[i].masscenter
 
         except AttributeError:
