@@ -45,14 +45,17 @@ multibody systems. More recently we developed two packages, `pydy.codegen` and
 Python package contains these two packages and other tools for working with
 mathematical models generated from SymPy mechanics. The remaining tools
 currently used in the PyDy workflow are popular scientific Python packages such
-as NumPy_, SciPy_, IPython_, and matplotlib_ (i.e. the SciPy stack) which
-provide additional code for numerical analyses, simulation, and visualization.
+as NumPy_, SciPy_, IPython_, Jupyter_, ipywidgets_, and matplotlib_ (i.e. the
+SciPy stack) which provide additional code for numerical analyses, simulation,
+and visualization.
 
 .. _SymPy: http://sympy.org
 .. _mechanics package: http://docs.sympy.org/latest/modules/physics/mechanics/index.html
 .. _NumPy: http://numpy.scipy.org
 .. _SciPy: http://www.scipy.org/scipylib/index.html
 .. _IPython: http://ipython.org
+.. _Jupyter: http://jupyter.org
+.. _ipywidgets: https://pypi.python.org/pypi/ipywidgets
 .. _matplotlib: http://matplotlib.org
 
 Installation
@@ -61,24 +64,25 @@ Installation
 PyDy has hard dependencies on the following software\ [#]_:
 
 .. [#] We only test PyDy with these minimum dependencies; these module versions
-    are provided in the Ubuntu 14.04 packages. Previous versions may work.
+       are provided in the Ubuntu 16.04 packages. Previous versions may work.
 
-- Python >= 2.7, >= 3.5
+- 2.7 <= Python < 3.0 or Python >= 3.5
 - setuptools >= 20.7.0
 - NumPy_ >= 1.11.0
-- SciPy_ >= 0.17.0
+- SciPy_ >= 0.17.1
 - SymPy_ >= 0.7.6.1
 - PyWin32 >= 219 (Windows Only)
 
 PyDy has optional dependencies on these packages:
 
-- IPython_ >= 3.0.0 (plus ipywidgets_ >= 4.0.0 if IPython >= 4.0.0)
+- 4.0.0 <= `Jupyter Notebook`_ < 5.0.0
+- 4.0.0 <= ipywidgets_ < 5.0
 - Theano_ >= 0.8.0
 - Cython_ >= 0.23.4
 
 .. _Theano: http://deeplearning.net/software/theano/
 .. _Cython: http://cython.org/
-.. _ipywidgets: https://pypi.python.org/pypi/ipywidgets
+.. _Jupyter Notebook: https://pypi.python.org/pypi/notebook
 
 The examples may require these dependencies:
 
@@ -173,7 +177,7 @@ Derive the system::
 
    kane = me.KanesMethod(ceiling, q_ind=[position], u_ind=[speed],
                          kd_eqs=kinematic_equations)
-   kane.kanes_equations(particles, forces)
+   kane.kanes_equations(forces, particles)
 
 Create a system to manage integration and specify numerical values for the
 constants and specified quantities. Here, we specify sinusoidal forcing::
@@ -267,7 +271,7 @@ repository from Github with::
 
 You should then install the dependencies for running the tests:
 
-- nose_: 1.3.0
+- nose_: 1.3.7
 - phantomjs_: 1.9.0
 
 .. _nose: https://nose.readthedocs.org
@@ -285,7 +289,7 @@ The following installation assumes you have virtualenvwrapper_ in addition to
 virtualenv and all the dependencies needed to build the various packages::
 
    $ mkvirtualenv pydy-dev
-   (pydy-dev)$ pip install numpy scipy cython nose theano sympy ipython[all] ipywidgets version_information
+   (pydy-dev)$ pip install numpy scipy cython nose theano sympy ipython "notebook<5.0" "ipywidgets<5.0" version_information
    (pydy-dev)$ pip install matplotlib # make sure to do this after numpy
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
@@ -295,11 +299,11 @@ virtualenv and all the dependencies needed to build the various packages::
 
 Or with conda_::
 
-   $ conda create -c pydy -n pydy-dev setuptools numpy scipy ipython ipython-notebook ipywidgets cython nose theano sympy matplotlib version_information
+   $ conda create -c pydy -n pydy-dev setuptools numpy scipy ipython "notebook<5.0" "ipywidgets<5.0" cython nose theano sympy matplotlib version_information
    $ source activate pydy-dev
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
-   (pydy-dev)$ python setup.py develop
+   (pydy-dev)$ conda develop .
 
 The full Python test suite can be run with::
 
@@ -364,7 +368,16 @@ Release Notes
 0.4.0
 -----
 
-- Derivatives can now be used as specifies in System. [PR `#340`]
+- Bumped minimum Jupyter notebook to 4.0 and restricted to < 5.0.
+- Removed several deprecated functions. [PR `#375`]
+- Bumped minimum required hard dependencies to Ubuntu 16.04 LTS package
+  versions. [PR `#372`_]
+- Implemented ThreeJS Tube Geometry. [PR `#368`_]
+- Improved circle rendering. [PR `#357`_]
+- kwargs can be passed from System.generate_ode_function to the matrix
+  generator. [PR `#356`_]
+- Lagrangian simple pendulum example added. [PR `#351`_]
+- Derivatives can now be used as specifies in System. [PR `#340`_]
 - The initial conditions can now be adjusted in the notebook GUI. [PR `#333`_]
 - The width of the viz canvas is now properly bounded in the notebook. [PR `#332`_]
 - Planes now render both sides in the visualization GUI. [PR `#330`_]
@@ -373,6 +386,12 @@ Release Notes
 - Simplified the right hand side evaluation code in the ODEFunctionGenerator.
   Note that this change comes with some performance hits. [PR `#301`_]
 
+.. _#375: https://github.com/pydy/pydy/pull/375
+.. _#372: https://github.com/pydy/pydy/pull/372
+.. _#368: https://github.com/pydy/pydy/pull/368
+.. _#357: https://github.com/pydy/pydy/pull/357
+.. _#356: https://github.com/pydy/pydy/pull/356
+.. _#351: https://github.com/pydy/pydy/pull/351
 .. _#340: https://github.com/pydy/pydy/pull/340
 .. _#333: https://github.com/pydy/pydy/pull/333
 .. _#332: https://github.com/pydy/pydy/pull/332

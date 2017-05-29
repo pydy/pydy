@@ -37,7 +37,7 @@ before_script:
   - pip --version
   - pip freeze
 script:
-  # Run Python and Javascript tests.
+  # The THEANO_FLAGS are necessary for compilation on Travis CI.
   - THEANO_FLAGS='gcc.cxxflags="-march=core2"' nosetests -v --with-coverage --cover-package=pydy
   # JS tests
   - cd pydy/viz/static/js/tests && phantomjs run-jasmine.js SpecRunner.html
