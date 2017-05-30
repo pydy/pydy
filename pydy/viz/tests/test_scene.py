@@ -65,8 +65,7 @@ class TestScene(object):
         self.origin = origin
         self.viz_frame = VisualizationFrame(ceiling, block, sphere)
         self.viz_frame_sym_shape = VisualizationFrame(ceiling, block,
-                                                      Sphere(radius=mass /
-                                                             10.0))
+                                                      Sphere(radius = 10.0))
 
     def test_init(self):
 
@@ -256,7 +255,7 @@ class TestScene(object):
         scene._generate_simulation_dict()
         scene._generate_scene_dict()
 
-        assert scene._scene_info['objects'][viz_frame_id]['radius'] == 0.1
+        assert scene._scene_info['objects'][viz_frame_id]['radius'] == 10.0 
 
     def test_custom_camera(self):
 

@@ -128,6 +128,45 @@ class Shape(object):
         return self.__class__.__name__
 
     @property
+    def length(self):
+        """Returns the length attribute of the shape."""
+        return self._length
+
+    @length.setter
+    def length(self, new_length):
+        """Sets the length attribute of the shape."""
+        if not isinstance(new_length, int) and not isinstance(new_length, float):
+            raise TypeError("Dimensions should be integer or float values.")
+        else:
+            self._length = new_length
+            
+    @property
+    def radius(self):
+        """Returns the radius attribute of the shape."""
+        return self._radius
+
+    @radius.setter
+    def radius(self, new_radius):
+        """Sets the radius attribute of the shape."""
+        if not isinstance(new_radius, int) and not isinstance(new_radius, float):
+            raise TypeError("Dimensions should be integer or float values.")
+        else:
+            self._radius = new_radius
+
+    @property
+    def width(self):
+        """Returns the width attribute of the shape."""
+        return self._width
+
+    @width.setter
+    def width(self, new_width):
+        """Sets the width attribute of the shape."""
+        if not isinstance(new_width, int) and not isinstance(new_width, float):
+            raise TypeError("Dimensions should be integer or float values.")
+        else:
+            self._width = new_width
+
+    @property
     def name(self):
         """Returns the name attribute of the shape."""
         return self._name
@@ -679,7 +718,10 @@ class Torus(Shape):
 
     @tube_radius.setter
     def tube_radius(self, new_tube_radius):
-        self._tube_radius = new_tube_radius
+        if not isinstance(new_tube_radius, int) and not isinstance(new_tube_radius, float):
+            raise TypeError("Dimensions should be integer or float values.")
+        else:
+            self._tube_radius = new_tube_radius
 
 
 class TorusKnot(Torus):
