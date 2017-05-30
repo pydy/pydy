@@ -265,36 +265,6 @@ class TestODEFunctionGeneratorSubclasses(object):
 
                 np.testing.assert_allclose(xdot, expected)
 
-    def test_old_rhs_args(self):
-
-        # DEPRECATED : This should be removed before the 0.4.0 release.
-
-        # There are four specified inputs available.
-        sys = models.n_link_pendulum_on_cart(3, True, True)
-        right_hand_side = sys.eom_method.rhs()
-
-        # It is only necessary to check one Generator because all of the
-        # arg handling is shared among them.
-        g = LambdifyODEFunctionGenerator(right_hand_side, sys.coordinates,
-                                         sys.speeds, sys.constants_symbols,
-                                         specifieds=sys.specifieds_symbols)
-
-        rhs = g.generate()
-
-        x = np.random.random(g.num_states)
-        t = 0.0
-        r = np.random.random(g.num_specifieds)
-        p = np.random.random(g.num_constants)
-
-        # Compute with new style args.
-        xd_01 = rhs(x, t, r, p)
-
-        # Now check to see if old style extra args works.
-        args = {'specified': r, 'constants': p}
-
-        xd_02 = rhs(x, t, args)
-        np.testing.assert_allclose(xd_01, xd_02)
-
     def test_rhs_args(self):
         # This test takes a while to run but it checks all the combinations.
 

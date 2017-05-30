@@ -15,7 +15,7 @@ Cython = sm.external.import_module('Cython')
 
 from ..system import System
 from ..models import multi_mass_spring_damper, n_link_pendulum_on_cart
-from ..utils import sympy_equal_to_or_newer_than, PyDyImportWarning
+from ..utils import PyDyImportWarning, sympy_newer_than
 
 SYMPY_VERSION = sm.__version__
 
@@ -88,22 +88,13 @@ class TestSystem():
                      constants=self.constant_map)
 
     def test_coordinates(self):
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            assert self.sys.coordinates == self.kane.q[:]
-        else:
-            assert self.sys.coordinates == self.kane._q
+        assert self.sys.coordinates == self.kane.q[:]
 
     def test_speeds(self):
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            assert self.sys.speeds == self.kane.u[:]
-        else:
-            assert self.sys.speeds == self.kane._u
+        assert self.sys.speeds == self.kane.u[:]
 
     def test_states(self):
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            assert self.sys.states == self.kane.q[:] + self.kane.u[:]
-        else:
-            assert self.sys.states == self.kane._q + self.kane._u
+        assert self.sys.states == self.kane.q[:] + self.kane.u[:]
 
     def test_constants(self):
 
@@ -481,7 +472,11 @@ def test_specifying_coordinate_issue_339():
 
     kane = me.KanesMethod(N, q_ind=[q1, q2, q3, q4],
                           u_ind=[u1, u2, u3, u4], kd_eqs=kdes)
-    fr, frstar = kane.kanes_equations(loads, bodies)
+
+    if sympy_newer_than('1.0'):
+        fr, frstar = kane.kanes_equations(bodies, loads)
+    else:
+        fr, frstar = kane.kanes_equations(loads, bodies)
 
     sys = System(kane)
 

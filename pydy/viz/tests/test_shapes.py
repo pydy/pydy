@@ -464,8 +464,8 @@ def test_tube():
 
     assert tube.name == 'tube'
     assert tube.__str__() == ('Tube tube color:red material:default points:'
-                              '[[ 2.  4.  5.]\n [ 2.  6.  4.]\n [ 1.  5.  8.]]'
-                              ' radius:10.0')
+                              '[[2.0, 4.0, 5.0], [2.0, 6.0, 4.0], '
+                              '[1.0, 5.0, 8.0]] radius:10.0')
     assert tube.__repr__() == 'Tube'
     assert tube.radius == 10.0
     assert_allclose(tube.points, point_list)
@@ -501,9 +501,9 @@ def test_tube():
 
     tube_ = Tube(10.0, point_list, color='red')
     assert tube_.name == 'unnamed'
-    assert tube_.__str__() == ('Tube unnamed color:red material:default '
-                               'points:[[ 2.  4.  5.]\n [ 2.  6.  4.]\n '
-                               '[ 1.  5.  8.]] radius:10.0')
+    assert tube_.__str__() == ('Tube unnamed color:red material:default points:'
+                               '[[2.0, 4.0, 5.0], [2.0, 6.0, 4.0], '
+                               '[1.0, 5.0, 8.0]] radius:10.0')
     assert tube_.__repr__() == 'Tube'
 
 
