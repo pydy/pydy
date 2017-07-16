@@ -18,6 +18,8 @@ import numpy as np
 from sympy import latex
 from sympy.physics.mechanics import ReferenceFrame, Point
 import pythreejs as p3js
+import ipywidgets as widgets
+from traitlets import Unicode, validate
 
 # local
 from .camera import PerspectiveCamera
@@ -676,10 +678,10 @@ class Scene(object):
         self._generate_play_widget()
 
         self._trajectory_links = []
-        for mesh in self._meshes:
-            self._trajectory_links.append(
-                    trajectory_link(self._play_widget.children[1], mesh))
-        self._generate_mesh_trajectories()
+        #for mesh in self._meshes:
+            #self._trajectory_links.append(
+                    #trajectory_link(self._play_widget.children[1], mesh))
+        #self._generate_mesh_trajectories()
 
         children = self._meshes + [p3js.AmbientLight(color=0x777777)]
         # TODO: lights
@@ -701,6 +703,15 @@ class Scene(object):
                                  self._play_widget,
                                  self._renderer)
         display(self._widget)
+
+    def display_pythreejs2(self):
+
+        class HelloWidget(widgets.DOMWidget):
+            _view_name = Unicode('HelloView').tag(sync=True)
+            _view_module = Unicode('nbextensions/pydyviztest/ipywidgets').tag(sync=True)
+            value = Unicode('Hello Worldy!').tag(sync=True)
+
+        return HelloWidget()
 
 
     def _generate_simulation_dict(self):
