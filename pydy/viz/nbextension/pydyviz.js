@@ -1,5 +1,5 @@
 define([
-    "widgets/js/widget",
+    "jupyter-js-widgets",
     "underscore",
 ], function(widget,  _){
     console.log("[PyDy INFO] loading pydyviz");
@@ -8,9 +8,11 @@ define([
 
         initialize: function() {
             this.on("change", this.update_bindings, this);
+            console.log("[PyDy INFO] TrajectoryLinkModel initialized.");
         },
 
         update_value: function(source, target) {
+
             if (this.updating) {
                 return;
             }
@@ -69,6 +71,7 @@ define([
 
         initialize: function() {
             this.on("change", this.update_bindings, this);
+            console.log('[PyDy Info] Initialized PlayLinkModel');
         },
 
         update_bindings: function() {
@@ -86,6 +89,7 @@ define([
         },
 
         on_control_click: function(control, slider, speedup, loop) {
+            console.log('[PyDy Info] Play clicked.');
             if (this.updating) {
                 return;
             }
