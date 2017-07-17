@@ -18,6 +18,8 @@ import numpy as np
 from sympy import latex
 from sympy.physics.mechanics import ReferenceFrame, Point
 import pythreejs as p3js
+import ipywidgets as widgets
+from traitlets import Unicode, validate, link
 
 # local
 from .camera import PerspectiveCamera
@@ -675,13 +677,13 @@ class Scene(object):
         self._generate_constants_widget()
         self._generate_play_widget()
 
+        time_slider = self._play_widget.children[1]
         self._trajectory_links = []
         for mesh in self._meshes:
-            self._trajectory_links.append(
-                    trajectory_link(self._play_widget.children[1], mesh))
+            self._trajectory_links.append(trajectory_link(time_slider, mesh))
         self._generate_mesh_trajectories()
 
-        children = self._meshes + [p3js.AmbientLight(color=0x777777)]
+        children = self._meshes + [p3js.AmbientLight(color='grey')]
         # TODO: lights
         # TODO: cameras
         c = p3js.PerspectiveCamera(
@@ -693,8 +695,8 @@ class Scene(object):
                 camera=c,
                 scene=p3js.Scene(children=children),
                 controls=[p3js.OrbitControls(controlling=c)],
-                width=700,
-                height=400)
+                width='700',
+                height='400')
         self._widget = widgets.VBox()
         self._widget.children = (self._constants_widget,
                                  self._time_widget,
