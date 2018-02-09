@@ -129,10 +129,10 @@ class TestODEFunctionGenerator(object):
         3.0, sm.Function('x0')(sm.Symbol('t')))))]])
 
         rhs = generate_ode_function(sym_rhs, q, u, p)
-        rhs2 = generate_ode_function(sym_rhs2, q, u, p)
+        rhs2 = generate_ode_function(sym_rhs2, q, u)
         
         assert np.array_equal(rhs(np.array([1.0, 2.0]), 0.0, np.array([1.0, 2.0, 3.0])),
-               rhs2(np.array([1.0, 2.0]), 0.0, np.array([])))
+               rhs2(np.array([1.0, 2.0]), 0.0)
 
 
 class TestODEFunctionGeneratorSubclasses(object):
