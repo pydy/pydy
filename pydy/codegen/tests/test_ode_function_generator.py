@@ -120,7 +120,10 @@ class TestODEFunctionGenerator(object):
         sym_rhs = sys.eom_method.rhs()
         q = sys.coordinates
         u = sys.speeds
+<<<<<<< HEAD
         p = [sm.Symbol('m0'), sm.Symbol('c0'), sm.Symbol('k0')]
+=======
+>>>>>>> 332dcd6b81ca2d39d60d946cc1590bce43e92504
 
         #Equation sym_rhs with constants substituted with their values
         sym_rhs2 = sm.MutableDenseMatrix([[sm.Function('v0')(sm.Symbol('t'))],
@@ -128,11 +131,19 @@ class TestODEFunctionGenerator(object):
         sm.Function('v0')(sm.Symbol('t'))), sm.Mul(sm.Integer(-1),
         3.0, sm.Function('x0')(sm.Symbol('t')))))]])
 
+<<<<<<< HEAD
         rhs = generate_ode_function(sym_rhs, q, u, p)
         rhs2 = generate_ode_function(sym_rhs2, q, u, [])
         
         assert np.array_equal(rhs(np.array([1.0, 2.0]), 0.0, np.array([1.0, 2.0, 3.0])),
                rhs2(np.array([1.0, 2.0]), 0.0, []))
+=======
+        rhs = generate_ode_function(sym_rhs, q, u)
+        rhs2 = generate_ode_function(sym_rhs2, q, u)
+        
+        assert np.array_equal(rhs(np.array([1.0, 2.0]), 0.0, np.array([1.0, 2.0, 3.0])),
+               rhs2(np.array([1.0, 2.0]), 0.0)
+>>>>>>> 332dcd6b81ca2d39d60d946cc1590bce43e92504
 
 
 class TestODEFunctionGeneratorSubclasses(object):
