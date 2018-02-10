@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 import scipy as sp
 import sympy as sm
+from pydy.codegen.ode_function_generators import generate_ode_function
 
 Cython = sm.external.import_module('Cython')
 theano = sm.external.import_module('theano')
@@ -15,7 +16,6 @@ from ..ode_function_generators import (ODEFunctionGenerator,
                                        LambdifyODEFunctionGenerator,
                                        CythonODEFunctionGenerator,
                                        TheanoODEFunctionGenerator)
-from pydy.codegen.ode_function_generators import generate_ode_function
 
 from ...utils import PyDyImportWarning
 
@@ -123,16 +123,19 @@ class TestODEFunctionGenerator(object):
         p = [sm.Symbol('m0'), sm.Symbol('c0'), sm.Symbol('k0')]
 
         #Equation sym_rhs with constants substituted with their values
-        sym_rhs2 = sm.MutableDenseMatrix([[sm.Function('v0')(sm.Symbol('t'))],
-        [sm.Mul(sm.Pow(1.0, sm.Integer(-1)),sm.Add(sm.Mul(sm.Integer(-1), 2.0,
-        sm.Function('v0')(sm.Symbol('t'))), sm.Mul(sm.Integer(-1),
-        3.0, sm.Function('x0')(sm.Symbol('t')))))]])
+        sym_rhs2 = \
+        sm.MutableDenseMatrix([[sm.Function('v0')(sm.Symbol('t'))],
+                               [sm.Mul(sm.Pow(1.0, sm.Integer(-1)),
+                                       sm.Add(sm.Mul(sm.Integer(-1), 2.0,
+                                                     sm.Function('v0')(sm.Symbol('t'))),
+                                              sm.Mul(sm.Integer(-1),
+                                                     3.0, sm.Function('x0')(sm.Symbol('t')))))]])
 
         rhs = generate_ode_function(sym_rhs, q, u, p)
         rhs2 = generate_ode_function(sym_rhs2, q, u, [])
 
         assert np.array_equal(rhs(np.array([1.0, 2.0]), 0.0, np.array([1.0, 2.0, 3.0])),
-            rhs2(np.array([1.0, 2.0]), 0.0, []))
+                              rhs2(np.array([1.0, 2.0]), 0.0, []))
 
 
 class TestODEFunctionGeneratorSubclasses(object):
