@@ -122,14 +122,13 @@ class TestODEFunctionGenerator(object):
         u = sys.speeds
         p = [sm.Symbol('m0'), sm.Symbol('c0'), sm.Symbol('k0')]
 
-        #Equation sym_rhs with constants substituted with their values
-        sym_rhs2 = \
-        sm.MutableDenseMatrix([[sm.Function('v0')(sm.Symbol('t'))],
-                               [sm.Mul(sm.Pow(1.0, sm.Integer(-1)),
-                                       sm.Add(sm.Mul(sm.Integer(-1), 2.0,
-                                                     sm.Function('v0')(sm.Symbol('t'))),
-                                              sm.Mul(sm.Integer(-1),
-                                                     3.0, sm.Function('x0')(sm.Symbol('t')))))]])
+        # Equation sym_rhs with constants substituted with their values
+        sym_rhs2 = sm.MutableDenseMatrix([[sm.Function('v0')(sm.Symbol('t'))],
+                                          [sm.Mul(sm.Pow(1.0, sm.Integer(-1)),
+                                                  sm.Add(sm.Mul(sm.Integer(-1), 2.0,
+                                                                sm.Function('v0')(sm.Symbol('t'))),
+                                                         sm.Mul(sm.Integer(-1),
+                                                                3.0, sm.Function('x0')(sm.Symbol('t')))))]])
 
         rhs = generate_ode_function(sym_rhs, q, u, p)
         rhs2 = generate_ode_function(sym_rhs2, q, u, [])
