@@ -49,6 +49,7 @@ Tutorials
 
     tutorials/beginners.rst
     tutorials/advanced.rst
+    tutorials/pydy_for_autolev_users.rst
 
 Indices and tables
 ==================
