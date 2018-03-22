@@ -176,7 +176,7 @@ r : dictionary
 
         return system_type
 
-    def __init__(self, right_hand_side, coordinates, speeds, constants=[],
+    def __init__(self, right_hand_side, coordinates, speeds, constants=(),
                  mass_matrix=None, coordinate_derivatives=None,
                  specifieds=None, linear_sys_solver='numpy',
                  constants_arg_type=None, specifieds_arg_type=None):
