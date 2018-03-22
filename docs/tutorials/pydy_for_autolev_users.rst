@@ -4,13 +4,13 @@
 Introduction
 ----------------
 
-Autolev (now defunct) was a proprietary software which was used for
+Autolev (now defunct) is a domain specific programming language which is used for
 symbolic multibody dynamics. The SymPy mechanics module now has enough
 power and functionality to be a fully featured symbolic dynamics module.
 The PyDy package extends the SymPy output to the numerical domain for
 simulation, analyses and visualization. Autolev and PyDy have a lot in
 common but there are also many differences between them. This page shall
-expand upon their differences. It is meant to be a go to reference for
+expand upon their differences. It is meant to be a go-to reference for
 Autolev users who want to transition to PyDy.
 
 It would be helpful to have a basic idea about scientific computing with
@@ -31,30 +31,27 @@ Some Key Differences
 |          **Autolev**              |             **PyDy**              |            
 +===================================+===================================+
 ||                                  ||                                  | 
-| Autolev is a language that was    | PyDy is based on Python. While    |
-| designed to perform symbolic      | Autolev’s syntax is more compact  |
-| multibody dynamics. Since it is a | than PyDy’s , PyDy (by virtue of  |
-| language of its own, it has a     | being an add-on to Python) is     |
-| very rigid language               | much more flexible. The users     |
-| specification. It predefines and  | have more control over what they  |
-| computes many things based on the | can do. For example, one can      |
-| input code. Its statements are a  | create a class in their code for  |
-| lot cleaner as a result of this.  | let’s say a type of rigidbodies   |
-|                                   | with common properties.           |
-|                                   |                                   |
-|                                   |                                   |
+| Autolev is a domain specific      | PyDy is a library written in the  |
+| programming language designed to  | general purpose language Python.  |
+| perform multibody dynamics. Since | Although Autolev's code is more   |
+| it is a language of its own, it   | compact, PyDy(by virtue of being  |
+| has a very rigid language         | an add on to Python) is more      |
+| specification. It predefines and  | flexible. The users have more     |
+| computes many things based on the | control over what they can do. For|
+| input code. Its statements are a  | example, one can create a class in|
+| lot cleaner as a result of this.  | their code for let's say a type of|
+|                                   | rigibodies with with common       |
+|                                   | properties.                       |
 +-----------------------------------+-----------------------------------+
 ||                                  ||                                  |
-| Autolev writes Matlab, C, or      | The PyDy package uses the SymPy   |
-| Fortan code for evaluating        | mechanics module at its core. It  |
-| numerical solutions. One can use  | also builds on the popular        |
-| the CODE command for this         | scientific Python stack such as   |
-| purpose.                          | NumPy, SciPy, IPython,            |
-|                                   | matplotlib, Cython and Theano.    |
-|                                   | One can therefore write code for  |
-|                                   | numerical computation and         |
-|                                   | visualization in the same         |
-|                                   | language.                         |
+| Autolev generates Matlab, C, or   | PyDy generates numerical Python,  |
+| Fortan code from a small set of   | C or Octave/Matlab code from a    |
+| symbolic mathematics.             | large set of symbolic mathematics |
+|                                   | created with SymPy. It also builds|
+|                                   | on the popular scientific Python  |
+|                                   | stack such as NumPy, SciPy,       |
+|                                   | IPython, matplotlib, Cython and   |
+|                                   | Theano.                           |
 +-----------------------------------+-----------------------------------+
 ||                                  ||                                  |
 | Autolev uses 1 (one) based        | Python uses 0 (zero) based        |
@@ -72,13 +69,7 @@ Some Key Differences
 | programs.                         | convenient.                       |
 +-----------------------------------+-----------------------------------+
 ||                                  ||                                  |
-| Although Autolev is still used    | The PyDy package is a suite of    |
-| for symbolic dynamics by users    | open source tools which are all   |
-| familiar with it, it is now       | brimming with vibrant             |
-| defunct.                          | communities. This is a huge plus  |
-|                                   | as the libraries are constantly   |
-|                                   | evolving to be better versions of |
-|                                   | themselves.                       |
+| Autolev is proprietary.           | PyDy is open source.              |
 +-----------------------------------+-----------------------------------+
 
 Rough Autolev-PyDy Equivalents
@@ -88,21 +79,15 @@ The tables below give rough equivalents for some common Autolev
 expressions. **These are not exact equivalents**, but rather should be
 taken as hints to get you going in the right direction. For more detail
 read the built-in documentation on `SymPy vectors <http://docs.sympy.org/latest/modules/physics/vector/index.html>`__
-, SymPy mechanics and
-PyDy.
-
-**THIS IS AN EVOLVING DOCUMENT. If you find an error, or can fill in an
-empty box, please fix it! If there's something you'd like to see added,
-just add it.**
+, `SymPy mechanics <http://docs.sympy.org/latest/modules/physics/mechanics/index.html>`__ and
+`PyDy <http://www.pydy.org/documentation.html>`__ .
 
 In the tables below, it is assumed that you have executed the following
 commands in Python:
 ::
 
-	from sympy.physics.mechanics import *
-	from sympy.physics.vector import *
-	from sympy import *
-	from pydy import *
+	import sympy.physics.mechanics as me
+	import sympy as sm
 
 Mathematical Equivalents
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -111,8 +96,8 @@ Mathematical Equivalents
 | **Autolev**           | **PyDy**              | **Notes**             |
 +=======================+=======================+=======================+
 ||                      ||                      ||                      |
-| Constants A, B        | a, b = symbols(‘a b’) | Note that the names   |
-|                       |                       | of the symbols can be |
+| Constants A, B        | a, b = sm.symbols     | Note that the names   |
+|                       | (‘a b’, real=True)    | of the symbols can be |
 |                       |                       | different from the    |
 |                       |                       | names of the          |
 |                       |                       | variables they are    |
@@ -124,63 +109,68 @@ Mathematical Equivalents
 |                       |                       | convention.           |
 +-----------------------+-----------------------+-----------------------+
 ||                      ||                      ||                      |
-| Constants C+          | c = symbols(‘c’,      | Refer to SymPy        |
-|                       | nonnegative = True)   | assumptions for more  |
-|                       |                       | information.          |
+| Constants C+          | c = sm.symbols(‘c’,   | Refer to SymPy        |
+|                       | real=True, nonnegative| assumptions for more  |
+|                       | =True)                | information.          |
 |                       |                       | `modules/core         |
 |                       |                       | <http://docs.sy       |
 |                       |                       | mpy.org/latest/module |
 |                       |                       | s/core.html>`__       |
 +-----------------------+-----------------------+-----------------------+
 ||                      ||                      ||                      |
-| Constants D-          | d = symbols(‘d’,      |                       |
-|                       | nonpositive = True)   |                       |
+| Constants D-          | d = sm.symbols(‘d’,   |                       |
+|                       | real=True,            |                       |
+|                       | nonpositive=True)     |                       |
 +-----------------------+-----------------------+-----------------------+
 ||                      ||                      ||                      |
-| Specified Phi         | Phi =                 | dynamicsymbols must be| 
-|                       | dynamicsymbols(‘Phi’) | imported from sympy   |
-|                       |                       | mechanics.            |       
+| Specified Phi         | Phi =                 |                       | 
+|                       | me.dynamicsymbols(‘Phi|                       |
+|                       | ')                    |                       |       
 +-----------------------+-----------------------+-----------------------+
 ||                      ||                      ||                      |
 | Variables q, s        | q, s =                |                       |
-|                       | dynamicsymbols(q, s)  |                       |
+|                       | me.dynamicsymbols     |                       |
+|                       | (q, s)                |                       |
 +-----------------------+-----------------------+-----------------------+
 | Variables x’’         | x =                   |                       |
-|                       | dynamicsymbols(‘x’)   |                       |
+|                       | me.dynamicsymbols(‘x’)|                       |
 |                       |                       |                       |
 |                       | xd =                  |                       |
-|                       | dynamicsymbols(‘x’, 1)|                       |
+|                       | me.dynamicsymbols     |                       |
+|                       | (‘x’, 1)              |                       |
 |                       |                       |                       |
 |                       | xd2 =                 |                       |
-|                       | dynamicsymbols(‘x’,   |                       |
+|                       | me.dynamicsymbols(‘x’,|                       |
 |                       | 2)                    |                       |
 +-----------------------+-----------------------+-----------------------+
 | Variables y{2}’       | y1 =                  |                       |
-|                       | dynamicsymbols(‘y1’)  |                       |
+|                       | me.dynamicsymbols     |                       |
+|                       | (‘y1’)                |                       |
 |                       |                       |                       |
 |                       | y2 =                  |                       |
-|                       | dynamicsymbols(‘y2’)  |                       |
+|                       | me.dynamicsymbols     |                       |
+|                       | (‘y2’)                |                       |
 |                       |                       |                       |
 |                       | y1d =                 |                       |
-|                       | dynamicsymbols(‘y1’,  |                       |
-|                       | 1)                    |                       |
+|                       | me.dynamicsymbols(‘y1’|                       |
+|                       | , 1)                  |                       |
 |                       |                       |                       |
 |                       | y2d =                 |                       |
-|                       | dynamicsymbols(‘y2’,  |                       |
-|                       | 1)                    |                       |
+|                       | me.dynamicsymbols(‘y2 |                       |
+|                       | , 1)                  |                       |
 +-----------------------+-----------------------+-----------------------+
-| MotionVariables u{2}  | u1 =                  | SymPy doesn’t         |
-|                       | dynamicsymbols(‘u1’)  | differentiate between |
+| MotionVariables u{2}  |u1 =                   | SymPy doesn’t         |
+|                       |me.dynamicsymbols(‘u1’)| differentiate between |
 |                       |                       | variables,            |
-|                       | u2 =                  | motionvariables and   |
-|                       | dynamicsymbols(‘u2’)  | specifieds during     |
+|                       |u2 =                   | motionvariables and   |
+|                       |me.dynamicsymbols(‘u2’)| specifieds during     |
 |                       |                       | declaration. Instead, |
 |                       |                       | it takes different    |
 |                       |                       | lists of these as     |
 |                       |                       | parameters in objects |
 |                       |                       | like the KanesMethod. |
 +-----------------------+-----------------------+-----------------------+
-| Imaginary j           | j = symbols(‘j’)      | I is a sympy object   |
+| Imaginary j           | j = sm.symbols(‘j’)   | I is a sympy object   |
 |                       |                       | which stands for the  |
 |                       | j = I                 | imaginary unit. One   |
 |                       |                       | can define complex    |
@@ -192,37 +182,44 @@ Mathematical Equivalents
 |                       |                       | symbols.              |
 +-----------------------+-----------------------+-----------------------+
 ||                      ||                      ||                      |
-| Tina = 2*pi           | Tina = 2*pi           | Numerical constants   |
-|                       |                       | like pi can be        |
-|                       |                       | imported from mpmath. |
+| Tina = 2*pi           | Tina = 2*sm.pi        | If one wants to use   |
+|                       |                       | numerical constants   |
+|                       |                       | instead of symbolic   |
+|                       |                       | ones they can import  |
+|                       |                       | them from mpmath.     |
 +-----------------------+-----------------------+-----------------------+
 ||                      ||                      ||                      |
-| abs(x)^3 + sin(x)^2 + | abs(x)**3 + sin(x)**2 |                       |
-| acos(x)               | + acos(x)             |                       |
+| abs(x)^3 + sin(x)^2 + | sm.abs(x)**3          |                       |
+| acos(x)               | + sm.sin(x)**2+       |                       |
+|                       | + sm.acos(x)          |                       |
 +-----------------------+-----------------------+-----------------------+
 | E = (x+2*y)^2 +       | E = (x+2*y)**2 +      | For more information  |
 | 3*(7+x)*(x+y)         | 3*(7+x)*(x+y)         | refer to              | 
 |                       |                       | `simplification. <htt |
-| Expand(E, n:m)        | expand(E)             | p://docs.sympy.org/la |
+| Expand(E, n:m)        | sm.expand(E)          | p://docs.sympy.org/la |
 |                       |                       | test/tutorial/simplif |
-| Factor(E, x)          | factor(E)             | ication.html>`__      |
+| Factor(E, x)          | sm.factor(E)          | ication.html>`__      |
 |                       |                       |                       |
 | Coef(y, x)            | y.coeff(x)            |                       |
 |                       |                       |                       |
-| Replace(y, sin(x)=3)  | y.subs([(sin(x), 3)]) |                       |
+| Replace(y, sin(x)=3)  | y = y.xreplace        |                       |
+|                       | ({sm.sin(x): 3})      |                       |
 +-----------------------+-----------------------+-----------------------+
-| Dy = D(E, y)          | diff(E, y)            | For more information  |
+| Dy = D(E, y)          | sm.diff(E, y)         | For more information  |
 |                       |                       | refer to `calculus.   |
 | Dt = Dt(E)            |                       | <http: //docs.sympy.or|
 |                       |                       | g/latest/tutorial/    |
-|                       | diff(E, Symbol(‘t’))  | calculus.html>`__     |
-|                       | works if the          |                       |
+|                       | sm.diff(E, t) where t | calculus.html>`__     |
+|                       | = me.dynamicsymbols._t|                       |
+|                       |                       |                       |
+|                       |                       |                       |
+|                       | Works if the          |                       |
 |                       | expression is made up |                       |
 |                       | of dynamicsymbols.    |                       |
 +-----------------------+-----------------------+-----------------------+
-| TY = Taylor(x*cos(x), | ty = taylor(x*cos(x), | Execute               |
-| 0:7, x = 0)           | 0, 7)                 |                       |
-|                       |                       | from                  |
+| TY = Taylor(x*cos(x), | ty =                  | Execute               |
+| 0:7, x = 0)           | taylor(x*sm.cos(x)    |                       |
+|                       | ,0 , 7)               | from                  |
 |                       |                       | sympy.mpmath.import \*|             
 |                       |                       |                       |
 |                       |                       | For more information  |
@@ -233,21 +230,27 @@ Mathematical Equivalents
 |                       |                       | les/mpmath/calculus/a |
 |                       |                       | pproximation.html>`__ |
 +-----------------------+-----------------------+-----------------------+
-||                      ||                      ||                      |
 | F = Evaluate(E, x=a,  | E.subs([(x, a), (y,   |                       |
 | y=2)                  | 2)])                  |                       |
+|                       |                       |                       |
+|                       | To get floating point |                       |
+|                       | numbers from numerical|                       |
+|                       | expressions use evalf |                       |
+|                       |                       |                       |
+|                       | E.evalf((a+sm.pi).subs|                       |
+|                       | ({a:3}))              |                       |                  
 +-----------------------+-----------------------+-----------------------+
 ||                      ||                      ||                      |
-| P = Polynomial([a, b, | p = Poly(a*x**2 + b*x | For more information  |
-| c], x)                | + c)                  | refer to              |
+| P = Polynomial([a, b, | p = sm.Poly(a*x**2    | For more information  |
+| c], x)                | + b*x + c)            | refer to              |
 |                       |                       | `modules/polys. <htt  |
 |                       |                       | p://docs.sympy.org/la |
 |                       |                       | test/modules/polys/re |
 |                       |                       | ference.html>`__      |
 +-----------------------+-----------------------+-----------------------+
-| Roots(Polynomial([a,  | solve(Poly(a*x**2 +   | For more information  |
-| b, c], x), x, 2)      | b*x +c), x)           | refer to `solvers. <ht| 
-|                       |                       | tp://docs.sympy.org/la|
+| Roots(Polynomial([a,  | sm.solve(             | For more information  |
+| b, c], x), x, 2)      | sm.Poly(a*x**2 +      | refer to `solvers. <ht| 
+|                       | b*x + c))             | tp://docs.sympy.org/la|
 |                       |                       | test/modules/solvers/ |
 |                       |                       | solvers.html>`__      |
 |                       |                       |                       |
@@ -261,21 +264,22 @@ Mathematical Equivalents
 |                       |                       | s/mpmath/calculus/pol |
 |                       |                       | ynomials.html>`__     |
 +-----------------------+-----------------------+-----------------------+
-| Solve(A, x1, x2)      | linsolve(A, (x1, x2)) | For more information  |
-|                       |                       | refer to              |
-| where A is an         | where A is an         | `solvers/solveset. <ht| 
-| augmented matrix that | augmented matrix      | tp://docs.sympy.org/l |
-| represents the linear |                       | atest/modules/solvers |
-| equations and x1, x2  |                       | /solveset.html>`__    |
+| Solve(A, x1, x2)      | sm.linsolve(A,        | For more information  |
+|                       | (x1, x2))             | refer to              |   
+|                       |                       | `solvers/solveset. <ht|
+| where A is an         | where A is an         | tp://docs.sympy.org/l |
+| augmented matrix that | augmented matrix      | atest/modules/solvers |
+| represents the linear |                       | /solveset.html>`__    |
+| equations and x1, x2  |                       |                       |
 | are the variables to  |                       |                       |
 | solve for.            |                       |                       |
 |                       |                       |                       |
 +-----------------------+-----------------------+-----------------------+
-| RowMatrix = [1, 2, 3, | RowMatrix =           | For more information  |
+| RowMatrix = [1, 2, 3, | row_matrix =          | For more information  |
 | 4]                    | Matrix([[1],[2],      | refer to `matrices. <h|
 |                       | [3],[4]])             | ttp://docs.sympy.org/ |
 |                       |                       | latest/tutorial/      |            
-|                       | ColMatrix =           | matrices.html>`__     |                     
+|                       | col_matrix =          | matrices.html>`__     |                     
 | ColMatrix = [1; 2; 3; | Matrix([1, 2, 3, 4])  |                       |           
 | 4]                    |                       |                       |
 |                       | MO = Matrix([[a, b],  |                       |
