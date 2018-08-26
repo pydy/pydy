@@ -20,17 +20,16 @@ before_install:
   - conda update -q conda
 install:
   - sudo apt-get install phantomjs
-  - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION pip coverage nose sphinx numpydoc flake8
+  - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION pip coverage nose sphinx numpydoc flake8 matplotlib
   - source activate test-env
   - if [[ $DEP_VERSIONS == "oldest" ]]; then
-      conda install numpy=1.11 scipy=0.17 sympy=0.7.6 cython=0.23 theano=0.8;
+      conda install numpy=1.11 scipy=0.17 sympy=0.7.6 cython=0.23 theano=0.8;  # Ubuntu 16.04 LTS
     elif [[ $DEP_VERSIONS == "latest" ]]; then
       conda install numpy scipy sympy cython theano;
     elif [[ $DEP_VERSIONS == "master" ]]; then
       conda install numpy scipy cython theano;
       pip install https://github.com/sympy/sympy/archive/master.zip;
     fi
-  - conda install matplotlib
 before_script:
   - conda info
   - conda list
