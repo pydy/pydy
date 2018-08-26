@@ -378,6 +378,11 @@ r : dictionary
 
         p = args[-1]
         try:
+            # NOTE : This emits "VisibleDeprecationWarning: using a non-integer
+            # number instead of an integer will result in an error in the
+            # future" along with the IndexError in NumPy 1.11. Not sure why it
+            # gives the warning, it already gives and error with trying to
+            # index with a SymPy symbol.
             p = self._convert_constants_dict_to_array(p)
         except IndexError:
             # p is an array so just return the args
