@@ -11,9 +11,9 @@ PyDy
 .. |anaconda| image:: https://anaconda.org/pydy/pydy/badges/version.svg
    :target: https://anaconda.org/pydy/pydy
 
-.. |rtd-docs| image:: https://readthedocs.org/projects/pydy/badge/?version=latest
-   :target: http://pydy.readthedocs.org/en/latest
-   :alt: Latest documentation
+.. |rtd-docs| image:: https://readthedocs.org/projects/pydy/badge/?version=stable
+   :target: https://pydy.readthedocs.io/en/stable/?badge=stable
+   :alt: Documentation Status
 
 .. |travis-build| image:: https://travis-ci.org/pydy/pydy.png?branch=master
    :target: https://travis-ci.org/pydy/pydy
