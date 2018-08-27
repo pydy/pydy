@@ -20,6 +20,42 @@ from ...utils import PyDyImportWarning
 warnings.simplefilter('once', PyDyImportWarning)
 
 
+def test_cse_same_numerical_results():
+    # NOTE : This ensurses that the same results are always given for the sympy
+    # cse outputs, which seem to change every version.
+
+    if not Cython:
+        return
+
+    sys = models.n_link_pendulum_on_cart(n=5, cart_force=False,
+                                         joint_torques=False)
+
+    g_no_cse = CythonODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        cse=False)
+    rhs_func_no_cse = g_no_cse.generate()
+
+    g_cse = CythonODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        cse=True)
+    rhs_func_cse = g_cse.generate()
+
+    x = np.random.random(g_cse.num_coordinates + g_cse.num_speeds)
+    t = 5.125
+    p = np.random.random(g_cse.num_constants)
+
+    np.testing.assert_allclose(rhs_func_no_cse(x, t, p),
+                               rhs_func_cse(x, t, p))
+
+
 class TestODEFunctionGenerator(object):
 
     def setup(self):
