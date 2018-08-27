@@ -552,9 +552,9 @@ class System(object):
 
         # TODO : KanesMethod should provide public attributes for qdot,
         # udot, uaux, and uauxdot.
-        insyms = set(self.eom_method.q[:] + self.eom_method._qdot[:] +
-                     self.eom_method.u[:] + self.eom_method._udot[:] + uaux +
-                     uauxdot)
+        insyms = set(self.eom_method.q[:] + list(self.eom_method._qdot[:]) +
+                     self.eom_method.u[:] + list(self.eom_method._udot[:]) +
+                     uaux + uauxdot)
 
         inlist = (self.eom_method.forcing_full[:] +
                   self.eom_method.mass_matrix_full[:])
