@@ -176,7 +176,7 @@ r : dictionary
 
         return system_type
 
-    def __init__(self, right_hand_side, coordinates, speeds, constants,
+    def __init__(self, right_hand_side, coordinates, speeds, constants=(),
                  mass_matrix=None, coordinate_derivatives=None,
                  specifieds=None, linear_sys_solver='numpy',
                  constants_arg_type=None, specifieds_arg_type=None):
@@ -220,7 +220,7 @@ r : dictionary
         speeds : sequence of SymPy Functions
             The generalized speeds. These must be ordered in the same order
             as the rows in M, F, and/or G and be functions of time.
-        constants : sequence of SymPy Symbols
+        constants : sequence of SymPy Symbols, optional
             All of the constants present in the equations of motion. The
             order does not matter.
         mass_matrix : sympy.Matrix, shape(n, n), optional
@@ -479,8 +479,10 @@ r : dictionary
                 q = args[0][:self.num_coordinates]
                 u = args[0][self.num_coordinates:]
 
-                xdot = self._base_rhs(q, u, *args[2:])
-
+                if self.constants:
+                    xdot = self._base_rhs(q, u, *args[2:])
+                else:
+                    xdot = self._base_rhs(q, u, *(args[2:3] + ([],)))
                 return xdot
 
             rhs.__doc__ = self._generate_rhs_docstring()
@@ -515,9 +517,15 @@ r : dictionary
             u = args[0][self.num_coordinates:]
 
             if self.specifieds is None:
-                return self._base_rhs(q, u, p(*args))
+                if self.constants:
+                    return self._base_rhs(q, u, p(*args))
+                else:
+                    return self._base_rhs(q, u, [])
             else:
-                return self._base_rhs(q, u, r(*args), p(*args))
+                if self.constants:
+                    return self._base_rhs(q, u, r(*args), p(*args))
+                else:
+                    return self._base_rhs(q, u, r(*args), [])
 
         rhs.__doc__ = self._generate_rhs_docstring()
 

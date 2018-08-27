@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 import scipy as sp
 import sympy as sm
+from pydy.codegen.ode_function_generators import generate_ode_function
 
 Cython = sm.external.import_module('Cython')
 theano = sm.external.import_module('theano')
@@ -15,6 +16,7 @@ from ..ode_function_generators import (ODEFunctionGenerator,
                                        LambdifyODEFunctionGenerator,
                                        CythonODEFunctionGenerator,
                                        TheanoODEFunctionGenerator)
+
 from ...utils import PyDyImportWarning
 
 warnings.simplefilter('once', PyDyImportWarning)
@@ -148,6 +150,18 @@ class TestODEFunctionGenerator(object):
                                  linear_sys_solver=solver)
 
         assert g._solve_linear_system == solver
+
+    def test_no_constants(self):
+        sys = models.multi_mass_spring_damper()
+        constant_vals = {sm.Symbol('m0'): 1.0, sm.Symbol('c0'): 2.0, sm.Symbol('k0'): 3.0}
+
+        sym_rhs = sys.eom_method.rhs()
+
+        rhs = generate_ode_function(sym_rhs, sys.coordinates, sys.speeds, constant_vals)
+        rhs2 = generate_ode_function(sym_rhs.subs(constant_vals), sys.coordinates, sys.speeds)
+
+        assert np.array_equal(rhs(np.array([1.0, 2.0]), 0.0, constant_vals),
+                              rhs2(np.array([1.0, 2.0]), 0.0))
 
 
 class TestODEFunctionGeneratorSubclasses(object):
