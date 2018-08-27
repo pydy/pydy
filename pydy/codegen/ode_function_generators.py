@@ -220,7 +220,7 @@ r : dictionary
         speeds : sequence of SymPy Functions
             The generalized speeds. These must be ordered in the same order
             as the rows in M, F, and/or G and be functions of time.
-        constants : sequence of SymPy Symbols
+        constants : sequence of SymPy Symbols, optional
             All of the constants present in the equations of motion. The
             order does not matter.
         mass_matrix : sympy.Matrix, shape(n, n), optional
