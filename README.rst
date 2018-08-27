@@ -147,7 +147,9 @@ influence of a spring, damper, gravity and an external force::
        | F
        V
 
-Derive the system::
+Derive the system:
+
+.. code:: python
 
    from sympy import symbols
    import sympy.physics.mechanics as me
@@ -180,7 +182,9 @@ Derive the system::
    kane.kanes_equations(forces, particles)
 
 Create a system to manage integration and specify numerical values for the
-constants and specified quantities. Here, we specify sinusoidal forcing::
+constants and specified quantities. Here, we specify sinusoidal forcing:
+
+.. code:: python
 
    from numpy import array, linspace, sin
    from pydy.system import System
@@ -192,11 +196,15 @@ constants and specified quantities. Here, we specify sinusoidal forcing::
                 initial_conditions={position: 0.1, speed: -1.0},
                 times=linspace(0.0, 10.0, 1000))
 
-Integrate the equations of motion to get the state trajectories::
+Integrate the equations of motion to get the state trajectories:
+
+.. code:: python
 
    y = sys.integrate()
 
-Plot the results::
+Plot the results:
+
+.. code:: python
 
    import matplotlib.pyplot as plt
 
