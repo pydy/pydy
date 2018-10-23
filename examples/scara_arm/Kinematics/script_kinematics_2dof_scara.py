@@ -9,7 +9,7 @@ from sympy.physics.vector import time_derivative
 
 # Variáveis Simbólicas
 THETA_1, THETA_2 = dynamicsymbols('theta_1 theta_2')
-L_1, L_2, R_1, R_2 = symbols('l_1 l_2 r_1 r_2', positive=True)
+L_1, L_2 = symbols('l_1 l_2', positive=True)
 
 # Referenciais
 # Referencial Parado
