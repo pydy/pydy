@@ -53,3 +53,5 @@ nosetests.xml
 
 # vim swap files
 *.swp
+examples/scara_arm/.vscode/.ropeproject/objectdb
+examples/scara_arm/.vscode/.ropeproject/config.py
