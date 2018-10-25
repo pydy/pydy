@@ -53,3 +53,6 @@ nosetests.xml
 
 # vim swap files
 *.swp
+
+# vs code local settings
+.vscode/
