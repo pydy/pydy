@@ -373,6 +373,21 @@ an `issue`_ on Github.
 Release Notes
 =============
 
+0.5.0
+-----
+
+- Added a new example for anthropomorphic arm. [PR `#406`_]
+- Fixed errors in the differential drive example. [PR `#405`_]
+- Added a new example for a scara arm. [PR `#402`_]
+- Fixed errors due to backwards incompatible changes with various dependencies. [PR `#397`_]
+- ODEFunctionGenerator now works with no constants symbols. [PR `#391`_]
+
+.. _#406: https://github.com/pydy/pydy/pull/406
+.. _#405: https://github.com/pydy/pydy/pull/405
+.. _#402: https://github.com/pydy/pydy/pull/402
+.. _#397: https://github.com/pydy/pydy/pull/397
+.. _#391: https://github.com/pydy/pydy/pull/391
+
 0.4.0
 -----
 
