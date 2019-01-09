@@ -121,7 +121,7 @@ Or if you have the pip package manager installed you can simply type::
 
 Or if you have conda you can type::
 
-   $ conda install -c pydy pydy
+   $ conda install -c conda-forge pydy
 
 Also, a simple way to install all of the optional dependencies is to install
 the ``pydy-examples`` metapackage using conda::
