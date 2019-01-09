@@ -32,8 +32,6 @@ install:
   # This upates conda and installs the necessary packages.
   - powershell .\\appveyor\\install.ps1
 
-  - "conda list"
-
   # Prepend newly installed Python to the PATH of this build (this cannot be
   # done from inside the powershell script as it would require to restart the
   # parent CMD process).

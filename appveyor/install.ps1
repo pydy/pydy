@@ -2,6 +2,14 @@
 # Authors: Olivier Grisel, Jonathan Helmus and Kyle Kastner, Robert McGibbon
 # License: CC0 1.0 Universal: http://creativecommons.org/publicdomain/zero/1.0/
 #
+function ListConda ($python_home) {
+    $conda_path = $python_home + "\Scripts\conda.exe"
+    Write-Host "Currently installed Conda packages:"
+    $args = "list"
+    Write-Host $conda_path $args
+    Start-Process -FilePath "$conda_path" -ArgumentList $args -Wait -Passthru
+}
+
 function UpdateConda ($python_home) {
     $conda_path = $python_home + "\Scripts\conda.exe"
     Write-Host "Updating conda..."
@@ -20,6 +28,7 @@ function InstallCondaPackages ($python_home, $spec) {
 function main () {
     UpdateConda $env:PYTHON
     InstallCondaPackages $env:PYTHON "numpy scipy sympy cython pywin32 nose coverage msvc_runtime"
+    ListConda $env:PYTHON
 }
 
 main
