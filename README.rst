@@ -376,6 +376,11 @@ Release Notes
 0.5.0
 -----
 
+- SymPy introduced a backward incompatibility to differentiation Matrices in
+  SymPy 1.2, which remained in SymPy 1.3, see:
+  https://github.com/sympy/sympy/issues/14958. This breaks PyDy's System class,
+  see: https://github.com/pydy/pydy/issues/395. A fix is introduced to handle
+  all support versions of SymPy.
 - Added a new example for anthropomorphic arm. [PR `#406`_]
 - Fixed errors in the differential drive example. [PR `#405`_]
 - Added a new example for a scara arm. [PR `#402`_]
