@@ -121,7 +121,7 @@ Or if you have the pip package manager installed you can simply type::
 
 Or if you have conda you can type::
 
-   $ conda install -c pydy pydy
+   $ conda install -c conda-forge pydy
 
 Also, a simple way to install all of the optional dependencies is to install
 the ``pydy-examples`` metapackage using conda::
@@ -376,12 +376,18 @@ Release Notes
 0.5.0
 -----
 
+- SymPy introduced a backward incompatibility to differentiation Matrices in
+  SymPy 1.2, which remained in SymPy 1.3, see:
+  https://github.com/sympy/sympy/issues/14958. This breaks PyDy's System class,
+  see: https://github.com/pydy/pydy/issues/395. A fix is introduced to handle
+  all support versions of SymPy. [PR `#408`_]
 - Added a new example for anthropomorphic arm. [PR `#406`_]
 - Fixed errors in the differential drive example. [PR `#405`_]
 - Added a new example for a scara arm. [PR `#402`_]
 - Fixed errors due to backwards incompatible changes with various dependencies. [PR `#397`_]
 - ODEFunctionGenerator now works with no constants symbols. [PR `#391`_]
 
+.. _#408: https://github.com/pydy/pydy/pull/408
 .. _#406: https://github.com/pydy/pydy/pull/406
 .. _#405: https://github.com/pydy/pydy/pull/405
 .. _#402: https://github.com/pydy/pydy/pull/402

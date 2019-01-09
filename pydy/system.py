@@ -552,9 +552,14 @@ class System(object):
 
         # TODO : KanesMethod should provide public attributes for qdot,
         # udot, uaux, and uauxdot.
-        insyms = set(self.eom_method.q[:] + list(self.eom_method._qdot[:]) +
-                     self.eom_method.u[:] + list(self.eom_method._udot[:]) +
-                     uaux + uauxdot)
+        # NOTE : There have been breaking changes in SymPy, e.g.
+        # https://github.com/pydy/pydy/issues/395, so all of these need to be
+        # converted to lists before summing.
+        insyms = set(list(self.eom_method.q[:]) +
+                     list(self.eom_method._qdot[:]) +
+                     list(self.eom_method.u[:]) +
+                     list(self.eom_method._udot[:]) +
+                     list(uaux) + list(uauxdot))
 
         inlist = (self.eom_method.forcing_full[:] +
                   self.eom_method.mass_matrix_full[:])
