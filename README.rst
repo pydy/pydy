@@ -99,8 +99,28 @@ and the Anaconda_ distribution for easy cross platform installation.
 .. _conda: http://conda.pydata.org/
 .. _Anaconda: http://docs.continuum.io/anaconda/
 
-Once the dependencies are installed, the latest stable version of the package
-can be downloaded from PyPi\ [#]_::
+Once Anaconda (or Miniconda) is installed type::
+
+   $ conda install -c conda-forge pydy
+
+Also, a simple way to install all of the optional dependencies is to install
+the ``pydy-optional`` metapackage using conda::
+
+   $ conda install -c conda-forge pydy-optional
+
+Note that this currently enforces the use of Jupyter 4.0, so you may not want
+to install into your root environment. Create a new environment for working
+with PyDy examples that use the embedded Jupyter visualizations::
+
+   $ conda create -n pydy -c conda-forge pydy-optional
+   $ conda activate pydy
+   (pydy)$ python -c "import pydy; print(pydy.__version__)"
+
+Other installation options
+--------------------------
+
+Installing from source is also supported. The latest stable version of the
+package can be downloaded from PyPi\ [#]_::
 
    $ wget https://pypi.python.org/packages/source/p/pydy/pydy-X.X.X.tar.gz
 
@@ -118,15 +138,6 @@ and extracted and installed\ [#]_::
 Or if you have the pip package manager installed you can simply type::
 
    $ pip install pydy
-
-Or if you have conda you can type::
-
-   $ conda install -c conda-forge pydy
-
-Also, a simple way to install all of the optional dependencies is to install
-the ``pydy-examples`` metapackage using conda::
-
-   $ conda install -c pydy pydy-examples
 
 Usage
 =====
@@ -179,7 +190,7 @@ Derive the system:
 
    kane = me.KanesMethod(ceiling, q_ind=[position], u_ind=[speed],
                          kd_eqs=kinematic_equations)
-   kane.kanes_equations(forces, particles)
+   kane.kanes_equations(particles, forces)
 
 Create a system to manage integration and specify numerical values for the
 constants and specified quantities. Here, we specify sinusoidal forcing:
@@ -190,8 +201,8 @@ constants and specified quantities. Here, we specify sinusoidal forcing:
    from pydy.system import System
 
    sys = System(kane,
-                constants={mass: 1.0, stiffness: 1.0,
-                           damping: 0.2, gravity: 9.8},
+                constants={mass: 1.0, stiffness: 10.0,
+                           damping: 0.4, gravity: 9.8},
                 specifieds={force: lambda x, t: sin(t)},
                 initial_conditions={position: 0.1, speed: -1.0},
                 times=linspace(0.0, 10.0, 1000))
@@ -210,13 +221,16 @@ Plot the results:
 
    plt.plot(sys.times, y)
    plt.legend((str(position), str(speed)))
+   plt.xlabel('Time [s]')
    plt.show()
+
+.. image:: readme-msd-result.png
 
 Documentation
 =============
 
-The documentation is hosted at http://pydy.readthedocs.org but you can also
-build them from source using the following instructions.
+The documentation for this package is hosted at http://pydy.readthedocs.org but
+you can also build them from source using the following instructions.
 
 To build the documentation you must install the dependencies:
 
