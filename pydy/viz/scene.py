@@ -714,7 +714,8 @@ class Scene(object):
                                  controls=[controller],
                                  width=view_width, height=view_height)
 
-        clip = p3js.AnimationClip(tracks=self._tracks) #, duration=sys.times[-1])
+        clip = p3js.AnimationClip(tracks=self._tracks,
+                                  duration=self.system.times[-1])
         action = p3js.AnimationAction(p3js.AnimationMixer(scene), clip, scene)
 
         return renderer, action
