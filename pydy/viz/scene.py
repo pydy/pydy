@@ -9,7 +9,7 @@ import json
 import distutils
 import distutils.dir_util
 import datetime
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 from math import sqrt
 
 # external
@@ -637,6 +637,7 @@ class Scene(object):
             self._trajectory_links[i].position = position
             self._trajectory_links[i].quaternion = quaternion
 
+
     def _update_system_widgets(self):
         # this should only be called if the system has been resimulated
         # which requires the system attribute to be set
@@ -667,6 +668,56 @@ class Scene(object):
         self._system.times = np.linspace(t[0].value, t[1].value, n)
         self._generate_simulation_dict()
         self._generate_mesh_trajectories()
+
+    def _generate_meshes_tracks(self):
+
+        self._meshes = []
+        self._tracks = []
+
+        x = self.system.integrate()
+
+        for vizframe in self.visualization_frames:
+            track = vizframe._create_keyframetrack(
+                self.system.times, x, list(self.system.constants.values()),
+                constant_map=self.system.constants)
+            self._tracks.append(track)
+            self._meshes.append(vizframe._mesh)
+
+    def _display_pythreejs_without_widgets(self, show_axes=True):
+
+        self.generate_visualization_json_system(self.system)
+
+        self._generate_meshes_tracks()
+
+        view_width = 800
+        view_height = 600
+
+        if show_axes:
+            x_arrow = p3js.ArrowHelper(dir=[1, 0, 0], length=1.0, color='blue')
+            y_arrow = p3js.ArrowHelper(dir=[0, 1, 0], length=1.0, color='red')
+            z_arrow = p3js.ArrowHelper(dir=[0, 0, 1], length=1.0, color='green')
+            arrows = [x_arrow, y_arrow, z_arrow]
+        else:
+            arrows = []
+
+        camera = p3js.PerspectiveCamera(position=[1, 1, 1],
+                                        aspect=view_width/view_height)
+        key_light = p3js.DirectionalLight(position=[0, 1, 1])
+        ambient_light = p3js.AmbientLight()
+
+        children = self._meshes + arrows + [camera, key_light, ambient_light]
+
+        scene = p3js.Scene(children=children)
+
+        controller = p3js.OrbitControls(controlling=camera)
+        renderer = p3js.Renderer(camera=camera, scene=scene,
+                                 controls=[controller],
+                                 width=view_width, height=view_height)
+
+        clip = p3js.AnimationClip(tracks=self._tracks) #, duration=sys.times[-1])
+        action = p3js.AnimationAction(p3js.AnimationMixer(scene), clip, scene)
+
+        return renderer, action
 
     def display_pythreejs(self):
         if not hasattr(self, 'simulation_info'):
@@ -703,7 +754,6 @@ class Scene(object):
                                  self._play_widget,
                                  self._renderer)
         display(self._widget)
-
 
     def _generate_simulation_dict(self):
         """Returns a dictionary containing all of the simulation

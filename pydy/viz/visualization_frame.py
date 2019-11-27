@@ -9,6 +9,7 @@ import numpy as np
 from sympy import Dummy, lambdify
 from sympy.matrices.expressions import Identity
 from sympy.physics.mechanics import Point, ReferenceFrame
+import pythreejs as p3js
 
 from .shapes import Shape
 
@@ -329,7 +330,6 @@ class VisualizationFrame(object):
         self._visualization_matrix = new.tolist()
         return self._visualization_matrix
 
-
     def generate_scene_dict(self, constant_map={}):
         """
         This method generates information for a static
@@ -399,3 +399,41 @@ class VisualizationFrame(object):
 
 
         return simulation_dict
+
+    def _create_keyframetrack(self, times, dynamic_values, constant_values,
+                              constant_map=None):
+        """Returns a KeyframeTrack for animating this visualization frame.
+
+        Parameters
+        ==========
+        times : ndarray, shape(n,)
+            Array of monotonically increasin or decreasing values of time.
+        dynamics_values : ndarray, shape(n, m)
+            Array of state values for each time.
+        constant_values : array_like, shape(p,)
+        constant_map : dictionary
+            A key value pair mapping from SymPy symbols to floating point
+            values.
+
+        Returns
+        =======
+        track : VectorKeyframeTrack
+            PyThreeJS animation track.
+
+        """
+
+        self._mesh = self.shape._p3js_mesh(constant_map=constant_map)
+
+        # NOTE : This is required to set the transform matrix directly.
+        self._mesh.matrixAutoUpdate = False
+
+        self.evaluate_transformation_matrix(dynamic_values, constant_values)
+
+        self._mesh.matrix = self._visualization_matrix[0]
+
+        name = "scene/{}.matrix".format(self._mesh.name)
+
+        track = p3js.VectorKeyframeTrack(name=name, times=times,
+                                         values=self._visualization_matrix)
+
+        self._track = track

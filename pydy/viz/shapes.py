@@ -14,6 +14,7 @@ __all__ = ['Cube',
            'Tube']
 
 import numpy as np
+import pythreejs as p3js
 
 
 # This is a list of ColorKeywords from THREE.js
@@ -249,6 +250,20 @@ class Cube(Shape):
         self.geometry_attrs.append('length')
         self.length = length
 
+    def _p3js_mesh(self, constant_map={}):
+
+        data = self.generate_dict(constant_map=constant_map)
+
+        box = p3js.BoxBufferGeometry(width=data['length'],
+                                     height=data['length'],
+                                     depth=data['length'])
+
+        material = p3js.MeshStandardMaterial(color=data['color'])
+
+        mesh = p3js.Mesh(geometry=box, material=material)
+
+        return mesh
+
 
 class Cylinder(Shape):
     """Instantiates a cylinder with given length and radius.
@@ -301,6 +316,20 @@ class Cylinder(Shape):
         self.geometry_attrs += ['length', 'radius']
         self.length = length
         self.radius = radius
+
+    def _p3js_mesh(self, constant_map={}):
+
+        data = self.generate_dict(constant_map=constant_map)
+
+        geometry = p3js.CylinderBufferGeometry(radiusTop=data['radius'],
+                                               radiusBotom=data['radius'],
+                                               height=data['length'])
+
+        material = p3js.MeshStandardMaterial(color=data['color'])
+
+        mesh = p3js.Mesh(geometry=geometry, material=material)
+
+        return mesh
 
 
 class Cone(Shape):
@@ -355,6 +384,20 @@ class Cone(Shape):
         self.length = length
         self.radius = radius
 
+    def _p3js_mesh(self, constant_map={}):
+
+        data = self.generate_dict(constant_map=constant_map)
+
+        geometry = p3js.CylinderBufferGeometry(radiusTop=0.0,
+                                               radiusBotom=data['radius'],
+                                               height=data['length'])
+
+        material = p3js.MeshStandardMaterial(color=data['color'])
+
+        mesh = p3js.Mesh(geometry=geometry, material=material)
+
+        return mesh
+
 
 class Sphere(Shape):
     """Instantiates a sphere with a given radius.
@@ -399,6 +442,18 @@ class Sphere(Shape):
         self.geometry_attrs += ['radius']
         self.radius = radius
 
+    def _p3js_mesh(self, constant_map={}):
+
+        data = self.generate_dict(constant_map=constant_map)
+
+        geometry = p3js.SphereBufferGeometry(radius=data['radius'])
+
+        material = p3js.MeshStandardMaterial(color=data['color'])
+
+        mesh = p3js.Mesh(geometry=geometry, material=material)
+
+        return mesh
+
 
 class Circle(Sphere):
     """Instantiates a circle with a given radius.
@@ -437,6 +492,18 @@ class Circle(Sphere):
     10.0
 
     """
+
+    def _p3js_mesh(self, constant_map={}):
+
+        data = self.generate_dict(constant_map=constant_map)
+
+        geometry = p3js.CircleBufferGeometry(radius=data['radius'])
+
+        material = p3js.MeshStandardMaterial(color=data['color'])
+
+        mesh = p3js.Mesh(geometry=geometry, material=material)
+
+        return mesh
 
 
 class Plane(Shape):
@@ -490,6 +557,20 @@ class Plane(Shape):
         self.geometry_attrs += ['length', 'width']
         self.length = length
         self.width = width
+
+    def _p3js_mesh(self, constant_map={}):
+
+        data = self.generate_dict(constant_map=constant_map)
+
+        geometry = p3js.PlaneBufferGeometry(width=data['width'],
+                                            height=data['length'],
+                                            side='DoubleSide')
+
+        material = p3js.MeshStandardMaterial(color=data['color'])
+
+        mesh = p3js.Mesh(geometry=geometry, material=material)
+
+        return mesh
 
 
 class Tetrahedron(Sphere):
