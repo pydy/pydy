@@ -206,6 +206,33 @@ class Shape(object):
                                 'must provide a mapping to numerical values.')
         return data_dict
 
+    def _p3js_mesh(self, constant_map={}):
+        """Returns a PyThreeJS mesh object that corresponds to this shape."""
+
+        data = self.generate_dict(constant_map=constant_map)
+
+        attrs = dict()
+
+        for k, v in self._p3js_attribute_map.items():
+            try:
+                attrs[k] = data[v]
+            except KeyError:
+                attrs[k] = v
+
+        Geometry = getattr(p3js,
+                           '{}BufferGeometry'.format(self._p3js_geometry_type))
+
+        geometry = Geometry(**attrs)
+
+        material = p3js.MeshStandardMaterial(color=data['color'])
+
+        mesh = p3js.Mesh(name=data['name'], geometry=geometry,
+                         material=material)
+
+        self._mesh = mesh
+
+        return mesh
+
 
 class Cube(Shape):
     """Instantiates a cube of a given size.
@@ -244,25 +271,15 @@ class Cube(Shape):
     10.0
 
     """
+    _p3js_geometry_type = 'Box'
+    _p3js_attribute_map = {'width': 'length',
+                           'height': 'length',
+                           'depth': 'length'}
 
     def __init__(self, length, **kwargs):
         super(Cube, self).__init__(**kwargs)
         self.geometry_attrs.append('length')
         self.length = length
-
-    def _p3js_mesh(self, constant_map={}):
-
-        data = self.generate_dict(constant_map=constant_map)
-
-        box = p3js.BoxBufferGeometry(width=data['length'],
-                                     height=data['length'],
-                                     depth=data['length'])
-
-        material = p3js.MeshStandardMaterial(color=data['color'])
-
-        mesh = p3js.Mesh(name=data['name'], geometry=box, material=material)
-
-        return mesh
 
 
 class Cylinder(Shape):
@@ -271,9 +288,10 @@ class Cylinder(Shape):
     Parameters
     ==========
     length : float or SymPy expression
-        The length of the cylinder.
+        Length of the cylinder along its Y axis.
     radius : float or SymPy expression
-        The radius of the cylinder.
+        Radius of the cylinder (of the circular cross section normal to the Y
+        axis).
 
     Examples
     ========
@@ -311,26 +329,16 @@ class Cylinder(Shape):
     5.0
 
     """
+    _p3js_geometry_type = 'Cylinder'
+    _p3js_attribute_map = {'radiusTop': 'radius',
+                           'radiusBottom': 'radius',
+                           'height': 'length'}
+
     def __init__(self, length, radius, **kwargs):
         super(Cylinder, self).__init__(**kwargs)
         self.geometry_attrs += ['length', 'radius']
         self.length = length
         self.radius = radius
-
-    def _p3js_mesh(self, constant_map={}):
-
-        data = self.generate_dict(constant_map=constant_map)
-
-        geometry = p3js.CylinderBufferGeometry(radiusTop=data['radius'],
-                                               radiusBottom=data['radius'],
-                                               height=data['length'])
-
-        material = p3js.MeshStandardMaterial(color=data['color'])
-
-        mesh = p3js.Mesh(name=data['name'], geometry=geometry,
-                         material=material)
-
-        return mesh
 
 
 class Cone(Shape):
@@ -379,26 +387,16 @@ class Cone(Shape):
     5.0
 
     """
+    _p3js_geometry_type = 'Cylinder'
+    _p3js_attribute_map = {'radiusTop': 0.0,
+                           'radiusBottom': 'radius',
+                           'height': 'length'}
+
     def __init__(self, length, radius, **kwargs):
         super(Cone, self).__init__(**kwargs)
         self.geometry_attrs += ['length', 'radius']
         self.length = length
         self.radius = radius
-
-    def _p3js_mesh(self, constant_map={}):
-
-        data = self.generate_dict(constant_map=constant_map)
-
-        geometry = p3js.CylinderBufferGeometry(radiusTop=0.0,
-                                               radiusBotom=data['radius'],
-                                               height=data['length'])
-
-        material = p3js.MeshStandardMaterial(color=data['color'])
-
-        mesh = p3js.Mesh(name=data['name'], geometry=geometry,
-                         material=material)
-
-        return mesh
 
 
 class Sphere(Shape):
@@ -438,24 +436,13 @@ class Sphere(Shape):
     10.0
 
     """
+    _p3js_geometry_type = 'Sphere'
+    _p3js_attribute_map = {'radius': 'radius'}
 
     def __init__(self, radius=10.0, **kwargs):
         super(Sphere, self).__init__(**kwargs)
         self.geometry_attrs += ['radius']
         self.radius = radius
-
-    def _p3js_mesh(self, constant_map={}):
-
-        data = self.generate_dict(constant_map=constant_map)
-
-        geometry = p3js.SphereBufferGeometry(radius=data['radius'])
-
-        material = p3js.MeshStandardMaterial(color=data['color'])
-
-        mesh = p3js.Mesh(name=data['name'], geometry=geometry,
-                         material=material)
-
-        return mesh
 
 
 class Circle(Sphere):
@@ -495,19 +482,8 @@ class Circle(Sphere):
     10.0
 
     """
-
-    def _p3js_mesh(self, constant_map={}):
-
-        data = self.generate_dict(constant_map=constant_map)
-
-        geometry = p3js.CircleBufferGeometry(radius=data['radius'])
-
-        material = p3js.MeshStandardMaterial(color=data['color'])
-
-        mesh = p3js.Mesh(name=data['name'], geometry=geometry,
-                         material=material)
-
-        return mesh
+    _p3js_geometry_type = 'Circle'
+    _p3js_attribute_map = {'radius': 'radius'}
 
 
 class Plane(Shape):
@@ -516,9 +492,9 @@ class Plane(Shape):
     Parameters
     ==========
     length : float or SymPy expression
-        The length of the plane.
+        Length of the plane along the Y axis.
     width : float or SymPy expression
-        The width of the plane.
+        Width of the plane along the X axis.
 
     Examples
     ========
@@ -556,26 +532,15 @@ class Plane(Shape):
     5.0
 
     """
+    _p3js_geometry_type = 'Plane'
+    _p3js_attribute_map = {'width': 'width',
+                           'height': 'length'}
+
     def __init__(self, length=10.0, width=5.0, **kwargs):
         super(Plane, self).__init__(**kwargs)
         self.geometry_attrs += ['length', 'width']
         self.length = length
         self.width = width
-
-    def _p3js_mesh(self, constant_map={}):
-
-        data = self.generate_dict(constant_map=constant_map)
-
-        geometry = p3js.PlaneBufferGeometry(width=data['width'],
-                                            height=data['length'])
-
-        material = p3js.MeshStandardMaterial(color=data['color'],
-                                             side='DoubleSide')
-
-        mesh = p3js.Mesh(name=data['name'], geometry=geometry,
-                         material=material)
-
-        return mesh
 
 
 class Tetrahedron(Sphere):
@@ -615,6 +580,8 @@ class Tetrahedron(Sphere):
     10.0
 
     """
+    _p3js_geometry_type = 'Tetrahedron'
+    _p3js_attribute_map = {'radius': 'radius'}
 
 
 class Octahedron(Sphere):
@@ -655,6 +622,8 @@ class Octahedron(Sphere):
     10.0
 
     """
+    _p3js_geometry_type = 'Octahedron'
+    _p3js_attribute_map = {'radius': 'radius'}
 
 
 class Icosahedron(Sphere):
@@ -696,6 +665,8 @@ class Icosahedron(Sphere):
     10.0
 
     """
+    _p3js_geometry_type = 'Icosahedron'
+    _p3js_attribute_map = {'radius': 'radius'}
 
 
 class Torus(Shape):
@@ -744,6 +715,9 @@ class Torus(Shape):
     5.0
 
     """
+    _p3js_geometry_type = 'Torus'
+    _p3js_attribute_map = {'radius': 'radius',
+                           'tube': 'tube_radius'}
 
     def __init__(self, radius, tube_radius, **kwargs):
         super(Torus, self).__init__(**kwargs)
@@ -814,6 +788,9 @@ class TorusKnot(Torus):
     5.0
 
     """
+    _p3js_geometry_type = 'TorusKnot'
+    _p3js_attribute_map = {'radius': 'radius',
+                           'tube': 'tube_radius'}
 
 
 class Tube(Shape):
