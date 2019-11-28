@@ -260,7 +260,7 @@ class Cube(Shape):
 
         material = p3js.MeshStandardMaterial(color=data['color'])
 
-        mesh = p3js.Mesh(geometry=box, material=material)
+        mesh = p3js.Mesh(name=data['name'], geometry=box, material=material)
 
         return mesh
 
@@ -327,7 +327,8 @@ class Cylinder(Shape):
 
         material = p3js.MeshStandardMaterial(color=data['color'])
 
-        mesh = p3js.Mesh(geometry=geometry, material=material)
+        mesh = p3js.Mesh(name=data['name'], geometry=geometry,
+                         material=material)
 
         return mesh
 
@@ -394,7 +395,8 @@ class Cone(Shape):
 
         material = p3js.MeshStandardMaterial(color=data['color'])
 
-        mesh = p3js.Mesh(geometry=geometry, material=material)
+        mesh = p3js.Mesh(name=data['name'], geometry=geometry,
+                         material=material)
 
         return mesh
 
@@ -450,7 +452,8 @@ class Sphere(Shape):
 
         material = p3js.MeshStandardMaterial(color=data['color'])
 
-        mesh = p3js.Mesh(geometry=geometry, material=material)
+        mesh = p3js.Mesh(name=data['name'], geometry=geometry,
+                         material=material)
 
         return mesh
 
@@ -501,7 +504,8 @@ class Circle(Sphere):
 
         material = p3js.MeshStandardMaterial(color=data['color'])
 
-        mesh = p3js.Mesh(geometry=geometry, material=material)
+        mesh = p3js.Mesh(name=data['name'], geometry=geometry,
+                         material=material)
 
         return mesh
 
@@ -563,12 +567,13 @@ class Plane(Shape):
         data = self.generate_dict(constant_map=constant_map)
 
         geometry = p3js.PlaneBufferGeometry(width=data['width'],
-                                            height=data['length'],
-                                            side='DoubleSide')
+                                            height=data['length'])
 
-        material = p3js.MeshStandardMaterial(color=data['color'])
+        material = p3js.MeshStandardMaterial(color=data['color'],
+                                             side='DoubleSide')
 
-        mesh = p3js.Mesh(geometry=geometry, material=material)
+        mesh = p3js.Mesh(name=data['name'], geometry=geometry,
+                         material=material)
 
         return mesh
 

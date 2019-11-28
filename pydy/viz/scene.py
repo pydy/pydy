@@ -680,12 +680,12 @@ class Scene(object):
         #print('integrated eoms')
 
         for vizframe in self.visualization_frames:
-            track = vizframe._create_keyframetrack(
+            vizframe._create_keyframetrack(
                 self.system.times,
                 self.system.integrate(),
                 list(self.system.constants.values()),
                 constant_map=self.system.constants)
-            self._tracks.append(track)
+            self._tracks.append(vizframe._track)
             self._meshes.append(vizframe._mesh)
 
     def _display_pythreejs_without_widgets(self, show_axes=True):
@@ -725,11 +725,11 @@ class Scene(object):
                                  width=view_width, height=view_height)
 
         print('made renderer')
-        #clip = p3js.AnimationClip(tracks=self._tracks,
-                                  #duration=self.system.times[-1])
-        #action = p3js.AnimationAction(p3js.AnimationMixer(scene), clip, scene)
+        clip = p3js.AnimationClip(tracks=self._tracks,
+                                  duration=self.system.times[-1])
+        action = p3js.AnimationAction(p3js.AnimationMixer(scene), clip, scene)
 
-        return renderer #, action
+        return renderer, action
 
     def display_pythreejs(self):
         if not hasattr(self, 'simulation_info'):
