@@ -685,6 +685,8 @@ class Scene(object):
 
     def _display_pythreejs_without_widgets(self, show_axes=True):
 
+        self._generate_simulation_dict()
+
         self._generate_meshes_tracks()
 
         view_width = 800
