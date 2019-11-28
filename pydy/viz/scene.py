@@ -637,7 +637,6 @@ class Scene(object):
             self._trajectory_links[i].position = position
             self._trajectory_links[i].quaternion = quaternion
 
-
     def _update_system_widgets(self):
         # this should only be called if the system has been resimulated
         # which requires the system attribute to be set
@@ -670,14 +669,9 @@ class Scene(object):
         self._generate_mesh_trajectories()
 
     def _generate_meshes_tracks(self):
-        print('in generate meshes tracks')
 
         self._meshes = []
         self._tracks = []
-
-        #print('starting integration')
-        #x = self.s
-        #print('integrated eoms')
 
         for vizframe in self.visualization_frames:
             vizframe._create_keyframetrack(
@@ -689,22 +683,14 @@ class Scene(object):
             self._meshes.append(vizframe._mesh)
 
     def _display_pythreejs_without_widgets(self, show_axes=True):
-        print('in display py3')
-
-        #self._generate_simulation_dict()
-        print('generated sim dict')
 
         self._generate_meshes_tracks()
-        print('generated tracks')
 
         view_width = 800
         view_height = 600
 
         if show_axes:
-            x_arrow = p3js.ArrowHelper(dir=[1, 0, 0], length=1.0, color='blue')
-            y_arrow = p3js.ArrowHelper(dir=[0, 1, 0], length=1.0, color='red')
-            z_arrow = p3js.ArrowHelper(dir=[0, 0, 1], length=1.0, color='green')
-            arrows = [x_arrow, y_arrow, z_arrow]
+            arrows = [p3js.AxesHelper(size=1.0)]
         else:
             arrows = []
 
@@ -712,19 +698,16 @@ class Scene(object):
                                         aspect=view_width/view_height)
         key_light = p3js.DirectionalLight(position=[0, 1, 1])
         ambient_light = p3js.AmbientLight()
-        print('created lights')
 
         children = self._meshes + arrows + [camera, key_light, ambient_light]
 
         scene = p3js.Scene(children=children)
-        print('made scene')
 
         controller = p3js.OrbitControls(controlling=camera)
         renderer = p3js.Renderer(camera=camera, scene=scene,
                                  controls=[controller],
                                  width=view_width, height=view_height)
 
-        print('made renderer')
         clip = p3js.AnimationClip(tracks=self._tracks,
                                   duration=self.system.times[-1])
         action = p3js.AnimationAction(p3js.AnimationMixer(scene), clip, scene)
