@@ -36,7 +36,7 @@ install:
 
   # This upates conda and installs the necessary packages.
   - "%PYTHON%\\Scripts\\conda.exe update --yes conda"
-  - "%PYTHON%\\Scripts\\conda.exe install --yes numpy scipy sympy cython pywin32 nose coverage"
+  - "%PYTHON%\\Scripts\\conda.exe install --yes numpy<1.16 scipy sympy cython pywin32 nose coverage"
   - "%PYTHON%\\Scripts\\conda.exe info"
   - "%PYTHON%\\Scripts\\conda.exe list"
 
