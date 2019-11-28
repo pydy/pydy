@@ -670,24 +670,32 @@ class Scene(object):
         self._generate_mesh_trajectories()
 
     def _generate_meshes_tracks(self):
+        print('in generate meshes tracks')
 
         self._meshes = []
         self._tracks = []
 
-        x = self.system.integrate()
+        #print('starting integration')
+        #x = self.s
+        #print('integrated eoms')
 
         for vizframe in self.visualization_frames:
             track = vizframe._create_keyframetrack(
-                self.system.times, x, list(self.system.constants.values()),
+                self.system.times,
+                self.system.integrate(),
+                list(self.system.constants.values()),
                 constant_map=self.system.constants)
             self._tracks.append(track)
             self._meshes.append(vizframe._mesh)
 
     def _display_pythreejs_without_widgets(self, show_axes=True):
+        print('in display py3')
 
-        self._generate_simulation_dict()
+        #self._generate_simulation_dict()
+        print('generated sim dict')
 
         self._generate_meshes_tracks()
+        print('generated tracks')
 
         view_width = 800
         view_height = 600
@@ -704,21 +712,24 @@ class Scene(object):
                                         aspect=view_width/view_height)
         key_light = p3js.DirectionalLight(position=[0, 1, 1])
         ambient_light = p3js.AmbientLight()
+        print('created lights')
 
         children = self._meshes + arrows + [camera, key_light, ambient_light]
 
         scene = p3js.Scene(children=children)
+        print('made scene')
 
         controller = p3js.OrbitControls(controlling=camera)
         renderer = p3js.Renderer(camera=camera, scene=scene,
                                  controls=[controller],
                                  width=view_width, height=view_height)
 
-        clip = p3js.AnimationClip(tracks=self._tracks,
-                                  duration=self.system.times[-1])
-        action = p3js.AnimationAction(p3js.AnimationMixer(scene), clip, scene)
+        print('made renderer')
+        #clip = p3js.AnimationClip(tracks=self._tracks,
+                                  #duration=self.system.times[-1])
+        #action = p3js.AnimationAction(p3js.AnimationMixer(scene), clip, scene)
 
-        return renderer, action
+        return renderer #, action
 
     def display_pythreejs(self):
         if not hasattr(self, 'simulation_info'):

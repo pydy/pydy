@@ -322,7 +322,7 @@ class Cylinder(Shape):
         data = self.generate_dict(constant_map=constant_map)
 
         geometry = p3js.CylinderBufferGeometry(radiusTop=data['radius'],
-                                               radiusBotom=data['radius'],
+                                               radiusBottom=data['radius'],
                                                height=data['length'])
 
         material = p3js.MeshStandardMaterial(color=data['color'])

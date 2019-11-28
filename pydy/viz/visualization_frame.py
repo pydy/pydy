@@ -421,19 +421,23 @@ class VisualizationFrame(object):
             PyThreeJS animation track.
 
         """
+        print('in create_keyframe')
 
         self._mesh = self.shape._p3js_mesh(constant_map=constant_map)
+        print('created a mesh')
 
         # NOTE : This is required to set the transform matrix directly.
         self._mesh.matrixAutoUpdate = False
 
-        self.evaluate_transformation_matrix(dynamic_values, constant_values)
+        matrices = self.evaluate_transformation_matrix(dynamic_values, constant_values)
+        print('made transform matrices')
 
-        self._mesh.matrix = self._visualization_matrix[0]
+        self._mesh.matrix = matrices[0]
 
         name = "scene/{}.matrix".format(self._mesh.name)
 
         track = p3js.VectorKeyframeTrack(name=name, times=times,
-                                         values=self._visualization_matrix)
+                                         values=matrices)
+        print('created a keyframetrack')
 
         self._track = track
