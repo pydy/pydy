@@ -645,24 +645,40 @@ class Scene(object):
             self._tracks.append(vizframe._track)
             self._meshes.append(vizframe._mesh)
 
-    def _display_pythreejs_without_widgets(self, show_axes=True):
+    def _display_pythreejs_without_widgets(self, window_size=(800, 600),
+                                           show_axes=True):
+        """Returns a PyThreeJS Renderer and AnimationAction for displaying and
+        animating the scene.
+
+        Parameters
+        ==========
+        window_size : 2-tuple of integers
+            2-tuple containing the width and height of the renderer window in
+            pixels.
+        show_axes : boolean
+            If true a red, green, and blue axes will be displayed.
+
+        Returns
+        =======
+        renderer : pythreejs.Renderer
+        action : pythreejs.AnimationAction
+
+        """
 
         self._generate_meshes_tracks()
 
-        view_width = 800
-        view_height = 600
-
-        if show_axes:
-            arrows = [p3js.AxesHelper(size=1.0)]
-        else:
-            arrows = []
+        view_width = window_size[0]
+        view_height = window_size[1]
 
         camera = p3js.PerspectiveCamera(position=[1, 1, 1],
                                         aspect=view_width/view_height)
         key_light = p3js.DirectionalLight()
         ambient_light = p3js.AmbientLight()
 
-        children = self._meshes + arrows + [camera, key_light, ambient_light]
+        children = self._meshes + [camera, key_light, ambient_light]
+
+        if show_axes:
+            children += [p3js.AxesHelper(size=1.0)]
 
         scene = p3js.Scene(children=children)
 
