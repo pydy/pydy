@@ -534,7 +534,8 @@ class Plane(Shape):
     """
     _p3js_geometry_type = 'Plane'
     _p3js_attribute_map = {'width': 'width',
-                           'height': 'length'}
+                           'height': 'length',
+                           'side': 'DoubleSide'}
 
     def __init__(self, length=10.0, width=5.0, **kwargs):
         super(Plane, self).__init__(**kwargs)
