@@ -403,21 +403,20 @@ class VisualizationFrame(object):
         simulation_dict = {}
         try:
             simulation_dict[id(self)] = self._visualization_matrix
-
         except:
-            raise RuntimeError("Cannot generate visualization data " + \
-                                "because numerical transformation " + \
-                               "has not been performed, " + \
-                                "Please call the numerical " + \
-                               "transformation methods, " + \
+            raise RuntimeError("Cannot generate visualization data "
+                               "because numerical transformation "
+                               "has not been performed, "
+                               "Please call the numerical "
+                               "transformation methods, "
                                "before generating visualization dict")
-
 
         return simulation_dict
 
     def _create_keyframetrack(self, times, dynamic_values, constant_values,
                               constant_map=None):
-        """Returns a KeyframeTrack for animating this visualization frame.
+        """Sets a attributes with a Mesh and KeyframeTrack for animating this
+        visualization frame.
 
         Parameters
         ==========
@@ -426,6 +425,7 @@ class VisualizationFrame(object):
         dynamics_values : ndarray, shape(n, m)
             Array of state values for each time.
         constant_values : array_like, shape(p,)
+            Array of values for the constants.
         constant_map : dictionary
             A key value pair mapping from SymPy symbols to floating point
             values.
@@ -441,10 +441,18 @@ class VisualizationFrame(object):
         # NOTE : This is required to set the transform matrix directly.
         self._mesh.matrixAutoUpdate = False
 
-        matrices = self.evaluate_transformation_matrix(dynamic_values, constant_values)
+        matrices = self.evaluate_transformation_matrix(dynamic_values,
+                                                       constant_values)
 
         self._mesh.matrix = matrices[0]
 
+        # TODO : If the user does not name their shapes, then there will be
+        # KeyFrameTracks with duplicate names. Need a better fix for this, but
+        # I at least warn the user if they didn't change the name at all.
+        if self._mesh.name == 'unnamed':
+            msg = ("The shape provided to this visualization frame must have a "
+                   "unique name. Make sure all shapes have unique names.")
+            raise ValueError(msg)
         name = "scene/{}.matrix".format(self._mesh.name)
 
         track = p3js.VectorKeyframeTrack(name=name, times=times,
