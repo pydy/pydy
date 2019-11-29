@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 
 from setuptools import setup, find_packages
 
@@ -13,18 +12,13 @@ exec(open('pydy/version.py').read())
 # line is added.
 os.environ["MPLCONFIGDIR"] = "."
 
-if sys.version_info >= (3, 0):
-    NUMPY_MIN_VER = '1.9'
-    SCIPY_MIN_VER = '0.14.0'
-    SYMPY_MIN_VER = '0.7.5'
-    CYTHON_MIN_VER = '0.20.1'
-    THEANO_MIN_VER = '0.7.0'
-else:
-    NUMPY_MIN_VER = '1.9'
-    SCIPY_MIN_VER = '0.14'
-    SYMPY_MIN_VER = '0.7.4.1'
-    CYTHON_MIN_VER = '0.17'
-    THEANO_MIN_VER = '0.7.0'
+
+install_requires = ['numpy>=1.13.3',
+                    'scipy>=0.19.1',
+                    'sympy>=1.1.1']
+
+if os.name == 'nt':
+    install_requires.append('PyWin32>=219')
 
 setup(
     name='pydy',
@@ -37,24 +31,24 @@ setup(
     keywords="multibody dynamics",
     license='LICENSE.txt',
     packages=find_packages(),
-    install_requires=['numpy>={}'.format(NUMPY_MIN_VER),
-                      'scipy>={}'.format(SCIPY_MIN_VER),
-                      'sympy>={}'.format(SYMPY_MIN_VER),
-                      ],
+    install_requires=install_requires,
     extras_require={'doc': ['sphinx', 'numpydoc'],
-                    'codegen': ['Cython>={}'.format(CYTHON_MIN_VER),
-                                'Theano>={}'.format(THEANO_MIN_VER)],
-                    'examples': ['matplotlib>=0.99',
-                                 'ipython[notebook]>=0.3.0'],
+                    'codegen': ['Cython>=0.26.1',
+                                'Theano>=0.9.0'],
+                    'examples': ['matplotlib>=2.1.1',
+                                 'notebook>=4.0.0,<5.0.0',
+                                 'ipywidgets>=4.0.0,<5.0.0'],
                     },
-    tests_require=['nose>=1.3.0'],
+    tests_require=['nose>=1.3.7'],
     test_suite='nose.collector',
-    scripts=['bin/benchmark_pydy_code_gen.py'],
     include_package_data=True,
     classifiers=['Development Status :: 4 - Beta',
                  'Intended Audience :: Science/Research',
                  'Operating System :: OS Independent',
                  'Programming Language :: Python :: 2.7',
+                 'Programming Language :: Python :: 3.5',
+                 'Programming Language :: Python :: 3.6',
+                 'Programming Language :: Python :: 3.7',
                  'Topic :: Scientific/Engineering :: Physics',
                  ],
 )

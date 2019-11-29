@@ -25,6 +25,15 @@ We currently support three backends:
    This generates C code that can be called from Python, using
    SymPy's C code printer utilities and Cython.
 
+On Windows
+==========
+
+For the Cython backend to work on Windows you must install a suitable compiler.
+See this `Cython wiki page
+<https://github.com/cython/cython/wiki/CythonExtensionsOnWindows>`_ for
+instructions on getting a compiler installed. The easiest solution is to use
+the Microsoft Visual C++ Compiler for Python 2.7.
+
 Example Use
 ===========
 
@@ -209,3 +218,29 @@ generate C and Cython code to evaluate matrices:
    >>> res = array([0.0, 0.0])
    >>> rhs(array([1.0]), array([2.0]), array([1.0, 2.0, 3.0]), res)
    array([ 2., -7.])
+
+We also support generating Octave/Matlab code as shown below:
+
+.. code:: pycon
+
+   >>> from pydy.codegen.octave_code import OctaveMatrixGenerator
+   >>> sys = multi_mass_spring_damper()
+   >>> q = sys.coordinates
+   >>> u = sys.speeds
+   >>> p = sys.constants_symbols
+   >>> sym_rhs = sys.eom_method.rhs()
+   >>> g = OctaveMatrixGenerator([q + u, p], [sym_rhs])
+   >>> m_src = g.doprint()
+   >>> print(m_src)
+   function [output_1] = eval_mats(input_1, input_2)
+   % function [output_1] = eval_mats(input_1, input_2)
+   %
+   % input_1 : [x0(t), v0(t)]
+   % input_2 : [k0, m0, c0]
+
+       pydy_0 = input_1(2);
+
+       output_1 = [pydy_0; (-input_2(3).*pydy_0 - ...
+       input_2(1).*input_1(1))./input_2(2)];
+
+   end

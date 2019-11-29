@@ -7,7 +7,7 @@ from nose.tools import assert_raises
 from sympy import cos, sin, tan, sqrt, Matrix
 from sympy.physics.mechanics import dynamicsymbols
 
-from ..utils import sympy_equal_to_or_newer_than
+from ..utils import sympy_equal_to_or_newer_than, wrap_and_indent
 from ..codegen.cython_code import CythonMatrixGenerator
 
 
@@ -23,6 +23,7 @@ def test_sympy_equal_to_or_newer_than():
         with assert_raises(ValueError):
             sympy_equal_to_or_newer_than('0.7.7', '0.7.6-git')
 
+
 def test_codegen_linewrap():
 
     # Generated can result in long expressions with no obvious place to insert a
@@ -35,4 +36,40 @@ def test_codegen_linewrap():
     mat_expr = Matrix([expr])
 
     q = [x, y, z]
+    # Don't raise an error with this line.
     gen = CythonMatrixGenerator([q], [mat_expr])
+
+
+def test_wrap_and_indent():
+
+    lines = ["a + b + c + d + e", "a + b + c + d + e"]
+    wrapped = wrap_and_indent(lines, width=10)
+    expected = """\
+    a + b
+    + c +
+    d + e
+    a + b
+    + c +
+    d + e"""
+    assert wrapped == expected
+
+    wrapped = wrap_and_indent(lines, width=14, continuation=' ...')
+    expected = """\
+    a + b ...
+    + c + ...
+    d + e
+    a + b ...
+    + c + ...
+    d + e"""
+    assert wrapped == expected
+
+    lines = ["% a + b + c + d + e", "% a + b + c + d + e"]
+    wrapped = wrap_and_indent(lines, width=12, comment='%')
+    expected = """\
+    % a + b
+    % + c + d
+    % + e
+    % a + b
+    % + c + d
+    % + e"""
+    assert wrapped == expected

@@ -25,7 +25,7 @@ Title
   Please provide some informative title for the example.
 Problem Setup
   This should include a vector drawing of the system as well as a basic
-  description of said drawing and what the premise of the example.
+  description of said drawing and the premise of the example.
 Equations of Motion
   This should lead the reader through the derivation of the symbolic equations
   of motion (non-linear and/or linear).

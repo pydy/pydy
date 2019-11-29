@@ -16,6 +16,7 @@ from ..visualization_frame import VisualizationFrame
 from ..camera import PerspectiveCamera, OrthoGraphicCamera
 from ..light import PointLight
 from ..scene import Scene
+from ...utils import sympy_newer_than
 
 
 class TestScene(object):
@@ -45,7 +46,12 @@ class TestScene(object):
 
         kane = me.KanesMethod(ceiling, q_ind=[position], u_ind=[speed],
                               kd_eqs=kinematic_equations)
-        kane.kanes_equations(forces, particles)
+
+        if sympy_newer_than('1.0'):
+            kane.kanes_equations(particles, forces)
+        else:
+            kane.kanes_equations(forces, particles)
+
 
         self.sys = System(kane)
         self.sys.initial_conditions = {position: 0.1, speed: -1.0}
@@ -219,6 +225,9 @@ class TestScene(object):
                                      'far': 1000.0,
                                      'simulation_id': camera_id,
                                      'near': 1.0,
+                                     'color': 'grey',
+                                     'material': 'default',
+                                     'reference_frame_name': 'N',
                                      'init_orientation':
                                          [1.0, 0.0, 0.0, 0.0,
                                           0.0, 1.0, 0.0, 0.0,

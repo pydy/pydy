@@ -6,26 +6,19 @@ if sys.version_info > (3, 0):
 else:
     from collections import Sequence
 from itertools import chain
-from pkg_resources import parse_version
-import warnings
 
 import numpy as np
 import numpy.linalg
 import scipy.linalg
 import sympy as sm
 import sympy.physics.mechanics as me
-from sympy.core.function import UndefinedFunction
+from sympy.core.function import UndefinedFunction, Derivative
 Cython = sm.external.import_module('Cython')
 theano = sm.external.import_module('theano')
 if theano:
     from sympy.printing.theanocode import theano_function
 
-import pydy
-from ..utils import PyDyDeprecationWarning
 from .cython_code import CythonMatrixGenerator
-
-
-warnings.simplefilter('once', PyDyDeprecationWarning)
 
 
 class ODEFunctionGenerator(object):
@@ -71,7 +64,7 @@ p : dictionary len({num_constants}) or ndarray shape({num_constants},)
 p : ndarray shape({num_constants},)
     A ndarray of floats that give the numerical values of the constants in
     this order:
-    {constant_list}\
+{constant_list}\
 """
 
     _constants_doc_templates['dictionary'] = \
@@ -141,6 +134,7 @@ r : function
     _specifieds_doc_templates['dictionary'] = \
 """
 r : dictionary
+
     A dictionary that maps the specified functions of time to floats,
     ndarrays, or functions that produce ndarrays. The keys can be a single
     specified symbolic function of time or a tuple of symbols. The total
@@ -182,7 +176,7 @@ r : dictionary
 
         return system_type
 
-    def __init__(self, right_hand_side, coordinates, speeds, constants,
+    def __init__(self, right_hand_side, coordinates, speeds, constants=(),
                  mass_matrix=None, coordinate_derivatives=None,
                  specifieds=None, linear_sys_solver='numpy',
                  constants_arg_type=None, specifieds_arg_type=None):
@@ -226,7 +220,7 @@ r : dictionary
         speeds : sequence of SymPy Functions
             The generalized speeds. These must be ordered in the same order
             as the rows in M, F, and/or G and be functions of time.
-        constants : sequence of SymPy Symbols
+        constants : sequence of SymPy Symbols, optional
             All of the constants present in the equations of motion. The
             order does not matter.
         mass_matrix : sympy.Matrix, shape(n, n), optional
@@ -270,16 +264,6 @@ r : dictionary
             what arg types you want to support choose either ``array``,
             ``function``, or ``dictionary``. The speed of each, from fast to
             slow, are ``array``, ``function``, ``dictionary``, None.
-
-        Notes
-        =====
-        The generated function still supports the pre-0.3.0 extra argument
-        style, i.e. args = {'constants': ..., 'specified': ...}, but only if
-        ``constants_arg_type`` and ``specifieds_arg_type`` are both set to
-        None. This functionality is deprecated and will be removed in 0.4.0,
-        so it's best to adjust your code to support the new argument types.
-        See the docstring for the generated function for more info on the
-        new style of arguments.
 
         """
 
@@ -372,39 +356,6 @@ r : dictionary
         lst = '- ' + ('\n' + indentation + '- ').join([str(s) for s in syms])
         return indentation + lst
 
-    def _parse_old_style_extra_args(self, *args):
-        """Returns the post-0.3.0 style args if the pre-0.3.0 style args are
-        passed in. The pre-0.3.0 style args always have three args: (x, t,
-        d) where d is is a dictionary which should always at least contain
-        the key 'constants'. It may also contain a key 'specified'."""
-
-        # DEPRECATED : Remove before 0.4.0 release.
-        if parse_version(pydy.__version__) > parse_version('0.4.0'):
-            msg = ("The old style args, i.e. {'constants': , 'specified'}, "
-                    "for the generated function is no longer supported as "
-                    "of PyDy 0.4.0. Please remove this function.")
-
-        last_arg = args[-1]
-        try:
-            constants = last_arg['constants']
-        # ValueError is needed for older NumPy versions.
-        except (KeyError, IndexError, ValueError):
-            return args
-        else:
-            warnings.warn("The old style args, i.e. {'constants': , "
-                          "'specified'}, for the generated function will be "
-                          "removed in PyDy 0.4.0.",
-                          PyDyDeprecationWarning)
-
-            new_args = list(args[:-1])  # gets x and t
-
-            if self.specifieds is not None:
-                new_args.append(last_arg['specified'])
-
-            new_args.append(constants)
-
-            return tuple(new_args)
-
     def _convert_constants_dict_to_array(self, p):
         """Returns an array of numerical values from the constants
         dictionary in the correct order."""
@@ -427,6 +378,11 @@ r : dictionary
 
         p = args[-1]
         try:
+            # NOTE : This emits "VisibleDeprecationWarning: using a non-integer
+            # number instead of an integer will result in an error in the
+            # future" along with the IndexError in NumPy 1.11. Not sure why it
+            # gives the warning, it already gives and error with trying to
+            # index with a SymPy symbol.
             p = self._convert_constants_dict_to_array(p)
         except IndexError:
             # p is an array so just return the args
@@ -438,7 +394,8 @@ r : dictionary
 
         for k, v in r.items():
             # TODO : Not sure if this is the best check here.
-            if isinstance(type(k), UndefinedFunction):
+            if (isinstance(type(k), UndefinedFunction) or
+                isinstance(k, Derivative)):
                 k = (k,)
             idx = [self.specifieds.index(symmy) for symmy in k]
             try:
@@ -459,10 +416,10 @@ r : dictionary
         else:
             # More efficient.
             try:
-                self._specifieds_values[:] = r(x, t)
+                self._specifieds_values = r(x, t)
             except TypeError:  # not callable.
                 # If not callable, then it should be a float or ndarray.
-                self._specifieds_values[:] = r
+                self._specifieds_values = r
 
         return x, t, self._specifieds_values, p
 
@@ -471,8 +428,6 @@ r : dictionary
         the parsers. This is the slowest method and is used by default if no
         information is provided by the user on which type of args will be
         passed in."""
-
-        args = self._parse_old_style_extra_args(*args)
 
         args = self._parse_constants(*args)
 
@@ -501,7 +456,7 @@ r : dictionary
                 'num_specified': self.num_specifieds,
                 'specified_list': self.list_syms(8, self.specifieds)}
             template_values['specifieds_explanation'] = \
-                self._specifieds_doc_templates[self.constants_arg_type].format(
+                self._specifieds_doc_templates[self.specifieds_arg_type].format(
                     **specified_template_values)
 
         return self._rhs_doc_template.format(**template_values)
@@ -510,30 +465,10 @@ r : dictionary
         """Returns a function in the form expected by scipy.integrate.odeint
         that computes the derivatives of the states."""
 
-        # This god awful mess below exists because of the need to optimize
-        # the speed of the rhs evaluation. We unfortunately support way too
-        # many ways to pass in extra arguments to the generated rhs
-        # function. The default behavior is to parse the arguments passed
-        # into the rhs function which can add a lot of computational
-        # overhead. So we allow the user to specify what type the extra args
-        # should be for both the constants and the specifieds. The constants
-        # can be None, 'array', or 'dictionary'. The specifieds can be None,
-        # 'array', 'function', or 'dictionary'. Thus we have 12 permutations
-        # of this "switch".
-
         p_arg_type = self.constants_arg_type
         r_arg_type = self.specifieds_arg_type
 
-        def slice_x(x):
-            q = x[:self.num_coordinates]
-            u = x[self.num_coordinates:]
-            return q, u
-
         if p_arg_type is None and r_arg_type is None:
-
-            # This is the only rhs that will properly check for the
-            # pre-0.3.0 rhs args for backwards compatibility.
-
             def rhs(*args):
                 # args: x, t, p
                 # or
@@ -541,158 +476,56 @@ r : dictionary
 
                 args = self._parse_all_args(*args)
 
-                q, u = slice_x(args[0])
+                q = args[0][:self.num_coordinates]
+                u = args[0][self.num_coordinates:]
 
-                xdot = self._base_rhs(q, u, *args[2:])
-
+                if self.constants:
+                    xdot = self._base_rhs(q, u, *args[2:])
+                else:
+                    xdot = self._base_rhs(q, u, *(args[2:3] + ([],)))
                 return xdot
 
-        elif p_arg_type == 'array' and r_arg_type is None:
+            rhs.__doc__ = self._generate_rhs_docstring()
 
-            # This could be combined with:
-            # elif p_arg_type == 'array' and r_arg_type == 'array':
+            return rhs
 
-            def rhs(*args):
-                # args: x, t, p
-                # or
-                # args: x, t, r, p
+        if p_arg_type is 'dictionary':
+            p = lambda *li : self._convert_constants_dict_to_array(li[-1])
 
-                if self.specifieds is not None:
-                    args = self._parse_specifieds(*args)
+        else:
+            p = lambda *li : self._parse_constants(*li)[-1]
 
-                q, u = slice_x(args[0])
+        if r_arg_type is None:
+            if self.specifieds is not None:
+                r = lambda *li : self._parse_specifieds(*li)[-2]
 
-                return self._base_rhs(q, u, *args[2:])
+        elif r_arg_type is 'array':
+            r = lambda *li : (li)[-2]
 
-        elif p_arg_type == 'dictionary' and r_arg_type is None:
+        elif r_arg_type is 'dictionary':
+            r = lambda *li : self._convert_specifieds_dict_to_array(*li[:3])
 
-            # This could be combined with:
-            # elif p_arg_type == 'dictionary' and r_arg_type == 'array':
+        elif r_arg_type is 'function':
+            r = lambda *li: li[2](*li[2:])
 
-            def rhs(*args):
-                # args: x, t, p
-                # or
-                # args: x, t, r, p
+        def rhs(*args):
+            # args: x, t, p
+            # or
+            # args: x, t, r, p
 
-                if self.specifieds is not None:
-                    args = self._parse_specifieds(*args)
+            q = args[0][:self.num_coordinates]
+            u = args[0][self.num_coordinates:]
 
-                p = self._convert_constants_dict_to_array(args[-1])
-
-                q, u = slice_x(args[0])
-
-                xdot = self._base_rhs(q, u, *(args[2:-1] + (p,)))
-
-                return xdot
-
-        # All of the cases below must have specifieds, so the number of args
-        # is known. r_arg_type is forces to be None if self.specifieds is
-        # None.
-
-        elif p_arg_type is None and r_arg_type == 'array':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                args = self._parse_constants(*args)
-
-                q, u = slice_x(args[0])
-
-                return self._base_rhs(q, u, *args[2:])
-
-        elif p_arg_type == 'array' and r_arg_type == 'array':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                q, u = slice_x(args[0])
-
-                return self._base_rhs(q, u, *args[2:])
-
-        elif p_arg_type == 'dictionary' and r_arg_type == 'array':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                p = self._convert_constants_dict_to_array(args[-1])
-
-                q, u = slice_x(args[0])
-
-                return self._base_rhs(q, u, *(args[2:-1] + (p,)))
-
-        elif p_arg_type is None and r_arg_type == 'dictionary':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                args = self._parse_constants(*args)
-
-                q, u = slice_x(args[0])
-
-                r = self._convert_specifieds_dict_to_array(*args[:3])
-
-                return self._base_rhs(q, u, r, args[-1])
-
-        elif p_arg_type == 'array' and r_arg_type == 'dictionary':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                q, u = slice_x(args[0])
-
-                r = self._convert_specifieds_dict_to_array(*args[:3])
-
-                return self._base_rhs(q, u, r, args[-1])
-
-        elif p_arg_type == 'dictionary' and r_arg_type == 'dictionary':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                q, u = slice_x(args[0])
-
-                p = self._convert_constants_dict_to_array(args[-1])
-
-                r = self._convert_specifieds_dict_to_array(*args[:3])
-
-                return self._base_rhs(q, u, r, p)
-
-        elif p_arg_type is None and r_arg_type == 'function':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                q, u = slice_x(args[0])
-
-                args = self._parse_constants(*args)
-
-                r = args[2](*args[:2])
-
-                return self._base_rhs(q, u, r, args[-1])
-
-        elif p_arg_type == 'array' and r_arg_type == 'function':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                q, u = slice_x(args[0])
-
-                r = args[2](*args[:2])
-
-                return self._base_rhs(q, u, r, args[-1])
-
-        elif p_arg_type == 'dictionary' and r_arg_type == 'function':
-
-            def rhs(*args):
-                # args: x, t, r, p
-
-                q, u = slice_x(args[0])
-
-                p = self._convert_constants_dict_to_array(args[-1])
-
-                r = args[2](*args[:2])
-
-                return self._base_rhs(q, u, r, p)
+            if self.specifieds is None:
+                if self.constants:
+                    return self._base_rhs(q, u, p(*args))
+                else:
+                    return self._base_rhs(q, u, [])
+            else:
+                if self.constants:
+                    return self._base_rhs(q, u, r(*args), p(*args))
+                else:
+                    return self._base_rhs(q, u, r(*args), [])
 
         rhs.__doc__ = self._generate_rhs_docstring()
 
@@ -769,6 +602,13 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
 
     def __init__(self, *args, **kwargs):
 
+        self._options = {'tmp_dir': None,
+                         'prefix': 'pydy_codegen',
+                         'cse': True,
+                         'verbose': False}
+        for k, v in self._options.items():
+            self._options[k] = kwargs.pop(k, v)
+
         if Cython is None:
             raise ImportError('Cython must be installed to use this class.')
         else:
@@ -776,9 +616,12 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
 
     __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
 
-    @staticmethod
-    def _cythonize(outputs, inputs):
-        return CythonMatrixGenerator(inputs, outputs).compile()
+    def _cythonize(self, outputs, inputs):
+        g = CythonMatrixGenerator(inputs, outputs,
+                                  prefix=self._options['prefix'],
+                                  cse=self._options['cse'])
+        return g.compile(tmp_dir=self._options['tmp_dir'],
+                         verbose=self._options['verbose'])
 
     def _set_eval_array(self, f):
 
@@ -1010,9 +853,7 @@ def generate_ode_function(*args, **kwargs):
         return g.generate()
 
 
-_divider = '\n        Notes\n        ====='
 _docstr = ODEFunctionGenerator.__init__.__doc__
-_before_notes, _after_notes = _docstr.split(_divider)
 _extra_parameters_doc = \
 """\
         generator : string or and ODEFunctionGenerator, optional
@@ -1027,6 +868,4 @@ _extra_parameters_doc = \
             A function which evaluates the derivaties of the states. See the
             function's docstring for more details after generation.
 """
-generate_ode_function.__doc__ = ('' * 4 + _before_notes +
-                                 _extra_parameters_doc + _divider +
-                                 _after_notes)
+generate_ode_function.__doc__ = ('' * 4 + _docstr + _extra_parameters_doc)

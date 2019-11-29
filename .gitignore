@@ -2,6 +2,7 @@
 
 *data.json
 *desc.json
+pydy-resources/
 
 # python
 
@@ -52,3 +53,6 @@ nosetests.xml
 
 # vim swap files
 *.swp
+
+# vs code local settings
+.vscode/

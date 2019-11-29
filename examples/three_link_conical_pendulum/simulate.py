@@ -39,7 +39,8 @@ param_vals = [link_length for x in l] + \
 # ODEs can be generated.
 print("Generating numeric right hand side.")
 right_hand_side = generate_ode_function(kane.forcing_full, q, u, param_syms,
-                                        mass_matrix=kane.mass_matrix_full)
+                                        mass_matrix=kane.mass_matrix_full,
+                                        generator='cython')
 
 # To simulate the system, a time vector and initial conditions for the
 # system's states is required.
@@ -47,7 +48,7 @@ t = linspace(0.0, 60.0, num=600)
 x0 = hstack((ones(6) * radians(10.0), zeros(6)))
 
 print("Integrating equations of motion.")
-state_trajectories = odeint(right_hand_side, x0, t,
-                            args=({'constants': dict(zip(param_syms,
-                                                         param_vals))},))
+state_trajectories = odeint(right_hand_side, x0, t, args=(dict(zip(param_syms,
+                                                                   param_vals)),
+                                                          ))
 print("Integration done.")

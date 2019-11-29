@@ -852,7 +852,7 @@ class Tube(Shape):
 
     @property
     def points(self):
-        return self._points
+        return self._points.tolist()
 
     @points.setter
     def points(self, new_points):
