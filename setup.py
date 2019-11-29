@@ -13,9 +13,9 @@ exec(open('pydy/version.py').read())
 os.environ["MPLCONFIGDIR"] = "."
 
 
-install_requires=['numpy>=1.11.0',
-                  'scipy>=0.17.1',
-                  'sympy>=0.7.6.1']
+install_requires = ['numpy>=1.13.3',
+                    'scipy>=0.19.1',
+                    'sympy>=1.1.1']
 
 if os.name == 'nt':
     install_requires.append('PyWin32>=219')
@@ -33,9 +33,9 @@ setup(
     packages=find_packages(),
     install_requires=install_requires,
     extras_require={'doc': ['sphinx', 'numpydoc'],
-                    'codegen': ['Cython>=0.23.4',
-                                'Theano>=0.8.0'],
-                    'examples': ['matplotlib>=1.5.1',
+                    'codegen': ['Cython>=0.26.1',
+                                'Theano>=0.9.0'],
+                    'examples': ['matplotlib>=2.1.1',
                                  'notebook>=4.0.0,<5.0.0',
                                  'ipywidgets>=4.0.0,<5.0.0'],
                     },
@@ -48,6 +48,7 @@ setup(
                  'Programming Language :: Python :: 2.7',
                  'Programming Language :: Python :: 3.5',
                  'Programming Language :: Python :: 3.6',
+                 'Programming Language :: Python :: 3.7',
                  'Topic :: Scientific/Engineering :: Physics',
                  ],
 )

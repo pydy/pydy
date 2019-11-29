@@ -68,17 +68,17 @@ PyDy has hard dependencies on the following software\ [#]_:
 
 - 2.7 <= Python < 3.0 or Python >= 3.5
 - setuptools >= 20.7.0
-- NumPy_ >= 1.11.0
-- SciPy_ >= 0.17.1
-- SymPy_ >= 0.7.6.1
+- NumPy_ >= 1.13.3
+- SciPy_ >= 0.19.1
+- SymPy_ >= 1.1.1
 - PyWin32 >= 219 (Windows Only)
 
 PyDy has optional dependencies on these packages:
 
 - 4.0.0 <= `Jupyter Notebook`_ < 5.0.0
 - 4.0.0 <= ipywidgets_ < 5.0.0
-- Theano_ >= 0.8.0
-- Cython_ >= 0.23.4
+- Theano_ >= 0.9.0
+- Cython_ >= 0.26.1
 
 .. _Theano: http://deeplearning.net/software/theano/
 .. _Cython: http://cython.org/
@@ -86,7 +86,7 @@ PyDy has optional dependencies on these packages:
 
 The examples may require these dependencies:
 
-- matplotlib_ >= 1.5.1
+- matplotlib_ >= 2.1.1
 - version_information_
 
 .. _version_information: https://pypi.python.org/pypi/version_information
@@ -386,6 +386,14 @@ an `issue`_ on Github.
 
 Release Notes
 =============
+
+0.6.0
+-----
+
+- Remove support for required dependencies prior to those in Ubuntu 18.04 LTS.
+  [PR `#415`_]
+
+.. _#415: https://github.com/pydy/pydy/pull/415
 
 0.5.0
 -----
