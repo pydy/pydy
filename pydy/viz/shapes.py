@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
-__all__ = ['Cube',
+import numpy as np
+import pythreejs as p3js
+
+__all__ = ['Box',
+           'Cube',
            'Cylinder',
            'Cone',
            'Sphere',
@@ -12,9 +16,6 @@ __all__ = ['Cube',
            'Torus',
            'TorusKnot',
            'Tube']
-
-import numpy as np
-import pythreejs as p3js
 
 
 # This is a list of ColorKeywords from THREE.js
@@ -234,6 +235,54 @@ class Shape(object):
         self._mesh = mesh
 
         return mesh
+
+
+class Box(Shape):
+    """Instantiates a box of a given size.
+
+    Parameters
+    ==========
+    width : float or SymPy expression
+        Width of the box along the X axis.
+    height : float or SymPy expression
+        Height of the box along the Y axis.
+    depth : float or SymPy expression
+        Depth of the box along the Z axis.
+
+    Examples
+    ========
+
+    >>> from pydy.viz.shapes import Box
+    >>> s = Box(10.0, 5.0, 1.0)
+    >>> s.name
+    'unnamed'
+    >>> s.color
+    'grey'
+    >>>s.width
+    5.0
+    >>>s.height
+    1.0
+    >>>s.depth
+    10.0
+    >>> s.name = 'my-shape1'
+    >>> s.name
+    'my-shape1'
+    >>> s.color = 'blue'
+    >>> s.color
+    'blue'
+
+    """
+    _p3js_geometry_type = 'Box'
+    _p3js_attribute_map = {'width': 'width',
+                           'height': 'height',
+                           'depth': 'depth'}
+
+    def __init__(self, width, height, depth, **kwargs):
+        super(Box, self).__init__(**kwargs)
+        self.geometry_attrs.append(['width', 'height', 'depth'])
+        self.width = width
+        self.height = height
+        self.depth = depth
 
 
 class Cube(Shape):
