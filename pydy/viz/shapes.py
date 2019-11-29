@@ -105,6 +105,7 @@ class Shape(object):
     'red'
 
     """
+    _p3js_material_attributes = {}
 
     def __init__(self, name='unnamed', color='grey', material="default"):
 
@@ -224,7 +225,8 @@ class Shape(object):
 
         geometry = Geometry(**attrs)
 
-        material = p3js.MeshStandardMaterial(color=data['color'])
+        material = p3js.MeshStandardMaterial(color=data['color'],
+                                             **self._p3js_material_attributes)
 
         mesh = p3js.Mesh(name=data['name'], geometry=geometry,
                          material=material)
@@ -534,8 +536,8 @@ class Plane(Shape):
     """
     _p3js_geometry_type = 'Plane'
     _p3js_attribute_map = {'width': 'width',
-                           'height': 'length',
-                           'side': 'DoubleSide'}
+                           'height': 'length'}
+    _p3js_material_attributes = {'side': 'DoubleSide'}
 
     def __init__(self, length=10.0, width=5.0, **kwargs):
         super(Plane, self).__init__(**kwargs)
