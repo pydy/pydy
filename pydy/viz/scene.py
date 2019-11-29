@@ -696,13 +696,10 @@ class Scene(object):
 
         camera = p3js.PerspectiveCamera(position=[1, 1, 1],
                                         aspect=view_width/view_height)
-        key_light1 = p3js.DirectionalLight(position=[1, 0, 0])
-        key_light2 = p3js.DirectionalLight(position=[0, 1, 0])
-        key_light3 = p3js.DirectionalLight(position=[0, 0, 1])
+        key_light = p3js.DirectionalLight()
         ambient_light = p3js.AmbientLight()
 
-        children = self._meshes + arrows + [camera, key_light1, key_light2,
-                                            key_light3, ambient_light]
+        children = self._meshes + arrows + [camera, key_light, ambient_light]
 
         scene = p3js.Scene(children=children)
 
