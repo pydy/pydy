@@ -226,7 +226,15 @@ class Shape(object):
 
         geometry = Geometry(**attrs)
 
-        material = p3js.MeshStandardMaterial(color=data['color'],
+        # NOTE : For some reason traitlets doesn't think 'grey' is a valid HTML
+        # color. This workaround should be removed, but deprecation will likely
+        # be needed.
+        if data['color'] == 'grey':
+            color = 'gray'
+        else:
+            color = data['color']
+
+        material = p3js.MeshStandardMaterial(color=color,
                                              **self._p3js_material_attributes)
 
         mesh = p3js.Mesh(name=data['name'], geometry=geometry,
