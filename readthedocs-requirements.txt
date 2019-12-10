@@ -1,1 +1,5 @@
 numpydoc
+numpy
+scipy
+sympy
+cython
