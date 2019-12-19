@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 import numpy as np
-import pythreejs as p3js
+try:
+    import pythreejs as p3js
+except ImportError:
+    p3js = None
 
 __all__ = ['Box',
            'Cube',
@@ -210,6 +213,9 @@ class Shape(object):
 
     def _p3js_mesh(self, constant_map={}):
         """Returns a PyThreeJS mesh object that corresponds to this shape."""
+
+        if p3js is None:
+            raise ImportError('pythreejs is not installed.')
 
         data = self.generate_dict(constant_map=constant_map)
 
