@@ -209,6 +209,14 @@ def test_cone():
     assert cone.radius == 5.0
     assert cone.color == 'darkblue'
 
+    mesh = cone._p3js_mesh()
+    expected_mesh = p3js.Mesh(p3js.CylinderBufferGeometry(radiusTop=0.0,
+                                                          radiusBottom=5.0,
+                                                          height=10.0),
+                              p3js.MeshStandardMaterial(color='darkblue'),
+                              name='cone')
+    assert repr(mesh) == repr(expected_mesh)
+
     cone.name = 'cone1'
     assert cone.name == 'cone1'
 
@@ -247,6 +255,12 @@ def test_sphere():
     assert sphere.radius == 10.0
     assert sphere.color == 'azure'
 
+    mesh = sphere._p3js_mesh()
+    expected_mesh = p3js.Mesh(p3js.SphereBufferGeometry(radius=10.0),
+                              p3js.MeshStandardMaterial(color='azure'),
+                              name='sphere')
+    assert repr(mesh) == repr(expected_mesh)
+
     sphere.name = 'sphere1'
     assert sphere.name == 'sphere1'
 
@@ -281,6 +295,12 @@ def test_circle():
     assert circle.radius == 10.0
     assert circle.color == 'gold'
 
+    mesh = circle._p3js_mesh()
+    expected_mesh = p3js.Mesh(p3js.CircleBufferGeometry(radius=10.0),
+                              p3js.MeshStandardMaterial(color='gold'),
+                              name='circle')
+    assert repr(mesh) == repr(expected_mesh)
+
     circle.name = 'circle1'
     assert circle.name == 'circle1'
 
@@ -307,14 +327,21 @@ def test_circle():
 
 def test_plane():
 
-    plane = Plane(10.0, 20.0, name='plane', color='indigo')
+    plane = Plane(10.0, 20.0, name='plane', color='lightcyan')
     assert plane.name == 'plane'
     assert plane.__str__() == \
-        'Plane plane color:indigo material:default length:10.0 width:20.0'
+        'Plane plane color:lightcyan material:default length:10.0 width:20.0'
     assert plane.__repr__() == 'Plane'
     assert plane.length == 10.0
     assert plane.width == 20.0
-    assert plane.color == 'indigo'
+    assert plane.color == 'lightcyan'
+
+    mesh = plane._p3js_mesh()
+    expected_mesh = p3js.Mesh(p3js.PlaneBufferGeometry(height=10.0, width=20.0),
+                              p3js.MeshStandardMaterial(color='lightcyan',
+                                                        side='DoubleSide'),
+                              name='plane')
+    assert repr(mesh) == repr(expected_mesh)
 
     plane.name = 'plane1'
     assert plane.name == 'plane1'
@@ -356,6 +383,12 @@ def test_tetrahedron():
     assert tetrahedron.radius == 5.0
     assert tetrahedron.color == 'maroon'
 
+    mesh = tetrahedron._p3js_mesh()
+    expected_mesh = p3js.Mesh(p3js.TetrahedronBufferGeometry(radius=5.0),
+                              p3js.MeshStandardMaterial(color='maroon'),
+                              name='tetrahedron')
+    assert repr(mesh) == repr(expected_mesh)
+
     tetrahedron.name = 'tetrahedron1'
     assert tetrahedron.name == 'tetrahedron1'
 
@@ -388,6 +421,12 @@ def test_octahedron():
     assert octahedron.__repr__() == 'Octahedron'
     assert octahedron.radius == 12.0
     assert octahedron.color == 'purple'
+
+    mesh = octahedron._p3js_mesh()
+    expected_mesh = p3js.Mesh(p3js.OctahedronBufferGeometry(radius=12.0),
+                              p3js.MeshStandardMaterial(color='purple'),
+                              name='octahedron')
+    assert repr(mesh) == repr(expected_mesh)
 
     octahedron.name = 'octahedron1'
     assert octahedron.name == 'octahedron1'
@@ -423,6 +462,12 @@ def test_icosahedron():
     assert icosahedron.radius == 11.0
     assert icosahedron.color == 'blue'
 
+    mesh = icosahedron._p3js_mesh()
+    expected_mesh = p3js.Mesh(p3js.IcosahedronBufferGeometry(radius=11.0),
+                              p3js.MeshStandardMaterial(color='blue'),
+                              name='icosahedron')
+    assert repr(mesh) == repr(expected_mesh)
+
     icosahedron.name = 'icosahedron1'
     assert icosahedron.name == 'icosahedron1'
 
@@ -457,6 +502,12 @@ def test_torus():
     assert torus.radius == 10.0
     assert torus.tube_radius == 2.0
     assert torus.color == 'red'
+
+    mesh = torus._p3js_mesh()
+    expected_mesh = p3js.Mesh(p3js.TorusBufferGeometry(radius=10.0, tube=2.0),
+                              p3js.MeshStandardMaterial(color='red'),
+                              name='torus')
+    assert repr(mesh) == repr(expected_mesh)
 
     torus.name = 'torus1'
     assert torus.name == 'torus1'
@@ -549,6 +600,13 @@ def test_torus_knot():
     assert torus_knot.radius == 10.0
     assert torus_knot.tube_radius == 2.0
     assert torus_knot.color == 'red'
+
+    mesh = torus_knot._p3js_mesh()
+    expected_mesh = p3js.Mesh(p3js.TorusKnotBufferGeometry(radius=10.0,
+                                                           tube=2.0),
+                              p3js.MeshStandardMaterial(color='red'),
+                              name='torus_knot')
+    assert repr(mesh) == repr(expected_mesh)
 
     torus_knot.name = 'torus_knot1'
     assert torus_knot.name == 'torus_knot1'
