@@ -275,7 +275,10 @@ class Scene(object):
 
     @property
     def times(self):
-        return self._times
+        if self.system is not None:
+            return self.system.times
+        else:
+            return self._times
 
     @times.setter
     def times(self, new_times):
@@ -306,7 +309,10 @@ class Scene(object):
 
     @property
     def states_symbols(self):
-        return self._states_symbols
+        if self.system is not None:
+            return self.system.states
+        else:
+            return self._states_symbols
 
     @states_symbols.setter
     def states_symbols(self, new_states_symbols):
@@ -336,7 +342,11 @@ class Scene(object):
 
     @property
     def states_trajectories(self):
-        return self._states_trajectories
+        if self.system is not None:
+            # TODO : This calculation needs to be cached in some way.
+            return self.system.integrate()
+        else:
+            return self._states_trajectories
 
     @states_trajectories.setter
     def states_trajectories(self, new_states_trajectories):
@@ -374,7 +384,10 @@ class Scene(object):
 
     @property
     def constants(self):
-        return self._constants
+        if self.system is not None:
+            return self.system.constants
+        else:
+            return self._constants
 
     @constants.setter
     def constants(self, new_constants):
@@ -632,21 +645,26 @@ class Scene(object):
         self._generate_mesh_trajectories()
 
     def _generate_meshes_tracks(self):
+        """Creates KeyFrameTrack for each visualization frame."""
 
         self._meshes = []
         self._tracks = []
 
+        traj = self.states_trajectories
+
         for vizframe in self.visualization_frames:
-            vizframe._create_keyframetrack(
-                self.system.times,
-                self.system.integrate(),
-                list(self.system.constants.values()),
-                constant_map=self.system.constants)
+            vizframe.generate_transformation_matrix(self.reference_frame,
+                                                    self.origin)
+            vizframe.generate_numeric_transform_function(self.states_symbols,
+                                                         self.constants.keys())
+            vizframe._create_keyframetrack(self.times, traj,
+                                           list(self.constants.values()),
+                                           constant_map=self.constants)
             self._tracks.append(vizframe._track)
             self._meshes.append(vizframe._mesh)
 
-    def _display_pythreejs_without_widgets(self, window_size=(800, 600),
-                                           show_axes=True):
+    def display_pythreejs_simple(self, window_size=(800, 600),
+                                 axes_arrows_length=None):
         """Returns a PyThreeJS Renderer and AnimationAction for displaying and
         animating the scene.
 
@@ -655,13 +673,16 @@ class Scene(object):
         window_size : 2-tuple of integers
             2-tuple containing the width and height of the renderer window in
             pixels.
-        show_axes : boolean
-            If true a red, green, and blue axes will be displayed.
+        axes_arrows_length : float
+            If a positive value is supplied a red (x), green (y), and blue (z)
+            arrows of the supplied length will be displayed as arrows for the
+            global axes.
 
         Returns
         =======
-        renderer : pythreejs.Renderer
-        action : pythreejs.AnimationAction
+        vbox : widgets.VBox
+            A vertical box containing the action (pythreejs.AnimationAction)
+            and renderer (pythreejs.Renderer).
 
         """
 
@@ -677,8 +698,8 @@ class Scene(object):
 
         children = self._meshes + [camera, key_light, ambient_light]
 
-        if show_axes:
-            children += [p3js.AxesHelper(size=1.0)]
+        if axes_arrows_length is not None:
+            children += [p3js.AxesHelper(size=abs(axes_arrows_length))]
 
         scene = p3js.Scene(children=children)
 
@@ -687,13 +708,12 @@ class Scene(object):
                                  controls=[controller],
                                  width=view_width, height=view_height)
 
-        clip = p3js.AnimationClip(tracks=self._tracks,
-                                  duration=self.system.times[-1])
+        clip = p3js.AnimationClip(tracks=self._tracks, duration=self.times[-1])
         action = p3js.AnimationAction(p3js.AnimationMixer(scene), clip, scene)
 
-        return renderer, action
+        return widgets.VBox([action, renderer])
 
-    def display_pythreejs(self):
+    def _display_pythreejs(self):
         if not hasattr(self, 'simulation_info'):
             self._generate_simulation_dict()
 
@@ -741,16 +761,6 @@ class Scene(object):
         This method must be called before ``generate_scene_dict``.
 
         """
-        if self.system is None:
-            constants_symbols = self.constants.keys()
-            constants_values = self.constants.values()
-            states_symbols = self.states_symbols
-            states_trajectories = self.states_trajectories
-        else:
-            constants_symbols = self.system.constants.keys()
-            constants_values = self.system.constants.values()
-            states_symbols = self.system.states
-            states_trajectories = self.system.integrate()
 
         self._simulation_info = {}
 
@@ -758,10 +768,10 @@ class Scene(object):
             for frame in group:
                 frame.generate_transformation_matrix(self.reference_frame,
                                                      self.origin)
-                frame.generate_numeric_transform_function(states_symbols,
-                                                          constants_symbols)
-                frame.evaluate_transformation_matrix(states_trajectories,
-                                                     constants_values)
+                frame.generate_numeric_transform_function(self.states_symbols,
+                                                          self.constants.keys())
+                frame.evaluate_transformation_matrix(self.states_trajectories,
+                                                     self.constants.values())
                 self._simulation_info.update(frame.generate_simulation_dict())
 
     def generate_visualization_json_system(self, system, **kwargs):
