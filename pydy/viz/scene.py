@@ -16,8 +16,10 @@ from pkg_resources import parse_version
 import numpy as np
 from sympy import latex
 from sympy.physics.mechanics import ReferenceFrame, Point, dynamicsymbols
-import pythreejs as p3js
-import ipywidgets as widgets
+try:
+    import pythreejs as p3js
+except ImportError:
+    p3js is None
 
 # local
 from .camera import PerspectiveCamera
@@ -50,7 +52,6 @@ try:
         except ImportError:
             from IPython.html import widgets
         from IPython.display import display, Javascript
-        from IPython.utils.traitlets import CFloat, List
 except ImportError:
     IPython = None
 
@@ -492,6 +493,8 @@ class Scene(object):
             and renderer (pythreejs.Renderer).
 
         """
+        if p3js is None:
+            raise ImportError('pythreejs needs to be installed.')
 
         self._generate_meshes_tracks()
 
