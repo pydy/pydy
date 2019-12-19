@@ -19,7 +19,7 @@ from sympy.physics.mechanics import ReferenceFrame, Point, dynamicsymbols
 try:
     import pythreejs as p3js
 except ImportError:
-    p3js is None
+    p3js = None
 
 # local
 from .camera import PerspectiveCamera
