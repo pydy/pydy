@@ -10,7 +10,6 @@ import distutils
 import distutils.dir_util
 import datetime
 from collections import OrderedDict
-from math import sqrt
 
 # external
 from pkg_resources import parse_version
@@ -19,13 +18,11 @@ from sympy import latex
 from sympy.physics.mechanics import ReferenceFrame, Point, dynamicsymbols
 import pythreejs as p3js
 import ipywidgets as widgets
-from traitlets import Unicode, validate, link
 
 # local
 from .camera import PerspectiveCamera
 from .server import Server
 from .light import PointLight
-from .trajectory_link import trajectory_link, play_link
 from ..system import System
 from ..utils import PyDyImportWarning
 
@@ -442,10 +439,7 @@ class Scene(object):
         self._scene_info["lights"] = {}
 
         for frame in self.visualization_frames:
-            if self.system is None:
-                constants = self.constants
-            else:
-                constants = self._system.constants
+            constants = self.constants
             object_info = frame.generate_scene_dict(constant_map=constants)
             self._scene_info["objects"].update(object_info)
 
