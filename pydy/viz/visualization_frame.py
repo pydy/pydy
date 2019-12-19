@@ -9,7 +9,10 @@ import numpy as np
 from sympy import Dummy, lambdify
 from sympy.matrices.expressions import Identity
 from sympy.physics.mechanics import Point, ReferenceFrame
-import pythreejs as p3js
+try:
+    import pythreejs as p3js
+except ImportError:
+    p3js = None
 
 from .shapes import Shape
 from ..utils import sympy_equal_to_or_newer_than
@@ -436,6 +439,11 @@ class VisualizationFrame(object):
             PyThreeJS animation track.
 
         """
+        # TODO : Passing in constant_values and constant_map is redundant,
+        # right?
+        if p3js is None:
+            raise ImportError('pythreejs must be installed.')
+
         self._mesh = self.shape._p3js_mesh(constant_map=constant_map)
 
         # NOTE : This is required to set the transform matrix directly.
