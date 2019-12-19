@@ -415,13 +415,13 @@ class VisualizationFrame(object):
 
     def _create_keyframetrack(self, times, dynamic_values, constant_values,
                               constant_map=None):
-        """Sets a attributes with a Mesh and KeyframeTrack for animating this
+        """Sets attributes with a Mesh and KeyframeTrack for animating this
         visualization frame.
 
         Parameters
         ==========
         times : ndarray, shape(n,)
-            Array of monotonically increasin or decreasing values of time.
+            Array of monotonically increasing or decreasing values of time.
         dynamics_values : ndarray, shape(n, m)
             Array of state values for each time.
         constant_values : array_like, shape(p,)
@@ -444,6 +444,7 @@ class VisualizationFrame(object):
         matrices = self.evaluate_transformation_matrix(dynamic_values,
                                                        constant_values)
 
+        # Set initial configuration.
         self._mesh.matrix = matrices[0]
 
         # TODO : If the user does not name their shapes, then there will be
@@ -451,8 +452,10 @@ class VisualizationFrame(object):
         # I at least warn the user if they didn't change the name at all.
         if self._mesh.name == 'unnamed':
             msg = ("The shape provided to this visualization frame must have a "
-                   "unique name. Make sure all shapes have unique names.")
+                   "unique name other thane 'unnamed'. Make sure all shapes in "
+                   "the scene have unique names.")
             raise ValueError(msg)
+
         name = "scene/{}.matrix".format(self._mesh.name)
 
         track = p3js.VectorKeyframeTrack(name=name, times=times,

@@ -48,7 +48,7 @@ class TestVisualizationFrameScene(object):
         self.point_list2 = [[3, 1, 4], [3, 8, 2], [2, 1, 6], [2, 1, 1]]
 
         self.shape1 = Cylinder(1.0, 1.0)
-        self.shape2 = Cylinder(1.0, 1.0)
+        self.shape2 = Cylinder(1.0, 1.0, name='booger')
 
         self.Ixx, self.Iyy, self.Izz = symbols('Ixx, Iyy, Izz')
         self.mass = symbols('m')
@@ -216,6 +216,7 @@ class TestVisualizationFrameScene(object):
                        20.0,
                        1.0]]
 
+        times = [1.0, 2.0, 3.0, 4.0]
 
         self.global_frame1.generate_transformation_matrix(
             self.inertial_ref_frame, self.origin)
@@ -232,6 +233,12 @@ class TestVisualizationFrameScene(object):
 
         assert_allclose(self.global_frame2.evaluate_transformation_matrix(
             self.states, self.param_vals), self.list2)
+
+        self.global_frame2._create_keyframetrack(
+            times, self.states, self.param_vals,
+            constant_map=dict(zip(self.parameters, self.param_vals)))
+        self.global_frame2._track.name == 'scene/booger.matrix'
+        assert_allclose(self.global_frame2._track.times, times)
 
     def test_perspective_camera(self):
 
