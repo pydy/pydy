@@ -537,13 +537,15 @@ class Scene(object):
 
         self._simulation_info = {}
 
+        traj = self.states_trajectories
+
         for group in [self.visualization_frames, self.cameras, self.lights]:
             for frame in group:
                 frame.generate_transformation_matrix(self.reference_frame,
                                                      self.origin)
                 frame.generate_numeric_transform_function(self.states_symbols,
                                                           self.constants.keys())
-                frame.evaluate_transformation_matrix(self.states_trajectories,
+                frame.evaluate_transformation_matrix(traj,
                                                      self.constants.values())
                 self._simulation_info.update(frame.generate_simulation_dict())
 
