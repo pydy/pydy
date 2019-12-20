@@ -234,11 +234,16 @@ class TestVisualizationFrameScene(object):
         assert_allclose(self.global_frame2.evaluate_transformation_matrix(
             self.states, self.param_vals), self.list2)
 
-        self.global_frame2._create_keyframetrack(
-            times, self.states, self.param_vals,
-            constant_map=dict(zip(self.parameters, self.param_vals)))
-        self.global_frame2._track.name == 'scene/booger.matrix'
-        assert_allclose(self.global_frame2._track.times, times)
+        try:
+            import pythreejs
+        except:
+            print('pythreejs not installed, skipping related tests.')
+        else:
+            self.global_frame2._create_keyframetrack(
+                times, self.states, self.param_vals,
+                constant_map=dict(zip(self.parameters, self.param_vals)))
+            self.global_frame2._track.name == 'scene/booger.matrix'
+            assert_allclose(self.global_frame2._track.times, times)
 
     def test_perspective_camera(self):
 

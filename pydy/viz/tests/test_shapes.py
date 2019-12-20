@@ -3,9 +3,13 @@
 # external
 import numpy as np
 from sympy import symbols
-import pythreejs as p3js
 from numpy.testing import assert_allclose
 from nose.tools import assert_raises
+try:
+    import pythreejs as p3js
+except ImportError:
+    print('pythreejs not installed, skipping related tests.')
+    p3js = None
 
 # local
 from ..shapes import (Shape, Cube, Cylinder, Cone, Sphere, Circle, Plane,
@@ -91,12 +95,14 @@ def test_cube():
     assert cube.length == 10.0
     assert cube.color == 'blue'
 
-    mesh = cube._p3js_mesh()
-    expected_mesh = p3js.Mesh(p3js.BoxBufferGeometry(width=10.0, height=10.0,
-                                                     depth=10.0),
-                              p3js.MeshStandardMaterial(color='blue'),
-                              name='cube')
-    assert repr(mesh) == repr(expected_mesh)
+    if p3js is not None:
+        mesh = cube._p3js_mesh()
+        expected_mesh = p3js.Mesh(p3js.BoxBufferGeometry(width=10.0,
+                                                         height=10.0,
+                                                         depth=10.0),
+                                  p3js.MeshStandardMaterial(color='blue'),
+                                  name='cube')
+        assert repr(mesh) == repr(expected_mesh)
 
     cube.name = 'cube1'
     assert cube.name == 'cube1'
@@ -115,12 +121,14 @@ def test_cube():
 
     assert isinstance(cube, Shape)
 
-    mesh = cube._p3js_mesh()
-    expected_mesh = p3js.Mesh(p3js.BoxBufferGeometry(width=16.0, height=16.0,
-                                                     depth=16.0),
-                              p3js.MeshStandardMaterial(color='red'),
-                              name='cube1')
-    assert repr(mesh) == repr(expected_mesh)
+    if p3js is not None:
+        mesh = cube._p3js_mesh()
+        expected_mesh = p3js.Mesh(p3js.BoxBufferGeometry(width=16.0,
+                                                         height=16.0,
+                                                         depth=16.0),
+                                  p3js.MeshStandardMaterial(color='red'),
+                                  name='cube1')
+        assert repr(mesh) == repr(expected_mesh)
 
     # testing unnamed
     cube = Cube(10.0, color='blue')
@@ -138,12 +146,13 @@ def test_cube():
                       "length": 3.0,
                       "material": "default"}
 
-    mesh = cube._p3js_mesh(constant_map={symbols('V'): 27.0})
-    expected_mesh = p3js.Mesh(p3js.BoxBufferGeometry(width=3.0, height=3.0,
-                                                     depth=3.0),
-                              p3js.MeshStandardMaterial(color='gray'),
-                              name='unnamed')
-    assert repr(mesh) == repr(expected_mesh)
+    if p3js is not None:
+        mesh = cube._p3js_mesh(constant_map={symbols('V'): 27.0})
+        expected_mesh = p3js.Mesh(p3js.BoxBufferGeometry(width=3.0, height=3.0,
+                                                         depth=3.0),
+                                  p3js.MeshStandardMaterial(color='gray'),
+                                  name='unnamed')
+        assert repr(mesh) == repr(expected_mesh)
 
 
 def test_cylinder():
@@ -158,13 +167,14 @@ def test_cylinder():
     assert cylinder.radius == 5.0
     assert cylinder.color == 'blue'
 
-    mesh = cylinder._p3js_mesh()
-    expected_mesh = p3js.Mesh(p3js.CylinderBufferGeometry(radiusTop=5.0,
-                                                          radiusBottom=5.0,
-                                                          height=10.0),
-                              p3js.MeshStandardMaterial(color='blue'),
-                              name='cylinder')
-    assert repr(mesh) == repr(expected_mesh)
+    if p3js is not None:
+        mesh = cylinder._p3js_mesh()
+        expected_mesh = p3js.Mesh(p3js.CylinderBufferGeometry(radiusTop=5.0,
+                                                              radiusBottom=5.0,
+                                                              height=10.0),
+                                  p3js.MeshStandardMaterial(color='blue'),
+                                  name='cylinder')
+        assert repr(mesh) == repr(expected_mesh)
 
     cylinder.name = 'cylinder1'
     assert cylinder.name == 'cylinder1'
@@ -209,13 +219,14 @@ def test_cone():
     assert cone.radius == 5.0
     assert cone.color == 'darkblue'
 
-    mesh = cone._p3js_mesh()
-    expected_mesh = p3js.Mesh(p3js.CylinderBufferGeometry(radiusTop=0.0,
-                                                          radiusBottom=5.0,
-                                                          height=10.0),
-                              p3js.MeshStandardMaterial(color='darkblue'),
-                              name='cone')
-    assert repr(mesh) == repr(expected_mesh)
+    if p3js is not None:
+        mesh = cone._p3js_mesh()
+        expected_mesh = p3js.Mesh(p3js.CylinderBufferGeometry(radiusTop=0.0,
+                                                              radiusBottom=5.0,
+                                                              height=10.0),
+                                  p3js.MeshStandardMaterial(color='darkblue'),
+                                  name='cone')
+        assert repr(mesh) == repr(expected_mesh)
 
     cone.name = 'cone1'
     assert cone.name == 'cone1'
@@ -255,11 +266,12 @@ def test_sphere():
     assert sphere.radius == 10.0
     assert sphere.color == 'azure'
 
-    mesh = sphere._p3js_mesh()
-    expected_mesh = p3js.Mesh(p3js.SphereBufferGeometry(radius=10.0),
-                              p3js.MeshStandardMaterial(color='azure'),
-                              name='sphere')
-    assert repr(mesh) == repr(expected_mesh)
+    if p3js is not None:
+        mesh = sphere._p3js_mesh()
+        expected_mesh = p3js.Mesh(p3js.SphereBufferGeometry(radius=10.0),
+                                  p3js.MeshStandardMaterial(color='azure'),
+                                  name='sphere')
+        assert repr(mesh) == repr(expected_mesh)
 
     sphere.name = 'sphere1'
     assert sphere.name == 'sphere1'
@@ -295,11 +307,12 @@ def test_circle():
     assert circle.radius == 10.0
     assert circle.color == 'gold'
 
-    mesh = circle._p3js_mesh()
-    expected_mesh = p3js.Mesh(p3js.CircleBufferGeometry(radius=10.0),
-                              p3js.MeshStandardMaterial(color='gold'),
-                              name='circle')
-    assert repr(mesh) == repr(expected_mesh)
+    if p3js is not None:
+        mesh = circle._p3js_mesh()
+        expected_mesh = p3js.Mesh(p3js.CircleBufferGeometry(radius=10.0),
+                                  p3js.MeshStandardMaterial(color='gold'),
+                                  name='circle')
+        assert repr(mesh) == repr(expected_mesh)
 
     circle.name = 'circle1'
     assert circle.name == 'circle1'
@@ -336,12 +349,14 @@ def test_plane():
     assert plane.width == 20.0
     assert plane.color == 'lightcyan'
 
-    mesh = plane._p3js_mesh()
-    expected_mesh = p3js.Mesh(p3js.PlaneBufferGeometry(height=10.0, width=20.0),
-                              p3js.MeshStandardMaterial(color='lightcyan',
-                                                        side='DoubleSide'),
-                              name='plane')
-    assert repr(mesh) == repr(expected_mesh)
+    if p3js is not None:
+        mesh = plane._p3js_mesh()
+        expected_mesh = p3js.Mesh(p3js.PlaneBufferGeometry(height=10.0,
+                                                           width=20.0),
+                                  p3js.MeshStandardMaterial(color='lightcyan',
+                                                            side='DoubleSide'),
+                                  name='plane')
+        assert repr(mesh) == repr(expected_mesh)
 
     plane.name = 'plane1'
     assert plane.name == 'plane1'
@@ -383,11 +398,12 @@ def test_tetrahedron():
     assert tetrahedron.radius == 5.0
     assert tetrahedron.color == 'maroon'
 
-    mesh = tetrahedron._p3js_mesh()
-    expected_mesh = p3js.Mesh(p3js.TetrahedronBufferGeometry(radius=5.0),
-                              p3js.MeshStandardMaterial(color='maroon'),
-                              name='tetrahedron')
-    assert repr(mesh) == repr(expected_mesh)
+    if p3js is not None:
+        mesh = tetrahedron._p3js_mesh()
+        expected_mesh = p3js.Mesh(p3js.TetrahedronBufferGeometry(radius=5.0),
+                                  p3js.MeshStandardMaterial(color='maroon'),
+                                  name='tetrahedron')
+        assert repr(mesh) == repr(expected_mesh)
 
     tetrahedron.name = 'tetrahedron1'
     assert tetrahedron.name == 'tetrahedron1'
@@ -422,11 +438,12 @@ def test_octahedron():
     assert octahedron.radius == 12.0
     assert octahedron.color == 'purple'
 
-    mesh = octahedron._p3js_mesh()
-    expected_mesh = p3js.Mesh(p3js.OctahedronBufferGeometry(radius=12.0),
-                              p3js.MeshStandardMaterial(color='purple'),
-                              name='octahedron')
-    assert repr(mesh) == repr(expected_mesh)
+    if p3js is not None:
+        mesh = octahedron._p3js_mesh()
+        expected_mesh = p3js.Mesh(p3js.OctahedronBufferGeometry(radius=12.0),
+                                  p3js.MeshStandardMaterial(color='purple'),
+                                  name='octahedron')
+        assert repr(mesh) == repr(expected_mesh)
 
     octahedron.name = 'octahedron1'
     assert octahedron.name == 'octahedron1'
@@ -462,11 +479,12 @@ def test_icosahedron():
     assert icosahedron.radius == 11.0
     assert icosahedron.color == 'blue'
 
-    mesh = icosahedron._p3js_mesh()
-    expected_mesh = p3js.Mesh(p3js.IcosahedronBufferGeometry(radius=11.0),
-                              p3js.MeshStandardMaterial(color='blue'),
-                              name='icosahedron')
-    assert repr(mesh) == repr(expected_mesh)
+    if p3js is not None:
+        mesh = icosahedron._p3js_mesh()
+        expected_mesh = p3js.Mesh(p3js.IcosahedronBufferGeometry(radius=11.0),
+                                  p3js.MeshStandardMaterial(color='blue'),
+                                  name='icosahedron')
+        assert repr(mesh) == repr(expected_mesh)
 
     icosahedron.name = 'icosahedron1'
     assert icosahedron.name == 'icosahedron1'
@@ -503,11 +521,13 @@ def test_torus():
     assert torus.tube_radius == 2.0
     assert torus.color == 'red'
 
-    mesh = torus._p3js_mesh()
-    expected_mesh = p3js.Mesh(p3js.TorusBufferGeometry(radius=10.0, tube=2.0),
-                              p3js.MeshStandardMaterial(color='red'),
-                              name='torus')
-    assert repr(mesh) == repr(expected_mesh)
+    if p3js is not None:
+        mesh = torus._p3js_mesh()
+        expected_mesh = p3js.Mesh(p3js.TorusBufferGeometry(radius=10.0,
+                                                           tube=2.0),
+                                  p3js.MeshStandardMaterial(color='red'),
+                                  name='torus')
+        assert repr(mesh) == repr(expected_mesh)
 
     torus.name = 'torus1'
     assert torus.name == 'torus1'
@@ -601,12 +621,13 @@ def test_torus_knot():
     assert torus_knot.tube_radius == 2.0
     assert torus_knot.color == 'red'
 
-    mesh = torus_knot._p3js_mesh()
-    expected_mesh = p3js.Mesh(p3js.TorusKnotBufferGeometry(radius=10.0,
-                                                           tube=2.0),
-                              p3js.MeshStandardMaterial(color='red'),
-                              name='torus_knot')
-    assert repr(mesh) == repr(expected_mesh)
+    if p3js is not None:
+        mesh = torus_knot._p3js_mesh()
+        expected_mesh = p3js.Mesh(p3js.TorusKnotBufferGeometry(radius=10.0,
+                                                               tube=2.0),
+                                  p3js.MeshStandardMaterial(color='red'),
+                                  name='torus_knot')
+        assert repr(mesh) == repr(expected_mesh)
 
     torus_knot.name = 'torus_knot1'
     assert torus_knot.name == 'torus_knot1'
