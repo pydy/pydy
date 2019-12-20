@@ -43,6 +43,7 @@ if os.environ.get('READTHEDOCS', None) == 'True':
                     'scipy.linalg',
                     'scipy.integrate',
                     'matplotlib',
+                    'pythreejs',
                     'sympy',
                     'sympy.core',
                     'sympy.core.function',
