@@ -9,6 +9,10 @@ import numpy as np
 from sympy import Dummy, lambdify
 from sympy.matrices.expressions import Identity
 from sympy.physics.mechanics import Point, ReferenceFrame
+try:
+    import pythreejs as p3js
+except ImportError:
+    p3js = None
 
 from .shapes import Shape
 from ..utils import sympy_equal_to_or_newer_than
@@ -334,7 +338,6 @@ class VisualizationFrame(object):
         self._visualization_matrix = new.tolist()
         return self._visualization_matrix
 
-
     def generate_scene_dict(self, constant_map={}):
         """
         This method generates information for a static
@@ -403,14 +406,67 @@ class VisualizationFrame(object):
         simulation_dict = {}
         try:
             simulation_dict[id(self)] = self._visualization_matrix
-
         except:
-            raise RuntimeError("Cannot generate visualization data " + \
-                                "because numerical transformation " + \
-                               "has not been performed, " + \
-                                "Please call the numerical " + \
-                               "transformation methods, " + \
+            raise RuntimeError("Cannot generate visualization data "
+                               "because numerical transformation "
+                               "has not been performed, "
+                               "Please call the numerical "
+                               "transformation methods, "
                                "before generating visualization dict")
 
-
         return simulation_dict
+
+    def _create_keyframetrack(self, times, dynamic_values, constant_values,
+                              constant_map=None):
+        """Sets attributes with a Mesh and KeyframeTrack for animating this
+        visualization frame.
+
+        Parameters
+        ==========
+        times : ndarray, shape(n,)
+            Array of monotonically increasing or decreasing values of time.
+        dynamics_values : ndarray, shape(n, m)
+            Array of state values for each time.
+        constant_values : array_like, shape(p,)
+            Array of values for the constants.
+        constant_map : dictionary
+            A key value pair mapping from SymPy symbols to floating point
+            values.
+
+        Returns
+        =======
+        track : VectorKeyframeTrack
+            PyThreeJS animation track.
+
+        """
+        # TODO : Passing in constant_values and constant_map is redundant,
+        # right?
+        if p3js is None:
+            raise ImportError('pythreejs must be installed.')
+
+        self._mesh = self.shape._p3js_mesh(constant_map=constant_map)
+
+        # NOTE : This is required to set the transform matrix directly.
+        self._mesh.matrixAutoUpdate = False
+
+        matrices = self.evaluate_transformation_matrix(dynamic_values,
+                                                       constant_values)
+
+        # Set initial configuration.
+        self._mesh.matrix = matrices[0]
+
+        # TODO : If the user does not name their shapes, then there will be
+        # KeyFrameTracks with duplicate names. Need a better fix for this, but
+        # I at least warn the user if they didn't change the name at all.
+        if self._mesh.name == 'unnamed':
+            msg = ("The shape provided to this visualization frame must have a "
+                   "unique name other thane 'unnamed'. Make sure all shapes in "
+                   "the scene have unique names.")
+            raise ValueError(msg)
+
+        name = "scene/{}.matrix".format(self._mesh.name)
+
+        track = p3js.VectorKeyframeTrack(name=name, times=times,
+                                         values=matrices)
+
+        self._track = track

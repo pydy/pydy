@@ -64,7 +64,7 @@ Installation
 PyDy has hard dependencies on the following software\ [#]_:
 
 .. [#] We only test PyDy with these minimum dependencies; these module versions
-       are provided in the Ubuntu 16.04 packages. Previous versions may work.
+       are provided in the Ubuntu 18.04 packages. Previous versions may work.
 
 - 2.7 <= Python < 3.0 or Python >= 3.5
 - setuptools >= 20.7.0
@@ -73,16 +73,27 @@ PyDy has hard dependencies on the following software\ [#]_:
 - SymPy_ >= 1.1.1
 - PyWin32 >= 219 (Windows Only)
 
-PyDy has optional dependencies on these packages:
+PyDy has optional dependencies for extended code generation on:
 
-- 4.0.0 <= `Jupyter Notebook`_ < 5.0.0
-- 4.0.0 <= ipywidgets_ < 5.0.0
 - Theano_ >= 0.9.0
 - Cython_ >= 0.26.1
 
+and animated visualizations with `Scene.display_jupyter()` on:
+
+- `Jupyter Notebook`_ >= 6.0.0 or `Jupyter Lab` >= 1.0.0
+- ipywidgets_ >= 6.0.0
+- pythreejs_ >= 2.1.1
+
+or interactive animated visualizations with `Scene.display_ipython()` on:
+
+- 4.0.0 <= `Jupyter Notebook`_ < 5.0.0
+- 4.0.0 <= ipywidgets_ < 5.0.0
+
 .. _Theano: http://deeplearning.net/software/theano/
 .. _Cython: http://cython.org/
-.. _Jupyter Notebook: https://pypi.python.org/pypi/notebook
+.. _Jupyter Notebook: https://jupyter-notebook.readthedocs.io
+.. _Jupyter Lab: https://jupyterlab.readthedocs.io
+.. _pythreejs: https://pythreejs.readthedocs.io
 
 The examples may require these dependencies:
 
@@ -390,9 +401,12 @@ Release Notes
 0.6.0
 -----
 
+- ``display_jupyter()`` method added to ``Scene`` that utlizes pythreejs for
+  animating a system. [PR `#416`_]
 - Remove support for required dependencies prior to those in Ubuntu 18.04 LTS.
   [PR `#415`_]
 
+.. _#416: https://github.com/pydy/pydy/pull/416
 .. _#415: https://github.com/pydy/pydy/pull/415
 
 0.5.0

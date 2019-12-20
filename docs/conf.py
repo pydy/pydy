@@ -52,6 +52,7 @@ if os.environ.get('READTHEDOCS', None) == 'True':
                     'numpy',
                     'numpy.linalg',
                     'numpy.testing',
+                    'pythreejs',
                     'scipy',
                     'scipy.integrate',
                     'scipy.linalg',

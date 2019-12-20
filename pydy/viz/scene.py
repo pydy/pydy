@@ -16,6 +16,10 @@ from pkg_resources import parse_version
 import numpy as np
 from sympy import latex
 from sympy.physics.mechanics import ReferenceFrame, Point, dynamicsymbols
+try:
+    import pythreejs as p3js
+except ImportError:
+    p3js = None
 
 # local
 from .camera import PerspectiveCamera
@@ -211,7 +215,10 @@ class Scene(object):
 
     @property
     def times(self):
-        return self._times
+        if self.system is not None:
+            return self.system.times
+        else:
+            return self._times
 
     @times.setter
     def times(self, new_times):
@@ -242,7 +249,10 @@ class Scene(object):
 
     @property
     def states_symbols(self):
-        return self._states_symbols
+        if self.system is not None:
+            return self.system.states
+        else:
+            return self._states_symbols
 
     @states_symbols.setter
     def states_symbols(self, new_states_symbols):
@@ -272,7 +282,11 @@ class Scene(object):
 
     @property
     def states_trajectories(self):
-        return self._states_trajectories
+        if self.system is not None:
+            # TODO : This calculation needs to be cached in some way.
+            return self.system.integrate()
+        else:
+            return self._states_trajectories
 
     @states_trajectories.setter
     def states_trajectories(self, new_states_trajectories):
@@ -310,7 +324,10 @@ class Scene(object):
 
     @property
     def constants(self):
-        return self._constants
+        if self.system is not None:
+            return self.system.constants
+        else:
+            return self._constants
 
     @constants.setter
     def constants(self, new_constants):
@@ -423,10 +440,7 @@ class Scene(object):
         self._scene_info["lights"] = {}
 
         for frame in self.visualization_frames:
-            if self.system is None:
-                constants = self.constants
-            else:
-                constants = self.system.constants
+            constants = self.constants
             object_info = frame.generate_scene_dict(constant_map=constants)
             self._scene_info["objects"].update(object_info)
 
@@ -437,6 +451,76 @@ class Scene(object):
         for light in self.lights:
             object_info = light.generate_scene_dict()
             self._scene_info["lights"].update(object_info)
+
+    def _generate_meshes_tracks(self):
+        """Creates KeyFrameTrack for each visualization frame."""
+
+        self._meshes = []
+        self._tracks = []
+
+        traj = self.states_trajectories
+
+        for vizframe in self.visualization_frames:
+            vizframe.generate_transformation_matrix(self.reference_frame,
+                                                    self.origin)
+            vizframe.generate_numeric_transform_function(self.states_symbols,
+                                                         self.constants.keys())
+            vizframe._create_keyframetrack(self.times, traj,
+                                           list(self.constants.values()),
+                                           constant_map=self.constants)
+            self._tracks.append(vizframe._track)
+            self._meshes.append(vizframe._mesh)
+
+    def display_jupyter(self, window_size=(800, 600), axes_arrow_length=None):
+        """Returns a PyThreeJS Renderer and AnimationAction for displaying and
+        animating the scene inside a Jupyter notebook.
+
+        Parameters
+        ==========
+        window_size : 2-tuple of integers
+            2-tuple containing the width and height of the renderer window in
+            pixels.
+        axes_arrow_length : float
+            If a positive value is supplied a red (x), green (y), and blue (z)
+            arrows of the supplied length will be displayed as arrows for the
+            global axes.
+
+        Returns
+        =======
+        vbox : widgets.VBox
+            A vertical box containing the action (pythreejs.AnimationAction)
+            and renderer (pythreejs.Renderer).
+
+        """
+        if p3js is None:
+            raise ImportError('pythreejs needs to be installed.')
+
+        self._generate_meshes_tracks()
+
+        view_width = window_size[0]
+        view_height = window_size[1]
+
+        camera = p3js.PerspectiveCamera(position=[1, 1, 1],
+                                        aspect=view_width/view_height)
+        key_light = p3js.DirectionalLight()
+        ambient_light = p3js.AmbientLight()
+
+        children = self._meshes + [camera, key_light, ambient_light]
+
+        if axes_arrow_length is not None:
+            children += [p3js.AxesHelper(size=abs(axes_arrow_length))]
+
+        scene = p3js.Scene(children=children)
+
+        controller = p3js.OrbitControls(controlling=camera)
+        renderer = p3js.Renderer(camera=camera, scene=scene,
+                                 controls=[controller],
+                                 width=view_width, height=view_height)
+
+        clip = p3js.AnimationClip(tracks=self._tracks, duration=self.times[-1])
+        action = p3js.AnimationAction(p3js.AnimationMixer(scene), clip, scene)
+
+        return widgets.VBox([action, renderer])
 
     def _generate_simulation_dict(self):
         """Returns a dictionary containing all of the simulation
@@ -450,27 +534,19 @@ class Scene(object):
         This method must be called before ``generate_scene_dict``.
 
         """
-        if self.system is None:
-            constants_symbols = self.constants.keys()
-            constants_values = self.constants.values()
-            states_symbols = self.states_symbols
-            states_trajectories = self.states_trajectories
-        else:
-            constants_symbols = self.system.constants.keys()
-            constants_values = self.system.constants.values()
-            states_symbols = self.system.states
-            states_trajectories = self.system.integrate()
 
         self._simulation_info = {}
+
+        traj = self.states_trajectories
 
         for group in [self.visualization_frames, self.cameras, self.lights]:
             for frame in group:
                 frame.generate_transformation_matrix(self.reference_frame,
                                                      self.origin)
-                frame.generate_numeric_transform_function(states_symbols,
-                                                          constants_symbols)
-                frame.evaluate_transformation_matrix(states_trajectories,
-                                                     constants_values)
+                frame.generate_numeric_transform_function(self.states_symbols,
+                                                          self.constants.keys())
+                frame.evaluate_transformation_matrix(traj,
+                                                     self.constants.values())
                 self._simulation_info.update(frame.generate_simulation_dict())
 
     def generate_visualization_json_system(self, system, **kwargs):
@@ -757,6 +833,5 @@ class Scene(object):
         # stays within the borders of the IPython notebook.
         self._html_widget._css = [("canvas", "width", "100%"),
                                   ("canvas", "padding-right", "10px")]
-
 
         display(self._html_widget)
