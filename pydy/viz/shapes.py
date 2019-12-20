@@ -6,19 +6,21 @@ try:
 except ImportError:
     p3js = None
 
-__all__ = ['Box',
+__all__ = [
+           'Box',
+           'Circle',
+           'Cone',
            'Cube',
            'Cylinder',
-           'Cone',
-           'Sphere',
-           'Circle',
-           'Plane',
-           'Tetrahedron',
-           'Octahedron',
            'Icosahedron',
+           'Octahedron',
+           'Plane',
+           'Sphere',
+           'Tetrahedron',
            'Torus',
            'TorusKnot',
-           'Tube']
+           'Tube'
+           ]
 
 
 # This is a list of ColorKeywords from THREE.js
@@ -227,8 +229,12 @@ class Shape(object):
             except KeyError:
                 attrs[k] = v
 
-        Geometry = getattr(p3js,
-                           '{}BufferGeometry'.format(self._p3js_geometry_type))
+        try:
+            geom_attr = '{}BufferGeometry'.format(self._p3js_geometry_type)
+            Geometry = getattr(p3js, geom_attr)
+        except AttributeError:
+            geom_attr = '{}Geometry'.format(self._p3js_geometry_type)
+            Geometry = getattr(p3js, geom_attr)
 
         geometry = Geometry(**attrs)
 

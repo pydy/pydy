@@ -400,7 +400,7 @@ def test_tetrahedron():
 
     if p3js is not None:
         mesh = tetrahedron._p3js_mesh()
-        expected_mesh = p3js.Mesh(p3js.TetrahedronBufferGeometry(radius=5.0),
+        expected_mesh = p3js.Mesh(p3js.TetrahedronGeometry(radius=5.0),
                                   p3js.MeshStandardMaterial(color='maroon'),
                                   name='tetrahedron')
         assert repr(mesh) == repr(expected_mesh)
@@ -440,7 +440,7 @@ def test_octahedron():
 
     if p3js is not None:
         mesh = octahedron._p3js_mesh()
-        expected_mesh = p3js.Mesh(p3js.OctahedronBufferGeometry(radius=12.0),
+        expected_mesh = p3js.Mesh(p3js.OctahedronGeometry(radius=12.0),
                                   p3js.MeshStandardMaterial(color='purple'),
                                   name='octahedron')
         assert repr(mesh) == repr(expected_mesh)
@@ -481,7 +481,7 @@ def test_icosahedron():
 
     if p3js is not None:
         mesh = icosahedron._p3js_mesh()
-        expected_mesh = p3js.Mesh(p3js.IcosahedronBufferGeometry(radius=11.0),
+        expected_mesh = p3js.Mesh(p3js.IcosahedronGeometry(radius=11.0),
                                   p3js.MeshStandardMaterial(color='blue'),
                                   name='icosahedron')
         assert repr(mesh) == repr(expected_mesh)
