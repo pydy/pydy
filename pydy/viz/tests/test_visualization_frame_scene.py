@@ -236,9 +236,10 @@ class TestVisualizationFrameScene(object):
 
         try:
             import pythreejs
-        except:
+        except ImportError:
             print('pythreejs not installed, skipping related tests.')
         else:
+            del pythreejs
             self.global_frame2._create_keyframetrack(
                 times, self.states, self.param_vals,
                 constant_map=dict(zip(self.parameters, self.param_vals)))
