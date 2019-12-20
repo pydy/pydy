@@ -36,36 +36,45 @@ if os.environ.get('READTHEDOCS', None) == 'True':
                 return Mock()
 
     # Every module that is imported in PyDy is required to be in this list.
-    MOCK_MODULES = ['numpy',
+    # NOTE : Do not include pkg_resources or setuptools here because they are
+    # needed for the modules to function.
+    MOCK_MODULES = [
+                    'Cython',
+                    'Cython.Build',
+                    'IPython',
+                    'IPython.display',
+                    'IPython.html',
+                    'IPython.html.widgets',
+                    'ipywidgets',
+                    'matplotlib',
+                    'nose',
+                    'nose.tools',
+                    'numpy',
                     'numpy.linalg',
                     'numpy.testing',
-                    'scipy',
-                    'scipy.linalg',
-                    'scipy.integrate',
-                    'matplotlib',
                     'pythreejs',
+                    'scipy',
+                    'scipy.integrate',
+                    'scipy.linalg',
                     'sympy',
                     'sympy.core',
                     'sympy.core.function',
-                    'sympy.utilities',
-                    'sympy.utilities.iterables',
-                    'sympy.printing',
-                    'sympy.printing.ccode',
-                    'sympy.printing.theanocode',
+                    'sympy.matrices',
+                    'sympy.matrices.expressions',
                     'sympy.physics',
                     'sympy.physics.mechanics',
                     'sympy.physics.mechanics.functions',
-                    'sympy.matrices',
-                    'sympy.matrices.expressions',
-                    'IPython',
-                    'IPython.html',
-                    'IPython.display',
-                    'nose',
-                    'nose.tools',
-                    'Cython',
-                    'Cython.Build',
-                    'pkg_resources',
-                    'setuptools']
+                    'sympy.printing',
+                    'sympy.printing.ccode',
+                    'sympy.printing.codeprinter',
+                    'sympy.printing.octave',
+                    'sympy.printing.theanocode',
+                    'sympy.utilities',
+                    'sympy.utilities.iterables',
+                    'theano',
+                    'win32api',
+                    'win32con',
+                   ]
 
     pairs = []
     for mod_name in MOCK_MODULES:
@@ -73,6 +82,8 @@ if os.environ.get('READTHEDOCS', None) == 'True':
         # This is necessary for the version checks in pydy.utils.
         if mod_name == 'sympy':
             mocked.__version__ = '0.7.6'
+        if mod_name == 'IPython':
+            mocked.__version__ = '3.5.0'
         pairs.append((mod_name, mocked))
     sys.modules.update(pairs)
 
