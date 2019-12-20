@@ -35,7 +35,9 @@ install:
   - ps: "ls \"C:/Program Files/Microsoft SDKs/Windows\""
 
   # This upates conda and installs the necessary packages.
+  - "%PYTHON%\\Scripts\\conda.exe clean --yes --all"
   - "%PYTHON%\\Scripts\\conda.exe update --yes conda"
+  - "%PYTHON%\\Scripts\\conda.exe update -y --all"
   - "%PYTHON%\\Scripts\\conda.exe config --prepend channels conda-forge"
   - '%PYTHON%\\Scripts\\conda.exe install --yes numpy scipy sympy cython pywin32 pythreejs nose coverage'
   - "%PYTHON%\\Scripts\\conda.exe update -y --all"
