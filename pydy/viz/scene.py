@@ -471,17 +471,16 @@ class Scene(object):
             self._tracks.append(vizframe._track)
             self._meshes.append(vizframe._mesh)
 
-    def display_pythreejs_simple(self, window_size=(800, 600),
-                                 axes_arrows_length=None):
+    def display_jupyter(self, window_size=(800, 600), axes_arrow_length=None):
         """Returns a PyThreeJS Renderer and AnimationAction for displaying and
-        animating the scene.
+        animating the scene inside a Jupyter notebook.
 
         Parameters
         ==========
         window_size : 2-tuple of integers
             2-tuple containing the width and height of the renderer window in
             pixels.
-        axes_arrows_length : float
+        axes_arrow_length : float
             If a positive value is supplied a red (x), green (y), and blue (z)
             arrows of the supplied length will be displayed as arrows for the
             global axes.
@@ -508,8 +507,8 @@ class Scene(object):
 
         children = self._meshes + [camera, key_light, ambient_light]
 
-        if axes_arrows_length is not None:
-            children += [p3js.AxesHelper(size=abs(axes_arrows_length))]
+        if axes_arrow_length is not None:
+            children += [p3js.AxesHelper(size=abs(axes_arrow_length))]
 
         scene = p3js.Scene(children=children)
 
@@ -832,6 +831,5 @@ class Scene(object):
         # stays within the borders of the IPython notebook.
         self._html_widget._css = [("canvas", "width", "100%"),
                                   ("canvas", "padding-right", "10px")]
-
 
         display(self._html_widget)

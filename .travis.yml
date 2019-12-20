@@ -25,9 +25,9 @@ install:
   - if [[ $DEP_VERSIONS == "oldest" ]]; then
       conda install numpy=1.13 scipy=0.19 sympy=1.1 cython=0.26 theano=0.9;
     elif [[ $DEP_VERSIONS == "latest" ]]; then
-      conda install numpy scipy sympy cython theano;
+      conda install numpy scipy sympy cython theano pythreejs;
     elif [[ $DEP_VERSIONS == "master" ]]; then
-      conda install numpy scipy cython theano;
+      conda install numpy scipy cython theano pythreejs;
       pip install https://github.com/sympy/sympy/archive/master.zip;
     fi
 before_script:
