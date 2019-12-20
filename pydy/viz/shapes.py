@@ -200,13 +200,14 @@ class Shape(object):
         data_dict['color'] = self.color
         data_dict['material'] = self.material
         data_dict['type'] = self.__repr__()
+        # NOTE : WebGL doesn't like 64 bit floats, so force them to be 32 bit.
         for geom in self.geometry_attrs:
             atr = getattr(self, geom)
             try:
-                data_dict[geom] = float(atr.subs(constant_map))
+                data_dict[geom] = np.float32(atr.subs(constant_map))
             except AttributeError:
                 # not a SymPy expression
-                data_dict[geom] = atr
+                data_dict[geom] = np.float32(atr)
             except TypeError:
                 # can't convert expression to float
                 raise TypeError('{} is an expression, you '.format(atr) +

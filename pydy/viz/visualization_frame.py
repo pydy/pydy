@@ -324,7 +324,8 @@ class VisualizationFrame(object):
             n = 1
             args = np.hstack((states, constant_values))
 
-        new = np.zeros((n, 16))
+        # NOTE : WebGL only accepts 32bit not 64bit.
+        new = np.zeros((n, 16), dtype=np.float32)
         for i, t in enumerate(self._numeric_transform):
             if callable(t):
                 try:
@@ -466,7 +467,9 @@ class VisualizationFrame(object):
 
         name = "scene/{}.matrix".format(self._mesh.name)
 
-        track = p3js.VectorKeyframeTrack(name=name, times=times,
+        # NOTE : WebGL doesn't like 64bit so convert to 32 bit.
+        track = p3js.VectorKeyframeTrack(name=name,
+                                         times=times.astype(np.float32),
                                          values=matrices)
 
         self._track = track
