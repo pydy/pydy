@@ -20,7 +20,7 @@ before_install:
   - conda update -q conda
 install:
   - sudo apt-get install phantomjs
-  - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION pip coverage nose sphinx numpydoc flake8 matplotlib
+  - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION pip coverage nose flake8 matplotlib sphinx numpydoc jupyter_sphinx
   - source activate test-env
   - if [[ $DEP_VERSIONS == "oldest" ]]; then
       conda install numpy=1.13 scipy=0.19 sympy=1.1 cython=0.26 theano=0.9;
@@ -46,7 +46,7 @@ script:
     flake8 --select F401 --exclude booger,__init__.py,conf.py . &&
     flake8 --select W2,W3 --filename='*.js' examples/ pydy/viz/static/js/dyviz/) ||
     (echo "Please run a linter and fix errors, e.g. pylint, flake8, pep8, etc."; false)
-  # Make sure the docs build.
+  # Make sure the docs build (including the examples).
   - cd docs && make html && cd ..
   # Make sure the library installs.
   - python setup.py install
