@@ -349,7 +349,7 @@ Plot Results
 
 .. jupyter-execute::
 
-    axes = plt.plot(sys.times, x)
+    plt.plot(sys.times, x);
 
 .. jupyter-execute::
 
@@ -359,7 +359,7 @@ Plot Results
     axes[1].plot(sys.times, np.rad2deg(x[:, 1:3]))
     axes[1].legend([sm.latex(q, mode='inline') for q in (q2, q3)])
     axes[1].set_xlabel('Time [s]')
-    axes[1].set_ylabel('Angle [deg]')
+    axes[1].set_ylabel('Angle [deg]');
 
 Animate with PyDy and pythreejs
 ===============================
