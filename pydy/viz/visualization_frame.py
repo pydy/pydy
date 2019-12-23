@@ -444,6 +444,9 @@ class VisualizationFrame(object):
         if p3js is None:
             raise ImportError('pythreejs must be installed.')
 
+        # NOTE : WebGL doesn't like 64bit so convert to 32 bit.
+        times = np.asarray(times, dtype=np.float32)
+
         self._mesh = self.shape._p3js_mesh(constant_map=constant_map)
 
         # NOTE : This is required to set the transform matrix directly.
