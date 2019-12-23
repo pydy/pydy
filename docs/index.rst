@@ -50,6 +50,14 @@ Tutorials
     tutorials/beginners.rst
     tutorials/advanced.rst
 
+Examples
+========
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/multidof_holonomic.rst
+
 Indices and tables
 ==================
 

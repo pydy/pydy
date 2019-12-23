@@ -102,9 +102,22 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
     'numpydoc',
+    'jupyter_sphinx.execute',
 ]
 
 numpydoc_show_class_members = False
+
+# NOTE : The default order causes SymPy output to show the png math images
+# instead of MathJax so I moved the LaTeX above the images.
+jupyter_execute_data_priority = [
+ 'application/vnd.jupyter.widget-view+json',
+ 'text/html',
+ 'text/latex',
+ 'image/svg+xml',
+ 'image/png',
+ 'image/jpeg',
+ 'text/plain',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
