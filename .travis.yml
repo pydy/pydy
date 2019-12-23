@@ -46,9 +46,9 @@ script:
     flake8 --select F401 --exclude booger,__init__.py,conf.py . &&
     flake8 --select W2,W3 --filename='*.js' examples/ pydy/viz/static/js/dyviz/) ||
     (echo "Please run a linter and fix errors, e.g. pylint, flake8, pep8, etc."; false)
-  # Make sure the docs build (including the examples).
-  - cd docs && make html && cd ..
   # Make sure the library installs.
   - python setup.py install
   # Run benchmark
   - python bin/benchmark_pydy_code_gen.py 1 10
+  # Make sure the docs build (including the examples).
+  - cd docs && make html && cd ..

@@ -429,3 +429,10 @@ the new initial condition.
 .. jupyter-execute::
 
     scene.display_jupyter(axes_arrow_length=1.0)
+
+Download
+========
+
+You can download this example as a Python script:
+:jupyter-download:script:`multidof_holonomic` or Jupyter notebook:
+:jupyter-download:notebook:`multidof_holonomic`.
