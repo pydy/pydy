@@ -1,0 +1,18 @@
+name: rtd-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - cython
+  - gcc_linux-64
+  - gfortran_linux-64
+  - gxx_linux-64
+  - ipywidgets
+  - jupyter_sphinx
+  - matplotlib-base
+  - numpy
+  - python =3.7
+  - pythreejs
+  - scipy
+  - sphinx
+  - sympy
