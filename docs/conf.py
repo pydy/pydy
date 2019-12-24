@@ -125,11 +125,10 @@ if sys.version_info >= (3, 5):  # jupyter_sphinx requires 3.5+
     ]
 
     # NOTE: This is required so that when jupyter_sphinx executes it picks up
-    # the uninstall pydy package.
-    package_path = os.path.abspath('../..')
+    # the uninstalled pydy package.
+    package_path = os.path.abspath('..')
     os.environ['PYTHONPATH'] = ':'.join((package_path,
                                          os.environ.get('PYTHONPATH', '')))
-
 else:
     def setup(app):
         app.add_config_value('INCLUDE_EXAMPLES', False, 'env')
