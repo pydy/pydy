@@ -58,6 +58,7 @@ Tutorials
    .. toctree::
       :maxdepth: 1
 
+      examples/mass_spring_damper.rst
       examples/multidof_holonomic.rst
 
 Indices and tables
