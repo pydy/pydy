@@ -7,6 +7,7 @@ dependencies:
   - gcc_linux-64
   - gfortran_linux-64
   - gxx_linux-64
+  - ipython
   - ipywidgets
   - jupyter_sphinx
   - matplotlib-base
