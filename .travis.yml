@@ -51,7 +51,11 @@ script:
     flake8 --select W2,W3 --filename='*.js' examples/ pydy/viz/static/js/dyviz/) ||
     (echo "Please run a linter and fix errors, e.g. pylint, flake8, pep8, etc."; false)
   # Make sure the docs build (including the examples).
-  - cd docs && make html && cd ..
+  # NOTE : There is a bug in SymPy 1.1.1 that prevents the jupyter_sphinx
+  # examples from building, so skip old versions here.
+  - if [[ $DEP_VERSIONS != "oldest" ]]; then
+      cd docs && make html && cd ..;
+    fi
   # Make sure the library installs.
   - python setup.py install
   # Run benchmark
