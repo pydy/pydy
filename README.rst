@@ -8,8 +8,8 @@ PyDy
    :target: https://pypi.python.org/pypi/pydy
    :alt: Latest Released Version
 
-.. |anaconda| image:: https://anaconda.org/pydy/pydy/badges/version.svg
-   :target: https://anaconda.org/pydy/pydy
+.. |anaconda| image:: https://anaconda.org/conda-forge/pydy/badges/version.svg
+   :target: https://anaconda.org/conda-forge/pydy
 
 .. |rtd-docs| image:: https://readthedocs.org/projects/pydy/badge/?version=stable
    :target: https://pydy.readthedocs.io/en/stable/?badge=stable
@@ -30,13 +30,14 @@ the study of multibody dynamics. The goal is to have a modular framework and
 eventually a physics abstraction layer which utilizes a variety of backends
 that can provide the user with their desired workflow, including:
 
-.. _PyDy: http://pydy.org
-
 - Model specification
 - Equation of motion generation
 - Simulation
 - Visualization
+- Benchmarking
 - Publication
+
+.. _PyDy: http://pydy.org
 
 We started by building the SymPy_ `mechanics package`_ which provides an API
 for building models and generating the symbolic equations of motion for complex
@@ -45,9 +46,9 @@ multibody systems. More recently we developed two packages, `pydy.codegen` and
 Python package contains these two packages and other tools for working with
 mathematical models generated from SymPy mechanics. The remaining tools
 currently used in the PyDy workflow are popular scientific Python packages such
-as NumPy_, SciPy_, IPython_, Jupyter_, ipywidgets_, and matplotlib_ (i.e. the
-SciPy stack) which provide additional code for numerical analyses, simulation,
-and visualization.
+as NumPy_, SciPy_, IPython_, Jupyter_, ipywidgets_, pythreejs_, and matplotlib_
+which provide additional code for numerical analyses, simulation, and
+visualization.
 
 .. _SymPy: http://sympy.org
 .. _mechanics package: http://docs.sympy.org/latest/modules/physics/mechanics/index.html
@@ -55,7 +56,8 @@ and visualization.
 .. _SciPy: http://www.scipy.org/scipylib/index.html
 .. _IPython: http://ipython.org
 .. _Jupyter: http://jupyter.org
-.. _ipywidgets: https://pypi.python.org/pypi/ipywidgets
+.. _ipywidgets: https://ipywidgets.readthedocs.io
+.. _pythreejs: https://pythreejs.readthedocs.io
 .. _matplotlib: http://matplotlib.org
 
 Installation
@@ -75,25 +77,24 @@ PyDy has hard dependencies on the following software\ [#]_:
 
 PyDy has optional dependencies for extended code generation on:
 
-- Theano_ >= 0.9.0
 - Cython_ >= 0.26.1
+- Theano_ >= 0.9.0
 
-and animated visualizations with `Scene.display_jupyter()` on:
+and animated visualizations with ``Scene.display_jupyter()`` on:
 
 - `Jupyter Notebook`_ >= 6.0.0 or `Jupyter Lab` >= 1.0.0
 - ipywidgets_ >= 6.0.0
 - pythreejs_ >= 2.1.1
 
-or interactive animated visualizations with `Scene.display_ipython()` on:
+or interactive animated visualizations with ``Scene.display_ipython()`` on:
 
 - 4.0.0 <= `Jupyter Notebook`_ < 5.0.0
 - 4.0.0 <= ipywidgets_ < 5.0.0
 
-.. _Theano: http://deeplearning.net/software/theano/
 .. _Cython: http://cython.org/
+.. _Theano: http://deeplearning.net/software/theano/
 .. _Jupyter Notebook: https://jupyter-notebook.readthedocs.io
 .. _Jupyter Lab: https://jupyterlab.readthedocs.io
-.. _pythreejs: https://pythreejs.readthedocs.io
 
 The examples may require these dependencies:
 
@@ -102,11 +103,9 @@ The examples may require these dependencies:
 
 .. _version_information: https://pypi.python.org/pypi/version_information
 
-It's best to install the SciPy Stack dependencies using the instructions_
-provided on the SciPy website first. We recommend the conda_ package manager
-and the Anaconda_ distribution for easy cross platform installation.
+We recommend the conda_ package manager and the Anaconda_ distribution for easy
+cross platform installation.
 
-.. _instructions: http://www.scipy.org/install.html
 .. _conda: http://conda.pydata.org/
 .. _Anaconda: http://docs.continuum.io/anaconda/
 
@@ -119,9 +118,9 @@ the ``pydy-optional`` metapackage using conda::
 
    $ conda install -c conda-forge pydy-optional
 
-Note that this currently enforces the use of Jupyter 4.0, so you may not want
-to install into your root environment. Create a new environment for working
-with PyDy examples that use the embedded Jupyter visualizations::
+Note that ``pydy-optional`` currently enforces the use of Jupyter 4.0, so you
+may not want to install into your root environment. Create a new environment
+for working with PyDy examples that use the embedded Jupyter visualizations::
 
    $ conda create -n pydy -c conda-forge pydy-optional
    $ conda activate pydy
@@ -146,7 +145,7 @@ and extracted and installed\ [#]_::
 .. [#] For system wide installs you may need root permissions (perhaps prepend
    commands with ``sudo``).
 
-Or if you have the pip package manager installed you can simply type::
+Or if you have the pip package manager installed you can type::
 
    $ pip install pydy
 
@@ -201,7 +200,7 @@ Derive the system:
 
    kane = me.KanesMethod(ceiling, q_ind=[position], u_ind=[speed],
                          kd_eqs=kinematic_equations)
-   kane.kanes_equations(particles, forces)
+   kane.kanes_equations(particles, loads=forces)
 
 Create a system to manage integration and specify numerical values for the
 constants and specified quantities. Here, we specify sinusoidal forcing:
@@ -247,9 +246,11 @@ To build the documentation you must install the dependencies:
 
 - Sphinx_
 - numpydoc_
+- jupyter-sphinx_
 
 .. _Sphinx: http://sphinx-doc.org/
 .. _numpydoc: https://pypi.python.org/pypi/numpydoc
+.. _jupyter-sphinx: https://jupyter-sphinx.readthedocs.io/
 
 To build the HTML docs, run Make from within the ``docs`` directory::
 
@@ -401,11 +402,13 @@ Release Notes
 0.6.0
 -----
 
-- ``display_jupyter()`` method added to ``Scene`` that utlizes pythreejs for
+- jupyter-sphinx enabled for examples in the documentation [PR `#419`_]
+- ``display_jupyter()`` method added to ``Scene`` that utilizes pythreejs for
   animating a system. [PR `#416`_]
 - Remove support for required dependencies prior to those in Ubuntu 18.04 LTS.
   [PR `#415`_]
 
+.. _#419: https://github.com/pydy/pydy/pull/419
 .. _#416: https://github.com/pydy/pydy/pull/416
 .. _#415: https://github.com/pydy/pydy/pull/415
 

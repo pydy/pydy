@@ -1,7 +1,7 @@
-The PyDy source code is actually spread across both the SymPy and PyDy
-repositories. The two projects are very intimately tied together in terms of
-development. Much of our development practices come from SymPy's methods so
-reading their documentation for contributing is the best place to start:
+The PyDy source code is spread across both the SymPy and PyDy repositories. The
+two projects are very intimately tied together in terms of development. Much of
+our development practices come from SymPy's methods so reading their
+documentation for contributing is the best place to start:
 
 https://github.com/sympy/sympy/wiki/introduction-to-contributing
 
