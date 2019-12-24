@@ -12,6 +12,7 @@ dependencies:
   - jupyter_sphinx
   - matplotlib-base
   - numpy
+  - numpydoc
   - python =3.7
   - pythreejs
   - scipy
