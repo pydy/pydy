@@ -14,6 +14,7 @@
 
 import sys
 import os
+import datetime
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -87,6 +88,8 @@ if os.environ.get('READTHEDOCS', None) == 'True':
         pairs.append((mod_name, mocked))
     sys.modules.update(pairs)
 
+COPYRIGHT_YEARS = '2009-{}'.format(datetime.datetime.now().year)
+
 # -- General configuration ------------------------------------------------
 
 import numpydoc
@@ -98,26 +101,34 @@ import numpydoc
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.autosummary',
     'numpydoc',
-    'jupyter_sphinx.execute',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.viewcode',
 ]
+
+if sys.version_info >= (3, 5):  # jupyter_sphinx requires 3.5+
+    def setup(app):
+        app.add_config_value('INCLUDE_EXAMPLES', True, 'env')
+    extensions.append('jupyter_sphinx.execute')
+    # NOTE : The default order causes SymPy output to show the png math images
+    # instead of MathJax so I moved the LaTeX above the images.
+    jupyter_execute_data_priority = [
+        'application/vnd.jupyter.widget-view+json',
+        'text/html',
+        'text/latex',
+        'image/svg+xml',
+        'image/png',
+        'image/jpeg',
+        'text/plain',
+    ]
+else:
+    def setup(app):
+        app.add_config_value('INCLUDE_EXAMPLES', False, 'env')
+    exclude_patterns = ['*/examples/*.rst']
 
 numpydoc_show_class_members = False
-
-# NOTE : The default order causes SymPy output to show the png math images
-# instead of MathJax so I moved the LaTeX above the images.
-jupyter_execute_data_priority = [
- 'application/vnd.jupyter.widget-view+json',
- 'text/html',
- 'text/latex',
- 'image/svg+xml',
- 'image/png',
- 'image/jpeg',
- 'text/plain',
-]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -133,7 +144,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyDy Distribution'
-copyright = u'2009-2017, PyDy Authors'
+copyright = u'{}, PyDy Authors'.format(COPYRIGHT_YEARS)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -348,7 +359,7 @@ texinfo_documents = [
 epub_title = u'PyDy Distribution'
 epub_author = u'PyDy Authors'
 epub_publisher = u'PyDy Authors'
-epub_copyright = u'2009-2017, PyDy Authors'
+epub_copyright = u'{}, PyDy Authors'.format(COPYRIGHT_YEARS)
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.

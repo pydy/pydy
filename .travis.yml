@@ -20,7 +20,7 @@ before_install:
   - conda update -q conda
 install:
   - sudo apt-get install phantomjs
-  - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION pip coverage nose flake8 matplotlib sphinx numpydoc jupyter_sphinx
+  - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION pip coverage nose flake8 matplotlib sphinx numpydoc
   - source activate test-env
   - if [[ $DEP_VERSIONS == "oldest" ]]; then
       conda install numpy=1.13 scipy=0.19 sympy=1.1 cython=0.26 theano=0.9;
@@ -29,6 +29,10 @@ install:
     elif [[ $DEP_VERSIONS == "master" ]]; then
       conda install numpy scipy cython theano pythreejs;
       pip install https://github.com/sympy/sympy/archive/master.zip;
+    fi
+  # jupyter_sphinx is onlly available for Python 3.5+
+  - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]
+      conda install jupyter_sphinx
     fi
 before_script:
   - conda info
