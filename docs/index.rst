@@ -50,6 +50,16 @@ Tutorials
     tutorials/beginners.rst
     tutorials/advanced.rst
 
+.. ifconfig:: INCLUDE_EXAMPLES
+
+   Examples
+   ========
+
+   .. toctree::
+      :maxdepth: 1
+
+      examples/multidof_holonomic.rst
+
 Indices and tables
 ==================
 
