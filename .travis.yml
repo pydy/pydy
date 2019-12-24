@@ -22,17 +22,21 @@ install:
   - sudo apt-get install phantomjs
   - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION pip coverage nose flake8 matplotlib sphinx numpydoc
   - source activate test-env
+  # NOTE : There is a bug in SymPy 1.1.1 that prevents the jupyter_sphinx
+  # examples from building, so don't install jupyter_sphinx in oldest so it is
+  # skipped.
   - if [[ $DEP_VERSIONS == "oldest" ]]; then
       conda install numpy=1.13 scipy=0.19 sympy=1.1 cython=0.26 theano=0.9;
+    elif [[ $DEP_VERSIONS == "latest" ]] && [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
+      conda install numpy scipy sympy cython theano pythreejs jupyter_sphinx;
     elif [[ $DEP_VERSIONS == "latest" ]]; then
       conda install numpy scipy sympy cython theano pythreejs;
-    elif [[ $DEP_VERSIONS == "master" ]]; then
-      conda install numpy scipy cython theano pythreejs;
+    elif [[ $DEP_VERSIONS == "master" ]] && [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
+      conda install numpy scipy mpmath fastcache cython theano pythreejs jupyter_sphinx;
       pip install https://github.com/sympy/sympy/archive/master.zip;
-    fi
-  # jupyter_sphinx is onlly available for Python 3.5+
-  - if [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
-      conda install jupyter_sphinx;
+    elif [[ $DEP_VERSIONS == "master" ]]; then
+      conda install numpy scipy mpmath fastcache cython theano pythreejs;
+      pip install https://github.com/sympy/sympy/archive/master.zip;
     fi
 before_script:
   - conda info
@@ -51,11 +55,7 @@ script:
     flake8 --select W2,W3 --filename='*.js' examples/ pydy/viz/static/js/dyviz/) ||
     (echo "Please run a linter and fix errors, e.g. pylint, flake8, pep8, etc."; false)
   # Make sure the docs build (including the examples).
-  # NOTE : There is a bug in SymPy 1.1.1 that prevents the jupyter_sphinx
-  # examples from building, so skip old versions here.
-  - if [[ $DEP_VERSIONS != "oldest" ]]; then
-      cd docs && make html && cd ..;
-    fi
+  - cd docs && make html && cd ..
   # Make sure the library installs.
   - python setup.py install
   # Run benchmark

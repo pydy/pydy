@@ -108,7 +108,20 @@ extensions = [
     'sphinx.ext.viewcode',
 ]
 
-if sys.version_info >= (3, 5):  # jupyter_sphinx requires 3.5+
+# NOTE : jupyter_sphinx is only available on Python 3.5+, make it an optional
+# dependency and don't build the examples if not installed.
+# TODO : The examples could be built when jupyter_sphinx is not available if
+# the .. jupyter-execute:: directives were dynamically swapped out with ..
+# code:: directives.
+try:
+    import jupyter_sphinx
+except ImportError:
+    def setup(app):
+        app.add_config_value('INCLUDE_EXAMPLES', False, 'env')
+    exclude_patterns = ['*/examples/*.rst']
+else:
+    del jupyter_sphinx
+
     def setup(app):
         app.add_config_value('INCLUDE_EXAMPLES', True, 'env')
     extensions.append('jupyter_sphinx.execute')
@@ -129,10 +142,6 @@ if sys.version_info >= (3, 5):  # jupyter_sphinx requires 3.5+
     package_path = os.path.abspath('..')
     os.environ['PYTHONPATH'] = ':'.join((package_path,
                                          os.environ.get('PYTHONPATH', '')))
-else:
-    def setup(app):
-        app.add_config_value('INCLUDE_EXAMPLES', False, 'env')
-    exclude_patterns = ['*/examples/*.rst']
 
 numpydoc_show_class_members = False
 
