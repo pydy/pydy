@@ -111,7 +111,7 @@ and extracted and installed\ [#]_::
    commands with ``sudo``).
 
 Dependencies
-============
+------------
 
 PyDy has hard dependencies on the following software\ [#]_:
 
