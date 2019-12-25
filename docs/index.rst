@@ -14,10 +14,10 @@ Table of Contents
    usage.rst
    changelog.rst
    system.rst
+   models.rst
    codegen/codegen.rst
    viz/viz.rst
-   viz/using_visualizer.rst
-   codegen/api.rst
+   api.rst
    viz/api.rst
    tutorials/beginners.rst
    tutorials/advanced.rst
