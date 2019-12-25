@@ -15,6 +15,7 @@
 import sys
 import os
 import datetime
+import shutil
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -24,6 +25,44 @@ sys.path.insert(0, os.path.abspath('..'))
 import pydy
 
 COPYRIGHT_YEARS = '2009-{}'.format(datetime.datetime.now().year)
+
+# Extract stuff from the readme
+with open('../README.rst') as f:
+    readme_text = f.read()
+
+headings = ['PyDy',  # 1
+            'Installation',  # 2
+            'Usage',  # 3
+            'Documentation',  # 4
+            'Modules and Packages',  # 5
+            'Development Environment',  # 6
+            'Benchmark',  # 7
+            'Citation',  # 8
+            'Questions, Bugs, Feature Requests',  # 9
+            'Related Packages']  # 10
+
+headings_with_lines = [heading + '\n' + '='*len(heading)
+                       for heading in headings]
+
+for h in headings_with_lines:
+    readme_text = readme_text.replace(h, 'SPLIT HERE!!')
+
+parts = readme_text.split('SPLIT HERE!!')
+
+with open('index-opening.txt', 'w') as f:
+    opening = parts[1] + '\n' + parts[8] + '\n' + parts[9]
+    f.write(opening)
+
+with open('install.rst', 'w') as f:
+    bar = len(headings[1])*'='
+    f.write(bar + '\n' + headings[1] + '\n' + bar + parts[2])
+
+with open('usage.rst', 'w') as f:
+    bar = len(headings[2])*'='
+    f.write(bar + '\n' + headings[2] + '\n' + bar + parts[3])
+
+shutil.copyfile('../CHANGELOG.rst', 'changelog.rst')
+shutil.copyfile('../readme-msd-result.png', 'readme-msd-result.png')
 
 # -- General configuration ------------------------------------------------
 

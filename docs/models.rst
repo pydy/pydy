@@ -5,7 +5,7 @@ models
 Introduction
 ============
 
-The `pydy/models.py` file provides canned symbolic models of classical dynamic
+The :py:mod:`models` file provides canned symbolic models of classical dynamic
 systems that are mostly for testing and example purposes. There are currently
 two models:
 
@@ -59,9 +59,3 @@ gravity and two external forces can be created with:
    [                                                                                                              v1(t)],
    [                                                     (-c0*v0(t) + c1*v1(t) + g*m0 - k0*x0(t) + k1*x1(t) + f0(t))/m0],
    [-(m1*(-c0*v0(t) + g*m0 + g*m1 - k0*x0(t) + f0(t) + f1(t)) + (m0 + m1)*(c1*v1(t) - g*m1 + k1*x1(t) - f1(t)))/(m0*m1)]])
-
-API
-===
-
-.. automodule:: pydy.models
-   :members:
