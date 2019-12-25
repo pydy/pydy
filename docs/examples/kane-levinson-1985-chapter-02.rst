@@ -138,7 +138,7 @@ fixed in both 'A' and 'B'. A.x is parallel to E.x. A.y is parallel to B.y.
 Point 'O' is a point fixed in both 'E' and 'A'. 'A*' is separated from 'O' by
 'LA' * A.z. 'P' is separated from 'O' by 'LP' * A.z. 'B*' is separated from 'P'
 by 'LB' * B.z. 'C*' is separated from 'B*' by 'q2' * B.z. 'D*' is separated
-from 'C*' by 'p1'*B.x + 'p2'*B.y + 'p3'*B.z.
+from 'C*' by ``p1*B.x + p2*B.y + p3*B.z``.
 
 We define:'q0d' = 'u1', 'q1d' = 'u2', 'q2d' = 'u3'.  'LA', 'LB', 'LP', 'p1',
 'p2', 'p3' are constants.

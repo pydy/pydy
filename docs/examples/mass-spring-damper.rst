@@ -2,6 +2,11 @@
 Linear Mass-Spring-Damper with Gravity
 ======================================
 
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`mass-spring-damper` or Jupyter notebook:
+   :jupyter-download:notebook:`mass-spring-damper`.
+
 Defining the Problem
 ====================
 
@@ -236,10 +241,3 @@ Now, we call the display method.
 .. jupyter-execute::
 
     scene.display_jupyter(axes_arrow_length=5.0)
-
-Download
-========
-
-You can download this example as a Python script:
-:jupyter-download:script:`mass_spring_damper` or Jupyter notebook:
-:jupyter-download:notebook:`mass_spring_damper`.

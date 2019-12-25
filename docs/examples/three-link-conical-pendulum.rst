@@ -2,16 +2,17 @@
 Three Link Conical Pendulum
 ===========================
 
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`three_link_conical_pendulum` or Jupyter notebook:
+   :jupyter-download:notebook:`three_link_conical_pendulum`.
+
 This example shows how to simulate a three link conical compound pendulum made
 up of cylindrical bars connecting particles at the joints. The is an example of
 a 3D holonomic system. Wikipedia provides a basic description of a `conical
 pendulum`_.
 
 .. _conical pendulum: https://en.wikipedia.org/wiki/Conical_pendulum
-
-You can download this example as a Python script:
-:jupyter-download:script:`three_link_conical_pendulum` or Jupyter notebook:
-:jupyter-download:notebook:`three_link_conical_pendulum`.
 
 Derive the Equations of Motion
 ==============================
