@@ -4,8 +4,8 @@ Three Link Conical Pendulum
 
 .. note::
    You can download this example as a Python script:
-   :jupyter-download:script:`three_link_conical_pendulum` or Jupyter notebook:
-   :jupyter-download:notebook:`three_link_conical_pendulum`.
+   :jupyter-download:script:`three-link-conical-pendulum` or Jupyter notebook:
+   :jupyter-download:notebook:`three-link-conical-pendulum`.
 
 This example shows how to simulate a three link conical compound pendulum made
 up of cylindrical bars connecting particles at the joints. The is an example of
