@@ -15,6 +15,7 @@
 import sys
 import os
 import datetime
+import shutil
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -37,7 +38,7 @@ headings = ['PyDy',  # 1
             'Development Environment',  # 6
             'Benchmark',  # 7
             'Citation',  # 8
-            'Questions, Bugs, Features Requests',  # 9
+            'Questions, Bugs, Feature Requests',  # 9
             'Related Packages']  # 10
 
 headings_with_lines = [heading + '\n' + '='*len(heading)
@@ -49,7 +50,8 @@ for h in headings_with_lines:
 parts = readme_text.split('SPLIT HERE!!')
 
 with open('index-opening.txt', 'w') as f:
-    f.write(parts[1])
+    opening = parts[1] + '\n' + parts[8] + '\n' + parts[9]
+    f.write(opening)
 
 with open('install.rst', 'w') as f:
     bar = len(headings[1])*'='
@@ -58,6 +60,9 @@ with open('install.rst', 'w') as f:
 with open('usage.rst', 'w') as f:
     bar = len(headings[2])*'='
     f.write(bar + '\n' + headings[2] + '\n' + bar + parts[3])
+
+shutil.copyfile('../CHANGELOG.rst', 'changelog.rst')
+shutil.copyfile('../readme-msd-result.png', 'readme-msd-result.png')
 
 # -- General configuration ------------------------------------------------
 

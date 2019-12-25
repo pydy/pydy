@@ -1,6 +1,6 @@
-=============================
-PyDy Package's documentation!
-=============================
+====================
+PyDy's Documentation
+====================
 
 .. include:: index-opening.txt
 
@@ -12,6 +12,7 @@ Table of Contents
 
    install.rst
    usage.rst
+   changelog.rst
    system.rst
    codegen/codegen.rst
    viz/viz.rst
@@ -22,6 +23,9 @@ Table of Contents
    tutorials/advanced.rst
 
 .. ifconfig:: INCLUDE_EXAMPLES
+
+   Examples
+   ========
 
    .. list-table::
 
