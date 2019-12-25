@@ -8,6 +8,11 @@ Exercise 2.7
 .. jupyter-kernel:: python3
    :id: ex2-7
 
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex2-7` or Jupyter notebook:
+   :jupyter-download:notebook:`ex2-7`.
+
 .. jupyter-execute::
 
    from sympy.physics.mechanics import ReferenceFrame, dynamicsymbols, mprint
@@ -60,6 +65,11 @@ Exercise 3.10
 
 .. jupyter-kernel:: python3
    :id: ex3-10
+
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex3-10` or Jupyter notebook:
+   :jupyter-download:notebook:`ex3-10`.
 
 .. jupyter-execute::
 
@@ -122,6 +132,11 @@ Exercise 3.15
 
 .. jupyter-kernel:: python3
    :id: ex3-15
+
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex3-15` or Jupyter notebook:
+   :jupyter-download:notebook:`ex3-15`.
 
 A robot arm, composed of Rigid Bodies 'A', 'B', 'C', operates in Reference
 Frame E. 'A*', 'B*', 'C*' are Points marking the centers of mass for the Rigid
@@ -243,6 +258,11 @@ Exercise 4.1
 .. jupyter-kernel:: python3
    :id: ex4-1
 
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex4-1` or Jupyter notebook:
+   :jupyter-download:notebook:`ex4-1`.
+
 .. jupyter-execute::
 
    from sympy.physics.mechanics import dot, msprint
@@ -276,6 +296,11 @@ Exercise 4.18
 
 .. jupyter-kernel:: python3
    :id: ex4-18
+
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex4-18` or Jupyter notebook:
+   :jupyter-download:notebook:`ex4-18`.
 
 .. jupyter-execute::
 

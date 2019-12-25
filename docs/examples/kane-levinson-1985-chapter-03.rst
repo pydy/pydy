@@ -5,6 +5,14 @@ Exercises from Chapter 3 in Kane and Levinson 1985
 Exercise 5.1
 ============
 
+.. jupyter-kernel:: python3
+   :id: ex5-1
+
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex5-1` or Jupyter notebook:
+   :jupyter-download:notebook:`ex5-1`.
+
 .. jupyter-execute::
 
    from sympy import symbols, integrate
@@ -121,6 +129,14 @@ the mass center of B.
 
 Exercise 5.4
 ============
+
+.. jupyter-kernel:: python3
+   :id: ex5-4
+
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex5-4` or Jupyter notebook:
+   :jupyter-download:notebook:`ex5-4`.
 
 .. jupyter-execute::
 
@@ -245,6 +261,14 @@ Exercise 5.4
 Exercise 5.8
 ============
 
+.. jupyter-kernel:: python3
+   :id: ex5-8
+
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex5-8` or Jupyter notebook:
+   :jupyter-download:notebook:`ex5-8`.
+
 .. jupyter-execute::
 
    from sympy.physics.mechanics import ReferenceFrame, Point
@@ -278,6 +302,14 @@ Exercise 5.8
 Exercise 5.12
 =============
 
+.. jupyter-kernel:: python3
+   :id: ex5-12
+
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex5-12` or Jupyter notebook:
+   :jupyter-download:notebook:`ex5-12`.
+
 .. jupyter-execute::
 
    import numpy as np
@@ -295,6 +327,14 @@ Exercise 5.12
 
 Exercise 6.6
 ============
+
+.. jupyter-kernel:: python3
+   :id: ex6-6
+
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex6-6` or Jupyter notebook:
+   :jupyter-download:notebook:`ex6-6`.
 
 .. jupyter-execute::
 
@@ -336,6 +376,14 @@ Exercise 6.6
 
 Exercise 6.7
 ============
+
+.. jupyter-kernel:: python3
+   :id: ex6-7
+
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex6-7` or Jupyter notebook:
+   :jupyter-download:notebook:`ex6-7`.
 
 .. jupyter-execute::
 
@@ -416,6 +464,14 @@ Exercise 6.7
 Exercise 6.10
 =============
 
+.. jupyter-kernel:: python3
+   :id: ex6-10
+
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex6-10` or Jupyter notebook:
+   :jupyter-download:notebook:`ex6-10`.
+
 .. jupyter-execute::
 
    from sympy import Matrix
@@ -477,6 +533,14 @@ Exercise 6.10
 
 Exercise 6.13
 =============
+
+.. jupyter-kernel:: python3
+   :id: ex6-13
+
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex6-13` or Jupyter notebook:
+   :jupyter-download:notebook:`ex6-13`.
 
 .. jupyter-execute::
 
@@ -558,6 +622,14 @@ Exercise 6.13
 
 Exercise 6.14
 =============
+
+.. jupyter-kernel:: python3
+   :id: ex6-14
+
+.. note::
+   You can download this example as a Python script:
+   :jupyter-download:script:`ex6-14` or Jupyter notebook:
+   :jupyter-download:notebook:`ex6-14`.
 
 .. jupyter-execute::
 
