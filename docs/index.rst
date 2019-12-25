@@ -61,6 +61,7 @@ Tutorials
       examples/mass_spring_damper.rst
       examples/multidof_holonomic.rst
       examples/kane-levinson-1985-chapter-02.rst
+      examples/kane-levinson-1985-chapter-03.rst
 
 Indices and tables
 ==================
