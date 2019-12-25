@@ -25,11 +25,15 @@ install:
   # NOTE : There is a bug in SymPy 1.1.1 that prevents the jupyter_sphinx
   # examples from building, so don't install jupyter_sphinx in oldest so it is
   # skipped. Also, there are no Python 3.5 binaries for jupyter_sphinx on conda-forge.
+  # NOTE : Python 3.7.6 is failing with link errors on compilation, so force
+  # 3.7.3. See https://github.com/conda-forge/python-feedstock
   - if [[ $DEP_VERSIONS == "oldest" ]]; then
       conda install numpy=1.13 scipy=0.19 sympy=1.1 cython=0.26 theano=0.9;
     elif [[ $DEP_VERSIONS == "latest" ]] && [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then
       conda install numpy scipy sympy cython theano pythreejs;
       pip install jupyter-sphinx;
+    elif [[ $DEP_VERSIONS == "latest" ]] && [[ $TRAVIS_PYTHON_VERSION == 3.7 ]]; then
+      conda install python=3.7.3 numpy scipy sympy cython theano pythreejs jupyter_sphinx;
     elif [[ $DEP_VERSIONS == "latest" ]] && [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
       conda install numpy scipy sympy cython theano pythreejs jupyter_sphinx;
     elif [[ $DEP_VERSIONS == "latest" ]]; then
@@ -37,6 +41,9 @@ install:
     elif [[ $DEP_VERSIONS == "master" ]] && [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then
       conda install numpy scipy mpmath fastcache cython theano pythreejs;
       pip install jupyter-sphinx;
+      pip install https://github.com/sympy/sympy/archive/master.zip;
+    elif [[ $DEP_VERSIONS == "master" ]] && [[ $TRAVIS_PYTHON_VERSION == 3.7 ]]; then
+      conda install python=3.7.3 numpy scipy mpmath fastcache cython theano pythreejs jupyter_sphinx;
       pip install https://github.com/sympy/sympy/archive/master.zip;
     elif [[ $DEP_VERSIONS == "master" ]] && [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
       conda install numpy scipy mpmath fastcache cython theano pythreejs jupyter_sphinx;
