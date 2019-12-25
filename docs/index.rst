@@ -41,8 +41,8 @@ viz package
     viz/using_visualizer.rst
     viz/api.rst
 
-Tutorials
-=========
+Examples
+========
 
 .. toctree::
     :maxdepth: 2
@@ -52,14 +52,12 @@ Tutorials
 
 .. ifconfig:: INCLUDE_EXAMPLES
 
-   Examples
-   ========
-
    .. toctree::
-      :maxdepth: 1
+      :maxdepth: 2
 
       examples/mass_spring_damper.rst
       examples/multidof_holonomic.rst
+      examples/three_link_conical_pendulum.rst
       examples/kane-levinson-1985-chapter-02.rst
       examples/kane-levinson-1985-chapter-03.rst
 
