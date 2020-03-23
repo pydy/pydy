@@ -5,15 +5,28 @@ Release Notes
 0.6.0
 =====
 
+- Improved the README and documentation integration. [PR `#424`_]
+- Moved some examples to Sphinx [PRs `#421`_, `#423`_]
 - jupyter-sphinx enabled for examples in the documentation [PR `#419`_]
+- Added an example with no constraints that uses ``display_jupyter()`` for
+  animation. [PR `#418`_]
+- Added an example that has both configuration and motion constraints.
+  [PR `#417`_]
 - ``display_jupyter()`` method added to ``Scene`` that utilizes pythreejs for
   animating a system. [PR `#416`_]
 - Remove support for required dependencies prior to those in Ubuntu 18.04 LTS.
   [PR `#415`_]
+- Recommend installing from Conda Forge [PR `#411`_]
 
+.. _#424: https://github.com/pydy/pydy/pull/424
+.. _#423: https://github.com/pydy/pydy/pull/423
+.. _#421: https://github.com/pydy/pydy/pull/421
 .. _#419: https://github.com/pydy/pydy/pull/419
+.. _#418: https://github.com/pydy/pydy/pull/418
+.. _#417: https://github.com/pydy/pydy/pull/417
 .. _#416: https://github.com/pydy/pydy/pull/416
 .. _#415: https://github.com/pydy/pydy/pull/415
+.. _#411: https://github.com/pydy/pydy/pull/411
 
 0.5.0
 =====
