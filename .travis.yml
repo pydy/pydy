@@ -29,6 +29,8 @@ install:
   # NOTE : There is a bug in SymPy 1.1.1 that prevents the jupyter_sphinx
   # examples from building, so don't install jupyter_sphinx in oldest so it is
   # skipped. Also, there are no Python 3.5 binaries for jupyter_sphinx on conda-forge.
+  # NOTE : SymPy's master branch will no longer install with Python 2.7. The
+  # last supported version is SymPy 1.5.
   - if [[ $DEP_VERSIONS == "oldest" ]]; then
       conda install numpy=1.13 scipy=0.19 sympy=1.1 cython=0.26 theano=0.9;
     elif [[ $DEP_VERSIONS == "latest" ]] && [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then
@@ -46,8 +48,7 @@ install:
       conda install numpy scipy mpmath fastcache cython theano pythreejs jupyter_sphinx;
       pip install https://github.com/sympy/sympy/archive/master.zip;
     elif [[ $DEP_VERSIONS == "master" ]]; then
-      conda install numpy scipy mpmath fastcache cython theano pythreejs;
-      pip install https://github.com/sympy/sympy/archive/master.zip;
+      conda install "sympy=1.5" numpy scipy mpmath fastcache cython theano pythreejs;
     fi
 before_script:
   - conda info
