@@ -180,7 +180,7 @@ NumPy's ``linspace`` is often useful for this.
     from numpy import linspace
     fps = 60
     duration = 10.0
-    sys.times = linspace(0.0, duration, duration*fps)
+    sys.times = linspace(0.0, duration, num=int(duration*fps))
 
 The trajectory of the states over time can be found by calling the
 ``.integrate()`` method.
