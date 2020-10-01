@@ -23,7 +23,7 @@ before_install:
   - conda update -q conda
 install:
   - sudo apt-get install phantomjs
-  - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION pip coverage nose flake8 matplotlib sphinx numpydoc
+  - conda create -q -n test-env python=$TRAVIS_PYTHON_VERSION pip coverage nose flake8 matplotlib sphinx "numpydoc<1"
   - source activate test-env
   # NOTE : There is a bug in SymPy 1.1.1 that prevents the jupyter_sphinx
   # examples from building, so don't install jupyter_sphinx in oldest so it is
