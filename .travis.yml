@@ -3,7 +3,6 @@ python:
   - 2.7
   - 3.6
   - 3.7
-  - 3.8
 env:
   matrix:
   - DEP_VERSIONS="oldest"  # Approximately the versions available in the last LTS release of Ubuntu, currently 18.04 LTS.
