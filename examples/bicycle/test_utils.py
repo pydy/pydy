@@ -6,7 +6,7 @@ from utils import *
 t = me.dynamicsymbols._t
 
 
-def test_decompose_linear_system():
+def test_decompose_linear_parts():
     a, b, c, d, e, f, g, h, i = sm.symbols('a, b, c, d, e, f, g, h, i')
     u = me.dynamicsymbols('u0:5')
     uI = u[:2]
@@ -18,7 +18,7 @@ def test_decompose_linear_system():
 
     motion_constraints = [expr1, expr2, expr3]
 
-    A1, A2, B = decompose_linear_system(motion_constraints, uI, uD)
+    A1, A2, B = decompose_linear_parts(motion_constraints, uI, uD)
 
     A_GuI_exp = sm.Matrix([[a, b], [f, g], [c, e]])
     A_GuD_exp = sm.Matrix([[c, d, e], [h, i, a], [f, g, h]])
@@ -28,7 +28,7 @@ def test_decompose_linear_system():
     assert A2 == A_GuD_exp
     assert B == B_G_exp
 
-    A, B = decompose_linear_system(motion_constraints, u)
+    A, B = decompose_linear_parts(motion_constraints, u)
 
     A_exp = sm.Matrix([[a, b, c, d, e],
                        [f, g, h, i, a],
