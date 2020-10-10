@@ -354,7 +354,7 @@ print('The mass matrix is a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(mass_matrix))))
 
 # sub in the kin diffs to eliminate some extraneous derivatives
-forcing_vector = mec.msubs(kane.forcing, kane.kindiffdict())
+forcing_vector = kane.forcing.xreplace(kane.kindiffdict())
 print('The forcing vector is a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
 
@@ -414,10 +414,10 @@ substitutions.update(dynamic_substitutions)
 
 # Try substituting values in through SymPy
 print('Substituting numerical parameters into SymPy expressions.')
-num_mass_matrix = sm.matrix2numpy(mec.msubs(mass_matrix, substitutions),
+num_mass_matrix = sm.matrix2numpy(mass_matrix.xreplace(substitutions),
                                   dtype=float)
-num_forcing_vector = sm.matrix2numpy(mec.msubs(forcing_vector,
-                                               substitutions), dtype=float)
+num_forcing_vector = sm.matrix2numpy(forcing_vector.xreplace(substitutions),
+                                     dtype=float)
 xd_from_sub = np.linalg.solve(num_mass_matrix, num_forcing_vector).flatten()
 
 print('The state derivatives from substitution:')
