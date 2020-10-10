@@ -6,6 +6,39 @@ import sympy.physics.mechanics as me
 TIME = me.dynamicsymbols._t
 
 
+def decompose_linear_system(F, *xs):
+    """
+
+    F = A1*x1 + A2*x2 + ... + An*xn + B = 0
+
+    Parameters
+    ==========
+    F : Matrix, shape(n, 1)
+        Column matrix of expressions that linear depend on entires of x1, ...,
+        xn.
+    xs : Sequence[Expr]
+        Column matrices for the
+
+    Returns
+    =======
+    Ai, ..., An : Matrix
+    B : Matrix, shape(n, 1)
+
+    """
+    F = sm.Matrix(F)
+    repl = {}
+    matrices = []
+    for xi in xs:
+        Ai = F.jacobian(xi)
+        matrices.append(Ai)
+        repl.update({xij: 0 for xij in xi})
+
+    B = F.xreplace(repl)
+    matrices.append(B)
+
+    return tuple(matrices)
+
+
 def decompose_fstar(fstar, ind_gen_speeds, dep_gen_speeds=None):
     """Decomposes the generalized inertial forces, Kane's F*, into the linear
     coefficient matrices corresponding to the independent and dependent
