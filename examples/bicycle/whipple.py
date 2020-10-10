@@ -372,6 +372,17 @@ print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
 # This takes forever.
 #print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
 
+from utils import formulate_nonmin_equations_motion
+
+q = (q3, q4, q5, q6, q7, q8)
+uI = (u4, u6, u7)  # independent generalized speeds
+uD = (u3, u5, u8)  # dependent generalized speeds
+u = tuple(sm.ordered(uI + uD))
+u_def = {ui: qi.diff(t) for ui, qi in zip(u, q)}
+
+M, F = formulate_nonmin_equations_motion(N, bodies, q, u_def, uI, uD, nonholonomic,
+                                  dict(forces), sub_explicit_gen_dep_speeds=False)
+
 ####################################
 # Validation of non-linear equations
 ####################################
@@ -420,8 +431,13 @@ num_forcing_vector = sm.matrix2numpy(forcing_vector.xreplace(substitutions),
                                      dtype=float)
 xd_from_sub = np.linalg.solve(num_mass_matrix, num_forcing_vector).flatten()
 
+num_M = sm.matrix2numpy(M.xreplace(substitutions), dtype=float)
+num_F = sm.matrix2numpy(F.xreplace(substitutions), dtype=float)
+xd_from_sub2 = np.linalg.solve(num_M, num_F).flatten()
+
 print('The state derivatives from substitution:')
 print(xd_from_sub)
+print(xd_from_sub2)
 
 # BUGS to report:
 # 1. find_dynamicsymbols should deal with Vectors and lists of
