@@ -347,7 +347,7 @@ kane = mec.KanesMethod(N,
                        u_dependent=[u3, u5, u8],  # yaw rate, pitch rate, front wheel rate
                        velocity_constraints=nonholonomic)
 
-fr, frstar = kane.kanes_equations(forces, bodies)
+fr, frstar = kane.kanes_equations(bodies, forces)
 
 mass_matrix = kane.mass_matrix
 print('The mass matrix is a function of these dynamic variables:')
