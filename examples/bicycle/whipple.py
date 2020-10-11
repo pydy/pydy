@@ -82,9 +82,9 @@ t = mec.dynamicsymbols._t
 # q3: frame yaw angle
 # q4: frame roll angle
 # q5: frame pitch angle
-# q6: front wheel rotation angle
+# q6: rear wheel rotation angle
 # q7: steering rotation angle
-# q8: rear wheel rotation angle
+# q8: front wheel rotation angle
 # q9: perpendicular distance from the n2> axis to the front contact
 #     point in the ground plane
 # q10: perpendicular distance from the n1> axis to the front contact
