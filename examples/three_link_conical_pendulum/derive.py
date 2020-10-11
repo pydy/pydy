@@ -117,13 +117,13 @@ links = [link1, link2, link3]
 forces = []
 
 for particle in particles:
-    mass = particle.get_mass()
-    point = particle.get_point()
+    mass = particle.mass
+    point = particle.point
     forces.append((point, -mass * g * I.y))
 
 for link in links:
-    mass = link.get_mass()
-    point = link.get_masscenter()
+    mass = link.mass
+    point = link.masscenter
     forces.append((point, -mass * g * I.y))
 
 # Make a list of all the particles and bodies in the system.

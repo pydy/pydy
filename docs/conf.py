@@ -14,6 +14,8 @@
 
 import sys
 import os
+import datetime
+import shutil
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -22,50 +24,45 @@ sys.path.insert(0, os.path.abspath('..'))
 
 import pydy
 
-# This allows readthedocs to use autodoc.
-if os.environ.get('READTHEDOCS', None) == 'True':
-    print('docs/conf.py: on READTHEDOCS')
+COPYRIGHT_YEARS = '2009-{}'.format(datetime.datetime.now().year)
 
-    # This allows the Sphinx docs to build without the required modules.
-    # http://docs.readthedocs.org/en/latest/faq.html#my-project-isn-t-building-with-autodoc
-    from mock import Mock as MagicMock
+# Extract stuff from the readme
+with open('../README.rst') as f:
+    readme_text = f.read()
 
-    class Mock(MagicMock):
-        @classmethod
-        def __getattr__(cls, name):
-                return Mock()
+headings = ['PyDy',  # 1
+            'Installation',  # 2
+            'Usage',  # 3
+            'Documentation',  # 4
+            'Modules and Packages',  # 5
+            'Development Environment',  # 6
+            'Benchmark',  # 7
+            'Citation',  # 8
+            'Questions, Bugs, Feature Requests',  # 9
+            'Related Packages']  # 10
 
-    # Every module that is imported in PyDy is required to be in this list.
-    MOCK_MODULES = ['numpy',
-                    'numpy.linalg',
-                    'numpy.testing',
-                    'scipy',
-                    'scipy.linalg',
-                    'scipy.integrate',
-                    'matplotlib',
-                    'sympy',
-                    'sympy.core',
-                    'sympy.core.function',
-                    'sympy.utilities',
-                    'sympy.utilities.iterables',
-                    'sympy.printing',
-                    'sympy.printing.ccode',
-                    'sympy.printing.theanocode',
-                    'sympy.physics',
-                    'sympy.physics.mechanics',
-                    'sympy.physics.mechanics.functions',
-                    'sympy.matrices',
-                    'sympy.matrices.expressions',
-                    'pkg_resources']
+headings_with_lines = [heading + '\n' + '='*len(heading)
+                       for heading in headings]
 
-    pairs = []
-    for mod_name in MOCK_MODULES:
-        mocked = Mock()
-        # This is necessary for the version checks in pydy.utils.
-        if mod_name == 'sympy':
-            mocked.__version__ = '0.7.6'
-        pairs.append((mod_name, mocked))
-    sys.modules.update(pairs)
+for h in headings_with_lines:
+    readme_text = readme_text.replace(h, 'SPLIT HERE!!')
+
+parts = readme_text.split('SPLIT HERE!!')
+
+with open('index-opening.txt', 'w') as f:
+    opening = parts[1] + '\n' + parts[8] + '\n' + parts[9]
+    f.write(opening)
+
+with open('install.rst', 'w') as f:
+    bar = len(headings[1])*'='
+    f.write(bar + '\n' + headings[1] + '\n' + bar + parts[2])
+
+with open('usage.rst', 'w') as f:
+    bar = len(headings[2])*'='
+    f.write(bar + '\n' + headings[2] + '\n' + bar + parts[3])
+
+shutil.copyfile('../CHANGELOG.rst', 'changelog.rst')
+shutil.copyfile('../readme-msd-result.png', 'readme-msd-result.png')
 
 # -- General configuration ------------------------------------------------
 
@@ -78,11 +75,47 @@ import numpydoc
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.autosummary',
     'numpydoc',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.viewcode',
 ]
+
+# NOTE : jupyter_sphinx is only available on Python 3.5+, make it an optional
+# dependency and don't build the examples if not installed.
+# TODO : The examples could be built when jupyter_sphinx is not available if
+# the .. jupyter-execute:: directives were dynamically swapped out with ..
+# code:: directives.
+try:
+    import jupyter_sphinx
+except ImportError:
+    def setup(app):
+        app.add_config_value('INCLUDE_EXAMPLES', False, 'env')
+    exclude_patterns = ['*/examples/*.rst']
+else:
+    del jupyter_sphinx
+
+    def setup(app):
+        app.add_config_value('INCLUDE_EXAMPLES', True, 'env')
+    extensions.append('jupyter_sphinx.execute')
+    # NOTE : The default order causes SymPy output to show the png math images
+    # instead of MathJax so I moved the LaTeX above the images.
+    jupyter_execute_data_priority = [
+        'application/vnd.jupyter.widget-view+json',
+        'text/html',
+        'text/latex',
+        'image/svg+xml',
+        'image/png',
+        'image/jpeg',
+        'text/plain',
+    ]
+
+    # NOTE: This is required so that when jupyter_sphinx executes it picks up
+    # the uninstalled pydy package.
+    package_path = os.path.abspath('..')
+    os.environ['PYTHONPATH'] = ':'.join((package_path,
+                                         os.environ.get('PYTHONPATH', '')))
 
 numpydoc_show_class_members = False
 
@@ -100,7 +133,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyDy Distribution'
-copyright = u'2013-2014, PyDy Authors'
+copyright = u'{}, PyDy Authors'.format(COPYRIGHT_YEARS)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -315,7 +348,7 @@ texinfo_documents = [
 epub_title = u'PyDy Distribution'
 epub_author = u'PyDy Authors'
 epub_publisher = u'PyDy Authors'
-epub_copyright = u'2013-2014, PyDy Authors'
+epub_copyright = u'{}, PyDy Authors'.format(COPYRIGHT_YEARS)
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.

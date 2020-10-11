@@ -1,11 +1,21 @@
 __all__ = ['VisualizationFrame']
 
+import sys
+if sys.version_info < (3, 0):
+    from collections import Iterator
+else:
+    from collections.abc import Iterator
 import numpy as np
 from sympy import Dummy, lambdify
 from sympy.matrices.expressions import Identity
 from sympy.physics.mechanics import Point, ReferenceFrame
+try:
+    import pythreejs as p3js
+except ImportError:
+    p3js = None
 
 from .shapes import Shape
+from ..utils import sympy_equal_to_or_newer_than
 
 
 class VisualizationFrame(object):
@@ -88,25 +98,29 @@ class VisualizationFrame(object):
         if isinstance(args[-1], Shape):
             self._shape = args[-1]
         else:
-            raise TypeError('''Please provide a valid shape object''')
+            raise TypeError("Please provide a valid shape object as the last "
+                            " positional argument.")
         i = 0
-        #If first arg is not str, name the visualization frame 'unnamed'
+        # If first arg is not str, name the visualization frame 'unnamed'
         if isinstance(args[i], str):
-            self._name = args[i]
+            self.name = args[i]
             i += 1
         else:
-            self._name = 'unnamed'
+            self.name = 'unnamed'
 
         try:
-            self._reference_frame = args[i].get_frame()
-            self._origin = args[i].get_masscenter()
+            if sympy_equal_to_or_newer_than('1.0'):
+                self.reference_frame = args[i].frame
+            else:
+                self.reference_frame = args[i].get_frame()
+            self.origin = args[i].masscenter
 
         except AttributeError:
             #It is not a rigidbody, hence this arg should be a
             #reference frame
             try:
                 dcm = args[i]._dcm_dict
-                self._reference_frame = args[i]
+                self.reference_frame = args[i]
                 i += 1
             except AttributeError:
                 raise TypeError(''' A ReferenceFrame is to be supplied
@@ -114,14 +128,14 @@ class VisualizationFrame(object):
 
             #Now next arg can either be a Particle or point
             try:
-                self._origin = args[i].get_point()
+                self.origin = args[i].point
 
             except AttributeError:
-                self._origin = args[i]
+                self.origin = args[i]
 
     #setting attributes ..
     def __str__(self):
-        return 'VisualizationFrame ' + self._name
+        return 'VisualizationFrame ' + self.name
 
     def __repr__(self):
         return 'VisualizationFrame'
@@ -220,13 +234,17 @@ class VisualizationFrame(object):
         """
         rotation_matrix = self.reference_frame.dcm(reference_frame)
         self._transform = Identity(4).as_mutable()
-        self._transform[0:3, 0:3] = rotation_matrix[0:3, 0:3]
+        self._transform[:3, :3] = rotation_matrix
 
-        _point_vector = self.origin.pos_from(point).express(reference_frame)
-
-        self._transform[3, 0] = _point_vector.dot(reference_frame.x)
-        self._transform[3, 1] = _point_vector.dot(reference_frame.y)
-        self._transform[3, 2] = _point_vector.dot(reference_frame.z)
+        point_vector = self.origin.pos_from(point)
+        try:
+            self._transform[3, :3] = point_vector.to_matrix(reference_frame).T
+        except AttributeError:
+            # In earlier versions of sympy, 'Vector' object has no attribute
+            # 'to_matrix'.
+            self._transform[3, 0] = point_vector.dot(reference_frame.x)
+            self._transform[3, 1] = point_vector.dot(reference_frame.y)
+            self._transform[3, 2] = point_vector.dot(reference_frame.z)
         return self._transform
 
     def generate_numeric_transform_function(self, dynamic_variables,
@@ -247,19 +265,30 @@ class VisualizationFrame(object):
 
         Returns
         =======
-        numeric_transform : function
-            A function which returns the numerical transformation matrix.
+        numeric_transform : list of functions
+            A list of functions which return the numerical transformation
+            for each element in the transformation matrix.
 
         """
 
         dummy_symbols = [Dummy() for i in dynamic_variables]
         dummy_dict = dict(zip(dynamic_variables, dummy_symbols))
-        transform = self._transform.subs(dummy_dict)
+        transform = self._transform.subs(dummy_dict).reshape(16, 1)
+        dummy_symbols.extend(constant_variables)
 
-        self._numeric_transform = lambdify(dummy_symbols +
-                                           constant_variables, transform,
-                                           modules="numpy")
-
+        # Create a numeric transformation for each element in the transformation
+        # matrix. We cannot lambdify the transformation matrix as calling
+        # lambdify of a constant expression returns a scalar, even if the
+        # lambdify function arguments are sequences:
+        # https://github.com/sympy/sympy/issues/5642
+        self._numeric_transform = []
+        for i in range(16):
+            t = transform[i]
+            if t.has(Dummy):
+                f = lambdify(dummy_symbols, t, modules='numpy')
+            else:
+                f = lambdify(constant_variables, t, modules='numpy')
+            self._numeric_transform.append(f)
         return self._numeric_transform
 
     def evaluate_transformation_matrix(self, dynamic_values, constant_values):
@@ -274,28 +303,40 @@ class VisualizationFrame(object):
 
         Returns
         -------
-        transform_matrix : numpy.array, shape(n, 4, 4)
+        transform_matrix : numpy.array, shape(n, 16)
             A 4 x 4 transformation matrix for each time step.
 
         """
         #If states is instance of numpy array, well and good.
         #else convert it to one:
 
-        states = np.array(dynamic_values)
+        states = np.squeeze(np.array(dynamic_values))
+        if not isinstance(constant_values, Iterator):
+            constant_values = list(constant_values)
         if len(states.shape) > 1:
             n = states.shape[0]
-            new = np.zeros((n, 4, 4))
-            for i, time_instance in enumerate(states):
-                args = np.hstack((time_instance, constant_values))
-                new[i, :, :] = self._numeric_transform(*args)
+            args = []
+            for a in np.split(states, states.shape[1], 1):
+                args.append(np.squeeze(a))
+            for a in constant_values:
+                args.append(np.repeat(a, n))
         else:
             n = 1
             args = np.hstack((states, constant_values))
-            new = self._numeric_transform(*args)
 
-        self._visualization_matrix = new.reshape(n, 16).tolist()
+        new = np.zeros((n, 16))
+        for i, t in enumerate(self._numeric_transform):
+            if callable(t):
+                try:
+                    new[:, i] = t(*args)
+                except TypeError:
+                    # dynamic values are not necessary so pass only constant
+                    # values into transform function
+                    new[:, i] = np.repeat(t(*constant_values), n)
+            else:
+                new[:, i] = np.repeat(t, n)
+        self._visualization_matrix = new.tolist()
         return self._visualization_matrix
-
 
     def generate_scene_dict(self, constant_map={}):
         """
@@ -330,9 +371,19 @@ class VisualizationFrame(object):
         """
         scene_dict = { id(self): {} }
         scene_dict[id(self)] = self.shape.generate_dict(constant_map=constant_map)
-        scene_dict[id(self)]["init_orientation"] = self._visualization_matrix[0]
-        scene_dict[id(self)]["reference_frame_name"] = str(self._reference_frame)
+        scene_dict[id(self)]['name'] = self.name
+        scene_dict[id(self)]["reference_frame_name"] = str(self.reference_frame)
         scene_dict[id(self)]["simulation_id"] = id(self)
+
+        try:
+            scene_dict[id(self)]["init_orientation"] = self._visualization_matrix[0]
+        except:
+            raise RuntimeError("Cannot generate visualization data " + \
+                                "because numerical transformation " + \
+                               "has not been performed, " + \
+                                "Please call the numerical " + \
+                               "transformation methods, " + \
+                               "before generating visualization dict")
 
         return scene_dict
 
@@ -355,14 +406,70 @@ class VisualizationFrame(object):
         simulation_dict = {}
         try:
             simulation_dict[id(self)] = self._visualization_matrix
-
         except:
-            raise RuntimeError("Cannot generate visualization data " + \
-                                "because numerical transformation " + \
-                               "has not been performed, " + \
-                                "Please call the numerical " + \
-                               "transformation methods, " + \
+            raise RuntimeError("Cannot generate visualization data "
+                               "because numerical transformation "
+                               "has not been performed, "
+                               "Please call the numerical "
+                               "transformation methods, "
                                "before generating visualization dict")
 
-
         return simulation_dict
+
+    def _create_keyframetrack(self, times, dynamic_values, constant_values,
+                              constant_map=None):
+        """Sets attributes with a Mesh and KeyframeTrack for animating this
+        visualization frame.
+
+        Parameters
+        ==========
+        times : ndarray, shape(n,)
+            Array of monotonically increasing or decreasing values of time.
+        dynamics_values : ndarray, shape(n, m)
+            Array of state values for each time.
+        constant_values : array_like, shape(p,)
+            Array of values for the constants.
+        constant_map : dictionary
+            A key value pair mapping from SymPy symbols to floating point
+            values.
+
+        Returns
+        =======
+        track : VectorKeyframeTrack
+            PyThreeJS animation track.
+
+        """
+        # TODO : Passing in constant_values and constant_map is redundant,
+        # right?
+        if p3js is None:
+            raise ImportError('pythreejs must be installed.')
+
+        # NOTE : WebGL doesn't like 64bit so convert to 32 bit.
+        times = np.asarray(times, dtype=np.float32)
+
+        self._mesh = self.shape._p3js_mesh(constant_map=constant_map)
+
+        # NOTE : This is required to set the transform matrix directly.
+        self._mesh.matrixAutoUpdate = False
+
+        matrices = self.evaluate_transformation_matrix(dynamic_values,
+                                                       constant_values)
+
+        # Set initial configuration.
+        self._mesh.matrix = matrices[0]
+
+        # TODO : If the user does not name their shapes, then there will be
+        # KeyFrameTracks with duplicate names. Need a better fix for this, but
+        # I at least warn the user if they didn't change the name at all.
+        if self._mesh.name == 'unnamed':
+            msg = ("The shape provided to this visualization frame must have a "
+                   "unique name other thane 'unnamed'. Make sure all shapes in "
+                   "the scene have unique names.")
+            raise ValueError(msg)
+
+        name = "scene/{}.matrix".format(self._mesh.name)
+
+        track = p3js.VectorKeyframeTrack(name=name, times=times,
+                                         values=matrices)
+
+        self._track = track

@@ -1,25 +1,30 @@
 #!/usr/bin/env python
 
-__all__ = ['Shape',
+import numpy as np
+try:
+    import pythreejs as p3js
+except ImportError:
+    p3js = None
+
+__all__ = [
+           'Box',
+           'Circle',
+           'Cone',
            'Cube',
            'Cylinder',
-           'Cone',
-           'Sphere',
-           'Circle',
-           'Plane',
-           'Tetrahedron',
-           'Octahedron',
            'Icosahedron',
+           'Octahedron',
+           'Plane',
+           'Sphere',
+           'Tetrahedron',
            'Torus',
            'TorusKnot',
-           'Tube']
-
-
-import numpy as np
+           'Tube'
+           ]
 
 
 # This is a list of ColorKeywords from THREE.js
-Three_ColorKeywords = ['aliceblue', 'antiquewhite', 'aqua',
+THREE_COLORKEYWORDS = ['aliceblue', 'antiquewhite', 'aqua',
                        'aquamarine', 'azure', 'beige', 'bisque',
                        'black', 'blanchedalmond', 'blue', 'blueviolet',
                        'brown', 'burlywood', 'cadetblue', 'chartreuse',
@@ -65,8 +70,7 @@ Three_ColorKeywords = ['aliceblue', 'antiquewhite', 'aqua',
                        'violet', 'wheat', 'white', 'whitesmoke',
                        'yellow', 'yellowgreen']
 
-Materials = ["default", "CHECKERBOARD", "METAL", "DIRT", "FOIL", "WATER",
-             "GRASS", "checkerboard", "metal", "dirt", "foil", "water",
+MATERIALS = ["default", "checkerboard", "metal", "dirt", "foil", "water",
              "grass"]
 
 
@@ -79,10 +83,11 @@ class Shape(object):
 
     Parameters
     ==========
+
     name : str, optional
         A name assigned to the shape.
-    color: str, optional
-        A color string from list of colors in Three_ColorKeywords
+    color : str, optional
+        A color string from list of colors in THREE_COLORKEYWORDS
 
     Examples
     ========
@@ -106,26 +111,25 @@ class Shape(object):
     'red'
 
     """
+    _p3js_material_attributes = {}
+
     def __init__(self, name='unnamed', color='grey', material="default"):
+
         self.name = name
-        if not isinstance(color, str) and color not in Three_ColorKeywords:
-            raise ValueError("'color' should be a valid Three.js colors "
-                             "string.")
-        else:
-            self.color = color
-        if not isinstance(material, str) and material not in Materials:
-            raise ValueError("'material' is not valid. Please check the list"
-                             " of available materials")
-        else:
-            self.material = material
+        self.color = color
+        self.material = material
 
         self.geometry_attrs = []
 
     def __str__(self):
-        attributes = ([self.__class__.__name__, self.name, 'color:' +
-                       self.color, 'material:' + self.material] +
+
+        attributes = ([self.__class__.__name__,
+                       self.name,
+                       'color:' + self.color,
+                       'material:' + self.material] +
                       sorted([attr + ':{}'.format(getattr(self, attr)) for
                               attr in self.geometry_attrs]))
+
         return ' '.join(['{}'] * len(attributes)).format(*attributes)
 
     def __repr__(self):
@@ -140,7 +144,7 @@ class Shape(object):
     def name(self, new_name):
         """Sets the name attribute of the shape."""
         if not isinstance(new_name, str):
-            raise TypeError('name should be a valid str object.')
+            raise TypeError("'name' should be a valid str object.")
         else:
             self._name = new_name
 
@@ -152,32 +156,30 @@ class Shape(object):
     @color.setter
     def color(self, new_color):
         """Sets the color attributes of the shape. This should be a valid
-        Three_ColorKeywords color string."""
-        if not isinstance(new_color, str) and new_color in Three_ColorKeywords:
-            raise TypeError("'color' should be a valid ",
-                            "Three.js colors string.")
+        three.js color keyword string."""
+        if new_color not in THREE_COLORKEYWORDS:
+            msg = "'color' should be a valid Three.js colors string:\n{}"
+            raise ValueError(msg.format('\n'.join(THREE_COLORKEYWORDS)))
         else:
             self._color = new_color
 
     @property
     def material(self):
-        """Returns the material attribute of the shape. Materials are an
-        attribute to shapes, which correspond to visual attributes of the
-        object used (its shine, brightness, opacity etc.). If a shape is
-        attributed as "red" color, and "WATER" material, ideally it should
-        have opacity and brightness properties like that of a red fluid.
-        """
+        """Returns the material attribute of the shape."""
         return self._material
 
     @material.setter
     def material(self, new_material):
-        """Sets the material attribute of the shape. The material should
-        be a valid material from the listed Materials.
+        """Sets the material attribute of the shape, i.e. its shine,
+        brightness, opacity etc.. The material should be a valid material
+        from the listed MATERIALS. If a shape is attributed as "red" color,
+        and "water" material, ideally it should have opacity and brightness
+        properties like that of a red fluid.
 
         """
-        if not isinstance(new_material, str) and new_material not in Materials:
-            raise ValueError(" 'material' is not valid. "
-                             "Please check the list of available materials")
+        if new_material.lower() not in MATERIALS:
+            msg = "'material' is not valid. Choose from:\n{}"
+            raise ValueError(msg.format('\n'.join(MATERIALS)))
         else:
             self._material = new_material
 
@@ -191,6 +193,7 @@ class Shape(object):
             If any of the shape's geometry are defined as SymPy expressions,
             then this dictionary should map all SymPy Symbol's found in the
             expressions to floats.
+
         """
         data_dict = {}
         data_dict['name'] = self.name
@@ -210,13 +213,104 @@ class Shape(object):
                                 'must provide a mapping to numerical values.')
         return data_dict
 
+    def _p3js_mesh(self, constant_map={}):
+        """Returns a PyThreeJS mesh object that corresponds to this shape."""
+
+        if p3js is None:
+            raise ImportError('pythreejs is not installed.')
+
+        data = self.generate_dict(constant_map=constant_map)
+
+        attrs = dict()
+
+        for k, v in self._p3js_attribute_map.items():
+            try:
+                attrs[k] = data[v]
+            except KeyError:
+                attrs[k] = v
+
+        try:
+            geom_attr = '{}BufferGeometry'.format(self._p3js_geometry_type)
+            Geometry = getattr(p3js, geom_attr)
+        except AttributeError:
+            geom_attr = '{}Geometry'.format(self._p3js_geometry_type)
+            Geometry = getattr(p3js, geom_attr)
+
+        geometry = Geometry(**attrs)
+
+        # NOTE : For some reason traitlets doesn't think 'grey' is a valid HTML
+        # color. This workaround should be removed, but deprecation will likely
+        # be needed.
+        if data['color'] == 'grey':
+            color = 'gray'
+        else:
+            color = data['color']
+
+        material = p3js.MeshStandardMaterial(color=color,
+                                             **self._p3js_material_attributes)
+
+        mesh = p3js.Mesh(name=data['name'], geometry=geometry,
+                         material=material)
+
+        self._mesh = mesh
+
+        return mesh
+
+
+class Box(Shape):
+    """Instantiates a box of a given size.
+
+    Parameters
+    ==========
+    width : float or SymPy expression
+        Width of the box along the X axis.
+    height : float or SymPy expression
+        Height of the box along the Y axis.
+    depth : float or SymPy expression
+        Depth of the box along the Z axis.
+
+    Examples
+    ========
+
+    >>> from pydy.viz.shapes import Box
+    >>> s = Box(10.0, 5.0, 1.0)
+    >>> s.name
+    'unnamed'
+    >>> s.color
+    'grey'
+    >>>s.width
+    5.0
+    >>>s.height
+    1.0
+    >>>s.depth
+    10.0
+    >>> s.name = 'my-shape1'
+    >>> s.name
+    'my-shape1'
+    >>> s.color = 'blue'
+    >>> s.color
+    'blue'
+
+    """
+    _p3js_geometry_type = 'Box'
+    _p3js_attribute_map = {'width': 'width',
+                           'height': 'height',
+                           'depth': 'depth'}
+
+    def __init__(self, width, height, depth, **kwargs):
+        super(Box, self).__init__(**kwargs)
+        self.geometry_attrs.append(['width', 'height', 'depth'])
+        self.width = width
+        self.height = height
+        self.depth = depth
+
 
 class Cube(Shape):
     """Instantiates a cube of a given size.
 
     Parameters
     ==========
-    length: float or SymPy expression
+    length : float or SymPy expression
         The length of the cube.
 
     Examples
@@ -248,6 +342,10 @@ class Cube(Shape):
     10.0
 
     """
+    _p3js_geometry_type = 'Box'
+    _p3js_attribute_map = {'width': 'length',
+                           'height': 'length',
+                           'depth': 'length'}
 
     def __init__(self, length, **kwargs):
         super(Cube, self).__init__(**kwargs)
@@ -260,10 +358,11 @@ class Cylinder(Shape):
 
     Parameters
     ==========
-    length: float or SymPy expression
-        The length of the cylinder.
-    radius: float or SymPy expression
-        The radius of the cylinder.
+    length : float or SymPy expression
+        Length of the cylinder along its Y axis.
+    radius : float or SymPy expression
+        Radius of the cylinder (of the circular cross section normal to the Y
+        axis).
 
     Examples
     ========
@@ -301,6 +400,11 @@ class Cylinder(Shape):
     5.0
 
     """
+    _p3js_geometry_type = 'Cylinder'
+    _p3js_attribute_map = {'radiusTop': 'radius',
+                           'radiusBottom': 'radius',
+                           'height': 'length'}
+
     def __init__(self, length, radius, **kwargs):
         super(Cylinder, self).__init__(**kwargs)
         self.geometry_attrs += ['length', 'radius']
@@ -313,9 +417,9 @@ class Cone(Shape):
 
     Parameters
     ==========
-    length: float or SymPy expression
+    length : float or SymPy expression
         The length of the cone.
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The base radius of the cone.
 
     Examples
@@ -354,6 +458,11 @@ class Cone(Shape):
     5.0
 
     """
+    _p3js_geometry_type = 'Cylinder'
+    _p3js_attribute_map = {'radiusTop': 0.0,
+                           'radiusBottom': 'radius',
+                           'height': 'length'}
+
     def __init__(self, length, radius, **kwargs):
         super(Cone, self).__init__(**kwargs)
         self.geometry_attrs += ['length', 'radius']
@@ -366,7 +475,7 @@ class Sphere(Shape):
 
     Parameters
     ==========
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the sphere.
 
     Examples
@@ -398,6 +507,8 @@ class Sphere(Shape):
     10.0
 
     """
+    _p3js_geometry_type = 'Sphere'
+    _p3js_attribute_map = {'radius': 'radius'}
 
     def __init__(self, radius=10.0, **kwargs):
         super(Sphere, self).__init__(**kwargs)
@@ -410,7 +521,7 @@ class Circle(Sphere):
 
     Parameters
     ==========
-    radius: float or SymPy Expression
+    radius : float or SymPy Expression
         The radius of the circle.
 
     Examples
@@ -442,6 +553,8 @@ class Circle(Sphere):
     10.0
 
     """
+    _p3js_geometry_type = 'Circle'
+    _p3js_attribute_map = {'radius': 'radius'}
 
 
 class Plane(Shape):
@@ -449,10 +562,10 @@ class Plane(Shape):
 
     Parameters
     ==========
-    length: float or SymPy expression
-        The length of the plane.
-    width: float or SymPy expression
-        The width of the plane.
+    length : float or SymPy expression
+        Length of the plane along the Y axis.
+    width : float or SymPy expression
+        Width of the plane along the X axis.
 
     Examples
     ========
@@ -490,6 +603,11 @@ class Plane(Shape):
     5.0
 
     """
+    _p3js_geometry_type = 'Plane'
+    _p3js_attribute_map = {'width': 'width',
+                           'height': 'length'}
+    _p3js_material_attributes = {'side': 'DoubleSide'}
+
     def __init__(self, length=10.0, width=5.0, **kwargs):
         super(Plane, self).__init__(**kwargs)
         self.geometry_attrs += ['length', 'width']
@@ -502,7 +620,7 @@ class Tetrahedron(Sphere):
 
     Parameters
     ==========
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the circum-scribing sphere of around the tetrahedron.
 
     Examples
@@ -534,6 +652,8 @@ class Tetrahedron(Sphere):
     10.0
 
     """
+    _p3js_geometry_type = 'Tetrahedron'
+    _p3js_attribute_map = {'radius': 'radius'}
 
 
 class Octahedron(Sphere):
@@ -542,7 +662,7 @@ class Octahedron(Sphere):
 
     Parameters
     ==========
-    radius: float or SymPy expression.
+    radius : float or SymPy expression.
         The radius of the circum-scribing sphere around the octahedron.
 
     Examples
@@ -574,6 +694,8 @@ class Octahedron(Sphere):
     10.0
 
     """
+    _p3js_geometry_type = 'Octahedron'
+    _p3js_attribute_map = {'radius': 'radius'}
 
 
 class Icosahedron(Sphere):
@@ -582,7 +704,7 @@ class Icosahedron(Sphere):
 
     Parameters
     ==========
-    radius: float or a SymPy expression
+    radius : float or a SymPy expression
         Radius of the circum-scribing sphere for Icosahedron
 
     Examples
@@ -615,6 +737,8 @@ class Icosahedron(Sphere):
     10.0
 
     """
+    _p3js_geometry_type = 'Icosahedron'
+    _p3js_attribute_map = {'radius': 'radius'}
 
 
 class Torus(Shape):
@@ -622,9 +746,9 @@ class Torus(Shape):
 
     Parameters
     ==========
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the torus.
-    tube_radius: float or SymPy expression
+    tube_radius : float or SymPy expression
         The radius of the torus tube.
 
     Examples
@@ -663,6 +787,9 @@ class Torus(Shape):
     5.0
 
     """
+    _p3js_geometry_type = 'Torus'
+    _p3js_attribute_map = {'radius': 'radius',
+                           'tube': 'tube_radius'}
 
     def __init__(self, radius, tube_radius, **kwargs):
         super(Torus, self).__init__(**kwargs)
@@ -692,9 +819,9 @@ class TorusKnot(Torus):
 
     Parameters
     ==========
-    radius: float or SymPy expression
+    radius : float or SymPy expression
         The radius of the torus knot.
-    tube_radius: float or SymPy expression
+    tube_radius : float or SymPy expression
         The radius of the torus knot tube.
 
     Examples
@@ -733,6 +860,9 @@ class TorusKnot(Torus):
     5.0
 
     """
+    _p3js_geometry_type = 'TorusKnot'
+    _p3js_attribute_map = {'radius': 'radius',
+                           'tube': 'tube_radius'}
 
 
 class Tube(Shape):
@@ -791,7 +921,7 @@ class Tube(Shape):
 
     @property
     def points(self):
-        return self._points
+        return self._points.tolist()
 
     @points.setter
     def points(self, new_points):

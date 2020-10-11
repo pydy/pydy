@@ -66,7 +66,7 @@ DynamicsVisualizer = Class.create({
         });
 
 
-        self._slider = jQuery("#time-slider").slider({min:0,max:100,step:1, handle:"square", value:0});
+        self._slider = jQuery("#time-slider").slider({min:0, max:100, step:1, handle:"square", value:0});
         self._slider.on('slide',function(ev) {
             var val = ev.value;
             var len = self._timeArray.length;
@@ -79,7 +79,6 @@ DynamicsVisualizer = Class.create({
             self.currentTime = self._timeArray[i];
             self.Scene.setAnimationTime(self._timeArray[i]);
         });
-
 
         jQuery("#resetControls").click(function(){
             self.scene._resetControls();
@@ -100,7 +99,7 @@ DynamicsVisualizer = Class.create({
         jQuery("#close-object-dialog").click(function(){
             jQuery("#object-dialog").html(" ");
             jQuery(this).addClass("disabled");
-
+            jQuery("#object-dialog").css("display", "none");
         });
 
         jQuery("#show-model").click(function(){
@@ -112,7 +111,6 @@ DynamicsVisualizer = Class.create({
                 '" download="scene_desc.json" class="btn btn-success btn-large"> \
                 <i class="icon-white icon-download-alt">download JSON</a>').appendTo('#download-json');
             jQuery(this).addClass("disabled");
-
         });
 
         jQuery("#close-model-dialog").click(function(){
@@ -122,7 +120,6 @@ DynamicsVisualizer = Class.create({
 
         });
         console.log("[PyDy INFO]: Activated UI controls");
-
 
     },
 
@@ -137,7 +134,7 @@ DynamicsVisualizer = Class.create({
         jQuery("#show-model").removeClass("disabled");
         var objs = self.model.objects;
 
-        jQuery("#object-dropdown").find("li").remove() // clean old dropdown list.
+        jQuery("#object-dropdown").find("li").remove(); // clean old dropdown list.
 
         for(var obj in objs){
             var toAppend = '<li><a id="'+ objs[obj].simulation_id +
@@ -146,6 +143,7 @@ DynamicsVisualizer = Class.create({
             // adding click functions to all dropdown objs.
             jQuery("#" + objs[obj].simulation_id).click(function(){
                 self.ParamEditor.openDialog(jQuery(this).attr("id"));
+                jQuery("#object-dialog").css("display", "block");
             });
         }
 

@@ -13,9 +13,8 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         self._addDefaultLight();
         self._addAxes();
         self._addTrackBallControls();
+        self.WindowResize(self.webgl_renderer, self.currentCamera, this);
         self.animationPaused = false;
-
-
     },
 
     _createRenderer: function(){
@@ -25,14 +24,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/
         var self = this;
         self.webgl_renderer = new THREE.WebGLRenderer();
-        var width = jQuery(window).width() * 0.4;
-        self.webgl_renderer.setSize(width, 480);
-
+        self._updateWidth();
+        self._updateHeight();
+        self.webgl_renderer.setSize(self.width, self.height);
         var backgroundColor = new THREE.Color(161192855); // WhiteSmoke
         self.webgl_renderer.setClearColor(backgroundColor);
         var container = jQuery('#renderer');
         container.append(self.webgl_renderer.domElement);
-
     },
 
     _createEmptyScene: function(){
@@ -55,10 +53,14 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
         self.primaryCamera = new THREE.PerspectiveCamera();
         self.primaryCamera.position.set(0,0,100);
+        self._updateWidth();
+        self._updateHeight();
+        self.primaryCamera.aspect = self.width / self.height;
         self._scene.add(self.primaryCamera);
         self.currentCamera = self.primaryCamera;
-
+        self.currentCamera.updateProjectionMatrix();
     },
+
     _addDefaultLight: function(){
         /**
           * This method adds a default light
@@ -95,6 +97,85 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
 
     },
 
+    _updateWidth: function(){
+        var self = this;
+        // Setting minimum width to be 800px
+        if(jQuery(window).width() > 800) {
+            self.width = jQuery(window).width() * 0.69;
+        } else{
+            self.width = 800 * 0.665;
+        }
+    },
+
+    _updateHeight: function(){
+        var self = this;
+        self.height = jQuery(window).height() * 0.83;
+    },
+
+    _map_points_to_curve: function(points){
+        /**
+          * Maps points to a THREE.Curve object.
+        **/
+        var self = this;
+        var vector_array = [];
+
+        // NOTE: Due to some issue in THREE.Vector3, we need to parseFloat
+        // coordinates before passing it to Vector3
+        for(var point in points){
+            vector_array.push(
+                new THREE.Vector3(
+                    parseFloat(point[0]), parseFloat(point[1]),
+                    parseFloat(point[2])
+                )
+            );
+        }
+
+        curve = new THREE.SplineCurve3(vector_array);
+        return curve;
+    },
+
+    WindowResize: function(renderer, camera, self){
+        /**
+          * Adds window resize event listener
+          * to renderer and camera and updates
+          * them accordingly. This is a modified
+          * version of THREEX.WindowResize.js
+          * LICENCE: The MIT License (MIT)
+          *
+          * Copyright (c) 2013 Jerome Etienne
+          *
+          * Permission is hereby granted, free of charge, to any person obtaining a copy of
+          * this software and associated documentation files (the "Software"), to deal in
+          * the Software without restriction, including without limitation the rights to
+          * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+          * the Software, and to permit persons to whom the Software is furnished to do so,
+          * subject to the following conditions:
+          *
+          * The above copyright notice and this permission notice shall be included in all
+          * copies or substantial portions of the Software.
+        **/
+        var callback  = function(){
+          self._updateWidth();
+          self._updateHeight();
+          // notify the renderer of the size change
+          renderer.setSize( self.width, self.height );
+          // update the camera
+          camera.aspect = self.width / self.height;
+          camera.updateProjectionMatrix();
+        };
+        // bind the resize event
+        window.addEventListener('resize', callback, false);
+        // return .stop() the function to stop watching window resize
+        return {
+          /**
+            * Stop watching window resize
+          **/
+          stop : function(){
+            window.removeEventListener('resize', callback);
+          }
+        };
+    },
+
     _resetControls: function(){
         /**
           * Resets the scene camera to
@@ -114,7 +195,6 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * function.
         **/
         var self = this;
-
 
         self._removeAll(); // Removes old objects first!
 
@@ -188,7 +268,7 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
             case "Circle":
                 var geometry = new THREE.CylinderGeometry(object.radius,
                                                           object.radius,
-                                                          0.5,100);
+                                                          0,100);
                 break;
 
             case "Plane":
@@ -227,11 +307,20 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                                           );
                 break;
 
+            case "Tube":
+                var curve = self._map_points_to_curve(object.points);
+                var geometry = new THREE.TubeGeometry(curve, 64,
+                                                      object.radius, 8, false);
+                break;
+
         }
 
-        var material = self.Materials[object.material];
+        var material = self.Materials.getMaterial(object.material);
         material.color = new THREE.Color(object.color);
         var mesh = new THREE.Mesh(geometry, material);
+        if(type == 'Plane'){
+            mesh.material.side = THREE.DoubleSide;
+        }
         var element = new Float32Array(object.init_orientation);
         var initMatrix = new THREE.Matrix4();
         initMatrix.elements = element;
@@ -272,10 +361,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         }
         _camera.name = camera.simulation_id;
         _camera["object-info"] = camera;
+        self._updateWidth();
+        self._updateHeight();
+        _camera.aspect = self.width / self.height;
         self._scene.add(_camera);
         self.currentCamera = _camera;
-
-
+        self.currentCamera.updateProjectionMatrix();
+        self._addTrackBallControls();
     },
 
     _addIndividualLight: function(light){
@@ -313,26 +405,26 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         **/
         var self = this;
         // toggle buttons..
-        jQuery("#play-animation").css("display","none");
-        jQuery("#pause-animation").css("display","block");
-        jQuery("#stop-animation").css("display","block");
+        jQuery("#play-animation").prop('disabled', true);
+        jQuery("#pause-animation").prop('disabled', false);
+        jQuery("#stop-animation").prop('disabled', false);
 
+        var startTime = self.model.startTime;
         if(!self.animationPaused){
-          self.currentTime = 0;
-        };
+          self.currentTime = startTime;
+        }
 
         self.animationPaused = false;
         var timeDelta = self.model.timeDelta;
 
         self.animationID = window.setInterval(function(){
                 self.setAnimationTime(self.currentTime);
-                self.currentTime+=timeDelta;
-                if(self.currentTime>=self._finalTime && jQuery("#play-looped").is(":checked")){
-                  self.currentTime = 0;
-                }
-                if(self.currentTime>=self._finalTime && !jQuery("#play-looped").is(":checked")){
-                  self.stopAnimation();
-                  self.currenTime = 0;
+                self.currentTime += timeDelta;
+                if(self.currentTime >= self._finalTime){
+                  self.currentTime = startTime;
+                  if(!jQuery("#play-looped").is(":checked")){
+                    self.stopAnimation();
+                  }
                 }
             },
         timeDelta*1000);
@@ -345,11 +437,13 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
           * corresponding to that time value.
         **/
         var self = this;
-        var percent = (currentTime/self._finalTime*100).toFixed(3);
+        var t0 = self.model.startTime;
+        var percent = (100*(currentTime - t0)/(self._finalTime - t0)).toFixed(3);
 
         var time_index = self._timeArray.indexOf(currentTime);
         var _children = self._scene.children;
         for(var i=0;i<_children.length;i++){
+          if(!(_children[i] instanceof (THREE.OrthoGraphicCamera || THREE.PerspectiveCamera))){
             var id = _children[i].name;
             if(self.simData[id] != undefined){
                 var element = new Float32Array(self.simData[id][time_index]);
@@ -358,9 +452,9 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                 _children[i].matrix.identity()
                 _children[i].applyMatrix(orientationMatrix);
             }
-
+          }
         }
-        jQuery("#time-slider").slider("setValue",percent);
+        jQuery("#time-slider").slider("setValue", percent);
         jQuery("#time").html(" " + currentTime.toFixed(3) + " s");
 
     },
@@ -372,9 +466,9 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
        **/
        var self = this;
        console.log("[PyDy INFO]: Pausing Animation");
-       jQuery("#stop-animation").css("display","block");
-       jQuery("#pause-animation").css("display","none");
-       jQuery("#play-animation").css("display","block");
+       jQuery("#play-animation").prop('disabled', false);
+       jQuery("#pause-animation").prop('disabled', true);
+       jQuery("#stop-animation").prop('disabled', false);
        window.clearInterval(self.animationID);
        self.animationPaused = true;
 
@@ -389,11 +483,11 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
         if(!self.animationPaused){
           window.clearInterval(self.animationID);
         }
-        self.currentTime = 0;
-        self.setAnimationTime(0);
-        jQuery("#stop-animation").css("display","none");
-        jQuery("#pause-animation").css("display","none");
-        jQuery("#play-animation").css("display","block");
+        self.currentTime = self.model.startTime;
+        self.setAnimationTime(self.currentTime);
+        jQuery("#play-animation").prop('disabled', false);
+        jQuery("#pause-animation").prop('disabled', true);
+        jQuery("#stop-animation").prop('disabled', true);
 
     },
 

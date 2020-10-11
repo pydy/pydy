@@ -35,7 +35,6 @@
     <script type="text/javascript" src="js/dyviz/parser.js"></script>
     <script type="text/javascript" src="js/dyviz/param_editor.js"></script>
     <script type="text/javascript" src="js/dyviz/materials.js"></script>
-    <script type="text/javascript" src="js/dyviz/main.js"></script>
 
   </head>
 
@@ -43,16 +42,6 @@
     <div id="wrapper">
       <div id="container">
         <div id="sidebar-right" >
-          <div id="json-inp">
-            <input type="text" class="form-control" id="json-input" value="{load_url}">
-            <input type="button" class="btn btn-primary" value="Load Simulation" id="simulation-load">
-            <hr />
-            <br />
-            <br />
-            <input type="checkbox" id="play-looped">
-              Play Looped
-          </div><!--!json-inp-->
-          <hr />
           <div id="edit-objects">
             <div class="btn-group">
               <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
@@ -66,9 +55,8 @@
               <br />
             </div>
             <hr />
-            <div id="object-dialog" class="well"></div>
+            <div id="object-dialog" class="well" style="display:none;"></div>
           </div>
-          <hr />
         </div>
         <div id="canvas" >
           <div id="model-loader-wrapper" style="display:None">
@@ -84,11 +72,11 @@
             <button id="play-animation" class="btn btn-default btn-success disabled" >
               <span class="glyphicon glyphicon-play"></span>Play
             </button>
-            <button id="pause-animation" style="display:none;" class="btn btn-default btn-info active">
+            <button id="pause-animation" disabled style="display:inline-block;" class="btn btn-default btn-info active">
               <span class="glyphicon glyphicon-pause" ></span>
               Pause
             </button>
-            <button id="stop-animation" style="display:none;" class="btn btn-default btn-danger active">
+            <button id="stop-animation" disabled style="display:inline-block;" class="btn btn-default btn-danger active">
               <span class="glyphicon glyphicon-stop" ></span>
               Stop
             </button>
@@ -96,13 +84,14 @@
               <span class="glyphicon glyphicon-edit" ></span>
               Show Scene JSON
             </button>
-            <div id="slider-wrapper">
-              <span class="glyphicon glyphicon-time" ></span>
-              <span style="margin-right:1em;" id="time"> 0s</span>
-              <div id="time-slider" class="slider" style="float:right; width:28em;padding-left: 2em;"></div>
-            </div>
+            <label id="checkbox-play-looped"><input type="checkbox" id="play-looped">Play Looped</label>
           </div>
-          <hr />
+          <div id="slider-wrapper">
+              <span class="glyphicon glyphicon-time" ></span>
+              <span style="margin-right:1em;" id="time"> -.--- s</span>
+              <style>#container .slider.slider-horizontal{width: 80% !important; margin-left: 10px;}</style>
+              <div id="time-slider" class="slider" style="float:right;padding-left: 2em;"></div>
+          </div>
           <div id="renderer"></div>
         </div>
       </div>

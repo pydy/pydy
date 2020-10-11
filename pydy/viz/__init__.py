@@ -11,25 +11,26 @@ __all__ = []
 #    determine which names are imported when
 #    "from sympy.physics.mechanics import *" is done.
 
-import visualization_frame
+from . import visualization_frame
 from .visualization_frame import *
 __all__.extend(visualization_frame.__all__)
 
-import shapes
+from . import shapes
 from .shapes import *
 __all__.extend(shapes.__all__)
 
-import scene
+from . import scene
 from .scene import *
 __all__.extend(scene.__all__)
 
-import camera
+from . import camera
 from .camera import *
 __all__.extend(camera.__all__)
 
-import light
+from . import light
 from .light import *
 __all__.extend(light.__all__)
 
-import server
+from . import server
 from .server import *
+__all__.extend(server.__all__)

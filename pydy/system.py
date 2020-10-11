@@ -50,18 +50,22 @@ you must call ``generate_ode_function`` on your own::
     sys.integrate()
 
 """
+import warnings
+from itertools import repeat
 
+import numpy as np
 import sympy as sm
 from sympy.physics.mechanics import dynamicsymbols
+from sympy.physics.mechanics.functions import find_dynamicsymbols
 from scipy.integrate import odeint
 
 from .codegen.ode_function_generators import generate_ode_function
-from .utils import sympy_equal_to_or_newer_than
+from .utils import PyDyFutureWarning
 
 SYMPY_VERSION = sm.__version__
 
-if sympy_equal_to_or_newer_than('0.7.6'):
-    from sympy.physics.mechanics.functions import find_dynamicsymbols
+
+warnings.simplefilter('once', PyDyFutureWarning)
 
 
 class System(object):
@@ -94,6 +98,7 @@ class System(object):
     """
     def __init__(self, eom_method, constants=None, specifieds=None,
                  ode_solver=None, initial_conditions=None, times=None):
+
         self._eom_method = eom_method
 
         # TODO : What if user adds symbols after constructing a System?
@@ -131,19 +136,13 @@ class System(object):
     def coordinates(self):
         """Returns a list of the symbolic functions of time representing the
         system's generalized coordinates."""
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            return self.eom_method.q[:]
-        else:
-            return self.eom_method._q
+        return self.eom_method.q[:]
 
     @property
     def speeds(self):
         """Returns a list of the symbolic functions of time representing the
         system's generalized speeds."""
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            return self.eom_method.u[:]
-        else:
-            return self.eom_method._u
+        return self.eom_method.u[:]
 
     @property
     def states(self):
@@ -181,7 +180,9 @@ class System(object):
 
     @property
     def constants_symbols(self):
-        """The symbolic constants (not functions of time) in the system."""
+        """A set of the symbolic constants (not functions of time) in the
+        system.
+        """
         return self._constants_symbols
 
     def _check_constants(self, constants):
@@ -191,9 +192,10 @@ class System(object):
                 raise ValueError("Symbol {} is not a constant.".format(k))
 
     def _constants_padded_with_defaults(self):
-        return dict(self.constants.items() + {
-            s: 1.0 for s in self.constants_symbols if s not in
-            self.constants}.items())
+        d = dict(zip(self.constants_symbols,
+                     repeat(1.0, len(self.constants_symbols))))
+        d.update(self.constants)
+        return d
 
     @property
     def specifieds(self):
@@ -249,7 +251,7 @@ class System(object):
 
     @property
     def specifieds_symbols(self):
-        """The dynamicsymbols you must specify."""
+        """A set of the dynamicsymbols you must specify."""
         # TODO : Eventually use a method in the KanesMethod class.
         return self._specifieds_symbols
 
@@ -321,9 +323,10 @@ class System(object):
         return False
 
     def _specifieds_padded_with_defaults(self):
-        return dict(self.specifieds.items() + {
-            s: 0.0 for s in self.specifieds_symbols if not
-            self._symbol_is_in_specifieds_dict(s, self.specifieds)}.items())
+        d = dict(zip(self.specifieds_symbols,
+                     repeat(0.0, len(self.specifieds_symbols))))
+        d.update(self.specifieds)
+        return d
 
     @property
     def times(self):
@@ -331,22 +334,25 @@ class System(object):
         equations of motion are integrated, numerically.
 
         The object should be in a format which the integration module to be
-        used can accept. Since this attribute is not checked for
-        compatibility, the user becomes responsible to supply it correctly.
+        used can accept.
         """
         return self._times
 
     @times.setter
     def times(self, new_times):
-        self._times = new_times
+        self._times = np.asarray(new_times)
+        self._check_times(self._times)
 
     def _check_times(self, times):
-        """
-        Very basic checking.
-        TODO: add more checking
-        """
-        if len(times) == 0:
+        if len(times.shape) == 0:
             raise TypeError("Times supplied should be in an array_like format.")
+
+        if not np.all(times >= 0):
+            raise ValueError("Times supplied must have positive values.")
+
+        if not np.all(np.diff(times) >= 0):
+            raise ValueError("Times supplied should be in an ascending order.")
+
         return True
 
     @property
@@ -393,8 +399,10 @@ class System(object):
                 raise ValueError("Symbol {} is not a state.".format(k))
 
     def _initial_conditions_padded_with_defaults(self):
-        d = {s: 0.0 for s in self.states if s not in self.initial_conditions}
-        return dict(self.initial_conditions.items() + d.items())
+        d = dict(zip(self.states,
+                     repeat(0.0, len(self.states))))
+        d.update(self.initial_conditions)
+        return d
 
     @property
     def evaluate_ode_function(self):
@@ -444,8 +452,8 @@ class System(object):
 
     def generate_ode_function(self, **kwargs):
         """Calls ``pydy.codegen.ode_function_generators.generate_ode_function``
-        with the appropriate arguments, and sets the
-        ``evaluate_ode_function`` attribute to the resulting function.
+        with the appropriate arguments, and sets the ``evaluate_ode_function``
+        attribute to the resulting function.
 
         Parameters
         ----------
@@ -542,16 +550,16 @@ class System(object):
         # Checking for dynamic symbols outside the dynamic differential
         # equations; throws error if there is.
 
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            # TODO : KanesMethod should provide public attributes for qdot,
-            # udot, uaux, and uauxdot.
-            insyms = set(self.eom_method.q[:] + self.eom_method._qdot[:] +
-                         self.eom_method.u[:] + self.eom_method._udot[:] +
-                         uaux + uauxdot)
-        else:
-            insyms = set(self.eom_method._q + self.eom_method._qdot +
-                         self.eom_method._u + self.eom_method._udot + uaux +
-                         uauxdot)
+        # TODO : KanesMethod should provide public attributes for qdot,
+        # udot, uaux, and uauxdot.
+        # NOTE : There have been breaking changes in SymPy, e.g.
+        # https://github.com/pydy/pydy/issues/395, so all of these need to be
+        # converted to lists before summing.
+        insyms = set(list(self.eom_method.q[:]) +
+                     list(self.eom_method._qdot[:]) +
+                     list(self.eom_method.u[:]) +
+                     list(self.eom_method._udot[:]) +
+                     list(uaux) + list(uauxdot))
 
         inlist = (self.eom_method.forcing_full[:] +
                   self.eom_method.mass_matrix_full[:])
@@ -567,15 +575,11 @@ class System(object):
 
         """
         from_eoms, from_sym_lists = self._Kane_inlist_insyms()
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            functions_of_time = set()
-            for expr in from_eoms:
-                functions_of_time = functions_of_time.union(
-                    find_dynamicsymbols(expr))
-            return list(functions_of_time.difference(from_sym_lists))
-        else:
-            return list(self.eom_method._find_dynamicsymbols(
-                *self._Kane_inlist_insyms()))
+        functions_of_time = set()
+        for expr in from_eoms:
+            functions_of_time = functions_of_time.union(
+                find_dynamicsymbols(expr))
+        return functions_of_time.difference(from_sym_lists)
 
     def _Kane_constant_symbols(self):
         """Similar to ``_find_othersymbols()``, except it checks all syms used in
@@ -587,13 +591,9 @@ class System(object):
 
         """
         from_eoms, from_sym_lists = self._Kane_inlist_insyms()
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            unique_symbols = set()
-            for expr in from_eoms:
-                unique_symbols = unique_symbols.union(expr.free_symbols)
-            constants = list(unique_symbols)
-        else:
-            constants = list(self.eom_method._find_othersymbols(
-                *self._Kane_inlist_insyms()))
+        unique_symbols = set()
+        for expr in from_eoms:
+            unique_symbols = unique_symbols.union(expr.free_symbols)
+        constants = unique_symbols
         constants.remove(dynamicsymbols._t)
         return constants

@@ -27,7 +27,7 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
             onComplete: function(){
                 console.log("[PyDy INFO]: Ajax request completed, adding Objects to scene");
                 self.Scene.addObjects();
-                //self.Scene.addCameras();
+                self.Scene.addCameras();
                 self.Scene.addLights();
                 self.Parser.loadSimulation();
                 // Load UI elements relevant for animation stuff!
@@ -64,7 +64,7 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
             },
             onComplete: function(){
                 self.createTimeArray();
-
+                self.Scene.setAnimationTime(self.model.startTime);
             },
             onFailure: function() { alert('[PyDy ALERT]: Simulation File not loaded!'); },
             on404: function(){ alert("[PyDy ALERT]: Simulation File Not Found! Error:404"); }
@@ -78,14 +78,14 @@ DynamicsVisualizer.Parser = Object.extend(DynamicsVisualizer, {
           * simulation data.
         **/
         var self = this;
-        var _NtimeSteps = self.model.timeSteps;
+        var timeSteps = self.model.timeSteps;
         var timeDelta = self.model.timeDelta;
-        var time=0;
+        var time = self.model.startTime;
         self._timeArray = [];
 
-        for(var i=0;i<_NtimeSteps; i++){
+        for(var i = 0; i < timeSteps; i++){
             self._timeArray.push(time);
-            time+=timeDelta;
+            time += timeDelta;
         }
         self._finalTime = self._timeArray.slice(-1)[0];
         console.log("[PyDy INFO]: Created Time Array");

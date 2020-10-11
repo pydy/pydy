@@ -1,18 +1,25 @@
 #!/usr/bin/env python
 
-from collections import Counter
+import os
+import warnings
+import tempfile
+import shutil
 
 import numpy as np
 from numpy import testing
 import sympy as sm
-from sympy.physics.mechanics import dynamicsymbols
+import sympy.physics.mechanics as me
 from scipy.integrate import odeint
+theano = sm.external.import_module('theano')
+Cython = sm.external.import_module('Cython')
 
 from ..system import System
 from ..models import multi_mass_spring_damper, n_link_pendulum_on_cart
-from ..utils import sympy_equal_to_or_newer_than
+from ..utils import PyDyImportWarning, sympy_newer_than
 
 SYMPY_VERSION = sm.__version__
+
+warnings.simplefilter('once', PyDyImportWarning)
 
 
 class TestSystem():
@@ -22,7 +29,7 @@ class TestSystem():
         # Create a simple system with one specified quantity.
         self.sys = multi_mass_spring_damper(1, apply_gravity=True,
                                             apply_external_forces=True)
-        self.specified_symbol = self.sys.specifieds_symbols[0]
+        self.specified_symbol = next(iter(self.sys.specifieds_symbols))
         self.constant_map = dict(zip(sm.symbols('m0, k0, c0, g'),
                                      [2.0, 1.5, 0.5, 9.8]))
         self.sys.specifieds = {self.specified_symbol: np.ones(1)}
@@ -39,20 +46,21 @@ class TestSystem():
         # -----------------------------------
         sys = System(self.kane)
 
-        assert (Counter(sys.constants_symbols) ==
-                Counter(list(sm.symbols('k0, m0, g, c0'))))
-        assert sys.specifieds_symbols == [self.specified_symbol]
-        assert sys.states == dynamicsymbols('x0, v0')
+        assert (sys.constants_symbols ==
+                set(sm.symbols('k0, m0, g, c0')))
+        assert sys.specifieds_symbols == {self.specified_symbol}
+        assert sys.states == me.dynamicsymbols('x0, v0')
         assert sys.evaluate_ode_function is None
         assert sys.eom_method is self.kane
         assert sys.ode_solver is odeint
         assert sys.specifieds == dict()
         assert sys.initial_conditions == dict()
         assert sys.constants == dict()
+        assert sys.times == list()
 
         # Specify a bunch of attributes during construction.
         # --------------------------------------------------
-        ic = {dynamicsymbols('x0'): 3.6, dynamicsymbols('v0'): 4.3}
+        ic = {me.dynamicsymbols('x0'): 3.6, me.dynamicsymbols('v0'): 4.3}
         sys = System(self.kane,
                      ode_solver=odeint,
                      specifieds={self.specified_symbol: np.ones(1)},
@@ -60,13 +68,15 @@ class TestSystem():
                      constants=self.constant_map)
 
         assert sys.eom_method is self.kane
-        assert sys.specifieds.keys() == [dynamicsymbols('f0')]
-        testing.assert_allclose(sys.specifieds.values(), [np.ones(1)])
+        assert list(sys.specifieds.keys()) == [me.dynamicsymbols('f0')]
+        testing.assert_allclose(list(sys.specifieds.values()),
+                                [np.ones(1)])
         assert sys.initial_conditions.keys() == ic.keys()
-        testing.assert_allclose(sys.initial_conditions.values(), ic.values())
+        testing.assert_allclose(list(sys.initial_conditions.values()),
+                                list(ic.values()))
         assert sys.constants.keys() == self.constant_map.keys()
-        testing.assert_allclose(sys.constants.values(),
-                                self.constant_map.values())
+        testing.assert_allclose(list(sys.constants.values()),
+                                list(self.constant_map.values()))
 
         # Use old specifieds.
         # -------------------
@@ -78,22 +88,13 @@ class TestSystem():
                      constants=self.constant_map)
 
     def test_coordinates(self):
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            assert self.sys.coordinates == self.kane.q[:]
-        else:
-            assert self.sys.coordinates == self.kane._q
+        assert self.sys.coordinates == self.kane.q[:]
 
     def test_speeds(self):
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            assert self.sys.speeds == self.kane.u[:]
-        else:
-            assert self.sys.speeds == self.kane._u
+        assert self.sys.speeds == self.kane.u[:]
 
     def test_states(self):
-        if sympy_equal_to_or_newer_than('0.7.6'):
-            assert self.sys.states == self.kane.q[:] + self.kane.u[:]
-        else:
-            assert self.sys.states == self.kane._q + self.kane._u
+        assert self.sys.states == self.kane.q[:] + self.kane.u[:]
 
     def test_constants(self):
 
@@ -107,7 +108,8 @@ class TestSystem():
         sys = System(self.kane, constants=constants)
 
         assert sys.constants.keys() == constants.keys()
-        testing.assert_allclose(sys.constants.values(), constants.values())
+        testing.assert_allclose(list(sys.constants.values()),
+                                list(constants.values()))
 
         # Set constants after construction.
         # ---------------------------------
@@ -118,18 +120,19 @@ class TestSystem():
         sys.constants = constants
 
         assert sys.constants.keys() == constants.keys()
-        testing.assert_allclose(sys.constants.values(), constants.values())
+        testing.assert_allclose(list(sys.constants.values()),
+                                list(constants.values()))
 
         # Using the property as a dict.
         # -----------------------------
         sys = System(self.kane)
         # Modifying the dict directly does change the dict.
         sys.constants[sm.symbols('m0')] = 9.3
-        assert sys.constants.keys() == [sm.symbols('m0')]
-        testing.assert_allclose(sys.constants.values(), [9.3])
+        assert list(sys.constants.keys()) == [sm.symbols('m0')]
+        testing.assert_allclose(list(sys.constants.values()), [9.3])
 
         # Putting in a non-constant key does not raise exception.
-        sys.constants[dynamicsymbols('v0')] = 9.8
+        sys.constants[me.dynamicsymbols('v0')] = 9.8
         # Then, if we integrate, we do error-checking and we get an exception.
         sys.times = [0.0, 1.0]
         with testing.assert_raises(ValueError):
@@ -138,26 +141,26 @@ class TestSystem():
         # Provide a constant that isn't actually a constant.
         # --------------------------------------------------
         with testing.assert_raises(ValueError):
-            sys.constants = {dynamicsymbols('x0'): 1.3}
+            sys.constants = {me.dynamicsymbols('x0'): 1.3}
         with testing.assert_raises(ValueError):
-            sys.constants = {dynamicsymbols('f0'): 1.8}
+            sys.constants = {me.dynamicsymbols('f0'): 1.8}
 
     def test_specifieds(self):
 
         sys = System(self.kane)
         assert sys.specifieds == dict()
-        sys.specifieds = {dynamicsymbols('f0'): 5.9}
-        assert sys.specifieds.keys() == [dynamicsymbols('f0')]
-        testing.assert_allclose(sys.specifieds.values(), [5.9])
+        sys.specifieds = {me.dynamicsymbols('f0'): 5.9}
+        assert list(sys.specifieds.keys()) == [me.dynamicsymbols('f0')]
+        testing.assert_allclose(list(sys.specifieds.values()), [5.9])
 
         # Using the property as a dict.
         # -----------------------------
         # Modifying the dict directly does change the dict.
-        sys.specifieds[dynamicsymbols('f0')] = 5.1
-        assert sys.specifieds.keys() == [dynamicsymbols('f0')]
-        testing.assert_allclose(sys.specifieds.values(), [5.1])
+        sys.specifieds[me.dynamicsymbols('f0')] = 5.1
+        assert list(sys.specifieds.keys()) == [me.dynamicsymbols('f0')]
+        testing.assert_allclose(list(sys.specifieds.values()), [5.1])
         # Putting in a non-specified key does not raise exception.
-        sys.specifieds[dynamicsymbols('v0')] = 3.5
+        sys.specifieds[me.dynamicsymbols('v0')] = 3.5
         # Then, if we integrate, we do error-checking and we get an exception.
         sys.times = [0.0, 1.0]
         with testing.assert_raises(ValueError):
@@ -165,7 +168,7 @@ class TestSystem():
 
         sys = System(self.kane)
         # Putting in a value of the wrong length does not raise exception.
-        sys.specifieds[dynamicsymbols('f0')] = 3.1 * np.ones(2)
+        sys.specifieds[me.dynamicsymbols('f0')] = 3.1 * np.ones(2)
         # Then, if we integrate, we do error-checking and we get an exception.
         # TODO actually, this does not seem to throw an exception.
         # TODO with testing.assert_raises(ValueError):
@@ -178,12 +181,12 @@ class TestSystem():
         with testing.assert_raises(ValueError):
             sys.specifieds = {sm.symbols('m0'): 5.4}
         with testing.assert_raises(ValueError):
-            sys.specifieds = {dynamicsymbols('x0'): 5.1}
+            sys.specifieds = {me.dynamicsymbols('x0'): 5.1}
 
         # Complex error-checking when using property as a dict.
         # -----------------------------------------------------
         sys = System(self.kane_nlink)
-        spec_syms = sys.specifieds_symbols
+        spec_syms = list(sys.specifieds_symbols)
         times = np.linspace(0, 0.5, 10)
         sys.specifieds = {
             spec_syms[0]: lambda x, t: np.ones(t),
@@ -212,7 +215,7 @@ class TestSystem():
         # Test old way of providing specifieds.
         # -------------------------------------
         sys = System(self.kane_nlink)
-        spec_syms = sys.specifieds_symbols
+        spec_syms = list(sys.specifieds_symbols)
         # Get numbers using the new way.
         sys.specifieds = dict(zip(spec_syms, [1.0, 2.0, 3.0, 4.0]))
         sys.times = times
@@ -232,7 +235,7 @@ class TestSystem():
             sys.specifieds = {'symbols': [sm.symbols('T2, T2')],
                               'values': [1, 2]}
         with testing.assert_raises(ValueError):
-            sys.specifieds = {'symbols': [dynamicsymbols('T2')],
+            sys.specifieds = {'symbols': [me.dynamicsymbols('T2')],
                               'values': [1.0]}
 
         # Reordering causes issues!
@@ -249,10 +252,28 @@ class TestSystem():
 
         # Test with no specifieds.
         sys = multi_mass_spring_damper(1, apply_gravity=True)
-        sys.initial_conditions = {dynamicsymbols('x0'): 0.1,
-                                  dynamicsymbols('v0'): -1.0}
+        sys.initial_conditions = {me.dynamicsymbols('x0'): 0.1,
+                                  me.dynamicsymbols('v0'): -1.0}
         sys.times = times
         sys.integrate()
+
+    def test_times(self):
+        times1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        times2 = [0, -2, 7, 3, -5]
+        times3 = [1, 2, 7, 4, 5]
+        times4 = 4
+
+        sys = System(self.kane, times=times1)
+        testing.assert_allclose(sys.times, times1)
+
+        with testing.assert_raises(ValueError):
+            sys.times = times2
+
+        with testing.assert_raises(ValueError):
+            sys.times = times3
+
+        with testing.assert_raises(TypeError):
+            sys.times = times4
 
     def test_ode_solver(self):
 
@@ -268,28 +289,30 @@ class TestSystem():
     def test_initial_conditions(self):
 
         # Partially provided ic's.
-        ic = {dynamicsymbols('v0'): 6.1}
+        ic = {me.dynamicsymbols('v0'): 6.1}
 
         # Using the constructor.
         # ----------------------
         sys = System(self.kane, initial_conditions=ic)
         assert sys.initial_conditions.keys() == ic.keys()
-        testing.assert_allclose(sys.initial_conditions.values(), ic.values())
+        testing.assert_allclose(list(sys.initial_conditions.values()),
+                                list(ic.values()))
 
         # Set the attribute.
         # ------------------
         sys = System(self.kane)
         sys.initial_conditions = ic
         assert sys.initial_conditions.keys() == ic.keys()
-        testing.assert_allclose(sys.initial_conditions.values(), ic.values())
+        testing.assert_allclose(list(sys.initial_conditions.values()),
+                                list(ic.values()))
 
         # Using the property as a dict.
         # -----------------------------
         # Modifying hte dict directly does change the dict.
         sys = System(self.kane, times=[0.0, 1.0])
-        sys.initial_conditions[dynamicsymbols('x0')] = 5.8
-        assert sys.initial_conditions.keys() == [dynamicsymbols('x0')]
-        testing.assert_allclose(sys.initial_conditions.values(), [5.8])
+        sys.initial_conditions[me.dynamicsymbols('x0')] = 5.8
+        assert list(sys.initial_conditions.keys()) == [me.dynamicsymbols('x0')]
+        testing.assert_allclose(list(sys.initial_conditions.values()), [5.8])
         # Putting in a non-state key does not raise exception.
         sys.initial_conditions[sm.symbols('m0')] = 7.9
         # Then, if we integrate, we do error-checking and we get an exception.
@@ -320,7 +343,7 @@ class TestSystem():
         # n-link cart: play with specifieds.
         # ----------------------------------
         sys = System(self.kane_nlink)
-        spec_syms = sys.specifieds_symbols
+        spec_syms = list(sys.specifieds_symbols)
         rhs = sys.generate_ode_function()
         x = np.array(np.random.random(len(sys.states)))
         args = (self.sys.specifieds,
@@ -359,7 +382,7 @@ class TestSystem():
         # -----------------------------------------
         constants_dict = dict(zip(sm.symbols('m0, k0, c0, g'),
                                   [1.0, 1.0, 1.0, 1.0]))
-        specified_dict = {dynamicsymbols('f0'): 0.0}
+        specified_dict = {me.dynamicsymbols('f0'): 0.0}
         x_03 = sys.ode_solver(sys.evaluate_ode_function, [0, 0], sys.times,
                               args=(specified_dict, constants_dict))
         testing.assert_allclose(x_02, x_03)
@@ -369,7 +392,7 @@ class TestSystem():
         sys = System(self.kane, times=times)
         # I know that this is the order of the states.
         x0 = [5.1, 3.7]
-        ic = {dynamicsymbols('x0'): x0[0], dynamicsymbols('v0'): x0[1]}
+        ic = {me.dynamicsymbols('x0'): x0[0], me.dynamicsymbols('v0'): x0[1]}
         sys.initial_conditions = ic
         x_04 = sys.integrate()
         x_05 = sys.ode_solver(
@@ -381,13 +404,85 @@ class TestSystem():
 
         # Test a generator other than lambdify.
         # -------------------------------------
-        sys.generate_ode_function(generator='theano')
-        sys.times = times
-        x_06 = sys.integrate()
-        testing.assert_allclose(x_04, x_06)
+        if theano:
+            sys.generate_ode_function(generator='theano')
+            sys.times = times
+            x_06 = sys.integrate()
+            testing.assert_allclose(x_04, x_06)
+        else:
+            warnings.warn("Theano was not found so the related tests are being"
+                          " skipped.", PyDyImportWarning)
 
         # Unrecognized generator.
         # -----------------------
         sys = System(self.kane, times=times)
         with testing.assert_raises(NotImplementedError):
             sys.generate_ode_function(generator='made-up')
+
+        # Test pass kwargs to the generators.
+        if Cython:
+            self.tempdirpath = tempfile.mkdtemp()
+            prefix = 'my_test_file'
+            self.sys.generate_ode_function(generator='cython',
+                                           prefix=prefix,
+                                           tmp_dir=self.tempdirpath)
+            assert [True for f in os.listdir(self.tempdirpath)
+                    if f.startswith(prefix)]
+        else:
+            warnings.warn("Cython was not found so the related tests are being"
+                          " skipped.", PyDyImportWarning)
+    def cleanup(self):
+        shutil.rmtree(self.tempdirpath)
+
+
+def test_specifying_coordinate_issue_339():
+    """This test ensures that you can use derivatives as specified values."""
+
+    # beta will be a specified angle
+    beta = me.dynamicsymbols('beta')
+    q1, q2, q3, q4 = me.dynamicsymbols('q1, q2, q3, q4')
+    u1, u2, u3, u4 = me.dynamicsymbols('u1, u2, u3, u4')
+
+    N = me.ReferenceFrame('N')
+    A = N.orientnew('A', 'Axis', (q1, N.x))
+    B = A.orientnew('B', 'Axis', (beta, A.y))
+
+    No = me.Point('No')
+    Ao = No.locatenew('Ao', q2 * N.x + q3 * N.y + q4 * N.z)
+    Bo = Ao.locatenew('Bo', 10 * A.x + 10 * A.y + 10 * A.z)
+
+    A.set_ang_vel(N, u1 * N.x)
+    B.ang_vel_in(N)  # compute it automatically
+
+    No.set_vel(N, 0)
+    Ao.set_vel(N, u2 * N.x + u3 * N.y + u4 * N.z)
+    Bo.v2pt_theory(Ao, N, B)
+
+    body_A = me.RigidBody('A', Ao, A, 1.0, (me.inertia(A, 1, 2, 3), Ao))
+    body_B = me.RigidBody('B', Bo, B, 1.0, (me.inertia(A, 3, 2, 1), Bo))
+
+    bodies = [body_A, body_B]
+    # TODO : This should be able to be simple an empty iterable.
+    loads = [(No, 0 * N.x)]
+
+    kdes = [u1 - q1.diff(),
+            u2 - q2.diff(),
+            u3 - q3.diff(),
+            u4 - q4.diff()]
+
+    kane = me.KanesMethod(N, q_ind=[q1, q2, q3, q4],
+                          u_ind=[u1, u2, u3, u4], kd_eqs=kdes)
+
+    if sympy_newer_than('1.0'):
+        fr, frstar = kane.kanes_equations(bodies, loads)
+    else:
+        fr, frstar = kane.kanes_equations(loads, bodies)
+
+    sys = System(kane)
+
+    sys.specifieds = {(beta, beta.diff(), beta.diff().diff()):
+                      lambda x, t: np.array([1.0, 1.0, 1.0])}
+
+    sys.times = np.linspace(0, 10, 20)
+
+    sys.integrate()

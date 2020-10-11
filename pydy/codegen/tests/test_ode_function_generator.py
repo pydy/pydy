@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 from random import choice
+import warnings
 
 import numpy as np
 import scipy as sp
 import sympy as sm
+from pydy.codegen.ode_function_generators import generate_ode_function
 
 Cython = sm.external.import_module('Cython')
 theano = sm.external.import_module('theano')
@@ -14,6 +16,46 @@ from ..ode_function_generators import (ODEFunctionGenerator,
                                        LambdifyODEFunctionGenerator,
                                        CythonODEFunctionGenerator,
                                        TheanoODEFunctionGenerator)
+
+from ...utils import PyDyImportWarning
+
+warnings.simplefilter('once', PyDyImportWarning)
+
+
+def test_cse_same_numerical_results():
+    # NOTE : This ensurses that the same results are always given for the sympy
+    # cse outputs, which seem to change every version.
+
+    if not Cython:
+        return
+
+    sys = models.n_link_pendulum_on_cart(n=5, cart_force=False,
+                                         joint_torques=False)
+
+    g_no_cse = CythonODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        cse=False)
+    rhs_func_no_cse = g_no_cse.generate()
+
+    g_cse = CythonODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        cse=True)
+    rhs_func_cse = g_cse.generate()
+
+    x = np.random.random(g_cse.num_coordinates + g_cse.num_speeds)
+    t = 5.125
+    p = np.random.random(g_cse.num_constants)
+
+    np.testing.assert_allclose(rhs_func_no_cse(x, t, p),
+                               rhs_func_cse(x, t, p))
 
 
 class TestODEFunctionGenerator(object):
@@ -38,7 +80,6 @@ class TestODEFunctionGenerator(object):
         assert g.num_speeds == 2
         assert g.num_states == 4
         assert g.system_type == 'full rhs'
-
 
     def test_init_full_mass_matrix(self):
 
@@ -110,12 +151,34 @@ class TestODEFunctionGenerator(object):
 
         assert g._solve_linear_system == solver
 
+    def test_no_constants(self):
+        sys = models.multi_mass_spring_damper()
+        constant_vals = {sm.Symbol('m0'): 1.0, sm.Symbol('c0'): 2.0, sm.Symbol('k0'): 3.0}
+
+        sym_rhs = sys.eom_method.rhs()
+
+        rhs = generate_ode_function(sym_rhs, sys.coordinates, sys.speeds, constant_vals)
+        rhs2 = generate_ode_function(sym_rhs.subs(constant_vals), sys.coordinates, sys.speeds)
+
+        assert np.array_equal(rhs(np.array([1.0, 2.0]), 0.0, constant_vals),
+                              rhs2(np.array([1.0, 2.0]), 0.0))
+
 
 class TestODEFunctionGeneratorSubclasses(object):
 
-    ode_function_subclasses = [LambdifyODEFunctionGenerator,
-                               CythonODEFunctionGenerator,
-                               TheanoODEFunctionGenerator]
+    ode_function_subclasses = [LambdifyODEFunctionGenerator]
+
+    if Cython:
+        ode_function_subclasses.append(CythonODEFunctionGenerator)
+    else:
+        warnings.warn("Cython was not found so the related tests are being"
+                      " skipped.", PyDyImportWarning)
+
+    if theano:
+        ode_function_subclasses.append(TheanoODEFunctionGenerator)
+    else:
+        warnings.warn("Theano was not found so the related tests are being"
+                      " skipped.", PyDyImportWarning)
 
     def setup(self):
 
@@ -139,6 +202,12 @@ class TestODEFunctionGeneratorSubclasses(object):
         expected_xdot = np.array([v0, (-c0 * v0 - k0 * x0) / m0])
 
         np.testing.assert_allclose(xdot, expected_xdot)
+
+    def test_init_doc(self):
+
+        for Subclass in self.ode_function_subclasses:
+            assert (Subclass.__init__.__doc__ ==
+                    ODEFunctionGenerator.__init__.__doc__)
 
     def test_generate_full_rhs(self):
 
@@ -246,44 +315,14 @@ class TestODEFunctionGeneratorSubclasses(object):
 
                 np.testing.assert_allclose(xdot, expected)
 
-    def test_old_rhs_args(self):
-
-        # DEPRECATED : This should be removed before the 0.4.0 release.
-
-        # There are four specified inputs available.
-        sys = models.n_link_pendulum_on_cart(3, True, True)
-        right_hand_side = sys.eom_method.rhs()
-
-        # It is only necessary to check one Generator because all of the
-        # arg handling is shared among them.
-        g = LambdifyODEFunctionGenerator(right_hand_side, sys.coordinates,
-                                         sys.speeds, sys.constants_symbols,
-                                         specifieds=sys.specifieds_symbols)
-
-        rhs = g.generate()
-
-        x = np.random.random(g.num_states)
-        t = 0.0
-        r = np.random.random(g.num_specifieds)
-        p = np.random.random(g.num_constants)
-
-        # Compute with new style args.
-        xd_01 = rhs(x, t, r, p)
-
-        # Now check to see if old style extra args works.
-        args = {'specified': r, 'constants': p}
-
-        xd_02 = rhs(x, t, args)
-        np.testing.assert_allclose(xd_01, xd_02)
-
     def test_rhs_args(self):
         # This test takes a while to run but it checks all the combinations.
 
         # There are eight constants and four specified inputs available.
         sys = models.n_link_pendulum_on_cart(3, True, True)
         right_hand_side = sys.eom_method.rhs()
-        constants = sys.constants_symbols
-        specifieds = sys.specifieds_symbols
+        constants = list(sm.ordered(sys.constants_symbols))
+        specifieds = list(sm.ordered(sys.specifieds_symbols))
 
         constants_arg_types = [None, 'array', 'dictionary']
         specifieds_arg_types = [None, 'array', 'function', 'dictionary']
@@ -320,7 +359,7 @@ class TestODEFunctionGeneratorSubclasses(object):
                 g = LambdifyODEFunctionGenerator(right_hand_side,
                                                  sys.coordinates,
                                                  sys.speeds,
-                                                 sys.constants_symbols,
+                                                 constants,
                                                  specifieds=specifieds,
                                                  constants_arg_type=p_arg_type,
                                                  specifieds_arg_type=r_arg_type)
@@ -338,7 +377,7 @@ class TestODEFunctionGeneratorSubclasses(object):
         # Now make sure it all works with specifieds=None
         sys = models.n_link_pendulum_on_cart(3, False, False)
         right_hand_side = sys.eom_method.rhs()
-        constants = sys.constants_symbols
+        constants = list(sm.ordered(sys.constants_symbols))
 
         del last_xdot
 
@@ -348,7 +387,7 @@ class TestODEFunctionGeneratorSubclasses(object):
                 g = LambdifyODEFunctionGenerator(right_hand_side,
                                                  sys.coordinates,
                                                  sys.speeds,
-                                                 sys.constants_symbols,
+                                                 constants,
                                                  constants_arg_type=p_arg_type,
                                                  specifieds_arg_type=r_arg_type)
 
@@ -364,3 +403,207 @@ class TestODEFunctionGeneratorSubclasses(object):
                     pass
 
                 last_xdot = xdot
+
+    def test_rhs_docstring(self):
+
+        sys = models.n_link_pendulum_on_cart(2, False, False)
+        right_hand_side = sys.eom_method.rhs()
+
+        constants = list(sm.ordered(sys.constants_symbols))
+
+        constants_arg_types = [None, 'array', 'dictionary']
+
+        rhs_doc_template = \
+"""\
+Returns the derivatives of the states, i.e. numerically evaluates the right
+hand side of the first order differential equation.
+
+x' = f(x, t,{specified_call_sig} p)
+
+Parameters
+==========
+x : ndarray, shape(6,)
+    The state vector is ordered as such:
+        - q0(t)
+        - q1(t)
+        - q2(t)
+        - u0(t)
+        - u1(t)
+        - u2(t)
+t : float
+    The current time.{specifieds_explanation}{constants_explanation}
+Returns
+=======
+dx : ndarray, shape(6,)
+    The derivative of the state vector.
+
+"""
+
+        constants_doc_templates = {}
+
+        constants_doc_templates['dictionary'] = \
+"""
+p : dictionary len(6)
+    A dictionary that maps the constants symbols to their numerical values
+    with at least these keys:
+        - g
+        - l0
+        - l1
+        - m0
+        - m1
+        - m2
+"""
+
+        constants_doc_templates['array'] = \
+"""
+p : ndarray shape(6,)
+    A ndarray of floats that give the numerical values of the constants in
+    this order:
+        - g
+        - l0
+        - l1
+        - m0
+        - m1
+        - m2
+"""
+
+        constants_doc_templates[None] = \
+"""
+p : dictionary len(6) or ndarray shape(6,)
+    Either a dictionary that maps the constants symbols to their numerical
+    values or an array with the constants in the following order:
+        - g
+        - l0
+        - l1
+        - m0
+        - m1
+        - m2
+"""
+
+        for p_arg_type in constants_arg_types:
+
+            _rhs_doc_template = rhs_doc_template.format(**{
+                'specified_call_sig': '',
+                'specifieds_explanation': '',
+                'constants_explanation': constants_doc_templates[p_arg_type]
+                })
+
+            g = LambdifyODEFunctionGenerator(right_hand_side,
+                                             sys.coordinates,
+                                             sys.speeds,
+                                             constants,
+                                             constants_arg_type=p_arg_type)
+
+            rhs = g.generate()
+
+            assert (_rhs_doc_template == rhs.__doc__)
+
+        sys = models.n_link_pendulum_on_cart(2, True, True)
+        right_hand_side = sys.eom_method.rhs()
+
+        constants = list(sm.ordered(sys.constants_symbols))
+        specifieds = list(sm.ordered(sys.specifieds_symbols))
+
+        specifieds_arg_types = [None, 'array', 'function', 'dictionary']
+
+        specifieds_doc_templates = {}
+
+        specifieds_doc_templates[None] = \
+"""
+r : dictionary; ndarray, shape(3,); function
+
+    There are three options for this argument. (1) is more flexible but
+    (2) and (3) are much more efficient.
+
+    (1) A dictionary that maps the specified functions of time to floats,
+    ndarrays, or functions that produce ndarrays. The keys can be a single
+    specified symbolic function of time or a tuple of symbols. The total
+    number of symbols must be equal to 3. If the value is a
+    function it must be of the form g(x, t), where x is the current state
+    vector ndarray and t is the current time float and it must return an
+    ndarray of the correct shape. For example::
+
+      r = {a: 1.0,
+           (d, b) : np.array([1.0, 2.0]),
+           (e, f) : lambda x, t: np.array(x[0], x[1]),
+           c: lambda x, t: np.array(x[2])}
+
+    (2) A ndarray with the specified values in the correct order and of the
+    correct shape.
+
+    (3) A function that must be of the form g(x, t), where x is the current
+    state vector and t is the current time and it must return an ndarray of
+    the correct shape.
+
+    The specified inputs are, in order:
+        - F(t)
+        - T1(t)
+        - T2(t)"""
+
+        specifieds_doc_templates['array'] = \
+"""
+r : ndarray, shape(3,)
+
+    A ndarray with the specified values in the correct order and of the
+    correct shape.
+
+    The specified inputs are, in order:
+        - F(t)
+        - T1(t)
+        - T2(t)"""
+
+        specifieds_doc_templates['dictionary'] = \
+"""
+r : dictionary
+
+    A dictionary that maps the specified functions of time to floats,
+    ndarrays, or functions that produce ndarrays. The keys can be a single
+    specified symbolic function of time or a tuple of symbols. The total
+    number of symbols must be equal to 3. If the value is a
+    function it must be of the form g(x, t), where x is the current state
+    vector ndarray and t is the current time float and it must return an
+    ndarray of the correct shape. For example::
+
+      r = {a: 1.0,
+           (d, b) : np.array([1.0, 2.0]),
+           (e, f) : lambda x, t: np.array(x[0], x[1]),
+           c: lambda x, t: np.array(x[2])}
+
+    The specified inputs are, in order:
+        - F(t)
+        - T1(t)
+        - T2(t)"""
+
+        specifieds_doc_templates['function'] = \
+"""
+r : function
+
+    A function that must be of the form g(x, t), where x is the current
+    state vector and t is the current time and it must return an ndarray of
+    shape(3,).
+
+    The specified inputs are, in order:
+        - F(t)
+        - T1(t)
+        - T2(t)"""
+
+        for p_arg_type in constants_arg_types:
+            for r_arg_type in specifieds_arg_types:
+
+                _rhs_doc_template = rhs_doc_template.format(**{
+                    'specified_call_sig': ' r,',
+                    'specifieds_explanation': specifieds_doc_templates[r_arg_type],
+                    'constants_explanation': constants_doc_templates[p_arg_type]
+                    })
+
+                g = LambdifyODEFunctionGenerator(right_hand_side,
+                                                 sys.coordinates,
+                                                 sys.speeds,
+                                                 constants,
+                                                 specifieds=specifieds,
+                                                 constants_arg_type=p_arg_type,
+                                                 specifieds_arg_type=r_arg_type)
+
+                rhs = g.generate()
+
+                assert (_rhs_doc_template == rhs.__doc__)

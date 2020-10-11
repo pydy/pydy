@@ -72,7 +72,7 @@ R.set_ang_acc(N, ud[0]*R.x + ud[1]*R.y + ud[2]*R.z)
 RO.set_acc(N, RO.vel(N).diff(t, R) + cross(R.ang_vel_in(N), RO.vel(N)))
 
 # Forces and Torques
-F_P = sum([cf*uv for cf, uv in zip(CF, Y)])
+F_P = sum([cf*uv for cf, uv in zip(CF, Y)], Vector(0))
 F_RO = m*g*Y.z
 T_R = -s*R.ang_vel_in(N)
 
@@ -88,8 +88,8 @@ T_star = - dot(R.ang_acc_in(N), I)\
          - cross(R.ang_vel_in(N), dot(I, R.ang_vel_in(N)))
 
 # Isolate the parts that involve only time derivatives of u's
-R_star_udot = sum([R_star.diff(udi, N)*udi for udi in ud])
-T_star_udot = sum([T_star.diff(udi, N)*udi for udi in ud])
+R_star_udot = sum([R_star.diff(udi, N)*udi for udi in ud], Vector(0))
+T_star_udot = sum([T_star.diff(udi, N)*udi for udi in ud], Vector(0))
 for ui in u:
   assert(R_star_udot.diff(ui, N) == 0)
   assert(T_star_udot.diff(ui, N) == 0)
@@ -145,8 +145,6 @@ for i, de_rhs in enumerate(qd_rhs[1:3] + f_dyn):
     J[5*i + j] = de_rhs.diff(xi)
     for qdk, qdk_rhs in zip(qd, qd_rhs):
       J[5*i + j] += de_rhs.diff(qdk)*qdk_rhs.diff(xi)
-
-stop
 
 # Build lists of grouped equations to do CSE on
 exp_ode = qd_rhs + M_dyn + f_dyn
@@ -214,15 +212,15 @@ for zi_lhs, zi_rhs in z:
   output_code += "  " + str(zi_lhs) + " = " + ccode(zi_rhs) + ";\n"
 
 output_code += "\n  // Entries of Jacobian matrix\n"
-for i in range(8):
-  for j in range(8):
+for i in range(5):
+  for j in range(5):
     output_code += "  J({0}, {1}) = {2};\n".format(i, j,
-        ccode(exp_jac_red[8*i + j]))
+        ccode(exp_jac_red[5*i + j]))
 output_code += "\n  // Entries of Mass matrix\n"
 for i in range(3):
   for j in range(3):
     output_code += "  M_dyn({0}, {1}) = {2};\n".format(i, j,
-        ccode(exp_jac_red[64 + 3*i + j]))
+        ccode(exp_jac_red[25 + 3*i + j]))
 
 # Perform text substitutions to change symbols used for state variables and
 # their derivatives (qi, ui, qdi, udi) to the names used by the ode integrator.
@@ -233,6 +231,5 @@ output_code = re.sub(r"qd([01234])", r"dxdt[\1]", output_code)
 output_code = re.sub(r"u([012])", r"x[\1 + 5]", output_code)
 output_code = re.sub(r"ud([012])", r"dxdt[\1 + 5]", output_code)
 
-f = file("ellipsoid_no_slip.txt", 'w')
-f.write(output_code)
-f.close()
+with open("ellipsoid_no_slip.txt", 'w') as f:
+    f.write(output_code)

@@ -45,8 +45,8 @@ def eval(
     _setup_py_template = """\
 #!/usr/bin/env python
 
-from distutils.core import setup
-from distutils.extension import Extension
+from setuptools import setup
+from setuptools import Extension
 
 from Cython.Build import cythonize
 import numpy
@@ -62,7 +62,7 @@ setup(name="{prefix}",
 
     _module_counter = 0
 
-    def __init__(self, arguments, matrices, prefix='pydy_codegen'):
+    def __init__(self, arguments, matrices, prefix='pydy_codegen', cse=True):
         """
 
         Parameters
@@ -79,6 +79,8 @@ setup(name="{prefix}",
             sympy.Function that are functions of me.dynamicsymbols._t.
         prefix : string, optional
             The desired prefix for the generated files.
+        cse : boolean
+            Find and replace common sub-expressions in ``matrices`` if True.
 
         """
 
@@ -87,7 +89,8 @@ setup(name="{prefix}",
         self.arguments = arguments
         self.num_matrices = len(matrices)
         self.num_arguments = len(arguments)
-        self.c_matrix_generator = CMatrixGenerator(arguments, matrices)
+        self.c_matrix_generator = CMatrixGenerator(arguments, matrices,
+                                                   cse=cse)
 
         self._generate_code_blocks()
 
@@ -181,7 +184,7 @@ setup(name="{prefix}",
         with open(os.path.join(path, self.prefix + '.pyx'), 'w') as f:
             f.write(pyx)
 
-    def compile(self, tmp_dir=None):
+    def compile(self, tmp_dir=None, verbose=False):
         """Returns a function which evaluates the matrices.
 
         Parameters
@@ -189,6 +192,9 @@ setup(name="{prefix}",
         tmp_dir : string
             The path to an existing or non-existing directory where all of
             the generated files will be stored.
+        verbose : boolean
+            If true the output of the completed compilation steps will be
+            printed.
 
         """
 
@@ -213,8 +219,9 @@ setup(name="{prefix}",
             self.write()
             cmd = [sys.executable, self.prefix + '_setup.py', 'build_ext',
                    '--inplace']
-            subprocess.call(cmd, stderr=subprocess.STDOUT,
-                            stdout=subprocess.PIPE)
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            if verbose:
+                print(output.decode())
             cython_module = importlib.import_module(self.prefix)
         except:
             raise Exception('Failed to compile and import Cython module.')
@@ -223,7 +230,12 @@ setup(name="{prefix}",
             CythonMatrixGenerator._module_counter += 1
             os.chdir(workingdir)
             if tmp_dir is None:
-                shutil.rmtree(codedir)
+                # rmtree fails on Windows with permissions errors, so skip the
+                # removal on Windows.
+                try:
+                    shutil.rmtree(codedir)
+                except OSError:
+                    pass
 
         self.prefix = base_prefix
 

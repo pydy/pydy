@@ -2,20 +2,26 @@
 PyDy
 ====
 
-|pypi| |rtd-docs| |travis-build| |Gitter Badge|
+|pypi| |anaconda| |rtd-docs| |travis-build| |appveyor| |gitter|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pydy.svg
    :target: https://pypi.python.org/pypi/pydy
    :alt: Latest Released Version
 
-.. |rtd-docs| image:: https://readthedocs.org/projects/pydy/badge/?version=latest
-   :target: http://pydy.readthedocs.org/en/latest
-   :alt: Latest documentation
+.. |anaconda| image:: https://anaconda.org/conda-forge/pydy/badges/version.svg
+   :target: https://anaconda.org/conda-forge/pydy
+
+.. |rtd-docs| image:: https://readthedocs.org/projects/pydy/badge/?version=stable
+   :target: https://pydy.readthedocs.io/en/stable/?badge=stable
+   :alt: Documentation Status
 
 .. |travis-build| image:: https://travis-ci.org/pydy/pydy.png?branch=master
    :target: https://travis-ci.org/pydy/pydy
 
-.. |Gitter Badge| image:: https://badges.gitter.im/Join%20Chat.svg
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/orj87gyb0c1wqc6j/branch/master?svg=true
+   :target: https://ci.appveyor.com/project/moorepants/pydy/branch/master
+
+.. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/pydy/pydy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 PyDy_, short for Python Dynamics, is a tool kit written in the Python
@@ -24,80 +30,128 @@ the study of multibody dynamics. The goal is to have a modular framework and
 eventually a physics abstraction layer which utilizes a variety of backends
 that can provide the user with their desired workflow, including:
 
-.. _PyDy: http://pydy.org
-
 - Model specification
 - Equation of motion generation
 - Simulation
 - Visualization
+- Benchmarking
 - Publication
+
+.. _PyDy: http://pydy.org
 
 We started by building the SymPy_ `mechanics package`_ which provides an API
 for building models and generating the symbolic equations of motion for complex
-multibody systems. More recently we developed two packages, `pydy.codegen`
-and `pydy.viz`, for simulation and visualization of the models, respectively.
-This Python package contains these two packages and other tools for working
-with SymPy mechanics. The remaining tools currently used in the PyDy workflow
-are popular scientific Python packages such as NumPy_, SciPy_, IPython_, and
-matplotlib_ (i.e. the SciPy stack) which provide additional code for numerical
-analyses, simulation, and visualization.
+multibody systems. More recently we developed two packages, `pydy.codegen` and
+`pydy.viz`, for simulation and visualization of the models, respectively.  This
+Python package contains these two packages and other tools for working with
+mathematical models generated from SymPy mechanics. The remaining tools
+currently used in the PyDy workflow are popular scientific Python packages such
+as NumPy_, SciPy_, IPython_, Jupyter_, ipywidgets_, pythreejs_, and matplotlib_
+which provide additional code for numerical analyses, simulation, and
+visualization.
 
 .. _SymPy: http://sympy.org
 .. _mechanics package: http://docs.sympy.org/latest/modules/physics/mechanics/index.html
 .. _NumPy: http://numpy.scipy.org
 .. _SciPy: http://www.scipy.org/scipylib/index.html
 .. _IPython: http://ipython.org
+.. _Jupyter: http://jupyter.org
+.. _ipywidgets: https://ipywidgets.readthedocs.io
+.. _pythreejs: https://pythreejs.readthedocs.io
 .. _matplotlib: http://matplotlib.org
 
 Installation
 ============
 
-PyDy has hard dependencies on the following software:
+We recommend the conda_ package manager and the Anaconda_ or Miniconda_
+distributions for easy cross platform installation.
 
-- Python >= 2.7, < 3
-- setuptools
-- SymPy_ >= 0.7.4.1
-- NumPy_ >= 1.6.1
-- SciPy_ >= 0.9.0
-- IPython_ >= 0.2.0
-
-PyDy has optional dependencies on these packages:
-
-- Cython_ >= 0.15.1
-- Theano_ >= 0.6.0
-
-.. _Theano: http://deeplearning.net/software/theano/
-.. _Cython: http://cython.org/
-
-The examples may require these dependencies:
-
-- matplotlib_
-
-It's best to install the SciPy Stack dependencies using the instructions_
-provided on the SciPy website. We recommend the conda_ package manager and the
-Anaconda_ distribution for easy cross platform installation.
-
-.. _instructions: http://www.scipy.org/install.html
 .. _conda: http://conda.pydata.org/
 .. _Anaconda: http://docs.continuum.io/anaconda/
+.. _Miniconda: https://docs.conda.io/en/latest/miniconda.html
 
-Once the dependencies are installed, the latest stable version of the package
-can be downloaded from PyPi::
+Once Anaconda (or Miniconda) is installed type::
 
-   $ wget https://pypi.python.org/packages/source/p/pydy/pydy-0.2.1.tar.gz
+   $ conda install -c conda-forge pydy
 
-and extracted and installed\ [#]::
+Also, a simple way to install all of the optional dependencies is to install
+the ``pydy-optional`` metapackage using conda::
 
-   $ tar -zxvf pydy-0.2.1.tar.gz
-   $ cd pydy-0.2.1
-   $ python setup.py install
+   $ conda install -c conda-forge pydy-optional
 
-Or if you have the pip package manager installed you can simply type::
+Note that ``pydy-optional`` currently enforces the use of Jupyter 4.0, so you
+may not want to install into your root environment. Create a new environment
+for working with PyDy examples that use the embedded Jupyter visualizations::
+
+   $ conda create -n pydy -c conda-forge pydy-optional
+   $ conda activate pydy
+   (pydy)$ python -c "import pydy; print(pydy.__version__)"
+
+Other installation options
+--------------------------
+
+If you have the pip package manager installed you can type::
 
    $ pip install pydy
 
+Installing from source is also supported. The latest stable version of the
+package can be downloaded from PyPi\ [#]_::
+
+   $ wget https://pypi.python.org/packages/source/p/pydy/pydy-X.X.X.tar.gz
+
+.. [#] Change ``X.X.X`` to the latest version number.
+
+and extracted and installed\ [#]_::
+
+   $ tar -zxvf pydy-X.X.X.tar.gz
+   $ cd pydy-X.X.X
+   $ python setup.py install
+
 .. [#] For system wide installs you may need root permissions (perhaps prepend
    commands with ``sudo``).
+
+Dependencies
+------------
+
+PyDy has hard dependencies on the following software\ [#]_:
+
+.. [#] We only test PyDy with these minimum dependencies; these module versions
+       are provided in the Ubuntu 18.04 packages. Previous versions may work.
+
+- 2.7 <= Python < 3.0 or Python >= 3.5
+- setuptools >= 20.7.0
+- NumPy_ >= 1.13.3
+- SciPy_ >= 0.19.1
+- SymPy_ >= 1.1.1
+- PyWin32 >= 219 (Windows Only)
+
+PyDy has optional dependencies for extended code generation on:
+
+- Cython_ >= 0.26.1
+- Theano_ >= 0.9.0
+
+and animated visualizations with ``Scene.display_jupyter()`` on:
+
+- `Jupyter Notebook`_ >= 6.0.0 or `Jupyter Lab` >= 1.0.0
+- ipywidgets_ >= 6.0.0
+- pythreejs_ >= 2.1.1
+
+or interactive animated visualizations with ``Scene.display_ipython()`` on:
+
+- 4.0.0 <= `Jupyter Notebook`_ < 5.0.0
+- 4.0.0 <= ipywidgets_ < 5.0.0
+
+.. _Cython: http://cython.org/
+.. _Theano: http://deeplearning.net/software/theano/
+.. _Jupyter Notebook: https://jupyter-notebook.readthedocs.io
+.. _Jupyter Lab: https://jupyterlab.readthedocs.io
+
+The examples may require these dependencies:
+
+- matplotlib_ >= 2.1.1
+- version_information_
+
+.. _version_information: https://pypi.python.org/pypi/version_information
 
 Usage
 =====
@@ -118,7 +172,9 @@ influence of a spring, damper, gravity and an external force::
        | F
        V
 
-Derive the system::
+Derive the system:
+
+.. code:: python
 
    from sympy import symbols
    import sympy.physics.mechanics as me
@@ -148,46 +204,57 @@ Derive the system::
 
    kane = me.KanesMethod(ceiling, q_ind=[position], u_ind=[speed],
                          kd_eqs=kinematic_equations)
-   kane.kanes_equations(forces, particles)
+   kane.kanes_equations(particles, loads=forces)
 
 Create a system to manage integration and specify numerical values for the
-constants and specified quantities. Here, we specify sinusoidal forcing::
+constants and specified quantities. Here, we specify sinusoidal forcing:
+
+.. code:: python
 
    from numpy import array, linspace, sin
    from pydy.system import System
 
    sys = System(kane,
-                constants={mass: 1.0, stiffness: 1.0,
-                           damping: 0.2, gravity: 9.8},
+                constants={mass: 1.0, stiffness: 10.0,
+                           damping: 0.4, gravity: 9.8},
                 specifieds={force: lambda x, t: sin(t)},
                 initial_conditions={position: 0.1, speed: -1.0},
                 times=linspace(0.0, 10.0, 1000))
 
-Integrate the equations of motion to get the state trajectories::
+Integrate the equations of motion to get the state trajectories:
+
+.. code:: python
 
    y = sys.integrate()
 
-Plot the results::
+Plot the results:
+
+.. code:: python
 
    import matplotlib.pyplot as plt
 
    plt.plot(sys.times, y)
    plt.legend((str(position), str(speed)))
+   plt.xlabel('Time [s]')
    plt.show()
+
+.. image:: readme-msd-result.png
 
 Documentation
 =============
 
-The documentation is hosted at http://pydy.readthedocs.org but you can also
-build them from source using the following instructions.
+The documentation for this package is hosted at http://pydy.readthedocs.org but
+you can also build them from source using the following instructions.
 
 To build the documentation you must install the dependencies:
 
 - Sphinx_
 - numpydoc_
+- jupyter-sphinx_
 
 .. _Sphinx: http://sphinx-doc.org/
 .. _numpydoc: https://pypi.python.org/pypi/numpydoc
+.. _jupyter-sphinx: https://jupyter-sphinx.readthedocs.io/
 
 To build the HTML docs, run Make from within the ``docs`` directory::
 
@@ -242,7 +309,7 @@ repository from Github with::
 
 You should then install the dependencies for running the tests:
 
-- nose_: 1.3.0
+- nose_: 1.3.7
 - phantomjs_: 1.9.0
 
 .. _nose: https://nose.readthedocs.org
@@ -260,7 +327,7 @@ The following installation assumes you have virtualenvwrapper_ in addition to
 virtualenv and all the dependencies needed to build the various packages::
 
    $ mkvirtualenv pydy-dev
-   (pydy-dev)$ pip install numpy scipy cython nose theano sympy ipython[all]
+   (pydy-dev)$ pip install numpy scipy cython nose theano sympy ipython "notebook<5.0" "ipywidgets<5.0" version_information
    (pydy-dev)$ pip install matplotlib # make sure to do this after numpy
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
@@ -270,11 +337,11 @@ virtualenv and all the dependencies needed to build the various packages::
 
 Or with conda_::
 
-   $ conda create -n pydy-dev setuptools numpy scipy ipython ipython-notebook cython nose theano sympy matplotlib
+   $ conda create -c pydy -n pydy-dev setuptools numpy scipy ipython "notebook<5.0" "ipywidgets<5.0" cython nose theano sympy matplotlib version_information
    $ source activate pydy-dev
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
-   (pydy-dev)$ python setup.py develop
+   (pydy-dev)$ conda develop .
 
 The full Python test suite can be run with::
 
@@ -292,19 +359,6 @@ Benchmark
 Run the benchmark to test the n-link pendulum problem with the various backends::
 
    $ python bin/benchmark_pydy_code_gen.py <max # of links> <# of time steps>
-
-Related Packages
-================
-
-These are various related and similar Python packages:
-
-- https://github.com/cdsousa/sympybotics
-- https://pypi.python.org/pypi/Hamilton
-- https://pypi.python.org/pypi/arboris
-- https://pypi.python.org/pypi/PyODE
-- https://pypi.python.org/pypi/odeViz
-- https://pypi.python.org/pypi/ARS
-- https://pypi.python.org/pypi/pymunk
 
 Citation
 ========
@@ -331,71 +385,18 @@ message to our public `mailing list`_ or visit our `Gitter chatroom`_.
 If you think there’s a bug or you would like to request a feature, please open
 an `issue`_ on Github.
 
-.. _issue: https://github.com/pydy/issues
+.. _issue: https://github.com/pydy/pydy/issues
 
-Release Notes
-=============
+Related Packages
+================
 
-0.3.0
------
+These are various related and similar Python packages:
 
-User Facing
-~~~~~~~~~~~
+- https://github.com/cdsousa/sympybotics
+- https://pypi.python.org/pypi/Hamilton
+- https://pypi.python.org/pypi/arboris
+- https://pypi.python.org/pypi/PyODE
+- https://pypi.python.org/pypi/odeViz
+- https://pypi.python.org/pypi/ARS
+- https://pypi.python.org/pypi/pymunk
 
-- Removed the partial implementation of the Mesh shape. [PR `#172`]
-- Overhauled the code generation package to make the generators more easily
-  extensible and to improve simulation speed. [PR `#113`_]
-- The visualizer has been overhauled as part of Tarun Gaba's 2014 GSoC
-  internship [PR `#82`_]. Here are some of the changes:
-
-  - The JavaScript is now handled by AJAX and requires a simple server.
-  - The JavaScript has been overhauled and now uses prototype.js for object
-    oriented design.
-  - The visualizer can now be loaded in an IPython notebook via IPython's
-    widgets.
-  - A slider was added to manually control the frame playback.
-  - The visualization objects can be manipulated via the GUI.
-  - The scene json file can be edited via the GUI.
-  - The data and scene description have been separated into two json files.
-  - Different simulation files can be loaded via the GUI.
-  - Shapes can now have a material.
-  - Simulation parameters can be modified and the simulations can be rerun all
-    via the GUI.
-
-- Added a new System class and module to more seamlessly manage integrating the
-  equations of motion. [PR `#81`_]
-
-.. _#172: https://github.com/pydy/pydy/pull/172
-.. _#113: https://github.com/pydy/pydy/pull/113
-.. _#82: https://github.com/pydy/pydy/pull/82
-.. _#81: https://github.com/pydy/pydy/pull/81
-
-Development
-~~~~~~~~~~~
-
-- When using older SymPy development versions with non-PEP440 compliant version
-  identifiers, setuptools < 8 is required. [PR `#166`_]
-- Development version numbers are now PEP 440 compliant. [PR `#141`_]
-- Introduced pull request checklists and CONTRIBUTING file. [PR `#146`_]
-- Introduced light code linting into Travis. [PR `#148`_]
-
-.. _#166: https://github.com/pydy/pydy/pull/166
-.. _#141: https://github.com/pydy/pydy/pull/141
-.. _#146: https://github.com/pydy/pydy/pull/146
-.. _#148: https://github.com/pydy/pydy/pull/148
-
-0.2.1
------
-
-- Unbundled unnecessary files from tar ball.
-
-0.2.0
------
-
-- Merged pydy_viz, pydy_code_gen, and pydy_examples into the source tree.
-- Added a method to output "static" visualizations from a Scene object.
-- Dropped the matplotlib dependency and now only three.js colors are valid.
-- Added joint torques to the n_pendulum model.
-- Added basic examples for codegen and viz.
-- Graceful fail if theano or cython are not present.
-- Shapes can now use sympy symbols for geometric dimensions.
