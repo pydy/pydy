@@ -35,12 +35,12 @@ install:
       conda install numpy=1.13 scipy=0.19 sympy=1.1 cython=0.26 theano=0.9 pip coverage nose flake8 matplotlib sphinx "numpydoc<1";
     elif [[ $DEP_VERSIONS == "latest" ]] && [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
       conda install numpy scipy sympy cython theano pythreejs pip coverage nose flake8 matplotlib sphinx numpydoc jupyter_sphinx ;
-    elif [[ $DEP_VERSIONS == "latest" ]]; then  # py27
+    elif [[ $DEP_VERSIONS == "latest" ]]; then
       conda install numpy scipy sympy cython theano pythreejs pip coverage nose flake8 matplotlib sphinx "numpydoc<1";
     elif [[ $DEP_VERSIONS == "master" ]] && [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
       conda install numpy scipy mpmath fastcache cython theano pythreejs pip coverage nose flake8 matplotlib sphinx numpydoc jupyter_sphinx;
       pip install https://github.com/sympy/sympy/archive/master.zip;
-    elif [[ $DEP_VERSIONS == "master" ]]; then  # py27
+    elif [[ $DEP_VERSIONS == "master" ]]; then
       conda install "sympy=1.5" numpy scipy mpmath fastcache cython theano pythreejs pip coverage nose flake8 matplotlib sphinx "numpydoc<1";
     fi
 before_script:
