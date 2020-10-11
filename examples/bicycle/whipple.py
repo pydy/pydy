@@ -24,7 +24,8 @@ from pydy.codegen.ode_function_generators import (CythonODEFunctionGenerator,
 # TODO : Make dtk optional.
 from dtk import bicycle
 
-from utils import compare_numerically, formulate_equations_motion
+from utils import (compare_numerically, formulate_equations_motion,
+                   solve_linear_system_with_sympy_subs)
 
 ##################
 # Reference Frames
@@ -411,15 +412,9 @@ substitutions.update(dynamic_substitutions)
 
 # Try substituting values in through SymPy
 print('Substituting numerical parameters into SymPy expressions.')
-num_mass_matrix = sm.matrix2numpy(mass_matrix.xreplace(substitutions),
-                                  dtype=float)
-num_forcing_vector = sm.matrix2numpy(forcing_vector.xreplace(substitutions),
-                                     dtype=float)
-xd_from_sub = np.linalg.solve(num_mass_matrix, num_forcing_vector).flatten()
-
-num_M = sm.matrix2numpy(M.xreplace(substitutions), dtype=float)
-num_F = sm.matrix2numpy(F.xreplace(substitutions), dtype=float)
-xd_from_sub2 = np.linalg.solve(num_M, num_F).flatten()
+xd_from_sub = solve_linear_system_with_sympy_subs(mass_matrix, forcing_vector,
+                                                  substitutions)
+xd_from_sub2 = solve_linear_system_with_sympy_subs(M, F, substitutions)
 
 print('The state derivatives from substitution:')
 print(xd_from_sub)

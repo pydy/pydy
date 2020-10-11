@@ -3,6 +3,7 @@
 import numpy as np
 import sympy as sm
 import sympy.physics.mechanics as me
+from dtk import bicycle
 
 TIME = me.dynamicsymbols._t
 
@@ -538,3 +539,13 @@ def solve_for_qdots(generalized_coordinates, generalized_speed_definitions):
     qdot_exprs = A_Kqd.LUsolve(-B_K)
 
     return dict(zip(qdot, qdot_exprs))
+
+
+def solve_linear_system_with_sympy_subs(A, b, value_map):
+    """Solves Ax=b by substituting values from value_map into A and b and
+    solving with NumPy."""
+
+    num_A = sm.matrix2numpy(A.xreplace(value_map), dtype=float)
+    num_b = sm.matrix2numpy(b.xreplace(value_map), dtype=float).flatten()
+
+    return np.linalg.solve(num_A, num_b)
