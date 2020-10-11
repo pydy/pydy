@@ -155,6 +155,14 @@ id11, id22 = sm.symbols('id11 id22', real=True)
 ie11, ie22, ie33, ie31 = sm.symbols('ie11 ie22 ie33 ie31', real=True)
 if11, if22 = sm.symbols('if11 if22', real=True)
 
+constants_name_map = {sym.name: sym for sym in (rf, rr, d1, d2, d3,
+                                                l1, l2, l3, l4, g,
+                                                mc, md, me, mf,
+                                                ic11, ic22, ic33, ic31,
+                                                id11, id22,
+                                                ie11, ie22, ie33, ie31,
+                                                if11, if22)}
+
 ###########
 # Specified
 ###########
@@ -165,6 +173,9 @@ if11, if22 = sm.symbols('if11 if22', real=True)
 # T7 : steer torque
 T4, T6, T7 = mec.dynamicsymbols('T4 T6 T7')
 
+time_varying_name_map = {s.name: s for s in (q1, q2, q3, q4, q5, q6, q7, q8,
+                                             u1, u2, u3, u4, u5, u6, u7, u8,
+                                             T4, T6, T7)}
 ##################
 # Position Vectors
 ##################
@@ -405,6 +416,12 @@ for k, v in moore_input.items():
         print('{} not added to sub dict.'.format(k))
 
 specified_subs = {T4: 0.0, T6: 0.0, T7: 0.0}
+
+# TODO : there are variables defined in create_symbol_map that are needed in
+# this script.
+from utils import create_symbol_value_map
+constants_substituions, dynamic_substitution, specified_subs = \
+    create_symbol_value_map(constants_name_map, time_varying_name_map)
 
 substitutions = specified_subs.copy()
 substitutions.update(constant_substitutions)

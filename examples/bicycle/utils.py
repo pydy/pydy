@@ -1,11 +1,60 @@
 #!/usr/bin/env python
 
+from collections import OrderedDict
+
 import numpy as np
 import sympy as sm
 import sympy.physics.mechanics as me
 from dtk import bicycle
 
 TIME = me.dynamicsymbols._t
+
+
+def create_symbol_value_map(constants_name_map, time_varying_name_map):
+    """Creates a dictionary mapping the constants and variables to the input
+    values specified in BasuMandall2007.
+
+    """
+
+    # These are the Benchmark bicycle [Meijaard, et. al 2007] parameters
+    # reexpressed in the Moore 2012 definition.
+    bp = bicycle.benchmark_parameters()
+    mp = bicycle.benchmark_to_moore(bp)
+
+    # load the input values specified in Table 1 of [BasuMandal2007]_
+    basu_input = bicycle.basu_table_one_input()
+
+    # convert the Basu-Mandal values to my coordinates and speeds
+    moore_input = bicycle.basu_to_moore_input(basu_input, bp['rR'], bp['lam'])
+
+    # build dictionaries that map the Moore symbolic parameters to the converted
+    # Basu-Mandal values
+    constant_substitutions = OrderedDict()
+    for k, v in mp.items():
+        try:
+            #exec('constant_substitutions[{}] = v'.format(k))
+            #constant_substitutions[sm.Symbol(k)] = v
+            constant_substitutions[constants_name_map[k]] = v
+        except KeyError:
+            print('{} not added to sub dict.'.format(k))
+        except NameError:
+            print('{} not added to sub dict.'.format(k))
+
+    dynamic_substitutions = {}
+    for k, v in moore_input.items():
+        try:
+            #exec('dynamic_substitutions[{}] = v'.format(k))
+            dynamic_substitutions[time_varying_name_map[k]] = v
+        except KeyError:
+            print('{} not added to sub dict.'.format(k))
+        except NameError:
+            print('{} not added to sub dict.'.format(k))
+
+    specified_subs = {time_varying_name_map['T4']: 0.0,
+                      time_varying_name_map['T6']: 0.0,
+                      time_varying_name_map['T7']: 0.0}
+
+    return constant_substitutions, dynamic_substitutions, specified_subs
 
 
 def compare_numerically(expr1, expr2, n=10):
