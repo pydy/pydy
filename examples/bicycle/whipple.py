@@ -24,7 +24,7 @@ from pydy.codegen.ode_function_generators import (CythonODEFunctionGenerator,
 # TODO : Make dtk optional.
 from dtk import bicycle
 
-from utils import compare_numerically
+from utils import compare_numerically, formulate_equations_motion
 
 ##################
 # Reference Frames
@@ -209,7 +209,6 @@ print('Defining holonomic constraints.')
 
 # this constraint is enforced so that the front wheel contacts the ground
 holonomic = fn.pos_from(dn).dot(A['3'])
-#holonomic = sm.trigsimp(holonomic)
 
 print('The holonomic constraint is a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(holonomic))))
@@ -248,7 +247,6 @@ print('Defining linear velocities.')
 no.set_vel(N, 0.0 * N['1'])
 
 # mass centers
-#do.set_vel(N, do.pos_from(no).dt(N))
 do.v2pt_theory(no, N, D)
 co.v2pt_theory(do, N, C)
 ce.v2pt_theory(do, N, C)
@@ -268,8 +266,6 @@ print('Defining nonholonomic constraints.')
 nonholonomic = [fn.vel(N).dot(A['1']),
                 fn.vel(N).dot(A['2']),
                 fn.vel(N).dot(A['3'])]
-# The following is pretty slow.
-#nonholonomic = [sm.trigsimp(expr) for expr in nonholonomic]
 
 nh1 = fn.vel(N).dot(A['3'])
 nh2 = holonomic.diff(t).subs(sm.solve(kinematical, [q3.diff(t), q4.diff(t),
@@ -363,22 +359,7 @@ forcing_vector = kane.forcing.xreplace(kane.kindiffdict())
 print('The forcing vector is a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
 
-# NOTE : doing this substitution must make the expressions super long
-# because it causes all kinds of slowdowns, for example cse is slow in the
-# code gen step.
-# u3, u5, u8 are all in forcing_vector and need to be replaced by functions
-# of u4, u6, u7
-# These are the equations for u3, u5, u8 in terms of the independent speeds:
-#u_dep = kane._Ars * kane.u[:3, :]
-#print('The dependent speeds are a function of these dynamic variables:')
-#print(list(sm.ordered(mec.find_dynamicsymbols(u_dep))))
-#
-#forcing_vector = mec.msubs(forcing_vector, dict(zip([u3, u5, u8], u_dep)))
-# This takes forever.
-#print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
-
-from utils import formulate_equations_motion
-
+# Calcuate the EoMs using an independent method.
 q = (q3, q4, q5, q6, q7, q8)
 uI = (u4, u6, u7)  # independent generalized speeds
 uD = (u3, u5, u8)  # dependent generalized speeds
