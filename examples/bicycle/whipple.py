@@ -372,7 +372,7 @@ print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
 # This takes forever.
 #print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
 
-from utils import formulate_nonmin_equations_motion
+from utils import formulate_equations_motion
 
 q = (q3, q4, q5, q6, q7, q8)
 uI = (u4, u6, u7)  # independent generalized speeds
@@ -380,8 +380,8 @@ uD = (u3, u5, u8)  # dependent generalized speeds
 u = tuple(sm.ordered(uI + uD))
 u_def = {ui: qi.diff(t) for ui, qi in zip(u, q)}
 
-M, F = formulate_nonmin_equations_motion(N, bodies, q, u_def, uI, uD, nonholonomic,
-                                  dict(forces), sub_explicit_gen_dep_speeds=False)
+M, F = formulate_equations_motion(N, bodies, q, u_def, uI, uD, nonholonomic,
+                                  dict(forces))
 
 ####################################
 # Validation of non-linear equations
