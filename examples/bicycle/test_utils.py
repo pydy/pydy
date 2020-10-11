@@ -38,29 +38,6 @@ def test_decompose_linear_parts():
     assert B == B_G_exp
 
 
-def test_decompose_nonholonomic():
-    a, b, c, d, e, f, g, h, i = sm.symbols('a, b, c, d, e, f, g, h, i')
-    u = me.dynamicsymbols('u0:5')
-    uI = u[:2]
-    uD = u[2:]
-
-    expr1 = a*uI[0] + b*uI[1] + c*uD[0] + d*uD[1] + e*uD[2] + c**2
-    expr2 = f*uI[0] + g*uI[1] + h*uD[0] + i*uD[1] + a*uD[2] + b**2
-    expr3 = c*uI[0] + e*uI[1] + f*uD[0] + g*uD[1] + h*uD[2] + i**2
-
-    motion_constraints = [expr1, expr2, expr3]
-
-    A_GuI, A_GuD, B_G = decompose_nonholonomic(motion_constraints, uI, uD)
-
-    A_GuI_exp = sm.Matrix([[a, b], [f, g], [c, e]])
-    A_GuD_exp = sm.Matrix([[c, d, e], [h, i, a], [f, g, h]])
-    B_G_exp = sm.Matrix([c**2, b**2, i**2])
-
-    assert A_GuI == A_GuI_exp
-    assert A_GuD == A_GuD_exp
-    assert B_G == B_G_exp
-
-
 def test_formulate_equations_of_motion():
     pass
 

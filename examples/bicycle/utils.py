@@ -6,53 +6,6 @@ import sympy.physics.mechanics as me
 TIME = me.dynamicsymbols._t
 
 
-def decompose_fstar(fstar, ind_gen_speeds, dep_gen_speeds=None):
-    """Decomposes the generalized inertial forces, Kane's F*, into the linear
-    coefficient matrices corresponding to the independent and dependent
-    generalized speeds and the remaining vector that of terms that are not
-    coefficients.
-
-    Fs = A_FsI * uI' + A_FsD * uD' + B_Fs
-
-    Parameters
-    ==========
-    fstar : Matrix, shape(p, 1)
-        Column matrix of expressions representing Fr* in Kane's equations. Fr*
-        should be a function of (u', u, q, t) only.
-    ind_gen_speeds : Sequence[Function]
-        A sequence of arbitrary functions of time that represent the
-        independent generalized speeds.
-    dep_gen_speeds : Sequence[Function]
-        A sequence of arbitrary functions of time that represent the
-        dependent generalized speeds.
-
-    Returns
-    =======
-    B_Fs : Matrix, shape(p, 1)
-    A_FI : Matrix, shape(p, p)
-        Linear coefficients of the indepedent generalized accelerations.
-    A_FsD : Matrix, shape(p, m)
-        Linear coefficients of the depedent generalized accelerations.
-
-    """
-    t = TIME
-
-    uI_dot = sm.Matrix(ind_gen_speeds).diff(t)
-    A_FstarI = fstar.jacobian(uI_dot)
-
-    udot_repl = {udot: 0 for udot in uI_dot}
-
-    if dep_gen_speeds is not None:
-        uD_dot = sm.Matrix(dep_gen_speeds).diff(t)
-        A_FstarD = fstar.jacobian(uD_dot)
-        udot_repl.update({udot: 0 for udot in uD_dot})
-        B_Fstar = fstar.xreplace(udot_repl)
-        return B_Fstar, A_FstarI, A_FstarD
-    else:
-        B_Fstar = fstar.xreplace(udot_repl)
-        return B_Fstar, A_FstarI
-
-
 def decompose_linear_parts(F, *xs):
     """Returns the linear coefficient matrices associated with the provided
     vectors and the remainder vector.
@@ -77,53 +30,21 @@ def decompose_linear_parts(F, *xs):
     Ai, ..., An : Matrix
     B : Matrix, shape(n, 1)
 
+    Notes
+    =====
+    If xi = xj', then make sure xj'is passed in first to guarantee proper
+    replacement.
+
     """
     F = sm.Matrix(F)
-    repl = {}
     matrices = []
     for xi in xs:
         Ai = F.jacobian(xi)
         matrices.append(Ai)
-        repl.update({xij: 0 for xij in xi})
-
-    B = F.xreplace(repl)
-    matrices.append(B)
-
+        repl = {xij: 0 for xij in xi}
+        F = F.xreplace(repl)  # remove Ai*xi from F
+    matrices.append(F)
     return tuple(matrices)
-
-
-def decompose_nonholonomic(G, ind_gen_speeds, dep_gen_speeds):
-    """Decomposes the nonholonomic constraints into linear coefficient matrices
-    and the remainder.
-
-    The nonholonmic constraint equations G are linear in all of the generalized
-    speeds and can be decomposed as::
-
-       G(u, q, t) = A_GuI(q, t)*uI(t) + A_GuD(q, t)*uD(t) + B_G(q, t) = 0
-
-    Parameters
-    ==========
-    G : Sequence[Expr], len(m)
-        Column matrix of expressions that equate to zero.
-    ind_gen_speeds : Sequence[Function], len(p)
-        Ordered sequence of arbitrary functions of time that represent the
-        independent generalized speeds.
-    dep_gen_speeds : Sequence[Function], len(m)
-        Ordered sequence of arbitrary functions of time that represent the
-        dependent generalized speeds.
-
-    """
-
-    G = sm.Matrix(G)
-
-    u_repl = {u: 0 for u in ind_gen_speeds}
-    u_repl.update({u: 0 for u in dep_gen_speeds})
-
-    A_GuI = G.jacobian(ind_gen_speeds)
-    A_GuD = G.jacobian(dep_gen_speeds)
-    B_G = G.xreplace(u_repl)
-
-    return A_GuI, A_GuD, B_G
 
 
 def formulate_equations_motion(newtonian_frame,
@@ -172,7 +93,7 @@ def formulate_equations_motion(newtonian_frame,
     kin_diff_map = solve_for_qdots(q, generalized_speed_defs)
 
     print('Solving for the dependent generalized speeds')
-    A_GuI, A_GuD, B_G = decompose_nonholonomic(motion_constraints, uI, uD)
+    A_GuI, A_GuD, B_G = decompose_linear_parts(motion_constraints, uI, uD)
     uD_of_uI = A_GuD.LUsolve(-A_GuI*sm.Matrix(uI) - B_G)
 
     if sub_explicit_gen_dep_speeds:
@@ -331,13 +252,13 @@ def formulate_mass_matrix_form(Frstar, Fr, uI, uD, kin_diff_map,
     t = TIME
 
     print('Taking the time derivative of the nonholomic constraints.')
-    A_GuI, A_GuD, B_G = decompose_nonholonomic(nonholonomic, uI, uD)
+    A_GuI, A_GuD, B_G = decompose_linear_parts(nonholonomic, uI, uD)
     A_GuI_dot = A_GuI.diff(t).xreplace(kin_diff_map)
     A_GuD_dot = A_GuD.diff(t).xreplace(kin_diff_map)
     B_G_dot = B_G.diff(t).xreplace(kin_diff_map)
 
     print('Decomposing F*')
-    B_Fstar, A_FstarI, A_FstarD = decompose_fstar(Frstar, uI, uD)
+    A_FstarI, A_FstarD, B_Fstar = decompose_linear_parts(Frstar, uI, uD)
 
     print('B_F*')
     print(list(sm.ordered(me.find_dynamicsymbols(B_Fstar))))
