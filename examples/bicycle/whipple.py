@@ -19,13 +19,17 @@ import numpy as np
 from numpy import testing
 import sympy as sm
 import sympy.physics.mechanics as mec
-from pydy.codegen.ode_function_generators import CythonODEFunctionGenerator
+from pydy.codegen.ode_function_generators import (CythonODEFunctionGenerator,
+                                                  LambdifyODEFunctionGenerator)
 # TODO : Make dtk optional.
 from dtk import bicycle
+
+from utils import compare_numerically
 
 ##################
 # Reference Frames
 ##################
+
 
 class ReferenceFrame(mec.ReferenceFrame):
     """Subclass that enforces the desired unit vector indice style."""
@@ -36,7 +40,7 @@ class ReferenceFrame(mec.ReferenceFrame):
         kwargs.pop('latexs', None)
 
         lab = args[0].lower()
-        tex = '\hat{{{}}}_{}'
+        tex = r'\hat{{{}}}_{}'
 
         super(ReferenceFrame, self).__init__(*args,
                                              indices=('1', '2', '3'),
@@ -44,6 +48,7 @@ class ReferenceFrame(mec.ReferenceFrame):
                                                      tex.format(lab, '2'),
                                                      tex.format(lab, '3')),
                                              **kwargs)
+
 
 print('Defining reference frames.')
 
@@ -266,11 +271,11 @@ nonholonomic = [fn.vel(N).dot(A['1']),
 # The following is pretty slow.
 #nonholonomic = [sm.trigsimp(expr) for expr in nonholonomic]
 
-# TODO : simplify(nh1-nh2) doesn't give me zero
-#nh1 = fn.vel(N).dot(A['3'])
-#nh2 = holonomic.diff(t).subs(sm.solve(kinematical, [q3.diff(t), q4.diff(t),
-                                                    #q5.diff(t), q7.diff(t)],
-                                      #dict=True)[0])
+nh1 = fn.vel(N).dot(A['3'])
+nh2 = holonomic.diff(t).subs(sm.solve(kinematical, [q3.diff(t), q4.diff(t),
+                                                    q5.diff(t), q7.diff(t)],
+                                      dict=True)[0])
+compare_numerically(nh1, nh2)  # shows that nh1 and nh2 are equivalent
 
 print('The nonholonomic constraints are a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(sm.Matrix(nonholonomic)))))

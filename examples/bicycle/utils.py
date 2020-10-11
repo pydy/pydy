@@ -1,9 +1,36 @@
 #!/usr/bin/env python
 
+import numpy as np
 import sympy as sm
 import sympy.physics.mechanics as me
 
 TIME = me.dynamicsymbols._t
+
+
+def compare_numerically(expr1, expr2, n=10):
+    """Compares two SymPy expressions by evaluting with a set of random
+    floating point inputs."""
+
+    time_varying_symbols1 = me.find_dynamicsymbols(expr1)
+    constants1 = expr1.free_symbols
+    constants1.remove(TIME)
+    args1 = tuple(time_varying_symbols1) + tuple(constants1)
+
+    time_varying_symbols2 = me.find_dynamicsymbols(expr2)
+    constants2 = expr2.free_symbols
+    constants2.remove(TIME)
+    args2 = tuple(time_varying_symbols2) + tuple(constants2)
+
+    # Make the arguments the union of args for both expressions.
+    args = tuple(sm.ordered(set(args1 + args2)))
+
+    eval_expr1 = sm.lambdify(args, expr1)
+    eval_expr2 = sm.lambdify(args, expr2)
+
+    for i in range(n):
+        input_vals = np.random.random(len(args))
+        np.testing.assert_allclose(eval_expr1(*input_vals),
+                                   eval_expr2(*input_vals))
 
 
 def decompose_linear_parts(F, *x):
@@ -137,6 +164,13 @@ def formulate_equations_motion(newtonian_frame,
     print('Solving for the dependent generalized speeds')
     A_GuD, B_G = decompose_linear_parts(motion_constraints, uD)
     uD_of_uI = A_GuD.LUsolve(-B_G)
+
+    # TODO : For some reason if the below lines are used instead of the above
+    # two, I get different results in the final ODE evaluation output for the
+    # bicycle. But they seem to compare numerically fine.
+    #AI, AD, BG = decompose_linear_parts(motion_constraints, uI, uD)
+    #uD_of_uI2 = AD.LUsolve(-AI*sm.Matrix(uI) - BG)
+    #compare_numerically(uD_of_uI, uD_of_uI2, n=1000)
 
     if sub_explicit_gen_dep_speeds:
         uD_repl = dict(zip(uD, uD_of_uI))
