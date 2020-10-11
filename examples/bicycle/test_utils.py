@@ -1,7 +1,7 @@
 import sympy as sm
 import sympy.physics.mechanics as me
 
-from utils import *
+from utils import decompose_linear_parts, inv_of_3_by_3, solve_for_qdots
 
 t = me.dynamicsymbols._t
 
@@ -36,6 +36,13 @@ def test_decompose_linear_parts():
 
     assert A == A_exp
     assert B == B_G_exp
+
+    A, B = decompose_linear_parts(motion_constraints, uD)
+    exprs_for_uD_1 = A.LUsolve(-B)
+    A1, A2, B2 = decompose_linear_parts(motion_constraints, uI, uD)
+    exprs_for_uD_2 = A2.LUsolve(-A1*sm.Matrix(uI) - B2)
+
+    assert sm.simplify(exprs_for_uD_1 - exprs_for_uD_2) == sm.zeros(3, 1)
 
 
 def test_formulate_equations_of_motion():
