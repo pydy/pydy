@@ -1,0 +1,472 @@
+==============================
+Carvallo-Whipple Bicycle Model
+==============================
+
+.. note::
+
+   You can download this example as a Python script:
+   :jupyter-download:script:`carvallo-whipple` or Jupyter notebook:
+   :jupyter-download:notebook:`carvallo-whipple`.
+
+.. jupyter-execute::
+
+   from collections import OrderedDict
+
+   import numpy as np
+   import sympy as sm
+   import sympy.physics.mechanics as mec
+   from pydy.system import System
+
+Reference Frames
+================
+
+.. jupyter-execute::
+
+   class ReferenceFrame(mec.ReferenceFrame):
+      """Subclass that enforces the desired unit vector indice style."""
+
+      def __init__(self, *args, **kwargs):
+
+         kwargs.pop('indices', None)
+         kwargs.pop('latexs', None)
+
+         lab = args[0].lower()
+         tex = r'\hat{{{}}}_{}'
+
+         super(ReferenceFrame, self).__init__(*args,
+                                                indices=('1', '2', '3'),
+                                                latexs=(tex.format(lab, '1'),
+                                                      tex.format(lab, '2'),
+                                                      tex.format(lab, '3')),
+                                                **kwargs)
+
+   # Newtonian Frame
+   N = ReferenceFrame('N')
+   # Yaw Frame
+   A = ReferenceFrame('A')
+   # Roll Frame
+   B = ReferenceFrame('B')
+   # Rear Frame
+   C = ReferenceFrame('C')
+   # Rear Wheel Frame
+   D = ReferenceFrame('D')
+   # Front Frame
+   E = ReferenceFrame('E')
+   # Front Wheel Frame
+   F = ReferenceFrame('F')
+
+Generalized Coordinates and Speeds
+==================================
+
+# All the following are a function of time.
+
+.. jupyter-execute::
+
+   t = mec.dynamicsymbols._t
+
+# q1: perpendicular distance from the n2> axis to the rear contact
+#     point in the ground plane
+# q2: perpendicular distance from the n1> axis to the rear contact
+#     point in the ground plane
+# q3: frame yaw angle
+# q4: frame roll angle
+# q5: frame pitch angle
+# q6: front wheel rotation angle
+# q7: steering rotation angle
+# q8: rear wheel rotation angle
+# q9: perpendicular distance from the n2> axis to the front contact
+#     point in the ground plane
+# q10: perpendicular distance from the n1> axis to the front contact
+#     point in the ground plane
+
+.. jupyter-execute::
+
+   q1, q2, q3, q4 = mec.dynamicsymbols('q1 q2 q3 q4')
+   q5, q6, q7, q8 = mec.dynamicsymbols('q5 q6 q7 q8')
+
+   u1, u2, u3, u4 = mec.dynamicsymbols('u1 u2 u3 u4')
+   u5, u6, u7, u8 = mec.dynamicsymbols('u5 u6 u7 u8')
+
+Orientation of Reference Frames
+===============================
+
+.. jupyter-execute::
+
+   # rear frame yaw
+   A.orient(N, 'Axis', (q3, N['3']))
+   # rear frame roll
+   B.orient(A, 'Axis', (q4, A['1']))
+   # rear frame pitch
+   C.orient(B, 'Axis', (q5, B['2']))
+   # front frame steer
+   E.orient(C, 'Axis', (q7, C['3']))
+
+Constants
+=========
+
+# geometry
+# rf: radius of front wheel
+# rr: radius of rear wheel
+# d1: the perpendicular distance from the steer axis to the center
+#     of the rear wheel (rear offset)
+# d2: the distance between wheels along the steer axis
+# d3: the perpendicular distance from the steer axis to the center
+#     of the front wheel (fork offset)
+# l1: the distance in the c1> direction from the center of the rear
+#     wheel to the frame center of mass
+# l2: the distance in the c3> direction from the center of the rear
+#     wheel to the frame center of mass
+# l3: the distance in the e1> direction from the front wheel center to
+#     the center of mass of the fork
+# l4: the distance in the e3> direction from the front wheel center to
+#     the center of mass of the fork
+
+.. jupyter-execute::
+
+   rf, rr = sm.symbols('rf rr', real=True, positive=True)
+   d1, d2, d3 = sm.symbols('d1 d2 d3', real=True)
+   l1, l2, l3, l4 = sm.symbols('l1 l2 l3 l4', real=True)
+
+   # acceleration due to gravity
+   g = sm.symbols('g', real=True)
+
+   # mass
+   mc, md, me, mf = sm.symbols('mc md me mf', real=True, positive=True)
+
+   # inertia
+   ic11, ic22, ic33, ic31 = sm.symbols('ic11 ic22 ic33 ic31', real=True)
+   id11, id22 = sm.symbols('id11 id22', real=True)
+   ie11, ie22, ie33, ie31 = sm.symbols('ie11 ie22 ie33 ie31', real=True)
+   if11, if22 = sm.symbols('if11 if22', real=True)
+
+Specified
+=========
+
+.. jupyter-execute::
+
+   # control torques
+   # T4 : roll torque
+   # T6 : rear wheel torque
+   # T7 : steer torque
+   T4, T6, T7 = mec.dynamicsymbols('T4 T6 T7')
+
+Position Vectors
+================
+
+.. jupyter-execute::
+
+   # newtonian origin
+   no = mec.Point('no')
+
+   # newtonian origin to rear wheel center
+   do = mec.Point('do')
+   do.set_pos(no, -rr * B['3'])
+
+   # rear wheel center to bicycle frame center
+   co = mec.Point('co')
+   co.set_pos(do, l1 * C['1'] + l2 * C['3'])
+
+   # rear wheel center to steer axis point
+   ce = mec.Point('ce')
+   ce.set_pos(do, d1 * C['1'])
+
+   # steer axis point to the front wheel center
+   fo = mec.Point('fo')
+   fo.set_pos(ce, d2 * E['3'] + d3 * E['1'])
+
+   # front wheel center to front frame center
+   eo = mec.Point('eo')
+   eo.set_pos(fo, l3 * E['1'] + l4 * E['3'])
+
+   # locate the points fixed on the wheel which instaneously touch the ground
+   # rear
+   dn = mec.Point('dn')
+   dn.set_pos(do, rr * B['3'])
+   # front
+   fn = mec.Point('fn')
+   fn.set_pos(fo, rf * E['2'].cross(A['3']).cross(E['2']).normalize())
+
+Holonomic Constraint
+====================
+
+# this constraint is enforced so that the front wheel contacts the ground
+
+.. jupyter-execute::
+
+   holonomic = fn.pos_from(dn).dot(A['3'])
+
+Kinematical Differential Equations
+==================================
+
+
+.. jupyter-execute::
+
+   kinematical = [q3.diff(t) - u3,  # yaw
+                  q4.diff(t) - u4,  # roll
+                  q5.diff(t) - u5,  # pitch
+                  q7.diff(t) - u7]  # steer
+
+Angular Velocities
+==================
+
+.. jupyter-execute::
+
+   A.set_ang_vel(N, u3 * N['3'])  # yaw rate
+   B.set_ang_vel(A, u4 * A['1'])  # roll rate
+   C.set_ang_vel(B, u5 * B['2'])  # pitch rate
+   D.set_ang_vel(C, u6 * C['2'])  # rear wheel rate
+   E.set_ang_vel(C, u7 * C['3'])  # steer rate
+   F.set_ang_vel(E, u8 * E['2'])  # front wheel rate
+
+Linear Velocities
+=================
+
+.. jupyter-execute::
+
+   # origin is fixed
+   no.set_vel(N, 0.0 * N['1'])
+
+   # mass centers
+   do.v2pt_theory(no, N, D)
+   co.v2pt_theory(do, N, C)
+   ce.v2pt_theory(do, N, C)
+   fo.v2pt_theory(ce, N, E)
+   eo.v2pt_theory(fo, N, E)
+
+   # wheel contact velocities
+   dn.set_vel(N, 0.0 * N['1'])
+   fn.v2pt_theory(fo, N, F)
+
+Motion Constraints
+==================
+
+.. jupyter-execute::
+
+   nonholonomic = [fn.vel(N).dot(A['1']),
+                   fn.vel(N).dot(A['2']),
+                   fn.vel(N).dot(A['3'])]
+
+Inertia
+=======
+
+.. jupyter-execute::
+
+   Ic = mec.inertia(C, ic11, ic22, ic33, 0.0, 0.0, ic31)
+   Id = mec.inertia(C, id11, id22, id11, 0.0, 0.0, 0.0)
+   Ie = mec.inertia(E, ie11, ie22, ie33, 0.0, 0.0, ie31)
+   If = mec.inertia(E, if11, if22, if11, 0.0, 0.0, 0.0)
+
+Rigid Bodies
+============
+
+.. jupyter-execute::
+
+   rear_frame = mec.RigidBody('Rear Frame', co, C, mc, (Ic, co))
+   rear_wheel = mec.RigidBody('Rear Wheel', do, D, md, (Id, do))
+   front_frame = mec.RigidBody('Front Frame', eo, E, me, (Ie, eo))
+   front_wheel = mec.RigidBody('Front Wheel', fo, F, mf, (If, fo))
+
+   bodies = [rear_frame, rear_wheel, front_frame, front_wheel]
+
+Generalized Active Forces
+=========================
+
+.. jupyter-execute::
+
+   # gravity
+   Fco = (co, mc * g * A['3'])
+   Fdo = (do, md * g * A['3'])
+   Feo = (eo, me * g * A['3'])
+   Ffo = (fo, mf * g * A['3'])
+
+   # input torques
+   Tc = (C, T4 * A['1'] - T6 * B['2'] - T7 * C['3'])
+   Td = (D, T6 * C['2'])
+   Te = (E, T7 * C['3'])
+
+   forces = [Fco, Fdo, Feo, Ffo, Tc, Td, Te]
+
+Kane's Method
+=============
+
+.. jupyter-execute::
+
+   kane = mec.KanesMethod(N,
+                        [q3, q4, q7],  # yaw, roll, steer
+                        [u4, u6, u7],  # roll rate, rear wheel rate, steer rate
+                        kd_eqs=kinematical,
+                        q_dependent=[q5],  # pitch angle
+                        configuration_constraints=[holonomic],
+                        u_dependent=[u3, u5, u8],  # yaw rate, pitch rate, front wheel rate
+                        velocity_constraints=nonholonomic)
+
+   fr, frstar = kane.kanes_equations(bodies, forces)
+
+Simulating the system
+=====================
+
+Now that we have defined the mass-spring-damper system, we are going to
+simulate it.
+
+PyDy's ``System`` is a wrapper that holds the Kanes object to integrate the
+equations of motion using numerical values of constants.
+
+.. jupyter-execute::
+
+    from pydy.system import System
+    sys = System(kane)
+
+Now, we specify the numerical values of the constants and the initial values of
+states in the form of a dict.
+
+.. jupyter-execute::
+
+    sys.constants = {
+       rf: 0.35,
+       rr: 0.3,
+       d1: 0.9534570696121849,
+       d3: 0.03207142672761929,
+       d2: 0.2676445084476887,
+       l1: 0.4707271515135145,
+       l2: -0.47792881146460797,
+       l4: -0.3699518200282974,
+       l3: -0.00597083392418685,
+       mc: 85.0,
+       md: 2.0,
+       me: 4.0,
+       mf: 3.0,
+       id11: 0.0603,
+       id22: 0.12,
+       if11: 0.1405,
+       if22: 0.28,
+       ic11: 7.178169776497895,
+       ic22: 11.0,
+       ic31: 3.8225535938357873,
+       ic33: 4.821830223502103,
+       ie11: 0.05841337700152972,
+       ie22: 0.06,
+       ie31: 0.009119225261946298,
+       ie33: 0.007586622998470264,
+       g: 9.81
+    }
+
+    initial_speed = 4.6  # m/s
+    initial_roll_rate = 0.5  # rad/s
+
+    eval_holonomic = sm.lambdify((q5, q4, q7, d1, d2, d3, rf, rr), holonomic)
+    from scipy.optimize import fsolve
+    initial_pitch_angle = float(fsolve(eval_holonomic, 0.0, args=(1e-12, 1e-12, sys.constants[d1],
+                                 sys.constants[d2], sys.constants[d3],
+                                 sys.constants[rf], sys.constants[rr])))
+
+    #from dtk.bicycle import pitch_from_roll_and_steer
+    #initial_pitch_angle = pitch_from_roll_and_steer(0., 0., sys.constants[rf],
+        #sys.constants[rr], sys.constants[d1], sys.constants[d2], sys.constants[d3])
+
+    np.rad2deg(initial_pitch_angle)
+
+.. jupyter-execute::
+
+    sys.initial_conditions = {q3: 1e-12,
+                              q4: 1e-12,
+                              q5: initial_pitch_angle,
+                              q7: 1e-12,
+                              u3: 1e-12,
+                              u4: initial_roll_rate,
+                              u5: 1e-12,
+                              u6: -initial_speed/sys.constants[rr],
+                              u7: 1e-12,
+                              u8: -initial_speed/sys.constants[rf]}
+
+We must generate a time vector over which the integration will be carried out.
+NumPy's ``linspace`` is often useful for this.
+
+.. jupyter-execute::
+
+    from numpy import linspace
+    fps = 60
+    duration = 5.0
+    sys.times = linspace(0.0, duration, num=int(duration*fps))
+
+The trajectory of the states over time can be found by calling the
+``.integrate()`` method.
+
+.. jupyter-execute::
+
+   sys.generate_ode_function(generator='cython')
+
+   x_trajectory = sys.integrate()
+
+.. jupyter-execute::
+
+   import matplotlib.pyplot as plt
+   fig, axes = plt.subplots(len(sys.states), 1)
+   for ax, traj in zip(axes, x_trajectory.T):
+       ax.plot(sys.times, traj)
+
+Visualizing the System
+======================
+
+PyDy has a native module ``pydy.viz`` which is used to visualize a System in an
+interactive 3D GUI.
+
+.. jupyter-execute::
+
+    from pydy.viz import *
+
+For visualizing the system, we need to create shapes for the objects we wish to
+visualize, and map each of them to a ``VisualizationFrame``, which holds the
+position and orientation of the object. First create a sphere to represent the
+bob and attach it to the point :math:`P` and the ceiling reference frame (the
+sphere does not rotate with respect to the ceiling).
+
+Cylinder axes are along the y axis.
+
+.. jupyter-execute::
+
+    rear_wheel_circle = Cylinder(radius=sys.constants[rr], length=0.01,
+                                 color="green", name='rear wheel')
+    front_wheel_circle = Cylinder(radius=sys.constants[rf], length=0.01,
+                                  color="green", name='front wheel')
+    rotatedB = B #.orientnew("B_r", 'Axis', [sm.pi/2, B.x])
+    rotatedE = E #.orientnew("E_r", 'Axis', [sm.pi/2, E.x])
+    rear_wheel_vframe = VisualizationFrame(rotatedB, do, rear_wheel_circle)
+    front_wheel_vframe = VisualizationFrame(rotatedE, fo, front_wheel_circle)
+
+.. jupyter-execute::
+
+    d1_cylinder = Cylinder(radius=0.02, length=sys.constants[d1],
+                           color='black', name='rear frame d1')
+    d2_cylinder = Cylinder(radius=0.02, length=sys.constants[d2],
+                           color='black', name='front frame d2')
+    d3_cylinder = Cylinder(radius=0.02, length=sys.constants[d3],
+                           color='black', name='front frame d3')
+
+    d1_frame = VisualizationFrame(C.orientnew('C_r', 'Axis', (sm.pi/2, C.z)),
+                                  do.locatenew('d1_half', d1/2*C.x), d1_cylinder)
+    d2_frame = VisualizationFrame(E.orientnew('E_r', 'Axis', (-sm.pi/2, E.x)),
+                                  fo.locatenew('d2_half', -d3*E.x - d2/2*E.z), d2_cylinder)
+    d3_frame = VisualizationFrame(E.orientnew('E_r', 'Axis', (sm.pi/2, E.z)),
+                                  fo.locatenew('d3_half', -d3/2*E.x), d3_cylinder)
+
+Now we initialize a Scene. A Scene contains all the information required to
+visualize a ``System`` onto a canvas. It takes a ReferenceFrame and Point as
+arguments.
+
+.. jupyter-execute::
+
+    scene = Scene(N, no, system=sys)
+
+We provide the VisualizationFrames, which we want to visualize as a list to
+scene.
+
+.. jupyter-execute::
+
+    scene.visualization_frames = [front_wheel_vframe, rear_wheel_vframe,
+                                  d1_frame, d2_frame, d3_frame]
+
+Now, we call the display method.
+
+.. jupyter-execute::
+
+    scene.display_jupyter(axes_arrow_length=5.0)
