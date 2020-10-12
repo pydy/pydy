@@ -75,11 +75,11 @@ import numpydoc
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'numpydoc',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
+    'numpydoc',
 ]
 
 # NOTE : jupyter_sphinx is only available on Python 3.5+, make it an optional

@@ -7,10 +7,14 @@ import os
 
 import sympy as sm
 try:
-    from sympy.printing.ccode import C99CodePrinter as CCodePrinter
-except ImportError:
-    # SymPy 1.0 and lower uses this version.
-    from sympy.printing.ccode import CCodePrinter
+    try:
+        from sympy.printing.ccode import C99CodePrinter as CCodePrinter
+    except ImportError:
+        # SymPy 1.0 and lower uses this version.
+        from sympy.printing.ccode import CCodePrinter
+except ModuleNotFoundError:
+    # SymPy > 1.5 renamed the module ccode to c
+    from sympy.printing.c import C99CodePrinter as CCodePrinter
 
 from .matrix_generator import MatrixGenerator
 from ..utils import wrap_and_indent
