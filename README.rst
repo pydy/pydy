@@ -116,19 +116,19 @@ Dependencies
 PyDy has hard dependencies on the following software\ [#]_:
 
 .. [#] We only test PyDy with these minimum dependencies; these module versions
-       are provided in the Ubuntu 18.04 packages. Previous versions may work.
+       are provided in the Ubuntu 20.04 packages. Previous versions may work.
 
-- 2.7 <= Python < 3.0 or Python >= 3.5
+- 2.7 <= Python < 3.0 or Python >= 3.6
 - setuptools >= 20.7.0
-- NumPy_ >= 1.13.3
-- SciPy_ >= 0.19.1
-- SymPy_ >= 1.1.1
+- NumPy_ >= 1.16.5
+- SciPy_ >= 1.3.3
+- SymPy_ >= 1.5.1
 - PyWin32 >= 219 (Windows Only)
 
 PyDy has optional dependencies for extended code generation on:
 
-- Cython_ >= 0.26.1
-- Theano_ >= 0.9.0
+- Cython_ >= 0.29.14
+- Theano_ >= 1.0.4
 
 and animated visualizations with ``Scene.display_jupyter()`` on:
 
@@ -148,7 +148,7 @@ or interactive animated visualizations with ``Scene.display_ipython()`` on:
 
 The examples may require these dependencies:
 
-- matplotlib_ >= 2.1.1
+- matplotlib_ >= 3.1.2
 - version_information_
 
 .. _version_information: https://pypi.python.org/pypi/version_information
@@ -399,4 +399,3 @@ These are various related and similar Python packages:
 - https://pypi.python.org/pypi/odeViz
 - https://pypi.python.org/pypi/ARS
 - https://pypi.python.org/pypi/pymunk
-
