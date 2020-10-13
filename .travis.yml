@@ -31,11 +31,14 @@ install:
   # skipped.
   # NOTE : SymPy's master branch will no longer install with Python 2.7. The
   # last supported version is SymPy 1.5.
-  # NOTE : numpydoc dropped support for Python 2.7 in version 1.0.0.
+  # NOTE : matplotlib dropped Python 2.7 in version 3.0
+  # NOTE : numpydoc dropped Python 2.7 in version 1.0
+  # NOTE : scipy dropped Python 2.7 in version 1.3
+  # NOTE : sphinx dropped Python 2.7 in version 2.0
   - if [[ $DEP_VERSIONS == "oldest" ]] && [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
-      conda install numpy=1.16 scipy=1.3 sympy=1.5 cython=0.29 theano=1.0 pip coverage nose flake8 matplotlib sphinx numpydoc;
+      conda install numpy=1.16.5 scipy=1.3.3 sympy=1.5.1 cython=0.29.14 theano=1.0.4 pip coverage nose flake8 matplotlib sphinx numpydoc;
     elif [[ $DEP_VERSIONS == "oldest" ]]; then
-      conda install numpy=1.16 scipy=1.3 sympy=1.5 cython=0.29 theano=1.0 pip coverage nose flake8 matplotlib sphinx "numpydoc<1";
+      conda install numpy=1.16.5 "scipy<1.3" sympy=1.5.1 cython=0.29.14 theano=1.0.4 pip coverage nose flake8 matplotlib-base "sphinx<2" "numpydoc<1";
     elif [[ $DEP_VERSIONS == "latest" ]] && [[ $TRAVIS_PYTHON_VERSION == 3.* ]]; then
       conda install numpy scipy sympy cython theano pythreejs pip coverage nose flake8 matplotlib sphinx numpydoc jupyter_sphinx ;
     elif [[ $DEP_VERSIONS == "latest" ]]; then
