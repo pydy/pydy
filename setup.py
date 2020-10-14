@@ -8,12 +8,6 @@ from setuptools import setup, find_packages
 
 exec(open('pydy/version.py').read())
 
-# I was getting the same error as:
-# https://github.com/statsmodels/statsmodels/issues/1073, so the following
-# line is added.
-os.environ["MPLCONFIGDIR"] = "."
-
-
 if sys.version_info[0] < 3:  # Python 2
     install_requires = ['numpy<1.17',
                         'scipy<1.3',
