@@ -40,44 +40,49 @@ Reference Frames
                                                       tex.format(lab, '3')),
                                                 **kwargs)
 
-   # Newtonian Frame
+Define some useful references frames:
+
+- :math:`N`: Newtonian Frame
+- :math:`A`: Yaw Frame, auxiliary frame
+- :math:`B`: Roll Frame, axillary frame
+- :math:`C`: Rear Frame
+- :math:`D`: Rear Wheel Frame
+- :math:`E`: Front Frame
+- :math:`F`: Front Wheel Frame
+
+.. jupyter-execute::
+
    N = ReferenceFrame('N')
-   # Yaw Frame
    A = ReferenceFrame('A')
-   # Roll Frame
    B = ReferenceFrame('B')
-   # Rear Frame
    C = ReferenceFrame('C')
-   # Rear Wheel Frame
    D = ReferenceFrame('D')
-   # Front Frame
    E = ReferenceFrame('E')
-   # Front Wheel Frame
    F = ReferenceFrame('F')
 
 Generalized Coordinates and Speeds
 ==================================
 
-# All the following are a function of time.
+All of the following variables are a functions of time, :math:`t`.
 
 .. jupyter-execute::
 
    t = mec.dynamicsymbols._t
 
-# q1: perpendicular distance from the n2> axis to the rear contact
-#     point in the ground plane
-# q2: perpendicular distance from the n1> axis to the rear contact
-#     point in the ground plane
-# q3: frame yaw angle
-# q4: frame roll angle
-# q5: frame pitch angle
-# q6: front wheel rotation angle
-# q7: steering rotation angle
-# q8: rear wheel rotation angle
-# q9: perpendicular distance from the n2> axis to the front contact
-#     point in the ground plane
-# q10: perpendicular distance from the n1> axis to the front contact
-#     point in the ground plane
+- :math:`q_1`: perpendicular distance from the :math:`\hat{n}_2` axis to the
+  rear contact point in the ground plane
+- :math:`q_2`: perpendicular distance from the :math:`\hat{n}_1` axis to the
+  rear contact point in the ground plane
+- :math:`q_3`: frame yaw angle
+- :math:`q_4`: frame roll angle
+- :math:`q_5`: frame pitch angle
+- :math:`q_6`: front wheel rotation angle
+- :math:`q_7`: steering rotation angle
+- :math:`q_8`: rear wheel rotation angle
+- :math:`q_9`: perpendicular distance from the :math:`\hat{n}_2` axis to the
+  front contact point in the ground plane
+- :math:`q_{10}`: perpendicular distance from the :math:`\hat{n}_1` axis to the
+  front contact point in the ground plane
 
 .. jupyter-execute::
 
@@ -89,6 +94,10 @@ Generalized Coordinates and Speeds
 
 Orientation of Reference Frames
 ===============================
+
+Declare the orientation of each frame to define the yaw, roll, and pitch of the
+rear frame relative to the Newtonian frame. The define steer of the front frame
+relative to the rear frame.
 
 .. jupyter-execute::
 
@@ -104,50 +113,54 @@ Orientation of Reference Frames
 Constants
 =========
 
-# geometry
-# rf: radius of front wheel
-# rr: radius of rear wheel
-# d1: the perpendicular distance from the steer axis to the center
-#     of the rear wheel (rear offset)
-# d2: the distance between wheels along the steer axis
-# d3: the perpendicular distance from the steer axis to the center
-#     of the front wheel (fork offset)
-# l1: the distance in the c1> direction from the center of the rear
-#     wheel to the frame center of mass
-# l2: the distance in the c3> direction from the center of the rear
-#     wheel to the frame center of mass
-# l3: the distance in the e1> direction from the front wheel center to
-#     the center of mass of the fork
-# l4: the distance in the e3> direction from the front wheel center to
-#     the center of mass of the fork
+Declare variables that are constant with respect to time for the model's
+physical parameters.
+
+- :math:`r_f`: radius of front wheel
+- :math:`r_r`: radius of rear wheel
+- :math:`d_1`: the perpendicular distance from the steer axis to the center of
+  the rear wheel (rear offset)
+- :math:`d_2`: the distance between wheels along the steer axis
+- :math:`d_3`: the perpendicular distance from the steer axis to the center of
+  the front wheel (fork offset)
+- :math:`l_1`: the distance in the :math:`\hat{c}_1` direction from the center
+  of the rear wheel to the frame center of mass
+- :math:`l_2`: the distance in the :math:`\hat{c}_3` direction from the center of the rear
+  wheel to the frame center of mass
+- :math:`l_3`: the distance in the :math:`\hat{e}_1` direction from the front
+  wheel center to the center of mass of the fork
+- :math:`l_4`: the distance in the :math:`\hat{e}_3` direction from the front
+  wheel center to the center of mass of the fork
 
 .. jupyter-execute::
 
-   rf, rr = sm.symbols('rf rr', real=True, positive=True)
-   d1, d2, d3 = sm.symbols('d1 d2 d3', real=True)
-   l1, l2, l3, l4 = sm.symbols('l1 l2 l3 l4', real=True)
+   rf, rr = sm.symbols('rf rr')
+   d1, d2, d3 = sm.symbols('d1 d2 d3')
+   l1, l2, l3, l4 = sm.symbols('l1 l2 l3 l4')
 
    # acceleration due to gravity
-   g = sm.symbols('g', real=True)
+   g = sm.symbols('g')
 
    # mass
-   mc, md, me, mf = sm.symbols('mc md me mf', real=True, positive=True)
+   mc, md, me, mf = sm.symbols('mc md me mf')
 
    # inertia
-   ic11, ic22, ic33, ic31 = sm.symbols('ic11 ic22 ic33 ic31', real=True)
-   id11, id22 = sm.symbols('id11 id22', real=True)
-   ie11, ie22, ie33, ie31 = sm.symbols('ie11 ie22 ie33 ie31', real=True)
-   if11, if22 = sm.symbols('if11 if22', real=True)
+   ic11, ic22, ic33, ic31 = sm.symbols('ic11 ic22 ic33 ic31')
+   id11, id22 = sm.symbols('id11 id22')
+   ie11, ie22, ie33, ie31 = sm.symbols('ie11 ie22 ie33 ie31')
+   if11, if22 = sm.symbols('if11 if22')
 
 Specified
 =========
 
+Declare three specified torques that are functions of time.
+
+- :math:`T_4` : roll torque
+- :math:`T_6` : rear wheel torque
+- :math:`T_7` : steer torque
+
 .. jupyter-execute::
 
-   # control torques
-   # T4 : roll torque
-   # T6 : rear wheel torque
-   # T7 : steer torque
    T4, T6, T7 = mec.dynamicsymbols('T4 T6 T7')
 
 Position Vectors
@@ -189,7 +202,8 @@ Position Vectors
 Holonomic Constraint
 ====================
 
-# this constraint is enforced so that the front wheel contacts the ground
+The front contact point :math:`f_n` and the rear contact point :math:`r_n` must
+both reside in the ground plane.
 
 .. jupyter-execute::
 
@@ -197,7 +211,6 @@ Holonomic Constraint
 
 Kinematical Differential Equations
 ==================================
-
 
 .. jupyter-execute::
 
@@ -401,8 +414,12 @@ The trajectory of the states over time can be found by calling the
 
    import matplotlib.pyplot as plt
    fig, axes = plt.subplots(len(sys.states), 1)
-   for ax, traj in zip(axes, x_trajectory.T):
+   fig.set_size_inches(8, 10)
+   for ax, traj, s in zip(axes, x_trajectory.T, sys.states):
        ax.plot(sys.times, traj)
+       ax.set_ylabel(s)
+   ax.set_xlabel('Time [s]')
+   plt.tight_layout()
 
 Visualizing the System
 ======================
