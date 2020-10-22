@@ -8,17 +8,31 @@ Carvallo-Whipple Bicycle Model
    :jupyter-download:script:`carvallo-whipple` or Jupyter notebook:
    :jupyter-download:notebook:`carvallo-whipple`.
 
+This example creates a nonlinear model and simulation of the Carvallo-Whipple
+Bicycle Model. This formulation uses the conventions described in [Moore2012]_
+which are equivalent to and based on the models described in [Meijaard2007]_
+and [Basu-Mandal2007]_.
+
+.. warning::
+
+   This model does not currently match the [Basu-Mandal2007]_ model to machine
+   precision. Beware if you require that level of precision.
+
+Import the necessary libraries:
+
 .. jupyter-execute::
 
-   from collections import OrderedDict
-
    import numpy as np
+   from scipy.optimize import fsolve
    import sympy as sm
    import sympy.physics.mechanics as mec
    from pydy.system import System
+   from pydy.viz import Cylinder, VisualizationFrame, Scene
 
 Reference Frames
 ================
+
+Use a reference frame that mimics the notation in [Moore2012]_.
 
 .. jupyter-execute::
 
@@ -248,7 +262,7 @@ Linear Velocities
 
    # wheel contact velocities
    dn.set_vel(N, 0.0 * N['1'])
-   fn.v2pt_theory(fo, N, F)
+   fn.v2pt_theory(fo, N, F);  # supress output
 
 Motion Constraints
 ==================
@@ -363,20 +377,40 @@ states in the form of a dict.
        g: 9.81
     }
 
+Setup the initial conditions such that the bicycle is traveling at some forward
+speeds and has an initial positive roll rate.
+
+.. jupyter-execute::
+
     initial_speed = 4.6  # m/s
     initial_roll_rate = 0.5  # rad/s
 
+The initial configuration will be the upright equilibrium position. The
+holonomic constraint requires that either the roll, pitch, or steer angle need
+be dependent. Below, the pitch angle is taken as dependent and solved for using
+`fsolve()`. Note that it is equivalent to the steer axis tilt [Meijaard2007]_.
+
+.. jupyter-execute::
+
     eval_holonomic = sm.lambdify((q5, q4, q7, d1, d2, d3, rf, rr), holonomic)
-    from scipy.optimize import fsolve
-    initial_pitch_angle = float(fsolve(eval_holonomic, 0.0, args=(1e-12, 1e-12, sys.constants[d1],
-                                 sys.constants[d2], sys.constants[d3],
-                                 sys.constants[rf], sys.constants[rr])))
-
-    #from dtk.bicycle import pitch_from_roll_and_steer
-    #initial_pitch_angle = pitch_from_roll_and_steer(0., 0., sys.constants[rf],
-        #sys.constants[rr], sys.constants[d1], sys.constants[d2], sys.constants[d3])
-
+    initial_pitch_angle = float(fsolve(eval_holonomic, 0.0,
+                                       args=(1e-12,  # q4
+                                             1e-12,  # q7
+                                             sys.constants[d1],
+                                             sys.constants[d2],
+                                             sys.constants[d3],
+                                             sys.constants[rf],
+                                             sys.constants[rr])))
     np.rad2deg(initial_pitch_angle)
+
+Set all of the initial conditions.
+
+.. warning::
+
+   A divide-by-zero will occur if the one (or more) angles are set to zero.
+   Thus the `1e-12` values. It is also sensitive to the size of these values.
+   This shouldn't be the case and may point to some errors in the derivation
+   and implementation.
 
 .. jupyter-execute::
 
@@ -391,18 +425,24 @@ states in the form of a dict.
                               u7: 1e-12,
                               u8: -initial_speed/sys.constants[rf]}
 
-We must generate a time vector over which the integration will be carried out.
-NumPy's ``linspace`` is often useful for this.
+Generate a time vector over which the integration will be carried out.
 
 .. jupyter-execute::
 
-    from numpy import linspace
-    fps = 60
-    duration = 5.0
-    sys.times = linspace(0.0, duration, num=int(duration*fps))
+    fps = 60  # frames per second
+    duration = 5.0  # seconds
+    sys.times = np.linspace(0.0, duration, num=int(duration*fps))
 
 The trajectory of the states over time can be found by calling the
-``.integrate()`` method.
+``.integrate()`` method. But due to the complexity of the equations of motion
+it is helpful to use the `cython` generator for faster numerical evaluation.
+
+.. warning::
+
+   The holonomic constraint equation is not explicitly enforced, as PyDy does
+   not yet support integration of differential algebraic equations (DAEs) yet.
+   The solution will drift from the true solution over time with magnitudes
+   dependent on the intiial conditions and constants values.
 
 .. jupyter-execute::
 
@@ -410,10 +450,13 @@ The trajectory of the states over time can be found by calling the
 
    x_trajectory = sys.integrate()
 
+Plot the State Trajectories
+===========================
+
 .. jupyter-execute::
 
    import matplotlib.pyplot as plt
-   fig, axes = plt.subplots(len(sys.states), 1)
+   fig, axes = plt.subplots(len(sys.states), 1, sharex=True)
    fig.set_size_inches(8, 10)
    for ax, traj, s in zip(axes, x_trajectory.T, sys.states):
        ax.plot(sys.times, traj)
@@ -421,23 +464,17 @@ The trajectory of the states over time can be found by calling the
    ax.set_xlabel('Time [s]')
    plt.tight_layout()
 
-Visualizing the System
-======================
-
-PyDy has a native module ``pydy.viz`` which is used to visualize a System in an
-interactive 3D GUI.
+Visualizing the System Motion
+=============================
 
 .. jupyter-execute::
 
-    from pydy.viz import *
 
-For visualizing the system, we need to create shapes for the objects we wish to
-visualize, and map each of them to a ``VisualizationFrame``, which holds the
-position and orientation of the object. First create a sphere to represent the
-bob and attach it to the point :math:`P` and the ceiling reference frame (the
-sphere does not rotate with respect to the ceiling).
+Create two cylinders to represent the front and rear wheels.
 
-Cylinder axes are along the y axis.
+.. note::
+
+   Cylinder axes are along the y axis.
 
 .. jupyter-execute::
 
@@ -445,10 +482,10 @@ Cylinder axes are along the y axis.
                                  color="green", name='rear wheel')
     front_wheel_circle = Cylinder(radius=sys.constants[rf], length=0.01,
                                   color="green", name='front wheel')
-    rotatedB = B #.orientnew("B_r", 'Axis', [sm.pi/2, B.x])
-    rotatedE = E #.orientnew("E_r", 'Axis', [sm.pi/2, E.x])
-    rear_wheel_vframe = VisualizationFrame(rotatedB, do, rear_wheel_circle)
-    front_wheel_vframe = VisualizationFrame(rotatedE, fo, front_wheel_circle)
+    rear_wheel_vframe = VisualizationFrame(B, do, rear_wheel_circle)
+    front_wheel_vframe = VisualizationFrame(E, fo, front_wheel_circle)
+
+Create some cylinders to represent the front and rear frames.
 
 .. jupyter-execute::
 
@@ -487,3 +524,20 @@ Now, we call the display method.
 .. jupyter-execute::
 
     scene.display_jupyter(axes_arrow_length=5.0)
+
+References
+==========
+
+.. [Moore2012] Moore, Jason K. "Human Control of a Bicycle." Doctor of
+   Philosophy, University of California, 2012.
+   http://moorepants.github.io/dissertation.
+.. [Meijaard2007] Meijaard, J. P., Jim M. Papadopoulos, Andy Ruina, and A. L.
+   Schwab. "Linearized Dynamics Equations for the Balance and Steer of a
+   Bicycle: A Benchmark and Review." Proceedings of the Royal Society A:
+   Mathematical, Physical and Engineering Sciences 463, no. 2084 (August 8,
+   2007): 1955–82.
+.. [Basu-Mandal2007] Basu-Mandal, Pradipta, Anindya Chatterjee, and J.M
+   Papadopoulos. "Hands-Free Circular Motions of a Benchmark Bicycle."
+   Proceedings of the Royal Society A: Mathematical, Physical and Engineering
+   Sciences 463, no. 2084 (August 8, 2007): 1983–2003.
+   https://doi.org/10.1098/rspa.2007.1849.
