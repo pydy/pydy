@@ -44,6 +44,11 @@ Table of Contents
              :target: examples/three-link-conical-pendulum.html
 
              Three link conical compound pendulum.
+      * - .. figure:: examples/bicycle-geometry.png
+             :width: 200px
+             :target: examples/carvallo-whipple.html
+
+             Carvallo-Whipple bicycle model.
         - .. figure:: examples/kane-levinson-1985.png
              :width: 200px
              :target: examples/kane-levinson-1985-chapter-02.html
