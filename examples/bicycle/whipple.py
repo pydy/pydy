@@ -19,8 +19,7 @@ import numpy as np
 from numpy import testing
 import sympy as sm
 import sympy.physics.mechanics as mec
-from pydy.codegen.ode_function_generators import (CythonODEFunctionGenerator,
-                                                  LambdifyODEFunctionGenerator)
+from pydy.codegen.ode_function_generators import CythonODEFunctionGenerator
 # TODO : Make dtk optional.
 from dtk import bicycle
 
