@@ -213,9 +213,8 @@ Position Vectors
    eo = mec.Point('eo')
    eo.set_pos(fo, l3 * E['1'] + l4 * E['3'])
 
-   # locate the points fixed on the wheel which instaneously touch the ground
-   # rear
-   # front
+   # locate the point fixed on the wheel which instantaneously touches the
+   # ground
    fn = mec.Point('fn')
    fn.set_pos(fo, rf * E['2'].cross(A['3']).cross(E['2']).normalize())
 
