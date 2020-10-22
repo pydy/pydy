@@ -9,16 +9,17 @@ Carvallo-Whipple Bicycle Model
    :jupyter-download:notebook:`carvallo-whipple`.
 
 This example creates a nonlinear model and simulation of the Carvallo-Whipple
-Bicycle Model. This formulation uses the conventions described in [Moore2012]_
-which are equivalent to and based on the models described in [Meijaard2007]_
-and [Basu-Mandal2007]_.
+Bicycle Model ([Carvallo1899]_, [Whipple1899]_). This formulation uses the
+conventions described in [Moore2012]_ which are equivalent to and based on the
+models described in [Meijaard2007]_ and [Basu-Mandal2007]_.
 
 .. warning::
 
    This model does not currently match the [Basu-Mandal2007]_ model to machine
-   precision. Beware if you require that level of precision.
+   precision. Beware if you require that level of precision. See
+   https://github.com/pydy/pydy/pull/122 for discussion on this issue.
 
-Import the necessary libraries:
+Import the necessary libraries, classes, and functions:
 
 .. jupyter-execute::
 
@@ -27,7 +28,18 @@ Import the necessary libraries:
    import sympy as sm
    import sympy.physics.mechanics as mec
    from pydy.system import System
-   from pydy.viz import Cylinder, VisualizationFrame, Scene
+   from pydy.viz import Sphere, Cylinder, VisualizationFrame, Scene
+
+System Diagrams
+===============
+
+.. figure:: bicycle-geometry.png
+
+   Geometric variable definitions.
+
+.. figure:: bicycle-coordinates.png
+
+   Configuration coordinate definitions.
 
 Reference Frames
 ================
@@ -78,10 +90,6 @@ Generalized Coordinates and Speeds
 ==================================
 
 All of the following variables are a functions of time, :math:`t`.
-
-.. jupyter-execute::
-
-   t = mec.dynamicsymbols._t
 
 - :math:`q_1`: perpendicular distance from the :math:`\hat{n}_2` axis to the
   rear contact point in the ground plane
@@ -169,9 +177,9 @@ Specified
 
 Declare three specified torques that are functions of time.
 
-- :math:`T_4` : roll torque
-- :math:`T_6` : rear wheel torque
-- :math:`T_7` : steer torque
+- :math:`T_4` : roll torque, between Newtonian frame and rear frame
+- :math:`T_6` : rear wheel torque, between rear wheel and rear frame
+- :math:`T_7` : steer torque, between rear frame and front frame
 
 .. jupyter-execute::
 
@@ -182,12 +190,12 @@ Position Vectors
 
 .. jupyter-execute::
 
-   # newtonian origin
-   no = mec.Point('no')
+   # rear wheel contact point
+   dn = mec.Point('dn')
 
-   # newtonian origin to rear wheel center
+   # rear wheel contact point to rear wheel center
    do = mec.Point('do')
-   do.set_pos(no, -rr * B['3'])
+   do.set_pos(dn, -rr * B['3'])
 
    # rear wheel center to bicycle frame center
    co = mec.Point('co')
@@ -207,8 +215,6 @@ Position Vectors
 
    # locate the points fixed on the wheel which instaneously touch the ground
    # rear
-   dn = mec.Point('dn')
-   dn.set_pos(do, rr * B['3'])
    # front
    fn = mec.Point('fn')
    fn.set_pos(fo, rf * E['2'].cross(A['3']).cross(E['2']).normalize())
@@ -216,17 +222,28 @@ Position Vectors
 Holonomic Constraint
 ====================
 
-The front contact point :math:`f_n` and the rear contact point :math:`r_n` must
+The front contact point :math:`f_n` and the rear contact point :math:`d_n` must
 both reside in the ground plane.
 
 .. jupyter-execute::
 
    holonomic = fn.pos_from(dn).dot(A['3'])
 
+This expression defines a configuration constraint among :math:`q_4`,
+:math:`q_5`, and :math:`q_7`.
+
+.. jupyter-execute::
+
+   mec.find_dynamicsymbols(holonomic)
+
 Kinematical Differential Equations
 ==================================
 
+Define the generalized speeds all as :math:`u=\dot{q}`.
+
 .. jupyter-execute::
+
+   t = mec.dynamicsymbols._t
 
    kinematical = [q3.diff(t) - u3,  # yaw
                   q4.diff(t) - u4,  # roll
@@ -250,22 +267,29 @@ Linear Velocities
 
 .. jupyter-execute::
 
-   # origin is fixed
-   no.set_vel(N, 0.0 * N['1'])
+   # rear wheel contact stays in ground plane and does not slip
+   dn.set_vel(N, 0.0 * N['1'])
 
    # mass centers
-   do.v2pt_theory(no, N, D)
+   do.v2pt_theory(dn, N, D)
    co.v2pt_theory(do, N, C)
    ce.v2pt_theory(do, N, C)
    fo.v2pt_theory(ce, N, E)
    eo.v2pt_theory(fo, N, E)
 
    # wheel contact velocities
-   dn.set_vel(N, 0.0 * N['1'])
    fn.v2pt_theory(fo, N, F);  # supress output
 
 Motion Constraints
 ==================
+
+Enforce the no slip condition at the front wheel contact point. Note that the
+no-slip condition is already enforced with the velocity of :math:`n_o` set to
+0. Also include an extra motion constraint not allowing vertical motion of the
+contact point. Note that this is an integrable constraint, i.e. the derivative
+of ``nonholonomic`` above. It is not a nonholonomic constraint, but we include
+it because we can't easy eliminate a dependent generalized coordinate with
+``nonholonmic``.
 
 .. jupyter-execute::
 
@@ -275,6 +299,8 @@ Motion Constraints
 
 Inertia
 =======
+
+The inertia dyadics are defined with respect to the rear and front frames.
 
 .. jupyter-execute::
 
@@ -295,23 +321,23 @@ Rigid Bodies
 
    bodies = [rear_frame, rear_wheel, front_frame, front_wheel]
 
-Generalized Active Forces
-=========================
+Loads
+=====
 
 .. jupyter-execute::
 
    # gravity
-   Fco = (co, mc * g * A['3'])
-   Fdo = (do, md * g * A['3'])
-   Feo = (eo, me * g * A['3'])
-   Ffo = (fo, mf * g * A['3'])
+   Fco = (co, mc*g*A['3'])
+   Fdo = (do, md*g*A['3'])
+   Feo = (eo, me*g*A['3'])
+   Ffo = (fo, mf*g*A['3'])
 
    # input torques
-   Tc = (C, T4 * A['1'] - T6 * B['2'] - T7 * C['3'])
-   Td = (D, T6 * C['2'])
-   Te = (E, T7 * C['3'])
+   Tc = (C, T4*A['1'] - T6*B['2'] - T7*C['3'])
+   Td = (D, T6*C['2'])
+   Te = (E, T7*C['3'])
 
-   forces = [Fco, Fdo, Feo, Ffo, Tc, Td, Te]
+   loads = [Fco, Fdo, Feo, Ffo, Tc, Td, Te]
 
 Kane's Method
 =============
@@ -319,24 +345,21 @@ Kane's Method
 .. jupyter-execute::
 
    kane = mec.KanesMethod(N,
-                        [q3, q4, q7],  # yaw, roll, steer
-                        [u4, u6, u7],  # roll rate, rear wheel rate, steer rate
-                        kd_eqs=kinematical,
-                        q_dependent=[q5],  # pitch angle
-                        configuration_constraints=[holonomic],
-                        u_dependent=[u3, u5, u8],  # yaw rate, pitch rate, front wheel rate
-                        velocity_constraints=nonholonomic)
+                          [q3, q4, q7],  # yaw, roll, steer
+                          [u4, u6, u7],  # roll rate, rear wheel rate, steer rate
+                          kd_eqs=kinematical,
+                          q_dependent=[q5],  # pitch angle
+                          configuration_constraints=[holonomic],
+                          u_dependent=[u3, u5, u8],  # yaw rate, pitch rate, front wheel rate
+                          velocity_constraints=nonholonomic)
 
-   fr, frstar = kane.kanes_equations(bodies, forces)
+   fr, frstar = kane.kanes_equations(bodies, loads)
 
 Simulating the system
 =====================
 
-Now that we have defined the mass-spring-damper system, we are going to
-simulate it.
-
-PyDy's ``System`` is a wrapper that holds the Kanes object to integrate the
-equations of motion using numerical values of constants.
+PyDy's ``System`` is a wrapper that holds the ``KanesMethod`` object to
+integrate the equations of motion using numerical values of constants.
 
 .. jupyter-execute::
 
@@ -344,7 +367,8 @@ equations of motion using numerical values of constants.
     sys = System(kane)
 
 Now, we specify the numerical values of the constants and the initial values of
-states in the form of a dict.
+states in the form of a dict. The are the benchmark values used in
+[Meijaard2007]_ converted to the [Moore2012]_ formulation.
 
 .. jupyter-execute::
 
@@ -450,76 +474,86 @@ it is helpful to use the `cython` generator for faster numerical evaluation.
 
    x_trajectory = sys.integrate()
 
+Evaluate the holonomic constraint across the simulation.
+
+.. jupyter-execute::
+
+   holonomic_vs_time  = eval_holonomic(x_trajectory[:, 3],  # q5
+                                       x_trajectory[:, 1],  # q4
+                                       x_trajectory[:, 2],  # q7
+                                       sys.constants[d1],
+                                       sys.constants[d2],
+                                       sys.constants[d3],
+                                       sys.constants[rf],
+                                       sys.constants[rr])
+
 Plot the State Trajectories
 ===========================
 
 .. jupyter-execute::
 
    import matplotlib.pyplot as plt
-   fig, axes = plt.subplots(len(sys.states), 1, sharex=True)
+   fig, axes = plt.subplots(len(sys.states) + 1, 1, sharex=True)
    fig.set_size_inches(8, 10)
    for ax, traj, s in zip(axes, x_trajectory.T, sys.states):
        ax.plot(sys.times, traj)
        ax.set_ylabel(s)
-   ax.set_xlabel('Time [s]')
+   axes[-1].plot(sys.times, np.squeeze(holonomic_vs_time))
+   axes[-1].set_ylabel('Holonomic\nconstraint [m]')
+   axes[-1].set_xlabel('Time [s]')
    plt.tight_layout()
 
 Visualizing the System Motion
 =============================
 
-.. jupyter-execute::
-
-
 Create two cylinders to represent the front and rear wheels.
 
-.. note::
-
-   Cylinder axes are along the y axis.
-
 .. jupyter-execute::
 
-    rear_wheel_circle = Cylinder(radius=sys.constants[rr], length=0.01,
-                                 color="green", name='rear wheel')
-    front_wheel_circle = Cylinder(radius=sys.constants[rf], length=0.01,
-                                  color="green", name='front wheel')
-    rear_wheel_vframe = VisualizationFrame(B, do, rear_wheel_circle)
-    front_wheel_vframe = VisualizationFrame(E, fo, front_wheel_circle)
+   rear_wheel_circle = Cylinder(radius=sys.constants[rr], length=0.01,
+                                color="green", name='rear wheel')
+   front_wheel_circle = Cylinder(radius=sys.constants[rf], length=0.01,
+                                 color="green", name='front wheel')
+   rear_wheel_vframe = VisualizationFrame(B, do, rear_wheel_circle)
+   front_wheel_vframe = VisualizationFrame(E, fo, front_wheel_circle)
 
 Create some cylinders to represent the front and rear frames.
 
 .. jupyter-execute::
 
-    d1_cylinder = Cylinder(radius=0.02, length=sys.constants[d1],
-                           color='black', name='rear frame d1')
-    d2_cylinder = Cylinder(radius=0.02, length=sys.constants[d2],
-                           color='black', name='front frame d2')
-    d3_cylinder = Cylinder(radius=0.02, length=sys.constants[d3],
-                           color='black', name='front frame d3')
+   d1_cylinder = Cylinder(radius=0.02, length=sys.constants[d1],
+                          color='black', name='rear frame d1')
+   d2_cylinder = Cylinder(radius=0.02, length=sys.constants[d2],
+                          color='black', name='front frame d2')
+   d3_cylinder = Cylinder(radius=0.02, length=sys.constants[d3],
+                          color='black', name='front frame d3')
 
-    d1_frame = VisualizationFrame(C.orientnew('C_r', 'Axis', (sm.pi/2, C.z)),
-                                  do.locatenew('d1_half', d1/2*C.x), d1_cylinder)
-    d2_frame = VisualizationFrame(E.orientnew('E_r', 'Axis', (-sm.pi/2, E.x)),
-                                  fo.locatenew('d2_half', -d3*E.x - d2/2*E.z), d2_cylinder)
-    d3_frame = VisualizationFrame(E.orientnew('E_r', 'Axis', (sm.pi/2, E.z)),
-                                  fo.locatenew('d3_half', -d3/2*E.x), d3_cylinder)
+   d1_frame = VisualizationFrame(C.orientnew('C_r', 'Axis', (sm.pi/2, C.z)),
+                                 do.locatenew('d1_half', d1/2*C.x), d1_cylinder)
+   d2_frame = VisualizationFrame(E.orientnew('E_r', 'Axis', (-sm.pi/2, E.x)),
+                                 fo.locatenew('d2_half', -d3*E.x - d2/2*E.z), d2_cylinder)
+   d3_frame = VisualizationFrame(E.orientnew('E_r', 'Axis', (sm.pi/2, E.z)),
+                                 fo.locatenew('d3_half', -d3/2*E.x), d3_cylinder)
 
-Now we initialize a Scene. A Scene contains all the information required to
-visualize a ``System`` onto a canvas. It takes a ReferenceFrame and Point as
-arguments.
+Create some spheres to represent the mass centers of the front and rear frames.
 
 .. jupyter-execute::
 
-    scene = Scene(N, no, system=sys)
+   co_sphere = Sphere(radius=0.05, color='blue', name='rear frame co')
+   eo_sphere = Sphere(radius=0.05, color='blue', name='rear frame eo')
+   co_frame = VisualizationFrame(C, co, co_sphere)
+   eo_frame = VisualizationFrame(E, eo, eo_sphere)
 
-We provide the VisualizationFrames, which we want to visualize as a list to
-scene.
+Create the scene and add the visualization frames.
 
 .. jupyter-execute::
 
+    scene = Scene(N, dn, system=sys)
     scene.visualization_frames = [front_wheel_vframe, rear_wheel_vframe,
-                                  d1_frame, d2_frame, d3_frame]
+                                  d1_frame, d2_frame, d3_frame,
+                                  co_frame, eo_frame]
 
-Now, we call the display method.
+Now, call the display method.
 
 .. jupyter-execute::
 
@@ -528,6 +562,10 @@ Now, we call the display method.
 References
 ==========
 
+.. [Whipple1899] Whipple, Francis J. W. "The Stability of the Motion of a
+   Bicycle." Quarterly Journal of Pure and Applied Mathematics 30 (1899): 312–48.
+.. [Carvallo1899] Carvallo, E. Théorie Du Mouvement Du Monocycle et de La
+   Bicyclette. Paris, France: Gauthier- Villars, 1899.
 .. [Moore2012] Moore, Jason K. "Human Control of a Bicycle." Doctor of
    Philosophy, University of California, 2012.
    http://moorepants.github.io/dissertation.
