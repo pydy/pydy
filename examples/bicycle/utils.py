@@ -57,6 +57,30 @@ def create_symbol_value_map(constants_name_map, time_varying_name_map):
     return constant_substitutions, dynamic_substitutions, specified_subs
 
 
+def compare_cse(expr):
+
+    args = list(expr.free_symbols)
+    args.remove(TIME)
+    args += me.find_dynamicsymbols(expr)
+    args = list(sm.ordered(args))
+    vals = list(np.random.random(len(args)))
+
+    eval_expr = sm.lambdify(args, expr)
+    res = eval_expr(*vals)
+
+    replacements, reduced_expr = sm.cse(expr)
+    for repl in replacements:
+        var = repl[0]
+        sub_expr = repl[1]
+        eval_sub_expr = sm.lambdify(args, sub_expr)
+        vals.append(eval_sub_expr(*vals))
+        args.append(var)
+    eval_reduced_expr = sm.lambdify(args, reduced_expr[0])
+    cse_res = eval_reduced_expr(*vals)
+
+    np.testing.assert_allclose(res, cse_res)
+
+
 def compare_numerically(expr1, expr2, n=10):
     """Compares two SymPy expressions by evaluting with a set of random
     floating point inputs."""
