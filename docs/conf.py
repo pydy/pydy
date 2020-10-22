@@ -98,7 +98,7 @@ else:
 
     def setup(app):
         app.add_config_value('INCLUDE_EXAMPLES', True, 'env')
-    extensions.append('jupyter_sphinx.execute')
+    extensions.append('jupyter_sphinx')
     # NOTE : The default order causes SymPy output to show the png math images
     # instead of MathJax so I moved the LaTeX above the images.
     jupyter_execute_data_priority = [
