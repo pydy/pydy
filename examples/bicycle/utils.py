@@ -80,7 +80,7 @@ def compare_cse(expr, args=None):
     #res = eval_expr(*vals)
 
     print('xreplace whole expr')
-    res = expr.xreplace(value_dict)
+    res = sm.matrix2numpy(expr.xreplace(value_dict), dtype=float)
 
     print('Find common sub expressions')
     replacements, reduced_expr = sm.cse(expr)
