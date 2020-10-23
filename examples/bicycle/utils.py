@@ -79,7 +79,8 @@ def compare_cse(expr, args=None):
     #print('Evaluate the whole expression')
     #res = eval_expr(*vals)
 
-    res = expr.evalf(subs=value_dict)
+    print('xreplace whole expr')
+    res = expr.xreplace(value_dict)
 
     print('Find common sub expressions')
     replacements, reduced_expr = sm.cse(expr)
