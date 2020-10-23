@@ -403,15 +403,14 @@ class Cylinder(Shape):
     _p3js_geometry_type = 'Cylinder'
     _p3js_attribute_map = {'radiusTop': 'radius',
                            'radiusBottom': 'radius',
-                           'radialSegments': 'radial_segments',
+                           'radialSegments': 100,
                            'height': 'length'}
 
     def __init__(self, length, radius, **kwargs):
         super(Cylinder, self).__init__(**kwargs)
-        self.geometry_attrs += ['length', 'radius', 'radial_segments']
+        self.geometry_attrs += ['length', 'radius']
         self.length = length
         self.radius = radius
-        self.radial_segments = max(10, int(radius*10))
 
 
 class Cone(Shape):
@@ -510,7 +509,9 @@ class Sphere(Shape):
 
     """
     _p3js_geometry_type = 'Sphere'
-    _p3js_attribute_map = {'radius': 'radius'}
+    _p3js_attribute_map = {'radius': 'radius',
+                           'widthSegments': 100,
+                           'heightSegments': 100}
 
     def __init__(self, radius=10.0, **kwargs):
         super(Sphere, self).__init__(**kwargs)
@@ -556,7 +557,8 @@ class Circle(Sphere):
 
     """
     _p3js_geometry_type = 'Circle'
-    _p3js_attribute_map = {'radius': 'radius'}
+    _p3js_attribute_map = {'radius': 'radius',
+                           'segments': 100}
 
 
 class Plane(Shape):
