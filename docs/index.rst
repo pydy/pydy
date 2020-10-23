@@ -24,6 +24,18 @@ Table of Contents
 
 .. ifconfig:: INCLUDE_EXAMPLES
 
+   .. toctree::
+      :hidden:
+
+      examples/carvallo-whipple.rst
+      examples/kane-levinson-1985-chapter-02.rst
+      examples/kane-levinson-1985-chapter-03.rst
+      examples/mass-spring-damper.rst
+      examples/multidof-holonomic.rst
+      examples/three-link-conical-pendulum.rst
+
+.. ifconfig:: INCLUDE_EXAMPLES
+
    Examples
    ========
 
