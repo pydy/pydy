@@ -380,6 +380,11 @@ u_def = {ui: qi.diff(t) for ui, qi in zip(u, q)}
 M, F = formulate_equations_motion(N, bodies, q, u_def, uI, uD, nonholonomic,
                                   dict(forces))
 
+print('Compare cse')
+from utils import compare_cse
+
+compare_cse(M)
+
 ####################################
 # Validation of non-linear equations
 ####################################

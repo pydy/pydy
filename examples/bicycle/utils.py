@@ -77,6 +77,7 @@ def compare_cse(expr):
     replacements, reduced_expr = sm.cse(expr)
     value_dict = {s: v for s, v in zip(args, vals)}
     for (var, sub_expr) in replacements:
+        print('Sub expression {}'.format(var))
         sub_expr_args = find_args(sub_expr)
         sub_expr_vals = [value_dict[s] for s in sub_expr_args]
         eval_sub_expr = sm.lambdify(sub_expr_args, sub_expr)
