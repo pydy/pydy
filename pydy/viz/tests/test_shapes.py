@@ -171,7 +171,8 @@ def test_cylinder():
         mesh = cylinder._p3js_mesh()
         expected_mesh = p3js.Mesh(p3js.CylinderBufferGeometry(radiusTop=5.0,
                                                               radiusBottom=5.0,
-                                                              height=10.0),
+                                                              height=10.0,
+                                                              radialSegments=100),
                                   p3js.MeshStandardMaterial(color='blue'),
                                   name='cylinder')
         assert repr(mesh) == repr(expected_mesh)
@@ -268,7 +269,9 @@ def test_sphere():
 
     if p3js is not None:
         mesh = sphere._p3js_mesh()
-        expected_mesh = p3js.Mesh(p3js.SphereBufferGeometry(radius=10.0),
+        expected_mesh = p3js.Mesh(p3js.SphereBufferGeometry(radius=10.0,
+                                                            widthSegments=100,
+                                                            heightSegments=100),
                                   p3js.MeshStandardMaterial(color='azure'),
                                   name='sphere')
         assert repr(mesh) == repr(expected_mesh)
@@ -309,7 +312,8 @@ def test_circle():
 
     if p3js is not None:
         mesh = circle._p3js_mesh()
-        expected_mesh = p3js.Mesh(p3js.CircleBufferGeometry(radius=10.0),
+        expected_mesh = p3js.Mesh(p3js.CircleBufferGeometry(radius=10.0,
+                                                            segments=100),
                                   p3js.MeshStandardMaterial(color='gold'),
                                   name='circle')
         assert repr(mesh) == repr(expected_mesh)
