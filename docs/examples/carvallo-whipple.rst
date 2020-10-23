@@ -417,8 +417,8 @@ be dependent. Below, the pitch angle is taken as dependent and solved for using
 
     eval_holonomic = sm.lambdify((q5, q4, q7, d1, d2, d3, rf, rr), holonomic)
     initial_pitch_angle = float(fsolve(eval_holonomic, 0.0,
-                                       args=(1e-12,  # q4
-                                             1e-12,  # q7
+                                       args=(0.0,  # q4
+                                             1e-8,  # q7
                                              sys.constants[d1],
                                              sys.constants[d2],
                                              sys.constants[d3],
@@ -430,22 +430,23 @@ Set all of the initial conditions.
 
 .. warning::
 
-   A divide-by-zero will occur if the one (or more) angles are set to zero.
-   Thus the `1e-12` values. It is also sensitive to the size of these values.
+   A divide-by-zero will occur if the steer angle is set to zero. Thus the
+   `1e-8` values. The integration is also sensitive to the size of this value.
    This shouldn't be the case and may point to some errors in the derivation
-   and implementation.
+   and implementation. More careful attention to the integration tolerances may
+   help too.
 
 .. jupyter-execute::
 
-    sys.initial_conditions = {q3: 1e-12,
-                              q4: 1e-12,
+    sys.initial_conditions = {q3: 0.0,
+                              q4: 0.0,
                               q5: initial_pitch_angle,
-                              q7: 1e-12,
-                              u3: 1e-12,
+                              q7: 1e-8,
+                              u3: 0.0,
                               u4: initial_roll_rate,
-                              u5: 1e-12,
+                              u5: 0.0,
                               u6: -initial_speed/sys.constants[rr],
-                              u7: 1e-12,
+                              u7: 0.0,
                               u8: -initial_speed/sys.constants[rf]}
 
 Generate a time vector over which the integration will be carried out.
