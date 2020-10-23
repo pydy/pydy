@@ -377,21 +377,21 @@ uD = (u3, u5, u8)  # dependent generalized speeds
 u = tuple(sm.ordered(uI + uD))
 u_def = {ui: qi.diff(t) for ui, qi in zip(u, q)}
 
-M, F = formulate_equations_motion(N, bodies, q, u_def, uI, uD, nonholonomic,
-                                  dict(forces))
+#M, F = formulate_equations_motion(N, bodies, q, u_def, uI, uD, nonholonomic,
+                                  #dict(forces))
 
 print('Compare cse')
 from utils import compare_cse
 
-compare_cse(F, args=[q3, q4, q5, q6, q7, q8, u3, u4, u5, u6, u7, u8, T4, T6,
-                     T7, rf, rr, d1, d2, d3, l1, l2, l3, l4, g, mc, md, me, mf,
-                     ic11, ic22, ic33, ic31, id11, id22, ie11, ie22, ie33,
-                     ie31, if11, if22])
-
-compare_cse(M, args=[q3, q4, q5, q6, q7, q8, u3, u4, u5, u6, u7, u8, T4, T6,
-                     T7, rf, rr, d1, d2, d3, l1, l2, l3, l4, g, mc, md, me, mf,
-                     ic11, ic22, ic33, ic31, id11, id22, ie11, ie22, ie33,
-                     ie31, if11, if22])
+#compare_cse(F, args=[q3, q4, q5, q6, q7, q8, u3, u4, u5, u6, u7, u8, T4, T6,
+                     #T7, rf, rr, d1, d2, d3, l1, l2, l3, l4, g, mc, md, me, mf,
+                     #ic11, ic22, ic33, ic31, id11, id22, ie11, ie22, ie33,
+                     #ie31, if11, if22])
+#
+#compare_cse(M, args=[q3, q4, q5, q6, q7, q8, u3, u4, u5, u6, u7, u8, T4, T6,
+                     #T7, rf, rr, d1, d2, d3, l1, l2, l3, l4, g, mc, md, me, mf,
+                     #ic11, ic22, ic33, ic31, id11, id22, ie11, ie22, ie33,
+                     #ie31, if11, if22])
 
 ####################################
 # Validation of non-linear equations
@@ -438,6 +438,46 @@ constants_substituions, dynamic_substitution, specified_subs = \
 substitutions = specified_subs.copy()
 substitutions.update(constant_substitutions)
 substitutions.update(dynamic_substitutions)
+
+# Two things learned here:
+# 1. compilation fails if cse is not true
+# 2. the resulting matrices from the c code produces slightly different M and F
+# matrices. Not sure why yet. But it needs to be addressed.
+from pydy.codegen.cython_code import CythonMatrixGenerator
+
+qs = [q3, q4, q5, q6, q7, q8]
+us = [u3, u4, u5, u6, u7, u8]
+rs = [T4, T6, T7]
+ps = [rf, rr, d1, d2, d3, l1, l2, l3, l4, g, mc, md, me, mf, ic11, ic22, ic33,
+      ic31, id11, id22, ie11, ie22, ie33, ie31, if11, if22]
+qs_vals = np.array([substitutions[s] for s in qs])
+us_vals = np.array([substitutions[s] for s in us])
+rs_vals = np.array([substitutions[s] for s in rs])
+ps_vals = np.array([substitutions[s] for s in ps])
+
+gen = CythonMatrixGenerator([qs, us, rs, ps], [mass_matrix, forcing_vector],
+                            cse=True)
+c_eval_M_F_no_cse = gen.compile()
+M1 = np.zeros(36)
+F1 = np.zeros(6)
+c_eval_M_F_no_cse(qs_vals, us_vals, rs_vals, ps_vals, M1, F1)
+
+gen = CythonMatrixGenerator([qs, us, rs, ps], [mass_matrix, forcing_vector],
+                            cse=True)
+c_eval_M_F_with_cse = gen.compile()
+M2 = np.zeros(36)
+F2 = np.zeros(6)
+c_eval_M_F_with_cse(qs_vals, us_vals, rs_vals, ps_vals, M2, F2)
+
+M3 =sm.matrix2numpy(mass_matrix.xreplace(substitutions), dtype=float)
+F3 =sm.matrix2numpy(forcing_vector.xreplace(substitutions), dtype=float)
+
+np.testing.assert_allclose(M1.reshape((6, 6)), M2.reshape((6, 6)))
+np.testing.assert_allclose(F1, F2)
+np.testing.assert_allclose(M1.reshape((6, 6)), M3)
+np.testing.assert_allclose(F1, np.squeeze(F3))
+
+pause
 
 # Try substituting values in through SymPy
 print('Substituting numerical parameters into SymPy expressions.')
