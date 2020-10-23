@@ -209,8 +209,9 @@ class TestSystem():
 
         # This gets rid of the previous default entries, and should work
         # properly.
+        # Also check here that optional arguments can be passed to the solver.
         sys.specifieds.pop(spec_syms[0])
-        sys.integrate()
+        state_traj, infodict = sys.integrate(full_output=True)
 
         # Test old way of providing specifieds.
         # -------------------------------------
