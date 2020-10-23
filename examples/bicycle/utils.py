@@ -58,6 +58,18 @@ def create_symbol_value_map(constants_name_map, time_varying_name_map):
 
 
 def compare_cse(expr, args=None):
+    """
+
+    Parameters
+    ==========
+    expr : sympy.Matrix
+        I think it has to be a matrix due to some details in the code. Needs to
+        be generalized to scalar expression.
+    args : List[Symbol,Function(t)]
+        If you know all the symbols in the expression already, pass them in.
+        Saves some time.
+
+    """
 
     def find_args(expr):
         args = list(expr.free_symbols)  # get constants and time
@@ -73,21 +85,21 @@ def compare_cse(expr, args=None):
     vals = list(np.random.random(len(args)))
     value_dict = {s: v for s, v in zip(args, vals)}
 
+    # TODO : Open an issue in SymPy that tries to lambdify and evalf the
+    # bicycle mass matrix, for example.
     # This is where it is getting killed! Can't lambdify M it seems.
     #print('lambdifying the whole expression')
     #eval_expr = sm.lambdify(args, expr)
     #print('Evaluate the whole expression')
     #res = eval_expr(*vals)
+    # this also doesn't complete (haven't waited for it to complete)
+    #res = sm.matrix2numpy(expr.evalf(subs=value_dict), dtype=float)
 
-    print('xreplace whole expr')
     res = sm.matrix2numpy(expr.xreplace(value_dict), dtype=float)
 
-    print('Find common sub expressions')
     replacements, reduced_expr = sm.cse(expr)
 
-    print('Evaluate each subexpression')
     for (var, sub_expr) in replacements:
-        print('Sub expression {}'.format(var))
         sub_expr_args = find_args(sub_expr)
         sub_expr_vals = [value_dict[s] for s in sub_expr_args]
         eval_sub_expr = sm.lambdify(sub_expr_args, sub_expr)
