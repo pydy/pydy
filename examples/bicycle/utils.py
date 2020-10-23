@@ -59,24 +59,33 @@ def create_symbol_value_map(constants_name_map, time_varying_name_map):
 
 def compare_cse(expr):
 
-    args = list(expr.free_symbols)
-    args.remove(TIME)
-    args += me.find_dynamicsymbols(expr)
-    args = list(sm.ordered(args))
+    def find_args(expr):
+        args = list(expr.free_symbols)  # get constants and time
+        try:  # time not explicit, so remove if there
+            args.remove(TIME)
+        except ValueError:  # time not present
+            pass
+        args += me.find_dynamicsymbols(expr)  # get the functions of time
+        return list(sm.ordered(args))
+
+    args = find_args(expr)
     vals = list(np.random.random(len(args)))
 
     eval_expr = sm.lambdify(args, expr)
     res = eval_expr(*vals)
 
     replacements, reduced_expr = sm.cse(expr)
-    for repl in replacements:
-        var = repl[0]
-        sub_expr = repl[1]
-        eval_sub_expr = sm.lambdify(args, sub_expr)
-        vals.append(eval_sub_expr(*vals))
-        args.append(var)
-    eval_reduced_expr = sm.lambdify(args, reduced_expr[0])
-    cse_res = eval_reduced_expr(*vals)
+    value_dict = {s: v for s, v in zip(args, vals)}
+    for (var, sub_expr) in replacements:
+        sub_expr_args = find_args(sub_expr)
+        sub_expr_vals = [value_dict[s] for s in sub_expr_args]
+        eval_sub_expr = sm.lambdify(sub_expr_args, sub_expr)
+        value_dict[var] = eval_sub_expr(*sub_expr_vals)
+
+    red_expr_args = find_args(reduced_expr[0])
+    red_expr_vals = [value_dict[s] for s in red_expr_args]
+    eval_reduced_expr = sm.lambdify(red_expr_args, reduced_expr[0])
+    cse_res = eval_reduced_expr(*red_expr_vals)
 
     np.testing.assert_allclose(res, cse_res)
 
