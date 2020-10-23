@@ -57,7 +57,7 @@ def create_symbol_value_map(constants_name_map, time_varying_name_map):
     return constant_substitutions, dynamic_substitutions, specified_subs
 
 
-def compare_cse(expr):
+def compare_cse(expr, args=None):
 
     def find_args(expr):
         args = list(expr.free_symbols)  # get constants and time
@@ -68,14 +68,23 @@ def compare_cse(expr):
         args += me.find_dynamicsymbols(expr)  # get the functions of time
         return list(sm.ordered(args))
 
-    args = find_args(expr)
+    if args is None:
+        args = find_args(expr)
     vals = list(np.random.random(len(args)))
-
-    eval_expr = sm.lambdify(args, expr)
-    res = eval_expr(*vals)
-
-    replacements, reduced_expr = sm.cse(expr)
     value_dict = {s: v for s, v in zip(args, vals)}
+
+    # This is where it is getting killed! Can't lambdify M it seems.
+    #print('lambdifying the whole expression')
+    #eval_expr = sm.lambdify(args, expr)
+    #print('Evaluate the whole expression')
+    #res = eval_expr(*vals)
+
+    res = expr.evalf(subs=value_dict)
+
+    print('Find common sub expressions')
+    replacements, reduced_expr = sm.cse(expr)
+
+    print('Evaluate each subexpression')
     for (var, sub_expr) in replacements:
         print('Sub expression {}'.format(var))
         sub_expr_args = find_args(sub_expr)

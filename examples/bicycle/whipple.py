@@ -383,7 +383,10 @@ M, F = formulate_equations_motion(N, bodies, q, u_def, uI, uD, nonholonomic,
 print('Compare cse')
 from utils import compare_cse
 
-compare_cse(M)
+compare_cse(M, args=[q3, q4, q5, q6, q7, q8, u3, u4, u5, u6, u7, u8, T4, T6,
+                     T7, rf, rr, d1, d2, d3, l1, l2, l3, l4, g, mc, md, me, mf,
+                     ic11, ic22, ic33, ic31, id11, id22, ie11, ie22, ie33,
+                     ie31, if11, if22])
 
 ####################################
 # Validation of non-linear equations
