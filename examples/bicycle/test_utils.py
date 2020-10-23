@@ -1,9 +1,21 @@
 import sympy as sm
 import sympy.physics.mechanics as me
 
-from utils import decompose_linear_parts, inv_of_3_by_3, solve_for_qdots
+from pydy.models import n_link_pendulum_on_cart
+
+from utils import (compare_cse, decompose_linear_parts, inv_of_3_by_3,
+                   solve_for_qdots)
 
 t = me.dynamicsymbols._t
+
+
+def test_compare_cse():
+
+    sys = n_link_pendulum_on_cart(n=5)
+
+    F = sys.eom_method.forcing
+
+    compare_cse(F)
 
 
 def test_decompose_linear_parts():
