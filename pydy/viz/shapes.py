@@ -403,13 +403,15 @@ class Cylinder(Shape):
     _p3js_geometry_type = 'Cylinder'
     _p3js_attribute_map = {'radiusTop': 'radius',
                            'radiusBottom': 'radius',
+                           'radialSegments': 'radial_segments',
                            'height': 'length'}
 
     def __init__(self, length, radius, **kwargs):
         super(Cylinder, self).__init__(**kwargs)
-        self.geometry_attrs += ['length', 'radius']
+        self.geometry_attrs += ['length', 'radius', 'radial_segments']
         self.length = length
         self.radius = radius
+        self.radial_segments = max(10, int(radius*10))
 
 
 class Cone(Shape):
