@@ -6,14 +6,14 @@ Release Notes
 ===========
 
 - Added the ability to pass optional arguments to the ODE solver in System. [PR
-  `#447`]
+  `#447`_]
 - Cylinders, Spheres, and Circles loaded via PyThreeJS will appear more round.
-  [PR `#440`]
-- Added a Carvallo-Whipple bicycle example to the documentation [PR `#442`]
+  [PR `#440`_]
+- Added a Carvallo-Whipple bicycle example to the documentation [PR `#442`_]
 - Oldest supported dependencies for Python 3 are aligned with Ubuntu 20.04 LTS.
   For Python 2, the oldest necessary dependencies are used if the ones for
-  Ubuntu 20.04 LTS are too new. [PR `#432`]
-- Dropped support for Python 3.5 [PR `#429`]
+  Ubuntu 20.04 LTS are too new. [PR `#432`_]
+- Dropped support for Python 3.5 [PR `#429`_]
 - Improved the README and documentation integration. [PR `#424`_]
 - Moved some examples to Sphinx [PRs `#421`_, `#423`_]
 - jupyter-sphinx enabled for examples in the documentation [PR `#419`_]
