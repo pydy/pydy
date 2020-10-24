@@ -91,3 +91,33 @@ how the Visualizer looks, when called from inside an IPython notebook:
 Here, one can add custom values in text-boxes(1, 2, 3 etc.) and on clicking
 "Rerun" (4) the simulations are re-run in the background. On completing, the
 scene corresponding to the new data is rendered on the Canvas.
+
+API
+===
+
+Python
+------
+
+.. automodule:: pydy.viz.camera
+   :members:
+   :special-members: __init__
+
+.. automodule:: pydy.viz.light
+   :members:
+   :special-members: __init__
+
+.. automodule:: pydy.viz.scene
+   :members:
+   :special-members: __init__
+
+.. automodule:: pydy.viz.server
+   :members:
+   :special-members: __init__
+
+.. automodule:: pydy.viz.shapes
+   :members:
+   :special-members: __init__
+
+.. automodule:: pydy.viz.visualization_frame
+   :members:
+   :special-members: __init__
