@@ -12,15 +12,13 @@ Table of Contents
 
    install.rst
    usage.rst
-   tutorials/beginners.rst
-   tutorials/advanced.rst
-   codegen/codegen.rst
+   tutorials.rst
+   codegen.rst
    models.rst
    system.rst
    viz/viz.rst
    viz/api.rst
    utils.rst
-   api.rst
    changelog.rst
 
 .. ifconfig:: INCLUDE_EXAMPLES
