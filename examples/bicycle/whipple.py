@@ -455,27 +455,28 @@ us_vals = np.array([substitutions[s] for s in us])
 rs_vals = np.array([substitutions[s] for s in rs])
 ps_vals = np.array([substitutions[s] for s in ps])
 
-gen = CythonMatrixGenerator([qs, us, rs, ps], [mass_matrix, forcing_vector],
-                            cse=True)
-c_eval_M_F_no_cse = gen.compile()
-M1 = np.zeros(36)
-F1 = np.zeros(6)
-c_eval_M_F_no_cse(qs_vals, us_vals, rs_vals, ps_vals, M1, F1)
+# this runs with only the mass matrix but uses like 10+ GB of memory to compile
+gen1 = CythonMatrixGenerator([qs, us, rs, ps], [mass_matrix],  # forcing_vector],
+                             cse=False)
+c_eval_M_F_no_cse = gen1.compile(tmp_dir='no_cse', verbose=True)
+M1 = np.empty(36)
+F1 = np.empty(6)
+c_eval_M_F_no_cse(qs_vals, us_vals, rs_vals, ps_vals, M1)  #, F1)
 
-gen = CythonMatrixGenerator([qs, us, rs, ps], [mass_matrix, forcing_vector],
-                            cse=True)
-c_eval_M_F_with_cse = gen.compile()
-M2 = np.zeros(36)
-F2 = np.zeros(6)
-c_eval_M_F_with_cse(qs_vals, us_vals, rs_vals, ps_vals, M2, F2)
+gen2 = CythonMatrixGenerator([qs, us, rs, ps], [mass_matrix],  # forcing_vector],
+                             cse=True)
+c_eval_M_F_with_cse = gen2.compile(tmp_dir='with_cse', verbose=True)
+M2 = np.empty(36)
+F2 = np.empty(6)
+c_eval_M_F_with_cse(qs_vals, us_vals, rs_vals, ps_vals, M2)  #, F2)
 
-M3 =sm.matrix2numpy(mass_matrix.xreplace(substitutions), dtype=float)
-F3 =sm.matrix2numpy(forcing_vector.xreplace(substitutions), dtype=float)
+M3 = sm.matrix2numpy(mass_matrix.xreplace(substitutions), dtype=float)
+F3 = sm.matrix2numpy(forcing_vector.xreplace(substitutions), dtype=float)
 
 np.testing.assert_allclose(M1.reshape((6, 6)), M2.reshape((6, 6)))
-np.testing.assert_allclose(F1, F2)
+#np.testing.assert_allclose(F1, F2)
 np.testing.assert_allclose(M1.reshape((6, 6)), M3)
-np.testing.assert_allclose(F1, np.squeeze(F3))
+#np.testing.assert_allclose(F1, np.squeeze(F3))
 
 pause
 
