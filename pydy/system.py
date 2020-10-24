@@ -11,8 +11,6 @@ Here is the procedure for using this class.
        how the ODE function is generated.
     3. call ``integrate()`` to simulate your system.
 
-Examples
---------
 The simplest usage of this class is as follows. First, we need a
 KanesMethod object on which we have already invoked ``kanes_equations()``::
 
