@@ -5,9 +5,62 @@ from collections import OrderedDict
 import numpy as np
 import sympy as sm
 import sympy.physics.mechanics as me
+from pydy.codegen.cython_code import CythonMatrixGenerator
 from dtk import bicycle
 
 TIME = me.dynamicsymbols._t
+
+
+def compare_CythonMatrixGenerator_with_and_without_cse(expr, float_subs):
+    """Tests whether a single symbolic matrix expression will produce the same
+    numerical results if cse is and isn't used for the C code generation.
+
+    Parameters
+    ==========
+    expr : sympy.Matrix, shape(n, m)
+        A matrix of expressions.
+    float_subs : dictionary
+        Maps all the symbols in ``expr`` to floating point numbers.
+
+    """
+
+    args = []
+    vals = []
+    for k, v in float_subs.items():
+        args.append(k)
+        vals.append(v)
+    vals = np.array(vals)
+    num_rows, num_cols = expr.shape
+
+    gen_no_cse = CythonMatrixGenerator([args], [expr], cse=False)
+    eval_no_cse = gen_no_cse.compile(tmp_dir='no_cse', verbose=True)
+    res_no_cse = np.empty(num_rows*num_cols)
+    eval_no_cse(vals, res_no_cse)
+
+    gen_with_cse = CythonMatrixGenerator([args], [expr], cse=True)
+    eval_with_cse = gen_with_cse.compile(tmp_dir='with_cse', verbose=True)
+    res_with_cse = np.empty(num_rows*num_cols)
+    eval_with_cse(vals, res_with_cse)
+
+    np.testing.assert_allclose(res_with_cse, res_no_cse)
+
+
+def evalf_with_symengine(sympy_expr, float_subs):
+    import symengine as se
+
+    symengine_expr = se.sympify(sympy_expr)
+
+    rational_subs = {}
+    for k, v in float_subs.items():
+        # converts float to rational, not sure why 10**18 is chosen. Probably
+        # because we aren't specifying the floats with any more digits than 17.
+        rational_subs[k] = se.Integer(int(v*10**18))/10**18
+
+    symengine_expr_with_rationals = symengine_expr.xreplace(rational_subs)
+    # n(number_of_bits, real=True)
+    M = symengine_expr_with_rationals.applyfunc(lambda x: x.n(100, real=True))
+
+    return M
 
 
 def create_symbol_value_map(constants_name_map, time_varying_name_map):
