@@ -432,6 +432,10 @@ for k, v in moore_input.items():
         exec('dynamic_substitutions[{}] = v'.format(k))
     except NameError:
         print('{} not added to sub dict.'.format(k))
+    # TODO : try this to ensure we are using 0.0 instead of other tiny floats.
+    #else:
+        #if abs(dynamic_substitutions[k]) < 1e-14:
+            #dynamic_substitutions[k] = 0.0
 
 specified_subs = {T4: 0.0, T6: 0.0, T7: 0.0}
 
@@ -460,6 +464,13 @@ qs_vals = np.array([substitutions[s] for s in qs])
 us_vals = np.array([substitutions[s] for s in us])
 rs_vals = np.array([substitutions[s] for s in rs])
 ps_vals = np.array([substitutions[s] for s in ps])
+
+from utils import compare_CythonMatrixGenerator_with_and_without_cse
+
+# this runs with only the mass matrix but uses like 10+ GB of memory to compile
+# both of these show descrepancies in the steer equation u7
+compare_CythonMatrixGenerator_with_and_without_cse(mass_matrix, substitutions)
+compare_CythonMatrixGenerator_with_and_without_cse(forcing_vector, substitutions)
 
 # this runs with only the mass matrix but uses like 10+ GB of memory to compile
 gen1 = CythonMatrixGenerator([qs, us, rs, ps], [mass_matrix],  # forcing_vector],
@@ -496,7 +507,7 @@ eval_autowrapped_fortran = autowrap(mass_matrix.xreplace(q_syms_subs),
                                     language='F95',
                                     backend='f2py',
                                     args=(qs_syms + us_syms + rs_syms + ps))
-M5 = eval_autowrapped_fortranimpm(*np.hstack((qs_vals, us_vals, rs_vals, ps_vals)))
+M5 = eval_autowrapped_fortran(*np.hstack((qs_vals, us_vals, rs_vals, ps_vals)))
 
 np.testing.assert_allclose(M1.reshape((6, 6)), M2.reshape((6, 6)))
 #np.testing.assert_allclose(F1, F2)
