@@ -138,21 +138,21 @@ print('Defining constants.')
 # l4: the distance in the e3> direction from the front wheel center to
 #     the center of mass of the fork
 
-rf, rr = sm.symbols('rf rr', real=True, positive=True)
-d1, d2, d3 = sm.symbols('d1 d2 d3', real=True)
-l1, l2, l3, l4 = sm.symbols('l1 l2 l3 l4', real=True)
+rf, rr = sm.symbols('rf rr')
+d1, d2, d3 = sm.symbols('d1 d2 d3')
+l1, l2, l3, l4 = sm.symbols('l1 l2 l3 l4')
 
 # acceleration due to gravity
-g = sm.symbols('g', real=True)
+g = sm.symbols('g')
 
 # mass
-mc, md, me, mf = sm.symbols('mc md me mf', real=True, positive=True)
+mc, md, me, mf = sm.symbols('mc md me mf')
 
 # inertia
-ic11, ic22, ic33, ic31 = sm.symbols('ic11 ic22 ic33 ic31', real=True)
-id11, id22 = sm.symbols('id11 id22', real=True)
-ie11, ie22, ie33, ie31 = sm.symbols('ie11 ie22 ie33 ie31', real=True)
-if11, if22 = sm.symbols('if11 if22', real=True)
+ic11, ic22, ic33, ic31 = sm.symbols('ic11 ic22 ic33 ic31')
+id11, id22 = sm.symbols('id11 id22')
+ie11, ie22, ie33, ie31 = sm.symbols('ie11 ie22 ie33 ie31')
+if11, if22 = sm.symbols('if11 if22')
 
 constants_name_map = {sym.name: sym for sym in (rf, rr, d1, d2, d3,
                                                 l1, l2, l3, l4, g,
@@ -365,6 +365,12 @@ mass_matrix = kane.mass_matrix
 print('The mass matrix is a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(mass_matrix))))
 
+q_syms_subs = {q4: sm.Symbol('q4'), q5: sm.Symbol('q5'), q7: sm.Symbol('q7')}
+mass_matrix_with_syms = mass_matrix.xreplace(q_syms_subs)
+mass_matrix_srepr = sm.srepr(mass_matrix_with_syms)
+with open('large_matrix.txt', 'w') as f:
+    f.write(mass_matrix_srepr)
+
 # sub in the kin diffs to eliminate some extraneous derivatives
 forcing_vector = kane.forcing.xreplace(kane.kindiffdict())
 print('The forcing vector is a function of these dynamic variables:')
@@ -473,10 +479,30 @@ c_eval_M_F_with_cse(qs_vals, us_vals, rs_vals, ps_vals, M2)  #, F2)
 M3 = sm.matrix2numpy(mass_matrix.xreplace(substitutions), dtype=float)
 F3 = sm.matrix2numpy(forcing_vector.xreplace(substitutions), dtype=float)
 
+from sympy.utilities.autowrap import autowrap
+# autowrap can't handle the Function()(t), so subs in symbols.
+qs_syms = [sm.Symbol(qi.name) for qi in qs]
+us_syms = [sm.Symbol(ui.name) for ui in us]
+rs_syms = [sm.Symbol(ri.name) for ri in rs]
+# TODO : Also try the Fortran backend.
+eval_autowrapped_c = autowrap(mass_matrix.xreplace(q_syms_subs),
+                              language='C',
+                              backend='cython',
+                              tempdir='autowrap_files',
+                              args=(qs_syms + us_syms + rs_syms + ps))
+M4 = eval_autowrapped_c(*np.hstack((qs_vals, us_vals, rs_vals, ps_vals)))
+
+eval_autowrapped_fortran = autowrap(mass_matrix.xreplace(q_syms_subs),
+                                    language='F95',
+                                    backend='f2py',
+                                    args=(qs_syms + us_syms + rs_syms + ps))
+M5 = eval_autowrapped_fortranimpm(*np.hstack((qs_vals, us_vals, rs_vals, ps_vals)))
+
 np.testing.assert_allclose(M1.reshape((6, 6)), M2.reshape((6, 6)))
 #np.testing.assert_allclose(F1, F2)
 np.testing.assert_allclose(M1.reshape((6, 6)), M3)
 #np.testing.assert_allclose(F1, np.squeeze(F3))
+np.testing.assert_allclose(M4, M3)
 
 pause
 
