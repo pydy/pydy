@@ -5,15 +5,16 @@ from collections import OrderedDict
 import numpy as np
 import sympy as sm
 import sympy.physics.mechanics as me
+from sympy.utilities.autowrap import autowrap
 from pydy.codegen.cython_code import CythonMatrixGenerator
 from dtk import bicycle
 
 TIME = me.dynamicsymbols._t
 
 
-def compare_CythonMatrixGenerator_with_and_without_cse(expr, float_subs):
-    """Tests whether a single symbolic matrix expression will produce the same
-    numerical results if cse is and isn't used for the C code generation.
+def evaluate_with_autowrap(expr, float_subs, language='C', tmp_dir=None):
+    """Returns the numerical evaluations of a single symbolic matrix expression
+    using ``autowrap``.
 
     Parameters
     ==========
@@ -21,6 +22,60 @@ def compare_CythonMatrixGenerator_with_and_without_cse(expr, float_subs):
         A matrix of expressions.
     float_subs : dictionary
         Maps all the symbols in ``expr`` to floating point numbers.
+    language : string
+        "C" or "Fortran"
+    tmp_dir : string
+        Path to a directory to store the generated files.
+
+    Returns
+    =======
+    res : ndarray, shape(n, m)
+
+    """
+
+    # autowrap can't handle the Function()(t), so subs in symbols.
+    func_subs = {}
+    new_float_subs = {}
+    for k, v in float_subs.items():
+        if '(t)' in str(k):
+            s = sm.Symbol(k.name[-3:])
+            func_subs[k] = s
+            new_float_subs[s] = v
+        else:
+            new_float_subs[k] = v
+
+    if language == 'C':
+        backend = 'cython'
+    elif language == 'Fortran':
+        language = 'F95'
+        backend = 'f2py'
+
+    eval_expr = autowrap(expr.xreplace(func_subs),
+                         language=language,
+                         backend=backend,
+                         tempdir=tmp_dir,
+                         args=tuple(new_float_subs.keys()))
+    res = eval_expr(*new_float_subs.values())
+
+    return res
+
+
+def evaluate_with_and_without_cse(expr, float_subs, tmp_dir=None):
+    """Returns the numerical evaluations of a single symbolic matrix expression
+    using ``CythonMatrixGenerator`` with and without using common subexpression
+    elimination.
+
+    Parameters
+    ==========
+    expr : sympy.Matrix, shape(n, m)
+        A matrix of expressions.
+    float_subs : dictionary
+        Maps all the symbols in ``expr`` to floating point numbers.
+
+    Returns
+    =======
+    res_no_cse : ndarray, shape(n, m)
+    res_with_cse : ndarray, shape(n, m)
 
     """
 
@@ -33,16 +88,16 @@ def compare_CythonMatrixGenerator_with_and_without_cse(expr, float_subs):
     num_rows, num_cols = expr.shape
 
     gen_no_cse = CythonMatrixGenerator([args], [expr], cse=False)
-    eval_no_cse = gen_no_cse.compile(tmp_dir='no_cse', verbose=True)
+    eval_no_cse = gen_no_cse.compile(tmp_dir=tmp_dir, verbose=True)
     res_no_cse = np.empty(num_rows*num_cols)
     eval_no_cse(vals, res_no_cse)
 
     gen_with_cse = CythonMatrixGenerator([args], [expr], cse=True)
-    eval_with_cse = gen_with_cse.compile(tmp_dir='with_cse', verbose=True)
+    eval_with_cse = gen_with_cse.compile(tmp_dir=tmp_dir, verbose=True)
     res_with_cse = np.empty(num_rows*num_cols)
     eval_with_cse(vals, res_with_cse)
 
-    np.testing.assert_allclose(res_with_cse, res_no_cse)
+    return res_no_cse, res_with_cse
 
 
 def evalf_with_symengine(sympy_expr, float_subs):
