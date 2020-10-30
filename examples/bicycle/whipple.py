@@ -13,6 +13,7 @@ values of this problem to those presented in [BasuMandal2007]_.
 
 """
 
+
 from collections import OrderedDict
 
 import numpy as np
@@ -299,6 +300,8 @@ print('Defining inertia.')
 # to the other reference frames so I define them here with respect to the
 # rear and front frames.
 
+# NOTE : Changning 0.0 to 0 or sm.S(0) changes the floating point errors.
+
 Ic = mec.inertia(C, ic11, ic22, ic33, 0.0, 0.0, ic31)
 Id = mec.inertia(C, id11, id22, id11, 0.0, 0.0, 0.0)
 Ie = mec.inertia(E, ie11, ie22, ie33, 0.0, 0.0, ie31)
@@ -450,7 +453,7 @@ substitutions.update(constant_substitutions)
 substitutions.update(dynamic_substitutions)
 
 # Two things learned here:
-# 1. compilation fails if cse is not true
+# 1. compilation fails if cse is not true when [mass_matrix
 # 2. the resulting matrices from the c code produces slightly different M and F
 # matrices. Not sure why yet. But it needs to be addressed.
 from pydy.codegen.cython_code import CythonMatrixGenerator
@@ -465,67 +468,58 @@ us_vals = np.array([substitutions[s] for s in us])
 rs_vals = np.array([substitutions[s] for s in rs])
 ps_vals = np.array([substitutions[s] for s in ps])
 
-from utils import compare_CythonMatrixGenerator_with_and_without_cse
+from utils import evalf_with_symengine
+print('Evaluating numerically with symengine')
+M_exact = evalf_with_symengine(mass_matrix, substitutions)
+F_exact = evalf_with_symengine(forcing_vector, substitutions)
 
+print('Evaluating numerically with xreplace')
+#M_from_xreplace = sm.matrix2numpy(mass_matrix.xreplace(substitutions),
+                                  #dtype=float)
+#F_from_xreplace = sm.matrix2numpy(forcing_vector.xreplace(substitutions),
+                                  #dtype=float)
+
+#np.testing.assert_allclose(M_from_xreplace, M_exact)
+#np.testing.assert_allclose(F_from_xreplace, F_exact)
+
+#from utils import evaluate_with_and_without_cse, evaluate_with_autowrap
 # this runs with only the mass matrix but uses like 10+ GB of memory to compile
 # both of these show descrepancies in the steer equation u7
-compare_CythonMatrixGenerator_with_and_without_cse(mass_matrix, substitutions)
-compare_CythonMatrixGenerator_with_and_without_cse(forcing_vector, substitutions)
+#M_no_cse, M_with_cse = evaluate_with_and_without_cse(mass_matrix,
+                                                     #substitutions)
+#F_no_cse, F_with_cse = evaluate_with_and_without_cse(forcing_vector,
+                                                     #substitutions)
+#
+#np.testing.assert_allclose(M_no_cse, mass_matrix_exact)
+#
+#M_autowrap_c = evaluate_with_autowrap(mass_matrix, substitutions, language="C")
+#M_autowrap_fortran = evaluate_with_autowrap(mass_matrix, substitutions,
+                                            #language="Fortran")
+#
+#F_autowrap_c = evaluate_with_autowrap(forcing_vector, substitutions,
+                                      #language="C")
+#F_autowrap_fortran = evaluate_with_autowrap(forcing_vector, substitutions,
+                                            #language="Fortran")
 
-# this runs with only the mass matrix but uses like 10+ GB of memory to compile
-gen1 = CythonMatrixGenerator([qs, us, rs, ps], [mass_matrix],  # forcing_vector],
-                             cse=False)
-c_eval_M_F_no_cse = gen1.compile(tmp_dir='no_cse', verbose=True)
-M1 = np.empty(36)
-F1 = np.empty(6)
-c_eval_M_F_no_cse(qs_vals, us_vals, rs_vals, ps_vals, M1)  #, F1)
-
-gen2 = CythonMatrixGenerator([qs, us, rs, ps], [mass_matrix],  # forcing_vector],
-                             cse=True)
-c_eval_M_F_with_cse = gen2.compile(tmp_dir='with_cse', verbose=True)
-M2 = np.empty(36)
-F2 = np.empty(6)
-c_eval_M_F_with_cse(qs_vals, us_vals, rs_vals, ps_vals, M2)  #, F2)
-
-M3 = sm.matrix2numpy(mass_matrix.xreplace(substitutions), dtype=float)
-F3 = sm.matrix2numpy(forcing_vector.xreplace(substitutions), dtype=float)
-
-from sympy.utilities.autowrap import autowrap
-# autowrap can't handle the Function()(t), so subs in symbols.
-qs_syms = [sm.Symbol(qi.name) for qi in qs]
-us_syms = [sm.Symbol(ui.name) for ui in us]
-rs_syms = [sm.Symbol(ri.name) for ri in rs]
-# TODO : Also try the Fortran backend.
-eval_autowrapped_c = autowrap(mass_matrix.xreplace(q_syms_subs),
-                              language='C',
-                              backend='cython',
-                              tempdir='autowrap_files',
-                              args=(qs_syms + us_syms + rs_syms + ps))
-M4 = eval_autowrapped_c(*np.hstack((qs_vals, us_vals, rs_vals, ps_vals)))
-
-eval_autowrapped_fortran = autowrap(mass_matrix.xreplace(q_syms_subs),
-                                    language='F95',
-                                    backend='f2py',
-                                    args=(qs_syms + us_syms + rs_syms + ps))
-M5 = eval_autowrapped_fortran(*np.hstack((qs_vals, us_vals, rs_vals, ps_vals)))
-
-np.testing.assert_allclose(M1.reshape((6, 6)), M2.reshape((6, 6)))
+#np.testing.assert_allclose(M1.reshape((6, 6)), M2.reshape((6, 6)))
 #np.testing.assert_allclose(F1, F2)
-np.testing.assert_allclose(M1.reshape((6, 6)), M3)
+#np.testing.assert_allclose(M1.reshape((6, 6)), M3)
 #np.testing.assert_allclose(F1, np.squeeze(F3))
-np.testing.assert_allclose(M4, M3)
-
-pause
+#np.testing.assert_allclose(M4, M3)
+#
+#pause
 
 # Try substituting values in through SymPy
 print('Substituting numerical parameters into SymPy expressions.')
-xd_from_sub = solve_linear_system_with_sympy_subs(mass_matrix, forcing_vector,
-                                                  substitutions)
-xd_from_sub2 = solve_linear_system_with_sympy_subs(M, F, substitutions)
+#xd_from_sub = solve_linear_system_with_sympy_subs(mass_matrix, forcing_vector,
+                                                  #substitutions)
+#xd_from_sub2 = solve_linear_system_with_sympy_subs(M, F, substitutions)
+
+xd_from_sub = np.linalg.solve(M_exact, F_exact)
 
 print('The state derivatives from substitution:')
 print(xd_from_sub)
-print(xd_from_sub2)
+#print(xd_from_sub2)
 
 # BUGS to report:
 # 1. find_dynamicsymbols should deal with Vectors and lists of
@@ -544,6 +538,17 @@ g = CythonODEFunctionGenerator(forcing_vector,
                                specifieds=[T4, T6, T7],
                                constants_arg_type='array',
                                specifieds_arg_type='array')
+
+# This solves for the right hand side symbolically and generates code from that
+# expression.
+# NOTE : This takes like 12+ hours to compile.
+#g = CythonODEFunctionGenerator(kane.rhs(),
+                               #kane.q[:],
+                               #kane.u[:],
+                               #list(constant_substitutions.keys()),
+                               #specifieds=[T4, T6, T7],
+                               #constants_arg_type='array',
+                               #specifieds_arg_type='array')
 print('Generating rhs')
 rhs = g.generate()
 
