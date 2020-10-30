@@ -14,6 +14,7 @@ values of this problem to those presented in [BasuMandal2007]_.
 """
 
 
+import os
 from collections import OrderedDict
 
 import numpy as np
@@ -24,8 +25,11 @@ from pydy.codegen.ode_function_generators import CythonODEFunctionGenerator
 # TODO : Make dtk optional.
 from dtk import bicycle
 
-from utils import (compare_numerically, formulate_equations_motion,
-                   solve_linear_system_with_sympy_subs)
+from utils import compare_numerically, formulate_equations_motion
+
+# NOTE : The default cache size is sometimes too low for these large expression
+# operations. This potentially helps.
+os.environ['SYMPY_CACHE_SIZE'] = '6000'
 
 ##################
 # Reference Frames
@@ -300,7 +304,7 @@ print('Defining inertia.')
 # to the other reference frames so I define them here with respect to the
 # rear and front frames.
 
-# NOTE : Changning 0.0 to 0 or sm.S(0) changes the floating point errors.
+# NOTE : Changing 0.0 to 0 or sm.S(0) changes the floating point errors.
 
 Ic = mec.inertia(C, ic11, ic22, ic33, 0.0, 0.0, ic31)
 Id = mec.inertia(C, id11, id22, id11, 0.0, 0.0, 0.0)
@@ -515,7 +519,7 @@ print('Substituting numerical parameters into SymPy expressions.')
                                                   #substitutions)
 #xd_from_sub2 = solve_linear_system_with_sympy_subs(M, F, substitutions)
 
-xd_from_sub = np.linalg.solve(M_exact, F_exact)
+xd_from_sub = np.squeeze(np.linalg.solve(M_exact, F_exact))
 
 print('The state derivatives from substitution:')
 print(xd_from_sub)
@@ -537,7 +541,11 @@ g = CythonODEFunctionGenerator(forcing_vector,
                                coordinate_derivatives=rhs_of_kin_diffs,
                                specifieds=[T4, T6, T7],
                                constants_arg_type='array',
-                               specifieds_arg_type='array')
+                               specifieds_arg_type='array',
+                               tmp_dir='cython_ode_func_gen_files',
+                               prefix='zz',
+                               cse=True,
+                               verbose=True)
 
 # This solves for the right hand side symbolically and generates code from that
 # expression.
