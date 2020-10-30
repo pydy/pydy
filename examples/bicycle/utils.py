@@ -8,6 +8,7 @@ import sympy.physics.mechanics as me
 from sympy.utilities.autowrap import autowrap
 from pydy.codegen.cython_code import CythonMatrixGenerator
 from dtk import bicycle
+import symengine as se
 
 TIME = me.dynamicsymbols._t
 
@@ -101,7 +102,23 @@ def evaluate_with_and_without_cse(expr, float_subs, tmp_dir=None):
 
 
 def evalf_with_symengine(sympy_expr, float_subs):
-    import symengine as se
+    """Returns the numerical evaluation of the expression using floats with X
+    digits of precision using symengine for speed (SymPy's evalf() takes hours
+    to compute).
+
+    Parameters
+    ==========
+    expr : sympy.Matrix, shape(n, m)
+        A matrix of expressions.
+    float_subs : dictionary
+        Maps all the symbols in ``expr`` to floating point numbers.
+
+    Returns
+    =======
+    res : ndarray, shape(n, m)
+        Array of double precision floats.
+
+    """
 
     symengine_expr = se.sympify(sympy_expr)
 
@@ -115,7 +132,11 @@ def evalf_with_symengine(sympy_expr, float_subs):
     # n(number_of_bits, real=True)
     M = symengine_expr_with_rationals.applyfunc(lambda x: x.n(100, real=True))
 
-    return M
+    res = np.empty(sympy_expr.shape[0]*sympy_expr.shape[1], dtype=float)
+    for i, val in enumerate(M):
+        res[i] = float(val)
+
+    return res.reshape(sympy_expr.shape)
 
 
 def create_symbol_value_map(constants_name_map, time_varying_name_map):
@@ -223,7 +244,7 @@ def compare_cse(expr, args=None):
 
 def compare_numerically(expr1, expr2, n=10):
     """Compares two SymPy expressions by evaluting with a set of random
-    floating point inputs."""
+    floating point inputs using lambdify."""
 
     time_varying_symbols1 = me.find_dynamicsymbols(expr1)
     constants1 = expr1.free_symbols
@@ -302,10 +323,10 @@ def formulate_equations_motion(newtonian_frame,
                                loads,
                                sub_explicit_gen_dep_speeds=False,
                                nonminimal_form=True):
-    """Returns the mass matrix M (coefficients to the generalized accelerations)
-    and the forcing vector F (terms that are not functions of the generalized
-    accelerations. The result is in one of two forms depending if
-    ``nonminimal_form`` is true or not.
+    """Returns the mass matrix M (coefficients to the generalized
+    accelerations) and the forcing vector F (terms that are not functions of
+    the generalized accelerations. The result is in one of two forms depending
+    if ``nonminimal_form`` is true or not.
 
     M(q,t)*u'(t) = F(u,q,t)
 
@@ -754,7 +775,7 @@ def solve_for_qdots(generalized_coordinates, generalized_speed_definitions):
     return dict(zip(qdot, qdot_exprs))
 
 
-def solve_linear_system_with_sympy_subs(A, b, value_map):
+def xreplace_and_solve_linear_system(A, b, value_map):
     """Solves Ax=b by substituting values from value_map into A and b and
     solving with NumPy."""
 
