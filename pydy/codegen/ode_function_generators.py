@@ -655,9 +655,12 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
                          verbose=self._options['verbose'])
 
     def _cythonize_symbolic_lusolve(self, outputs, inputs):
+        if not self._options['cse']:
+            msg = 'cse has to be True if using the sympy linear system solver'
+            raise ValueError(msg)
         g = CythonMatrixGenerator(inputs, outputs,
                                   prefix=self._options['prefix'],
-                                  cse=self._options['cse'])
+                                  cse=True)
         # patch in the special generator
         g.c_matrix_generator = _CLUsolveGenerator(inputs, outputs)
         return g.compile(tmp_dir=self._options['tmp_dir'],

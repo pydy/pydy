@@ -187,6 +187,7 @@ class TestODEFunctionGenerator(object):
                                  self.sys.constants_symbols,
                                  mass_matrix=self.sys.eom_method.mass_matrix_full)
 
+        assert g.linear_sys_solver == 'numpy'
         assert g._solve_linear_system == np.linalg.solve
 
         g = ODEFunctionGenerator(self.sys.eom_method.forcing_full,
@@ -196,6 +197,7 @@ class TestODEFunctionGenerator(object):
                                  mass_matrix=self.sys.eom_method.mass_matrix_full,
                                  linear_sys_solver='numpy')
 
+        assert g.linear_sys_solver == 'numpy'
         assert g._solve_linear_system == np.linalg.solve
 
         g = ODEFunctionGenerator(self.sys.eom_method.forcing_full,
@@ -205,6 +207,7 @@ class TestODEFunctionGenerator(object):
                                  mass_matrix=self.sys.eom_method.mass_matrix_full,
                                  linear_sys_solver='scipy')
 
+        assert g.linear_sys_solver == 'scipy'
         assert g._solve_linear_system == sp.linalg.solve
 
         solver = lambda A, b: np.dot(np.inv(A), b)
@@ -216,6 +219,7 @@ class TestODEFunctionGenerator(object):
                                  mass_matrix=self.sys.eom_method.mass_matrix_full,
                                  linear_sys_solver=solver)
 
+        assert g.linear_sys_solver == solver
         assert g._solve_linear_system == solver
 
     def test_no_constants(self):

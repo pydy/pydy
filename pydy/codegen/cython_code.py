@@ -8,8 +8,6 @@ import importlib
 import subprocess
 from collections import defaultdict
 
-import sympy as sm
-
 from .c_code import CMatrixGenerator
 from ..utils import wrap_and_indent
 
