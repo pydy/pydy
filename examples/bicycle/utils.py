@@ -13,6 +13,16 @@ import symengine as se
 TIME = me.dynamicsymbols._t
 
 
+def compare_numerical_arrays(actual, expected, name='Actual'):
+    try:
+        np.testing.assert_allclose(actual, expected)
+    except AssertionError:
+        print('{} is not correct. Here is the relative error:'.format(name))
+        print((actual - expected)/expected)
+    else:
+        print('{} is correct to machine precision'.format(name))
+
+
 def evaluate_with_autowrap(expr, float_subs, language='C', tmp_dir=None):
     """Returns the numerical evaluations of a single symbolic matrix expression
     using ``autowrap``.
@@ -124,13 +134,15 @@ def evalf_with_symengine(sympy_expr, float_subs):
 
     rational_subs = {}
     for k, v in float_subs.items():
-        # converts float to rational, not sure why 10**18 is chosen. Probably
-        # because we aren't specifying the floats with any more digits than 17.
-        rational_subs[k] = se.Integer(int(v*10**18))/10**18
+        # 17 because it is needed to represent a double
+        # https://stackoverflow.com/questions/6118231/why-do-i-need-17-significant-digits-and-not-16-to-represent-a-double/
+        rational_subs[k] = se.Integer(int(v*10**17))/10**17
+        #rational_subs[k] = se.Integer(int(v*2**52))/2**52
 
     symengine_expr_with_rationals = symengine_expr.xreplace(rational_subs)
     # n(number_of_bits, real=True)
-    M = symengine_expr_with_rationals.applyfunc(lambda x: x.n(100, real=True))
+    # TODO : Not sure what bit value I should choose.
+    M = symengine_expr_with_rationals.applyfunc(lambda x: x.n(1000, real=True))
 
     res = np.empty(sympy_expr.shape[0]*sympy_expr.shape[1], dtype=float)
     for i, val in enumerate(M):
@@ -773,6 +785,17 @@ def solve_for_qdots(generalized_coordinates, generalized_speed_definitions):
     qdot_exprs = A_Kqd.LUsolve(-B_K)
 
     return dict(zip(qdot, qdot_exprs))
+
+
+def write_matrix_to_file(expr, filename, funcs_of_time=None):
+
+    if funcs_of_time is None:
+        funcs_of_time = me.find_dynamicsymbols(expr)
+    syms_subs = {f: sm.Symbol(f.name) for f in funcs_of_time}
+    expr_with_syms = expr.xreplace(syms_subs)
+    expr_srepr = sm.srepr(expr_with_syms)
+    with open(filename, 'w') as f:
+        f.write(expr_srepr)
 
 
 def xreplace_and_solve_linear_system(A, b, value_map):

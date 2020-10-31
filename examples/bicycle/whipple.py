@@ -1,11 +1,11 @@
 #!usr/bin/env python
 
-"""This file derives the non-linear equations of motion of the Whipple
-bicycle model [Whippl1899]_ following the description and nomenclature in
-[Moore2012]_.
+"""This file derives the non-linear equations of motion of the Carvallo-Whipple
+bicycle model ([Carvallo1899]_, [Whippl1899]_) following the description and
+nomenclature in [Moore2012]_.
 
-It optionally depends on DynamicistToolKit to compare to the canonical
-values of this problem to those presented in [BasuMandal2007]_.
+The results are compared to the canonical values of this problem to those
+presented in [BasuMandal2007]_.
 
 .. [Moore2012] Moore, Jason K. "Human Control of a Bicycle." Doctor of
    Philosophy, University of California, Davis, 2012.
@@ -21,11 +21,21 @@ import numpy as np
 from numpy import testing
 import sympy as sm
 import sympy.physics.mechanics as mec
+from pydy.codegen.cython_code import CythonMatrixGenerator
 from pydy.codegen.ode_function_generators import CythonODEFunctionGenerator
-# TODO : Make dtk optional.
 from dtk import bicycle
 
-from utils import compare_numerically, formulate_equations_motion
+from utils import (
+                   create_symbol_value_map,
+                   compare_cse,
+                   compare_numerical_arrays,
+                   compare_numerically,
+                   evalf_with_symengine,
+                   evaluate_with_and_without_cse,
+                   evaluate_with_autowrap,
+                   formulate_equations_motion,
+                   write_matrix_to_file,
+                  )
 
 # NOTE : The default cache size is sometimes too low for these large expression
 # operations. This potentially helps.
@@ -159,14 +169,6 @@ id11, id22 = sm.symbols('id11 id22')
 ie11, ie22, ie33, ie31 = sm.symbols('ie11 ie22 ie33 ie31')
 if11, if22 = sm.symbols('if11 if22')
 
-constants_name_map = {sym.name: sym for sym in (rf, rr, d1, d2, d3,
-                                                l1, l2, l3, l4, g,
-                                                mc, md, me, mf,
-                                                ic11, ic22, ic33, ic31,
-                                                id11, id22,
-                                                ie11, ie22, ie33, ie31,
-                                                if11, if22)}
-
 ###########
 # Specified
 ###########
@@ -177,9 +179,6 @@ constants_name_map = {sym.name: sym for sym in (rf, rr, d1, d2, d3,
 # T7 : steer torque
 T4, T6, T7 = mec.dynamicsymbols('T4 T6 T7')
 
-time_varying_name_map = {s.name: s for s in (q1, q2, q3, q4, q5, q6, q7, q8,
-                                             u1, u2, u3, u4, u5, u6, u7, u8,
-                                             T4, T6, T7)}
 ##################
 # Position Vectors
 ##################
@@ -372,16 +371,16 @@ mass_matrix = kane.mass_matrix
 print('The mass matrix is a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(mass_matrix))))
 
-q_syms_subs = {q4: sm.Symbol('q4'), q5: sm.Symbol('q5'), q7: sm.Symbol('q7')}
-mass_matrix_with_syms = mass_matrix.xreplace(q_syms_subs)
-mass_matrix_srepr = sm.srepr(mass_matrix_with_syms)
-with open('large_matrix.txt', 'w') as f:
-    f.write(mass_matrix_srepr)
-
 # sub in the kin diffs to eliminate some extraneous derivatives
 forcing_vector = kane.forcing.xreplace(kane.kindiffdict())
 print('The forcing vector is a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
+
+print('Writing mass matrix and forcing vector to files.')
+write_matrix_to_file(mass_matrix, 'mass_matrix.txt',
+                     funcs_of_time=kane.q[:] + kane.u[:])
+write_matrix_to_file(forcing_vector, 'forcing_vector.txt',
+                     funcs_of_time=kane.q[:] + kane.u[:])
 
 # Calcuate the EoMs using an independent method.
 q = (q3, q4, q5, q6, q7, q8)
@@ -394,7 +393,6 @@ u_def = {ui: qi.diff(t) for ui, qi in zip(u, q)}
                                   #dict(forces))
 
 print('Compare cse')
-from utils import compare_cse
 
 #compare_cse(F, args=[q3, q4, q5, q6, q7, q8, u3, u4, u5, u6, u7, u8, T4, T6,
                      #T7, rf, rr, d1, d2, d3, l1, l2, l3, l4, g, mc, md, me, mf,
@@ -448,7 +446,19 @@ specified_subs = {T4: 0.0, T6: 0.0, T7: 0.0}
 
 # TODO : there are variables defined in create_symbol_map that are needed in
 # this script.
-from utils import create_symbol_value_map
+
+constants_name_map = {sym.name: sym for sym in (rf, rr, d1, d2, d3,
+                                                l1, l2, l3, l4, g,
+                                                mc, md, me, mf,
+                                                ic11, ic22, ic33, ic31,
+                                                id11, id22,
+                                                ie11, ie22, ie33, ie31,
+                                                if11, if22)}
+
+time_varying_name_map = {s.name: s for s in (q1, q2, q3, q4, q5, q6, q7, q8,
+                                             u1, u2, u3, u4, u5, u6, u7, u8,
+                                             T4, T6, T7)}
+
 constants_substituions, dynamic_substitution, specified_subs = \
     create_symbol_value_map(constants_name_map, time_varying_name_map)
 
@@ -460,70 +470,55 @@ substitutions.update(dynamic_substitutions)
 # 1. compilation fails if cse is not true when [mass_matrix
 # 2. the resulting matrices from the c code produces slightly different M and F
 # matrices. Not sure why yet. But it needs to be addressed.
-from pydy.codegen.cython_code import CythonMatrixGenerator
 
-qs = [q3, q4, q5, q6, q7, q8]
-us = [u3, u4, u5, u6, u7, u8]
-rs = [T4, T6, T7]
-ps = [rf, rr, d1, d2, d3, l1, l2, l3, l4, g, mc, md, me, mf, ic11, ic22, ic33,
-      ic31, id11, id22, ie11, ie22, ie33, ie31, if11, if22]
-qs_vals = np.array([substitutions[s] for s in qs])
-us_vals = np.array([substitutions[s] for s in us])
-rs_vals = np.array([substitutions[s] for s in rs])
-ps_vals = np.array([substitutions[s] for s in ps])
-
-from utils import evalf_with_symengine
 print('Evaluating numerically with symengine')
 M_exact = evalf_with_symengine(mass_matrix, substitutions)
 F_exact = evalf_with_symengine(forcing_vector, substitutions)
 
 print('Evaluating numerically with xreplace')
-#M_from_xreplace = sm.matrix2numpy(mass_matrix.xreplace(substitutions),
-                                  #dtype=float)
-#F_from_xreplace = sm.matrix2numpy(forcing_vector.xreplace(substitutions),
-                                  #dtype=float)
+M_from_xreplace = sm.matrix2numpy(mass_matrix.xreplace(substitutions),
+                                  dtype=float)
+F_from_xreplace = sm.matrix2numpy(forcing_vector.xreplace(substitutions),
+                                  dtype=float)
 
-#np.testing.assert_allclose(M_from_xreplace, M_exact)
-#np.testing.assert_allclose(F_from_xreplace, F_exact)
+compare_numerical_arrays(M_exact, M_from_xreplace,
+                         name='Mass matrix from xreplace')
+compare_numerical_arrays(F_exact, F_from_xreplace,
+                         name='Forcing vector from xreplace')
 
-#from utils import evaluate_with_and_without_cse, evaluate_with_autowrap
+print('Evaluating with autowrap C')
+M_autowrap_c = evaluate_with_autowrap(mass_matrix, substitutions, language="C")
+F_autowrap_c = evaluate_with_autowrap(forcing_vector, substitutions,
+                                      language="C")
+compare_numerical_arrays(M_exact, M_autowrap_c,
+                         name='Mass matrix from autowrap C')
+compare_numerical_arrays(F_exact, F_autowrap_c,
+                         name='Forcing vector from autowrap C')
+
+print('Evaluating with autowrap Fortran')
+M_autowrap_fortran = evaluate_with_autowrap(mass_matrix, substitutions,
+                                            language="Fortran")
+F_autowrap_fortran = evaluate_with_autowrap(forcing_vector, substitutions,
+                                            language="Fortran")
+compare_numerical_arrays(M_exact, M_autowrap_fortran,
+                         name='Mass matrix from autowrap Fortran')
+compare_numerical_arrays(F_exact, F_autowrap_fortran,
+                         name='Forcing vector from autowrap Fortran')
+
 # this runs with only the mass matrix but uses like 10+ GB of memory to compile
 # both of these show descrepancies in the steer equation u7
 #M_no_cse, M_with_cse = evaluate_with_and_without_cse(mass_matrix,
                                                      #substitutions)
 #F_no_cse, F_with_cse = evaluate_with_and_without_cse(forcing_vector,
                                                      #substitutions)
-#
-#np.testing.assert_allclose(M_no_cse, mass_matrix_exact)
-#
-#M_autowrap_c = evaluate_with_autowrap(mass_matrix, substitutions, language="C")
-#M_autowrap_fortran = evaluate_with_autowrap(mass_matrix, substitutions,
-                                            #language="Fortran")
-#
-#F_autowrap_c = evaluate_with_autowrap(forcing_vector, substitutions,
-                                      #language="C")
-#F_autowrap_fortran = evaluate_with_autowrap(forcing_vector, substitutions,
-                                            #language="Fortran")
+#compare_numerical_arrays(M_no_cse, M_with_cse,
+                         #name='Mass matrix from CythonMatrixGenerator with cse')
+#compare_numerical_arrays(F_no_cse, F_with_cse,
+                         #name='Forcing vector from CythonMatrixGenerator with cse')
 
-#np.testing.assert_allclose(M1.reshape((6, 6)), M2.reshape((6, 6)))
-#np.testing.assert_allclose(F1, F2)
-#np.testing.assert_allclose(M1.reshape((6, 6)), M3)
-#np.testing.assert_allclose(F1, np.squeeze(F3))
-#np.testing.assert_allclose(M4, M3)
-#
-#pause
-
-# Try substituting values in through SymPy
-print('Substituting numerical parameters into SymPy expressions.')
-#xd_from_sub = solve_linear_system_with_sympy_subs(mass_matrix, forcing_vector,
-                                                  #substitutions)
-#xd_from_sub2 = solve_linear_system_with_sympy_subs(M, F, substitutions)
-
+print('The state derivatives from high precision evaluation:')
 xd_from_sub = np.squeeze(np.linalg.solve(M_exact, F_exact))
-
-print('The state derivatives from substitution:')
 print(xd_from_sub)
-#print(xd_from_sub2)
 
 # BUGS to report:
 # 1. find_dynamicsymbols should deal with Vectors and lists of
@@ -578,27 +573,25 @@ speed_deriv_names = [str(speed)[:-3] + 'p' for speed in kane.u[:]]
 moore_output_from_sub = {k: v for k, v in zip(speed_deriv_names,
                                               list(xd_from_sub))}
 moore_output_from_gen = {k: v for k, v in zip(speed_deriv_names,
-    list(xd_from_gen)[g.num_coordinates:])}
+                                              list(xd_from_gen)[g.num_coordinates:])}
 
 # compute u1' and u2' manually
-u1 = -rr * u6 * sm.cos(q3)
-u1p = u1.diff(t)
-u2 = -rr * u6 * sm.sin(q3)
-u2p = u2.diff(t)
+u1 = -rr*(u5 + u6)*sm.cos(q3)
+u1p = u1.diff(t).xreplace(kane.kindiffdict())
+u2 = -rr*(u5 + u6)*sm.sin(q3)
+u2p = u2.diff(t).xreplace(kane.kindiffdict())
 
-moore_output_from_sub['u1p'] = u1p.subs(
-        {u6.diff(t): moore_output_from_sub['u6p']}).subs(
-                kane.kindiffdict()).subs(substitutions)
-moore_output_from_sub['u2p'] = u2p.subs(
-        {u6.diff(t): moore_output_from_sub['u6p']}).subs(
-                kane.kindiffdict()).subs(substitutions)
+acc_subs_sub = {u5.diff(t): moore_output_from_sub['u5p'],
+                u6.diff(t): moore_output_from_sub['u6p']}
 
-moore_output_from_gen['u1p'] = u1p.subs(
-        {u6.diff(t): moore_output_from_gen['u6p']}).subs(
-                kane.kindiffdict()).subs(substitutions)
-moore_output_from_gen['u2p'] = u2p.subs(
-        {u6.diff(t): moore_output_from_gen['u6p']}).subs(
-                kane.kindiffdict()).subs(substitutions)
+acc_subs_gen = {u5.diff(t): moore_output_from_gen['u5p'],
+                u6.diff(t): moore_output_from_gen['u6p']}
+
+moore_output_from_sub['u1p'] = u1p.xreplace(acc_subs_sub).xreplace(substitutions)
+moore_output_from_sub['u2p'] = u2p.xreplace(acc_subs_sub).xreplace(substitutions)
+
+moore_output_from_gen['u1p'] = u1p.xreplace(acc_subs_gen).xreplace(substitutions)
+moore_output_from_gen['u2p'] = u2p.xreplace(acc_subs_gen).xreplace(substitutions)
 
 moore_output_from_sub.update(moore_input)
 moore_output_from_gen.update(moore_input)
@@ -612,8 +605,12 @@ basu_output = bicycle.basu_table_one_output()
 
 print("Assertions.")
 
-for k, bv in basu_output.items():
-    for result in [moore_output_basu_from_sub, moore_output_basu_from_gen]:
+for result, typ in zip([moore_output_basu_from_sub,
+                        moore_output_basu_from_gen],
+                       ['Results from Symengine evaluation',
+                        'Results from CythonODEGenerator']):
+    print(typ)
+    for k, bv in basu_output.items():
         try:
             mv = float(result[k])
         except KeyError:
@@ -622,4 +619,6 @@ for k, bv in basu_output.items():
             try:
                 testing.assert_allclose(bv, mv)
             except AssertionError:
-                print('Failed: {}:\n  Correct: {:1.16f}\nIncorrect: {:1.16f}'.format(k, bv, mv))
+                print('Failed: {}:\n  Expected: {:1.16f}\n    Actual: {:1.16f}'.format(k, bv, mv))
+            else:
+                print('Matched: {}:\n  Expected: {:1.16f}\n    Actual: {:1.16f}'.format(k, bv, mv))
