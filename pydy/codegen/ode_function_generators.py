@@ -327,7 +327,7 @@ r : dictionary
             self._linear_sys_solver = v
         elif v == 'sympy':
             # dummy function
-            self._solve_linear_system = lambda A, b: b
+            self._solve_linear_system = lambda A, b: np.nan*np.ones_like(b)
             self._linear_sys_solver = v
         else:
             msg = '{} is not a valid solver.'
@@ -551,8 +551,8 @@ r : dictionary
               self.linear_sys_solver=='sympy'):
 
             def base_rhs(*args):
-                M, udot = self.eval_arrays(*args)
-                return udot
+                M, xdot = self.eval_arrays(*args)
+                return xdot
 
             self._base_rhs = base_rhs
 
