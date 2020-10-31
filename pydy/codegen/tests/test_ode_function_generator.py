@@ -22,6 +22,73 @@ from ...utils import PyDyImportWarning
 warnings.simplefilter('once', PyDyImportWarning)
 
 
+def test_symbolic_lusolve_full_mass_matrix():
+    sys = models.n_link_pendulum_on_cart(n=5, cart_force=False,
+                                         joint_torques=False)
+
+    g_symbolic_solve = CythonODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        linear_sys_solver='sympy')
+    rhs_symbolic_solve = g_symbolic_solve.generate()
+
+    g_numeric_solve = CythonODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        linear_sys_solver='numpy')
+    rhs_numeric_solve = g_numeric_solve.generate()
+
+    x = np.random.random(g_symbolic_solve.num_coordinates +
+                         g_symbolic_solve.num_speeds)
+    t = 5.125
+    p = np.random.random(g_symbolic_solve.num_constants)
+
+    np.testing.assert_allclose(rhs_numeric_solve(x, t, p),
+                               rhs_symbolic_solve(x, t, p))
+
+
+def test_symbolic_lusolve_min_mass_matrix():
+    sys = models.n_link_pendulum_on_cart(n=5, cart_force=False,
+                                         joint_torques=False)
+    kin_diff_eqs = sys.eom_method.kindiffdict()
+    coord_derivs = sm.Matrix([kin_diff_eqs[c.diff()] for c in
+                              sys.coordinates])
+
+    g_symbolic_solve = CythonODEFunctionGenerator(
+        sys.eom_method.forcing,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix,
+        coordinate_derivatives=coord_derivs,
+        linear_sys_solver='sympy')
+    rhs_symbolic_solve = g_symbolic_solve.generate()
+
+    g_numeric_solve = CythonODEFunctionGenerator(
+        sys.eom_method.forcing,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix,
+        coordinate_derivatives=coord_derivs,
+        linear_sys_solver='numpy')
+    rhs_numeric_solve = g_numeric_solve.generate()
+
+    x = np.random.random(g_symbolic_solve.num_coordinates +
+                         g_symbolic_solve.num_speeds)
+    t = 5.125
+    p = np.random.random(g_symbolic_solve.num_constants)
+
+    np.testing.assert_allclose(rhs_numeric_solve(x, t, p),
+                               rhs_symbolic_solve(x, t, p))
+
+
 def test_cse_same_numerical_results():
     # NOTE : This ensurses that the same results are always given for the sympy
     # cse outputs, which seem to change every version.
@@ -120,6 +187,7 @@ class TestODEFunctionGenerator(object):
                                  self.sys.constants_symbols,
                                  mass_matrix=self.sys.eom_method.mass_matrix_full)
 
+        assert g.linear_sys_solver == 'numpy'
         assert g._solve_linear_system == np.linalg.solve
 
         g = ODEFunctionGenerator(self.sys.eom_method.forcing_full,
@@ -129,6 +197,7 @@ class TestODEFunctionGenerator(object):
                                  mass_matrix=self.sys.eom_method.mass_matrix_full,
                                  linear_sys_solver='numpy')
 
+        assert g.linear_sys_solver == 'numpy'
         assert g._solve_linear_system == np.linalg.solve
 
         g = ODEFunctionGenerator(self.sys.eom_method.forcing_full,
@@ -138,6 +207,7 @@ class TestODEFunctionGenerator(object):
                                  mass_matrix=self.sys.eom_method.mass_matrix_full,
                                  linear_sys_solver='scipy')
 
+        assert g.linear_sys_solver == 'scipy'
         assert g._solve_linear_system == sp.linalg.solve
 
         solver = lambda A, b: np.dot(np.inv(A), b)
@@ -149,6 +219,7 @@ class TestODEFunctionGenerator(object):
                                  mass_matrix=self.sys.eom_method.mass_matrix_full,
                                  linear_sys_solver=solver)
 
+        assert g.linear_sys_solver == solver
         assert g._solve_linear_system == solver
 
     def test_no_constants(self):

@@ -154,3 +154,32 @@ void evaluate(
 
         with open(os.path.join(path, prefix + '.c'), 'w') as f:
             f.write(source)
+
+
+class _CLUsolveGenerator(CMatrixGenerator):
+    """This is a private undocumented class that supports the
+    ``linear_sys_solver='sympy'`` in CythonMatrixGenerator. It cse's A and b of
+    a linear system Ax=b, then solves the linear system symbolically and cse's
+    the result x. This is a more efficient way to get the symbolic solution of
+    a linear system encoded in generated C code."""
+
+    def _generate_cse(self, prefix='pydy_'):
+        # NOTE : This assumes the first two items in self.matrices are A and b
+        # of and Ax=b system. This also ignores cse=False.
+
+        gen1 = sm.numbered_symbols(prefix)
+        subexprs1, mats_simp = sm.cse(self.matrices, symbols=gen1)
+
+        A_simp = mats_simp[0]
+        b_simp = mats_simp[1]
+
+        x = A_simp.LUsolve(b_simp)
+
+        gen2 = sm.numbered_symbols(prefix, start=len(subexprs1))
+        subexprs2, x_simp = sm.cse(x, symbols=gen2)
+
+        # swap the b matrix with the x result
+        mats_simp[1] = x_simp[0]
+
+        self.subexprs = subexprs1 + subexprs2
+        self.simplified_matrices = tuple(mats_simp)
