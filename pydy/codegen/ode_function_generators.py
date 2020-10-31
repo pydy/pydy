@@ -18,6 +18,7 @@ theano = sm.external.import_module('theano')
 if theano:
     from sympy.printing.theanocode import theano_function
 
+from .c_code import _CLUsolveGenerator
 from .cython_code import CythonMatrixGenerator
 
 
@@ -317,10 +318,17 @@ r : dictionary
 
         if isinstance(v, type(lambda x: x)):
             self._solve_linear_system = v
+            self._linear_sys_solver = v
         elif v == 'numpy':
             self._solve_linear_system = numpy.linalg.solve
+            self._linear_sys_solver = v
         elif v == 'scipy':
             self._solve_linear_system = scipy.linalg.solve
+            self._linear_sys_solver = v
+        elif v == 'sympy':
+            # dummy function
+            self._solve_linear_system = lambda A, b: b
+            self._linear_sys_solver = v
         else:
             msg = '{} is not a valid solver.'
             raise ValueError(msg.format(self.linear_sys_solver))
@@ -539,12 +547,34 @@ r : dictionary
 
             self._base_rhs = self.eval_arrays
 
+        elif (self.system_type == 'full mass matrix' and
+              self.linear_sys_solver=='sympy'):
+
+            def base_rhs(*args):
+                M, udot = self.eval_arrays(*args)
+                return udot
+
+            self._base_rhs = base_rhs
+
         elif self.system_type == 'full mass matrix':
 
             def base_rhs(*args):
 
                 M, F = self.eval_arrays(*args)
                 return self._solve_linear_system(M, F)
+
+            self._base_rhs = base_rhs
+
+        elif (self.system_type == 'min mass matrix' and
+              self.linear_sys_solver=='sympy'):
+
+            xdot = np.empty(self.num_states, dtype=float)
+
+            def base_rhs(*args):
+                M, udot, qdot = self.eval_arrays(*args)
+                xdot[:self.num_coordinates] = qdot
+                xdot[self.num_coordinates:] = udot
+                return xdot
 
             self._base_rhs = base_rhs
 
@@ -605,7 +635,8 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
         self._options = {'tmp_dir': None,
                          'prefix': 'pydy_codegen',
                          'cse': True,
-                         'verbose': False}
+                         'verbose': False,
+                         }
         for k, v in self._options.items():
             self._options[k] = kwargs.pop(k, v)
 
@@ -620,6 +651,16 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
         g = CythonMatrixGenerator(inputs, outputs,
                                   prefix=self._options['prefix'],
                                   cse=self._options['cse'])
+        return g.compile(tmp_dir=self._options['tmp_dir'],
+                         verbose=self._options['verbose'])
+
+    def _cythonize_symbolic_lusolve(self, outputs, inputs):
+        g = CythonMatrixGenerator(inputs, outputs,
+                                  prefix=self._options['prefix'],
+                                  cse=self._options['cse'])
+        # patch in the special generator
+        g.c_matrix_generator = _CLUsolveGenerator(inputs, outputs[0],
+                                                  outputs[1])
         return g.compile(tmp_dir=self._options['tmp_dir'],
                          verbose=self._options['verbose'])
 
@@ -650,7 +691,11 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
 
         self._empties = (mass_matrix_result, rhs_result)
 
-        self._set_eval_array(self._cythonize(outputs, self.inputs))
+        if self.linear_sys_solver == 'sympy':
+            self._set_eval_array(self._cythonize_symbolic_lusolve(outputs,
+                                                                  self.inputs))
+        else:
+            self._set_eval_array(self._cythonize(outputs, self.inputs))
 
     def generate_min_mass_matrix_function(self):
 
@@ -663,7 +708,11 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
         kin_diffs_result = np.empty(self.num_coordinates, dtype=float)
         self._empties = (mass_matrix_result, rhs_result, kin_diffs_result)
 
-        self._set_eval_array(self._cythonize(outputs, self.inputs))
+        if self.linear_sys_solver == 'sympy':
+            self._set_eval_array(self._cythonize_symbolic_lusolve(outputs,
+                                                                  self.inputs))
+        else:
+            self._set_eval_array(self._cythonize(outputs, self.inputs))
 
 
 class LambdifyODEFunctionGenerator(ODEFunctionGenerator):

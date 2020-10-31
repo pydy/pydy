@@ -22,6 +22,41 @@ from ...utils import PyDyImportWarning
 warnings.simplefilter('once', PyDyImportWarning)
 
 
+def test_symbolic_lusolve():
+    sys = models.n_link_pendulum_on_cart(n=5, cart_force=False,
+                                         joint_torques=False)
+
+    g_symbolic_solve = CythonODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        linear_sys_solver='sympy',
+        tmp_dir='symbolic_lusolve')
+    rhs_symbolic_solve = g_symbolic_solve.generate()
+
+    g_numeric_solve = CythonODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        linear_sys_solver='numpy',
+        tmp_dir='numeric_lusolve')
+    rhs_numeric_solve = g_numeric_solve.generate()
+
+    x = np.random.random(g_symbolic_solve.num_coordinates +
+                         g_symbolic_solve.num_speeds)
+    t = 5.125
+    p = np.random.random(g_symbolic_solve.num_constants)
+
+    np.testing.assert_allclose(rhs_numeric_solve(x, t, p),
+                               rhs_symbolic_solve(x, t, p))
+
+    # TODO : Make sure min mass matrix works also.
+
+
 def test_cse_same_numerical_results():
     # NOTE : This ensurses that the same results are always given for the sympy
     # cse outputs, which seem to change every version.

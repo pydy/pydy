@@ -154,3 +154,38 @@ void evaluate(
 
         with open(os.path.join(path, prefix + '.c'), 'w') as f:
             f.write(source)
+
+
+class _CLUsolveGenerator(CMatrixGenerator):
+    def __init__(self, arguments, A, b):
+        """Generates C code
+
+        Parameters
+        ==========
+        arguments : sequence of sequences of SymPy Symbol or Function
+            Each of the sequences will be converted to input arrays in the
+            generated function. All of the symbols/functions contained in
+            ``matrices`` need to be in the sequences, but the sequences can
+            also contain extra symbols/functions that are not contained in the
+            matrices.
+        A : sympy.Matrix, shape(n, n)
+            Coefficient matrix of the linear system Ax=b.
+        b : sympy.Matrix, shape(n, 1)
+            Right hand side of the linear sysetm Ax=b.
+
+        """
+
+        super().__init__(arguments, [A, b])
+
+    def _generate_cse(self, prefix='pydy_'):
+
+        gen1 = sm.numbered_symbols(prefix)
+        subexprs1, (A_simp, b_simp) = sm.cse(self.matrices, symbols=gen1)
+
+        x = A_simp.LUsolve(b_simp)
+
+        gen2 = sm.numbered_symbols(prefix, start=len(subexprs1))
+        subexprs2, x_simplified = sm.cse(x, symbols=gen2)
+
+        self.subexprs = subexprs1 + subexprs2
+        self.simplified_matrices = (A_simp, x_simplified[0])
