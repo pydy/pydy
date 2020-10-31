@@ -157,6 +157,11 @@ void evaluate(
 
 
 class _CLUsolveGenerator(CMatrixGenerator):
+    """This is a private undocumented class that supports the
+    ``linear_sys_solver='sympy'`` in CythonMatrixGenerator. It cse's A and b of
+    a linear system Ax=b, then solves the linear system symbolically and cse's
+    the result x. This is a more efficient way to get the symbolic solution of
+    a linear system encoded in generated C code."""
 
     def _generate_cse(self, prefix='pydy_'):
         # NOTE : This assumes the first two items in self.matrices are A and b
