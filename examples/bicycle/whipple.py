@@ -25,6 +25,9 @@ from pydy.codegen.cython_code import CythonMatrixGenerator
 from pydy.codegen.ode_function_generators import CythonODEFunctionGenerator
 from dtk import bicycle
 
+import sys
+sys.path.append(os.path.dirname(__file__))
+
 from utils import (
                    create_symbol_value_map,
                    compare_cse,
@@ -486,24 +489,24 @@ compare_numerical_arrays(M_exact, M_from_xreplace,
 compare_numerical_arrays(F_exact, F_from_xreplace,
                          name='Forcing vector from xreplace')
 
-print('Evaluating with autowrap C')
-M_autowrap_c = evaluate_with_autowrap(mass_matrix, substitutions, language="C")
-F_autowrap_c = evaluate_with_autowrap(forcing_vector, substitutions,
-                                      language="C")
-compare_numerical_arrays(M_exact, M_autowrap_c,
-                         name='Mass matrix from autowrap C')
-compare_numerical_arrays(F_exact, F_autowrap_c,
-                         name='Forcing vector from autowrap C')
-
-print('Evaluating with autowrap Fortran')
-M_autowrap_fortran = evaluate_with_autowrap(mass_matrix, substitutions,
-                                            language="Fortran")
-F_autowrap_fortran = evaluate_with_autowrap(forcing_vector, substitutions,
-                                            language="Fortran")
-compare_numerical_arrays(M_exact, M_autowrap_fortran,
-                         name='Mass matrix from autowrap Fortran')
-compare_numerical_arrays(F_exact, F_autowrap_fortran,
-                         name='Forcing vector from autowrap Fortran')
+#print('Evaluating with autowrap C')
+#M_autowrap_c = evaluate_with_autowrap(mass_matrix, substitutions, language="C")
+#F_autowrap_c = evaluate_with_autowrap(forcing_vector, substitutions,
+                                      #language="C")
+#compare_numerical_arrays(M_exact, M_autowrap_c,
+                         #name='Mass matrix from autowrap C')
+#compare_numerical_arrays(F_exact, F_autowrap_c,
+                         #name='Forcing vector from autowrap C')
+#
+#print('Evaluating with autowrap Fortran')
+#M_autowrap_fortran = evaluate_with_autowrap(mass_matrix, substitutions,
+                                            #language="Fortran")
+#F_autowrap_fortran = evaluate_with_autowrap(forcing_vector, substitutions,
+                                            #language="Fortran")
+#compare_numerical_arrays(M_exact, M_autowrap_fortran,
+                         #name='Mass matrix from autowrap Fortran')
+#compare_numerical_arrays(F_exact, F_autowrap_fortran,
+                         #name='Forcing vector from autowrap Fortran')
 
 # this runs with only the mass matrix but uses like 10+ GB of memory to compile
 # both of these show descrepancies in the steer equation u7
@@ -552,6 +555,23 @@ g = CythonODEFunctionGenerator(forcing_vector,
                                #specifieds=[T4, T6, T7],
                                #constants_arg_type='array',
                                #specifieds_arg_type='array')
+
+# This also solves symbolically but cse's before the solve and it compiles
+# super fast.
+#g = CythonODEFunctionGenerator(forcing_vector,
+                               #kane.q[:],
+                               #kane.u[:],
+                               #list(constant_substitutions.keys()),
+                               #mass_matrix=mass_matrix,
+                               #coordinate_derivatives=rhs_of_kin_diffs,
+                               #specifieds=[T4, T6, T7],
+                               #constants_arg_type='array',
+                               #specifieds_arg_type='array',
+                               #linear_sys_solver='sympy',
+                               #tmp_dir='cython_ode_func_gen_files',
+                               #prefix='zz',
+                               #cse=True,
+                               #verbose=True)
 print('Generating rhs')
 rhs = g.generate()
 
