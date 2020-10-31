@@ -12,15 +12,26 @@ Table of Contents
 
    install.rst
    usage.rst
-   system.rst
+   tutorials.rst
+   codegen.rst
    models.rst
-   codegen/codegen.rst
+   system.rst
    viz/viz.rst
-   api.rst
    viz/api.rst
-   tutorials/beginners.rst
-   tutorials/advanced.rst
+   utils.rst
    changelog.rst
+
+.. ifconfig:: INCLUDE_EXAMPLES
+
+   .. toctree::
+      :hidden:
+
+      examples/carvallo-whipple.rst
+      examples/kane-levinson-1985-chapter-02.rst
+      examples/kane-levinson-1985-chapter-03.rst
+      examples/mass-spring-damper.rst
+      examples/multidof-holonomic.rst
+      examples/three-link-conical-pendulum.rst
 
 .. ifconfig:: INCLUDE_EXAMPLES
 
@@ -44,17 +55,21 @@ Table of Contents
              :target: examples/three-link-conical-pendulum.html
 
              Three link conical compound pendulum.
-        - .. figure:: examples/kane-levinson-1985.png
+        - .. figure:: examples/bicycle-geometry.png
+             :width: 200px
+             :target: examples/carvallo-whipple.html
+
+             Carvallo-Whipple bicycle model.
+      * - .. figure:: examples/kane-levinson-1985.png
              :width: 200px
              :target: examples/kane-levinson-1985-chapter-02.html
 
              Exercises from Chapter 2 of Kane & Levinson 1985.
-      * - .. figure:: examples/kane-levinson-1985.png
+        - .. figure:: examples/kane-levinson-1985.png
              :width: 200px
              :target: examples/kane-levinson-1985-chapter-03.html
 
              Exercises from Chapter 3 of Kane & Levinson 1985.
-        -
 
 Indices and tables
 ==================

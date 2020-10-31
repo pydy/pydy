@@ -11,8 +11,6 @@ Here is the procedure for using this class.
        how the ODE function is generated.
     3. call ``integrate()`` to simulate your system.
 
-Examples
---------
 The simplest usage of this class is as follows. First, we need a
 KanesMethod object on which we have already invoked ``kanes_equations()``::
 
@@ -486,7 +484,7 @@ class System(object):
 
         return self.evaluate_ode_function
 
-    def integrate(self):
+    def integrate(self, **solver_kwargs):
         """Integrates the equations ``evaluate_ode_function()`` using
         ``ode_solver``.
 
@@ -496,6 +494,11 @@ class System(object):
         function is generated (e.g., change the generator to cython), you can
         call ``generate_ode_function()`` on your own (before calling
         ``integrate()``).
+
+        Parameters
+        ----------
+        **solver_kwargs
+            Optional arguments that are passed on to the ``ode_solver``.
 
         Returns
         -------
@@ -537,7 +540,7 @@ class System(object):
             self.evaluate_ode_function,
             initial_conditions_in_proper_order,
             self.times,
-            args=args)
+            args=args, **solver_kwargs)
 
         return x_history
 

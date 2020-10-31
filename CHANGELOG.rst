@@ -2,9 +2,18 @@
 Release Notes
 =============
 
-0.6.0
-=====
+0.6.0 (TBA)
+===========
 
+- Added the ability to pass optional arguments to the ODE solver in System. [PR
+  `#447`_]
+- Cylinders, Spheres, and Circles loaded via PyThreeJS will appear more round.
+  [PR `#440`_]
+- Added a Carvallo-Whipple bicycle example to the documentation [PR `#442`_]
+- Oldest supported dependencies for Python 3 are aligned with Ubuntu 20.04 LTS.
+  For Python 2, the oldest necessary dependencies are used if the ones for
+  Ubuntu 20.04 LTS are too new. [PR `#432`_]
+- Dropped support for Python 3.5 [PR `#429`_]
 - Improved the README and documentation integration. [PR `#424`_]
 - Moved some examples to Sphinx [PRs `#421`_, `#423`_]
 - jupyter-sphinx enabled for examples in the documentation [PR `#419`_]
@@ -18,6 +27,10 @@ Release Notes
   [PR `#415`_]
 - Recommend installing from Conda Forge [PR `#411`_]
 
+.. _#447: https://github.com/pydy/pydy/pull/447
+.. _#442: https://github.com/pydy/pydy/pull/442
+.. _#440: https://github.com/pydy/pydy/pull/440
+.. _#432: https://github.com/pydy/pydy/pull/432
 .. _#424: https://github.com/pydy/pydy/pull/424
 .. _#423: https://github.com/pydy/pydy/pull/423
 .. _#421: https://github.com/pydy/pydy/pull/421
@@ -28,8 +41,8 @@ Release Notes
 .. _#415: https://github.com/pydy/pydy/pull/415
 .. _#411: https://github.com/pydy/pydy/pull/411
 
-0.5.0
-=====
+0.5.0 (January 9, 2019)
+=======================
 
 - SymPy introduced a backward incompatibility to differentiation Matrices in
   SymPy 1.2, which remained in SymPy 1.3, see:
@@ -49,8 +62,8 @@ Release Notes
 .. _#397: https://github.com/pydy/pydy/pull/397
 .. _#391: https://github.com/pydy/pydy/pull/391
 
-0.4.0
-=====
+0.4.0 (May 30, 2017)
+====================
 
 - Bumped minimum Jupyter notebook to 4.0 and restricted to < 5.0. [PR `#381`_]
 - Removed several deprecated functions. [PR `#375`_]
@@ -85,8 +98,8 @@ Release Notes
 .. _#323: https://github.com/pydy/pydy/pull/323
 .. _#301: https://github.com/pydy/pydy/pull/301
 
-0.3.1
-=====
+0.3.1 (January 6, 2016)
+=======================
 
 - Removed the general deprecation warning from System. [PR `#262`_]
 - Don't assume user enters input in server shutdown. [PR `#264`_]
@@ -132,8 +145,8 @@ Release Notes
 .. _#318: https://github.com/pydy/pydy/pull/318
 .. _#319: https://github.com/pydy/pydy/pull/319
 
-0.3.0
-=====
+0.3.0 (January 19, 2015)
+========================
 
 User Facing
 -----------
@@ -193,13 +206,13 @@ Development
 .. _#146: https://github.com/pydy/pydy/pull/146
 .. _#148: https://github.com/pydy/pydy/pull/148
 
-0.2.1
-=====
+0.2.1 (June 19, 2014)
+=====================
 
 - Unbundled unnecessary files from tar ball.
 
-0.2.0
-=====
+0.2.0 (June 19, 2014)
+=====================
 
 - Merged pydy_viz, pydy_code_gen, and pydy_examples into the source tree.
 - Added a method to output "static" visualizations from a Scene object.

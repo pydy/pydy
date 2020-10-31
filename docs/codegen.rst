@@ -244,3 +244,26 @@ We also support generating Octave/Matlab code as shown below:
        input_2(1).*input_1(1))./input_2(2)];
 
    end
+
+API
+===
+
+.. automodule:: pydy.codegen.c_code
+   :members:
+   :special-members: __init__
+
+.. automodule:: pydy.codegen.cython_code
+   :members:
+   :special-members: __init__
+
+.. automodule:: pydy.codegen.matrix_generator
+   :members:
+   :special-members: __init__
+
+.. automodule:: pydy.codegen.octave_code
+   :members:
+   :special-members: __init__
+
+.. automodule:: pydy.codegen.ode_function_generators
+   :members:
+   :special-members: __init__
