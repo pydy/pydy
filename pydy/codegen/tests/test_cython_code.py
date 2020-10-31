@@ -199,17 +199,19 @@ def test_lusolve_generator():
     """Tests whether the symbolic LUsolve of the cse'd expressions results in
     the same answer."""
 
-    sys = multi_mass_spring_damper(12, True, True)
+    sys = multi_mass_spring_damper(6, True, True)
 
     arguments = (sys.constants_symbols, sys.coordinates, sys.speeds,
                  sys.specifieds_symbols)
 
-    generator = CythonMatrixGenerator(arguments,
-                                      [sys.eom_method.mass_matrix,  # A
-                                       sys.eom_method.forcing])  # b
+    # first two outputs have to be A and b of Ax=b
+    outputs = [sys.eom_method.mass_matrix,  # A
+               sys.eom_method.forcing,  # b
+               sys.eom_method.forcing]
+
+    generator = CythonMatrixGenerator(arguments, outputs)
     # patch in the special generator
-    generator.c_matrix_generator = _CLUsolveGenerator(
-        arguments, sys.eom_method.mass_matrix, sys.eom_method.forcing)
+    generator.c_matrix_generator = _CLUsolveGenerator(arguments, outputs)
     func = generator.compile(tmp_dir='lusolve')
 
     # setup the input and output arrays
@@ -222,18 +224,21 @@ def test_lusolve_generator():
             subs[arg] = val
 
     nr, nc = sys.eom_method.mass_matrix.shape
-    M_vals1 = np.empty(nr*nc, dtype=float)
-    udot_vals = np.empty(nr, dtype=float)
+    A_vals = np.empty(nr*nc, dtype=float)
+    x_vals = np.empty(nr, dtype=float)
+    b_vals = np.empty(nr, dtype=float)
 
-    func(*(args + [M_vals1, udot_vals]))
+    func(*(args + [A_vals, x_vals, b_vals]))
 
     gen2 = CythonMatrixGenerator(arguments, [sys.eom_method.mass_matrix,
                                              sys.eom_method.forcing])
     func2 = gen2.compile()
     M_vals = np.empty(nr*nc, dtype=float)
-    b_vals = np.empty(nr, dtype=float)
-    func2(*(args + [M_vals, b_vals]))
+    F_vals = np.empty(nr, dtype=float)
+    func2(*(args + [M_vals, F_vals]))
 
-    np.testing.assert_allclose(udot_vals,
+    np.testing.assert_allclose(M_vals, A_vals)
+    np.testing.assert_allclose(F_vals, b_vals)
+    np.testing.assert_allclose(x_vals,
                                np.linalg.solve(M_vals.reshape((nr, nc)),
-                                               b_vals))
+                                               F_vals))
