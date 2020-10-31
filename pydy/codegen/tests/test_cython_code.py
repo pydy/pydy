@@ -212,7 +212,7 @@ def test_lusolve_generator():
     generator = CythonMatrixGenerator(arguments, outputs)
     # patch in the special generator
     generator.c_matrix_generator = _CLUsolveGenerator(arguments, outputs)
-    func = generator.compile(tmp_dir='lusolve')
+    func = generator.compile()
 
     # setup the input and output arrays
     args = []
