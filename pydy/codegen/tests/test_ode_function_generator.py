@@ -22,7 +22,7 @@ from ...utils import PyDyImportWarning
 warnings.simplefilter('once', PyDyImportWarning)
 
 
-def test_symbolic_lusolve():
+def test_symbolic_lusolve_full_mass_matrix():
     sys = models.n_link_pendulum_on_cart(n=5, cart_force=False,
                                          joint_torques=False)
 
@@ -32,8 +32,7 @@ def test_symbolic_lusolve():
         sys.speeds,
         sys.constants_symbols,
         mass_matrix=sys.eom_method.mass_matrix_full,
-        linear_sys_solver='sympy',
-        tmp_dir='symbolic_lusolve')
+        linear_sys_solver='sympy')
     rhs_symbolic_solve = g_symbolic_solve.generate()
 
     g_numeric_solve = CythonODEFunctionGenerator(
@@ -42,8 +41,7 @@ def test_symbolic_lusolve():
         sys.speeds,
         sys.constants_symbols,
         mass_matrix=sys.eom_method.mass_matrix_full,
-        linear_sys_solver='numpy',
-        tmp_dir='numeric_lusolve')
+        linear_sys_solver='numpy')
     rhs_numeric_solve = g_numeric_solve.generate()
 
     x = np.random.random(g_symbolic_solve.num_coordinates +
@@ -54,7 +52,41 @@ def test_symbolic_lusolve():
     np.testing.assert_allclose(rhs_numeric_solve(x, t, p),
                                rhs_symbolic_solve(x, t, p))
 
-    # TODO : Make sure min mass matrix works also.
+
+def test_symbolic_lusolve_min_mass_matrix():
+    sys = models.n_link_pendulum_on_cart(n=5, cart_force=False,
+                                         joint_torques=False)
+    kin_diff_eqs = sys.eom_method.kindiffdict()
+    coord_derivs = sm.Matrix([kin_diff_eqs[c.diff()] for c in
+                              sys.coordinates])
+
+    g_symbolic_solve = CythonODEFunctionGenerator(
+        sys.eom_method.forcing,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix,
+        coordinate_derivatives=coord_derivs,
+        linear_sys_solver='sympy')
+    rhs_symbolic_solve = g_symbolic_solve.generate()
+
+    g_numeric_solve = CythonODEFunctionGenerator(
+        sys.eom_method.forcing,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix,
+        coordinate_derivatives=coord_derivs,
+        linear_sys_solver='numpy')
+    rhs_numeric_solve = g_numeric_solve.generate()
+
+    x = np.random.random(g_symbolic_solve.num_coordinates +
+                         g_symbolic_solve.num_speeds)
+    t = 5.125
+    p = np.random.random(g_symbolic_solve.num_constants)
+
+    np.testing.assert_allclose(rhs_numeric_solve(x, t, p),
+                               rhs_symbolic_solve(x, t, p))
 
 
 def test_cse_same_numerical_results():

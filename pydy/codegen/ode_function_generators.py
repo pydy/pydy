@@ -659,8 +659,7 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
                                   prefix=self._options['prefix'],
                                   cse=self._options['cse'])
         # patch in the special generator
-        g.c_matrix_generator = _CLUsolveGenerator(inputs, outputs[0],
-                                                  outputs[1])
+        g.c_matrix_generator = _CLUsolveGenerator(inputs, outputs)
         return g.compile(tmp_dir=self._options['tmp_dir'],
                          verbose=self._options['verbose'])
 

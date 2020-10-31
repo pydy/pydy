@@ -157,35 +157,24 @@ void evaluate(
 
 
 class _CLUsolveGenerator(CMatrixGenerator):
-    def __init__(self, arguments, A, b):
-        """Generates C code
-
-        Parameters
-        ==========
-        arguments : sequence of sequences of SymPy Symbol or Function
-            Each of the sequences will be converted to input arrays in the
-            generated function. All of the symbols/functions contained in
-            ``matrices`` need to be in the sequences, but the sequences can
-            also contain extra symbols/functions that are not contained in the
-            matrices.
-        A : sympy.Matrix, shape(n, n)
-            Coefficient matrix of the linear system Ax=b.
-        b : sympy.Matrix, shape(n, 1)
-            Right hand side of the linear sysetm Ax=b.
-
-        """
-
-        super().__init__(arguments, [A, b])
 
     def _generate_cse(self, prefix='pydy_'):
+        # NOTE : This assumes the first two items in self.matrices are A and b
+        # of and Ax=b system. This also ignores cse=False.
 
         gen1 = sm.numbered_symbols(prefix)
-        subexprs1, (A_simp, b_simp) = sm.cse(self.matrices, symbols=gen1)
+        subexprs1, mats_simp = sm.cse(self.matrices, symbols=gen1)
+
+        A_simp = mats_simp[0]
+        b_simp = mats_simp[1]
 
         x = A_simp.LUsolve(b_simp)
 
         gen2 = sm.numbered_symbols(prefix, start=len(subexprs1))
-        subexprs2, x_simplified = sm.cse(x, symbols=gen2)
+        subexprs2, x_simp = sm.cse(x, symbols=gen2)
+
+        # swap the b matrix with the x result
+        mats_simp[1] = x_simp[0]
 
         self.subexprs = subexprs1 + subexprs2
-        self.simplified_matrices = (A_simp, x_simplified[0])
+        self.simplified_matrices = tuple(mats_simp)
