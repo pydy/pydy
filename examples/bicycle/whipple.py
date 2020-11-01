@@ -121,9 +121,6 @@ u5, u6, u7, u8 = mec.dynamicsymbols('u5 u6 u7 u8')
 
 print('Orienting frames.')
 
-# TODO : Report this as a SymPy issue. The following fails:
-#A.orient(N, 'Axis', (q3, A['3']))
-
 # rear frame yaw
 A.orient(N, 'Axis', (q3, N['3']))
 # rear frame roll
@@ -359,6 +356,19 @@ print("Generating Kane's equations.")
 # rwh   : u6, u3
 # fwh   : u8, u6
 
+system_symbolics = {
+ 'bodies': tuple(bodies),
+ 'dependent coordinates': (q5,),
+ 'dependent speeds': (u3, u5, u8),
+ 'holonomic constraints': (holonomic,),
+ 'ignorable coordinates': (q1, q2, q6, q8),
+ 'independent coordinates': (q3, q4, q7),
+ 'independent speeds': (u4, u6, u7),
+ 'loads': tuple(forces),
+ 'newtonian reference frame': N,
+ 'nonholonomic constraints': tuple(nonholonomic),
+}
+
 kane = mec.KanesMethod(N,
                        [q3, q4, q7],  # yaw, roll, steer
                        [u4, u6, u7],  # roll rate, rear wheel rate, steer rate
@@ -469,11 +479,6 @@ substitutions = specified_subs.copy()
 substitutions.update(constant_substitutions)
 substitutions.update(dynamic_substitutions)
 
-# Two things learned here:
-# 1. compilation fails if cse is not true when [mass_matrix
-# 2. the resulting matrices from the c code produces slightly different M and F
-# matrices. Not sure why yet. But it needs to be addressed.
-
 print('Evaluating numerically with symengine')
 M_exact = evalf_with_symengine(mass_matrix, substitutions)
 F_exact = evalf_with_symengine(forcing_vector, substitutions)
@@ -522,10 +527,6 @@ compare_numerical_arrays(F_exact, F_from_xreplace,
 print('The state derivatives from high precision evaluation:')
 xd_from_sub = np.squeeze(np.linalg.solve(M_exact, F_exact))
 print(xd_from_sub)
-
-# BUGS to report:
-# 1. find_dynamicsymbols should deal with Vectors and lists of
-# exprs/vectors/etc.
 
 print('Generating a right hand side function.')
 
