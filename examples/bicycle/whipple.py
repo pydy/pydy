@@ -174,12 +174,12 @@ def setup_symbolics():
 
     print('Defining position vectors.')
 
-    # newtonian origin
-    no = mec.Point('no')
+    # rear wheel contact point
+    dn = mec.Point('dn')
 
     # newtonian origin to rear wheel center
     do = mec.Point('do')
-    do.set_pos(no, -rr * B['3'])
+    do.set_pos(dn, -rr * B['3'])
 
     # rear wheel center to bicycle frame center
     co = mec.Point('co')
@@ -197,10 +197,6 @@ def setup_symbolics():
     eo = mec.Point('eo')
     eo.set_pos(fo, l3 * E['1'] + l4 * E['3'])
 
-    # locate the points fixed on the wheel which instaneously touch the ground
-    # rear
-    dn = mec.Point('dn')
-    dn.set_pos(do, rr * B['3'])
     # front
     fn = mec.Point('fn')
     fn.set_pos(fo, rf * E['2'].cross(A['3']).cross(E['2']).normalize())
@@ -247,18 +243,18 @@ def setup_symbolics():
 
     print('Defining linear velocities.')
 
-    # origin is fixed
-    no.set_vel(N, 0.0 * N['1'])
+    # rear wheel contact stays in ground plane and does not slip
+    # TODO : Investigate setting to sm.S(0) and 0.
+    dn.set_vel(N, 0.0 * N['1'])
 
     # mass centers
-    do.v2pt_theory(no, N, D)
+    do.v2pt_theory(dn, N, D)
     co.v2pt_theory(do, N, C)
     ce.v2pt_theory(do, N, C)
     fo.v2pt_theory(ce, N, E)
     eo.v2pt_theory(fo, N, E)
 
-    # wheel contact velocities
-    dn.set_vel(N, 0.0 * N['1'])
+    # front wheel contact velocity
     fn.v2pt_theory(fo, N, F)
 
     ####################
