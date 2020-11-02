@@ -31,6 +31,31 @@ class ReferenceFrame(me.ReferenceFrame):
                                              **kwargs)
 
 
+def compare_basu_values(basu_vals, exact_vals, float_vals):
+
+    print('Comparing numerical results to the Basu-Mandal values:')
+
+    fail_msg = 'Failed: {}:\n  Expected: {:1.16f}\n    Actual: {:1.16f}'
+    matc_msg = 'Matched: {}:\n  Expected: {:1.16f}\n    Actual: {:1.16f}'
+
+    for result, typ in zip([exact_vals, float_vals],
+                           ['Results from Symengine evaluation',
+                            'Results from CythonODEGenerator']):
+        print(typ)
+        for k, bv in basu_output.items():
+            try:
+                mv = float(result[k])
+            except KeyError:
+                print('{} was not checked.'.format(k))
+            else:
+                try:
+                    testing.assert_allclose(bv, mv)
+                except AssertionError:
+                    print(fail_msg.format(k, bv, mv))
+                else:
+                    print(matc_msg.format(k, bv, mv))
+
+
 def compare_numerical_arrays(actual, expected, name='Actual'):
     try:
         np.testing.assert_allclose(actual, expected)
