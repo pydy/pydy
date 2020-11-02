@@ -13,6 +13,24 @@ import symengine as se
 TIME = me.dynamicsymbols._t
 
 
+class ReferenceFrame(me.ReferenceFrame):
+    """Subclass that enforces the desired unit vector indice style."""
+
+    def __init__(self, *args, **kwargs):
+
+        kwargs.pop('indices', None)
+        kwargs.pop('latexs', None)
+
+        lab = args[0].lower()
+        tex = r'\hat{{{}}}_{}'
+
+        super(ReferenceFrame, self).__init__(*args, indices=('1', '2', '3'),
+                                             latexs=(tex.format(lab, '1'),
+                                                     tex.format(lab, '2'),
+                                                     tex.format(lab, '3')),
+                                             **kwargs)
+
+
 def compare_numerical_arrays(actual, expected, name='Actual'):
     try:
         np.testing.assert_allclose(actual, expected)

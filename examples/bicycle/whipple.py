@@ -13,31 +13,33 @@ presented in [BasuMandal2007]_.
 
 """
 
-
-import os
 from collections import OrderedDict
-
-import numpy as np
-from numpy import testing
-import sympy as sm
-import sympy.physics.mechanics as mec
-from pydy.codegen.ode_function_generators import CythonODEFunctionGenerator
-from dtk import bicycle
-
+import os
 import sys
+
+# NOTE : temporary hack so that python pydy/examples/bicycle/whipple.py uses
+# the local installed pydy.
 sys.path.append(os.path.dirname(__file__))
 
+from dtk import bicycle
+from numpy import testing
+from pydy.codegen.ode_function_generators import CythonODEFunctionGenerator
+import numpy as np
+import sympy as sm
+import sympy.physics.mechanics as mec
+
 from utils import (
-                   create_symbol_value_map,
-                   compare_cse,
-                   compare_numerical_arrays,
-                   compare_numerically,
-                   evalf_with_symengine,
-                   evaluate_with_and_without_cse,
-                   evaluate_with_autowrap,
-                   formulate_equations_motion,
-                   write_matrix_to_file,
-                  )
+    ReferenceFrame,
+    compare_cse,
+    compare_numerical_arrays,
+    compare_numerically,
+    create_symbol_value_map,
+    evalf_with_symengine,
+    evaluate_with_and_without_cse,
+    evaluate_with_autowrap,
+    formulate_equations_motion,
+    write_matrix_to_file,
+)
 
 # NOTE : The default cache size is sometimes too low for these large expression
 # operations. This potentially helps.
@@ -51,25 +53,6 @@ def setup_symbolics():
     ##################
     # Reference Frames
     ##################
-
-    # TODO : Move class to utils.py.
-    class ReferenceFrame(mec.ReferenceFrame):
-        """Subclass that enforces the desired unit vector indice style."""
-
-        def __init__(self, *args, **kwargs):
-
-            kwargs.pop('indices', None)
-            kwargs.pop('latexs', None)
-
-            lab = args[0].lower()
-            tex = r'\hat{{{}}}_{}'
-
-            super(ReferenceFrame, self).__init__(*args,
-                                                 indices=('1', '2', '3'),
-                                                 latexs=(tex.format(lab, '1'),
-                                                         tex.format(lab, '2'),
-                                                         tex.format(lab, '3')),
-                                                 **kwargs)
 
     print('Defining reference frames.')
 
