@@ -31,12 +31,129 @@ class ReferenceFrame(me.ReferenceFrame):
                                              **kwargs)
 
 
-def compare_basu_values(basu_vals, exact_vals, float_vals):
+def create_basu_output_from_moore_output(symbolics, kane, g, xd_from_sub,
+                                         xd_from_gen, substitutions,
+                                         moore_input, bp):
+
+    print("Generating output dictionary.")
+    # convert the outputs from my model to the Basu-Mandal coordinates
+    speed_deriv_names = [str(speed)[:-3] + 'p' for speed in kane.u[:]]
+
+    moore_output_from_sub = {k: v for k, v in zip(speed_deriv_names,
+                                                list(xd_from_sub))}
+    moore_output_from_gen = {k: v for k, v in zip(speed_deriv_names,
+                                                list(xd_from_gen)[g.num_coordinates:])}
+    u5 = symbolics['dependent generalized speeds'][1]
+    u6 = symbolics['independent generalized speeds'][1]
+    t = symbolics['time']
+    acc_subs_sub = {u5.diff(t): moore_output_from_sub['u5p'],
+                    u6.diff(t): moore_output_from_sub['u6p']}
+
+    acc_subs_gen = {u5.diff(t): moore_output_from_gen['u5p'],
+                    u6.diff(t): moore_output_from_gen['u6p']}
+
+    u1p_sym = sm.Function('u1')(t).diff(t)
+    u2p_sym = sm.Function('u2')(t).diff(t)
+    u1p = symbolics['extra definitions'][u1p_sym]
+    u2p = symbolics['extra definitions'][u2p_sym]
+    moore_output_from_sub['u1p'] = u1p.xreplace(acc_subs_sub).xreplace(substitutions)
+    moore_output_from_sub['u2p'] = u2p.xreplace(acc_subs_sub).xreplace(substitutions)
+
+    moore_output_from_gen['u1p'] = u1p.xreplace(acc_subs_gen).xreplace(substitutions)
+    moore_output_from_gen['u2p'] = u2p.xreplace(acc_subs_gen).xreplace(substitutions)
+
+    moore_output_from_sub.update(moore_input)
+    moore_output_from_gen.update(moore_input)
+
+    moore_output_basu_from_sub = bicycle.moore_to_basu(moore_output_from_sub,
+                                                       bp['rR'], bp['lam'])
+    moore_output_basu_from_gen = bicycle.moore_to_basu(moore_output_from_gen,
+                                                       bp['rR'], bp['lam'])
+
+    return moore_output_basu_from_sub, moore_output_basu_from_gen
+
+
+def create_moore_input_from_basu_input(symbolics):
+
+    print('Loading numerical input parameters.')
+
+    # these are the Benchmark bicycle [Meijaard 2007] parameters.
+    bp = bicycle.benchmark_parameters()
+    # these are the Benchmark bicycle [Meijaard 2007] parameters reexpressed in
+    # the [Moore 2012] definition.
+    mp = bicycle.benchmark_to_moore(bp)
+
+    # load the input values specified in Table 1 of [Basu-Mandal 2007]
+    basu_input = bicycle.basu_table_one_input()
+
+    # convert the Basu-Mandal values to my coordinates and speeds
+    moore_input = bicycle.basu_to_moore_input(basu_input, bp['rR'], bp['lam'])
+
+    constants_name_map = {sym.name: sym for sym in symbolics['constants']}
+    time_varying_name_map = {s.name: s for s in
+                            symbolics['generalized coordinates'] +
+                            symbolics['generalized speeds'] +
+                            symbolics['specified quantities']}
+
+    # build dictionaries that map the Moore symbolic parameters to the
+    # converted Basu-Mandal values
+    constant_substitutions = OrderedDict()
+    for k, v in mp.items():
+        try:
+            constant_substitutions[constants_name_map[k]] = v
+        except KeyError:
+            print('{} not added to sub dict.'.format(k))
+
+    dynamic_substitutions = {}
+    for k, v in moore_input.items():
+        try:
+            dynamic_substitutions[time_varying_name_map[k]] = v
+        except KeyError:
+            print('{} not added to sub dict.'.format(k))
+        # TODO : try this to ensure we are using 0.0 instead of other tiny
+        # floats.  As some of the converted Basu-Mandal numbers could have
+        # floating point round off.
+        #else:
+            #if abs(dynamic_substitutions[k]) < 1e-14:
+                #dynamic_substitutions[k] = 0.0
+
+    # set all specifieds to zero
+    specified_subs = {ri: 0.0 for ri in  symbolics['specified quantities']}
+
+    constants_substituions, dynamic_substitution, specified_subs = \
+        create_symbol_value_map(constants_name_map, time_varying_name_map)
+
+    substitutions = specified_subs.copy()
+    substitutions.update(constant_substitutions)
+    substitutions.update(dynamic_substitutions)
+
+    return (substitutions, constants_substituions, dynamic_substitution,
+            specified_subs, moore_input, bp)
+
+
+
+def compare_to_basu_values(exact_vals, float_vals):
+    """Prints 16 digit comparisons and tests with
+    numpy.testing.assert_allclose() to validate a match or not.
+
+    Parameters
+    ==========
+    exact_vals : dictionary
+        Maps Basu-Mandal variable strings to values computed from fixed
+        precision methods.
+    float_vals : dictionary
+        Maps Basu-Mandal variable strings to values computed from floating
+        point methods.
+
+    """
 
     print('Comparing numerical results to the Basu-Mandal values:')
 
     fail_msg = 'Failed: {}:\n  Expected: {:1.16f}\n    Actual: {:1.16f}'
     matc_msg = 'Matched: {}:\n  Expected: {:1.16f}\n    Actual: {:1.16f}'
+
+    # load values from Basu-Mandal 2007 Table 1
+    basu_output = bicycle.basu_table_one_output()
 
     for result, typ in zip([exact_vals, float_vals],
                            ['Results from Symengine evaluation',
@@ -49,7 +166,7 @@ def compare_basu_values(basu_vals, exact_vals, float_vals):
                 print('{} was not checked.'.format(k))
             else:
                 try:
-                    testing.assert_allclose(bv, mv)
+                    np.testing.assert_allclose(bv, mv)
                 except AssertionError:
                     print(fail_msg.format(k, bv, mv))
                 else:

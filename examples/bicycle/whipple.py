@@ -33,6 +33,9 @@ from utils import (
     compare_cse,
     compare_numerical_arrays,
     compare_numerically,
+    compare_to_basu_values,
+    create_basu_output_from_moore_output,
+    create_moore_input_from_basu_input,
     create_symbol_value_map,
     evalf_with_symengine,
     evaluate_with_and_without_cse,
@@ -358,7 +361,9 @@ def setup_symbolics():
     nonho = tuple(nonholonomic)
     us = tuple(sm.ordered((u1, u2) + u_ind + u_dep))
     qs = tuple(sm.ordered(q_ign + q_ind + q_dep))
-    spdef = {ui: qi.diff(t) for ui, qi in zip(us, qs)}
+    # TODO : Reduced these to work with formulate_equations_motion().
+    spdef = {ui: qi.diff(t) for ui, qi in zip((u3, u4, u5, u7),
+                                              (q3, q4, q5, q7))}
     exdef = {u1: u1_def, u2: u2_def, u1.diff(t): u1p_def, u2.diff(t): u2p_def}
 
     system_symbolics = {
@@ -414,142 +419,40 @@ forcing_vector = kane.forcing.xreplace(kane.kindiffdict())
 print('The forcing vector is a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
 
-print('Writing mass matrix and forcing vector to files.')
-write_matrix_to_file(mass_matrix, 'mass_matrix.txt',
-                     funcs_of_time=kane.q[:] + kane.u[:])
-write_matrix_to_file(forcing_vector, 'forcing_vector.txt',
-                     funcs_of_time=kane.q[:] + kane.u[:])
-
-# Calcuate the EoMs using an independent method.
-# TODO : Make sure this still works.
-#M, F = formulate_equations_motion(
-    #symbolics['newtonian reference frame'],
-    #symbolics['bodies'],
-    #symbolics['independent generalized coordinates'] + symbolics['dependent generalized coordinates'],
-    #symbolics['speed definitions'],
-    #symbolics['independent generalized speeds'],
-    #symbolics['dependent generalized speeds'],
-    #symbolics['nonholonomic constraints'],
-    #dict(symbolics['forces'])
-#)
-
-print('Compare cse')
-
-#compare_cse(F, args=[q3, q4, q5, q6, q7, q8, u3, u4, u5, u6, u7, u8, T4, T6,
-                     #T7, rf, rr, d1, d2, d3, l1, l2, l3, l4, g, mc, md, me, mf,
-                     #ic11, ic22, ic33, ic31, id11, id22, ie11, ie22, ie33,
-                     #ie31, if11, if22])
-#
-#compare_cse(M, args=[q3, q4, q5, q6, q7, q8, u3, u4, u5, u6, u7, u8, T4, T6,
-                     #T7, rf, rr, d1, d2, d3, l1, l2, l3, l4, g, mc, md, me, mf,
-                     #ic11, ic22, ic33, ic31, id11, id22, ie11, ie22, ie33,
-                     #ie31, if11, if22])
+#print('Writing mass matrix and forcing vector to files.')
+#write_matrix_to_file(mass_matrix, 'mass_matrix.txt',
+                     #funcs_of_time=kane.q[:] + kane.u[:])
+#write_matrix_to_file(forcing_vector, 'forcing_vector.txt',
+                     #funcs_of_time=kane.q[:] + kane.u[:])
 
 ####################################
 # Validation of non-linear equations
 ####################################
 
-print('Loading numerical input parameters.')
-
-# These are the Benchmark bicycle [Meijaard, et. al 2007] parameters
-# reexpressed in the Moore 2012 definition.
-bp = bicycle.benchmark_parameters()
-mp = bicycle.benchmark_to_moore(bp)
-
-# load the input values specified in Table 1 of [BasuMandal2007]_
-basu_input = bicycle.basu_table_one_input()
-
-# convert the Basu-Mandal values to my coordinates and speeds
-moore_input = bicycle.basu_to_moore_input(basu_input, bp['rR'], bp['lam'])
-
-# TODO : there are variables defined in create_symbol_map that are needed in
-# this script.
-
-constants_name_map = {sym.name: sym for sym in symbolics['constants']}
-time_varying_name_map = {s.name: s for s in
-                         symbolics['generalized coordinates'] +
-                         symbolics['generalized speeds'] +
-                         symbolics['specified quantities']}
-
-# build dictionaries that map the Moore symbolic parameters to the converted
-# Basu-Mandal values
-constant_substitutions = OrderedDict()
-for k, v in mp.items():
-    try:
-        constant_substitutions[constants_name_map[k]] = v
-    except KeyError:
-        print('{} not added to sub dict.'.format(k))
-
-dynamic_substitutions = {}
-for k, v in moore_input.items():
-    try:
-        dynamic_substitutions[time_varying_name_map[k]] = v
-    except KeyError:
-        print('{} not added to sub dict.'.format(k))
-    # TODO : try this to ensure we are using 0.0 instead of other tiny floats.
-    # As some of the converted Basu-Mandal numbers could have floating point
-    # round off.
-    #else:
-        #if abs(dynamic_substitutions[k]) < 1e-14:
-            #dynamic_substitutions[k] = 0.0
-
-specified_subs = {ri: 0.0 for ri in  symbolics['specified quantities']}
-
-constants_substituions, dynamic_substitution, specified_subs = \
-    create_symbol_value_map(constants_name_map, time_varying_name_map)
-
-substitutions = specified_subs.copy()
-substitutions.update(constant_substitutions)
-substitutions.update(dynamic_substitutions)
+sub_dicts = create_moore_input_from_basu_input(symbolics)
+substitutions = sub_dicts[0]
+constant_substitutions = sub_dicts[1]
+dynamic_substitutions = sub_dicts[2]
+specified_subs = sub_dicts[3]
+moore_input = sub_dicts[4]
+bp = sub_dicts[5]
 
 print('Evaluating numerically with symengine')
 M_exact = evalf_with_symengine(mass_matrix, substitutions)
 F_exact = evalf_with_symengine(forcing_vector, substitutions)
 
-print('Evaluating numerically with xreplace')
-M_from_xreplace = sm.matrix2numpy(mass_matrix.xreplace(substitutions),
-                                  dtype=float)
-F_from_xreplace = sm.matrix2numpy(forcing_vector.xreplace(substitutions),
-                                  dtype=float)
-
-compare_numerical_arrays(M_exact, M_from_xreplace,
-                         name='Mass matrix from xreplace')
-compare_numerical_arrays(F_exact, F_from_xreplace,
-                         name='Forcing vector from xreplace')
-
-#print('Evaluating with autowrap C')
-#M_autowrap_c = evaluate_with_autowrap(mass_matrix, substitutions, language="C")
-#F_autowrap_c = evaluate_with_autowrap(forcing_vector, substitutions,
-                                      #language="C")
-#compare_numerical_arrays(M_exact, M_autowrap_c,
-                         #name='Mass matrix from autowrap C')
-#compare_numerical_arrays(F_exact, F_autowrap_c,
-                         #name='Forcing vector from autowrap C')
-#
-#print('Evaluating with autowrap Fortran')
-#M_autowrap_fortran = evaluate_with_autowrap(mass_matrix, substitutions,
-                                            #language="Fortran")
-#F_autowrap_fortran = evaluate_with_autowrap(forcing_vector, substitutions,
-                                            #language="Fortran")
-#compare_numerical_arrays(M_exact, M_autowrap_fortran,
-                         #name='Mass matrix from autowrap Fortran')
-#compare_numerical_arrays(F_exact, F_autowrap_fortran,
-                         #name='Forcing vector from autowrap Fortran')
-
-# this runs with only the mass matrix but uses like 10+ GB of memory to compile
-# both of these show descrepancies in the steer equation u7
-#M_no_cse, M_with_cse = evaluate_with_and_without_cse(mass_matrix,
-                                                     #substitutions)
-#F_no_cse, F_with_cse = evaluate_with_and_without_cse(forcing_vector,
-                                                     #substitutions)
-#compare_numerical_arrays(M_no_cse, M_with_cse,
-                         #name='Mass matrix from CythonMatrixGenerator with cse')
-#compare_numerical_arrays(F_no_cse, F_with_cse,
-                         #name='Forcing vector from CythonMatrixGenerator with cse')
-
 print('The state derivatives from high precision evaluation:')
 xd_from_sub = np.squeeze(np.linalg.solve(M_exact, F_exact))
 print(xd_from_sub)
+
+#print('Running checks')
+#from checks import check_kanes_equations
+#check_kanes_equations(symbolics)
+#check_xreplace_against_exact(M_exact, F_exact, mass_matrix, forcing_vector,
+                             #substitutions)
+#check_autowrap_against_exact(M_exact, F_exact, mass_matrix, forcing_vector,
+                             #substitutions)
+#check_cse(mass_matrix, forcing_vector, substitutions)
 
 print('Generating a right hand side function.')
 
@@ -565,43 +468,12 @@ g = CythonODEFunctionGenerator(forcing_vector,
                                specifieds=symbolics['specified quantities'],
                                constants_arg_type='array',
                                specifieds_arg_type='array',
-                               tmp_dir='cython_ode_func_gen_files',
-                               prefix='zz',
-                               cse=True,
-                               verbose=True)
-
-# This solves for the right hand side symbolically and generates code from that
-# expression.
-# NOTE : This takes like 12+ hours to compile.
-#g = CythonODEFunctionGenerator(kane.rhs(),
-                               #kane.q[:],
-                               #kane.u[:],
-                               #list(constant_substitutions.keys()),
-                               #specifieds=symbolics['specified quantities'],
-                               #constants_arg_type='array',
-                               #specifieds_arg_type='array')
-
-# This also solves symbolically but cse's before the solve and it compiles
-# super fast.
-#g = CythonODEFunctionGenerator(forcing_vector,
-                               #kane.q[:],
-                               #kane.u[:],
-                               #list(constant_substitutions.keys()),
-                               #mass_matrix=mass_matrix,
-                               #coordinate_derivatives=rhs_of_kin_diffs,
-                               #specifieds=symbolics['specified quantities'],
-                               #constants_arg_type='array',
-                               #specifieds_arg_type='array',
-                               #linear_sys_solver='sympy',
-                               #tmp_dir='cython_ode_func_gen_files',
-                               #prefix='zz',
-                               #cse=True,
-                               #verbose=True)
+                               cse=True)
 print('Generating rhs')
 rhs = g.generate()
 
-state_vals = np.array([dynamic_substitutions[x] for x in kane.q[:] +
-                       kane.u[:]])
+state_vals = np.array([dynamic_substitutions[x]
+                       for x in kane.q[:] + kane.u[:]])
 specified_vals = np.zeros(3)
 constants_vals = np.array(list(constant_substitutions.values()))
 
@@ -609,61 +481,8 @@ xd_from_gen = rhs(state_vals, 0.0, specified_vals, constants_vals)
 print('The state derivatives from code gen:')
 print(xd_from_gen)
 
-print("Generating output dictionary.")
-# convert the outputs from my model to the Basu-Mandal coordinates
-# TODO : raise an issue about not knowing which order the x vector is in with
-# reference to M * x' = F
-speed_deriv_names = [str(speed)[:-3] + 'p' for speed in kane.u[:]]
-
-moore_output_from_sub = {k: v for k, v in zip(speed_deriv_names,
-                                              list(xd_from_sub))}
-moore_output_from_gen = {k: v for k, v in zip(speed_deriv_names,
-                                              list(xd_from_gen)[g.num_coordinates:])}
-u5 = symbolics['dependent generalized speeds'][1]
-u6 = symbolics['independent generalized speeds'][1]
-t = symbolics['time']
-acc_subs_sub = {u5.diff(t): moore_output_from_sub['u5p'],
-                u6.diff(t): moore_output_from_sub['u6p']}
-
-acc_subs_gen = {u5.diff(t): moore_output_from_gen['u5p'],
-                u6.diff(t): moore_output_from_gen['u6p']}
-
-u1p_sym = sm.Function('u1')(t).diff(t)
-u2p_sym = sm.Function('u2')(t).diff(t)
-u1p = symbolics['extra definitions'][u1p_sym]
-u2p = symbolics['extra definitions'][u2p_sym]
-moore_output_from_sub['u1p'] = u1p.xreplace(acc_subs_sub).xreplace(substitutions)
-moore_output_from_sub['u2p'] = u2p.xreplace(acc_subs_sub).xreplace(substitutions)
-
-moore_output_from_gen['u1p'] = u1p.xreplace(acc_subs_gen).xreplace(substitutions)
-moore_output_from_gen['u2p'] = u2p.xreplace(acc_subs_gen).xreplace(substitutions)
-
-moore_output_from_sub.update(moore_input)
-moore_output_from_gen.update(moore_input)
-
-moore_output_basu_from_sub = bicycle.moore_to_basu(moore_output_from_sub,
-                                                   bp['rR'], bp['lam'])
-moore_output_basu_from_gen = bicycle.moore_to_basu(moore_output_from_gen,
-                                                   bp['rR'], bp['lam'])
-
-basu_output = bicycle.basu_table_one_output()
-
-print("Assertions.")
-
-for result, typ in zip([moore_output_basu_from_sub,
-                        moore_output_basu_from_gen],
-                       ['Results from Symengine evaluation',
-                        'Results from CythonODEGenerator']):
-    print(typ)
-    for k, bv in basu_output.items():
-        try:
-            mv = float(result[k])
-        except KeyError:
-            print('{} was not checked.'.format(k))
-        else:
-            try:
-                testing.assert_allclose(bv, mv)
-            except AssertionError:
-                print('Failed: {}:\n  Expected: {:1.16f}\n    Actual: {:1.16f}'.format(k, bv, mv))
-            else:
-                print('Matched: {}:\n  Expected: {:1.16f}\n    Actual: {:1.16f}'.format(k, bv, mv))
+moore_output_basu_from_sub, moore_output_basu_from_gen = \
+    create_basu_output_from_moore_output(symbolics, kane, g, xd_from_sub,
+                                         xd_from_gen, substitutions,
+                                         moore_input, bp)
+compare_to_basu_values(moore_output_basu_from_sub, moore_output_basu_from_gen)
