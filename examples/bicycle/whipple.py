@@ -1,19 +1,34 @@
-#!usr/bin/env python
+#!/usr/bin/env python
 
 """This file derives the non-linear equations of motion of the Carvallo-Whipple
 bicycle model ([Carvallo1899]_, [Whippl1899]_) following the description and
-nomenclature in [Moore2012]_.
+nomenclature in [Moore2012]_. The resulting equations of motion are compared to
+the canonical values presented in [BasuMandal2007]_.
 
-The results are compared to the canonical values of this problem to those
-presented in [BasuMandal2007]_.
+References
+==========
 
+.. [Whipple1899] Whipple, Francis J. W. "The Stability of the Motion of a
+   Bicycle." Quarterly Journal of Pure and Applied Mathematics 30 (1899):
+   312–48.
+.. [Carvallo1899] Carvallo, E. Théorie Du Mouvement Du Monocycle et de La
+   Bicyclette. Paris, France: Gauthier- Villars, 1899.
 .. [Moore2012] Moore, Jason K. "Human Control of a Bicycle." Doctor of
-   Philosophy, University of California, Davis, 2012.
-   http://moorepants.github.com/dissertation
+   Philosophy, University of California, 2012.
+   http://moorepants.github.io/dissertation.
+.. [Meijaard2007] Meijaard, J. P., Jim M. Papadopoulos, Andy Ruina, and A. L.
+   Schwab. "Linearized Dynamics Equations for the Balance and Steer of a
+   Bicycle: A Benchmark and Review." Proceedings of the Royal Society A:
+   Mathematical, Physical and Engineering Sciences 463, no. 2084 (August 8,
+   2007): 1955–82.
+.. [Basu-Mandal2007] Basu-Mandal, Pradipta, Anindya Chatterjee, and J.M
+   Papadopoulos. "Hands-Free Circular Motions of a Benchmark Bicycle."
+   Proceedings of the Royal Society A: Mathematical, Physical and Engineering
+   Sciences 463, no. 2084 (August 8, 2007): 1983–2003.
+   https://doi.org/10.1098/rspa.2007.1849.
 
 """
 
-from collections import OrderedDict
 import os
 import sys
 
@@ -21,8 +36,6 @@ import sys
 # the local installed pydy.
 sys.path.append(os.path.dirname(__file__))
 
-from dtk import bicycle
-from numpy import testing
 from pydy.codegen.ode_function_generators import CythonODEFunctionGenerator
 import numpy as np
 import sympy as sm
@@ -30,17 +43,11 @@ import sympy.physics.mechanics as mec
 
 from utils import (
     ReferenceFrame,
-    compare_cse,
-    compare_numerical_arrays,
     compare_numerically,
     compare_to_basu_values,
     create_basu_output_from_moore_output,
     create_moore_input_from_basu_input,
-    create_symbol_value_map,
     evalf_with_symengine,
-    evaluate_with_and_without_cse,
-    evaluate_with_autowrap,
-    formulate_equations_motion,
     write_matrix_to_file,
 )
 
@@ -110,6 +117,11 @@ def setup_symbolics():
 
     print('Orienting frames.')
 
+    # The following defines a 3-1-2 Tait-Bryan rotation with yaw (q3), roll
+    # (q4), pitch (q5) angles to orient the rear frame relative to the ground.
+    # The front frame is then rotated through the steer angle (q7) about the
+    # rear frame's 3 axis.
+
     # rear frame yaw
     A.orient(N, 'Axis', (q3, N['3']))
     # rear frame roll
@@ -142,21 +154,21 @@ def setup_symbolics():
     # l4: the distance in the e3> direction from the front wheel center to
     #     the center of mass of the fork
 
-    rf, rr = sm.symbols('rf rr')
-    d1, d2, d3 = sm.symbols('d1 d2 d3')
-    l1, l2, l3, l4 = sm.symbols('l1 l2 l3 l4')
+    rf, rr = sm.symbols('rf, rr')
+    d1, d2, d3 = sm.symbols('d1, d2, d3')
+    l1, l2, l3, l4 = sm.symbols('l1, l2, l3, l4')
 
     # acceleration due to gravity
     g = sm.symbols('g')
 
     # mass
-    mc, md, me, mf = sm.symbols('mc md me mf')
+    mc, md, me, mf = sm.symbols('mc, md, me, mf')
 
-    # inertia
-    ic11, ic22, ic33, ic31 = sm.symbols('ic11 ic22 ic33 ic31')
-    id11, id22 = sm.symbols('id11 id22')
-    ie11, ie22, ie33, ie31 = sm.symbols('ie11 ie22 ie33 ie31')
-    if11, if22 = sm.symbols('if11 if22')
+    # inertia components
+    ic11, ic22, ic33, ic31 = sm.symbols('ic11, ic22, ic33, ic31')
+    id11, id22 = sm.symbols('id11, id22')
+    ie11, ie22, ie33, ie31 = sm.symbols('ie11, ie22, ie33, ie31')
+    if11, if22 = sm.symbols('if11, if22')
 
     ###########
     # Specified
@@ -179,27 +191,27 @@ def setup_symbolics():
 
     # newtonian origin to rear wheel center
     do = mec.Point('do')
-    do.set_pos(dn, -rr * B['3'])
+    do.set_pos(dn, -rr*B['3'])
 
     # rear wheel center to bicycle frame center
     co = mec.Point('co')
-    co.set_pos(do, l1 * C['1'] + l2 * C['3'])
+    co.set_pos(do, l1*C['1'] + l2*C['3'])
 
     # rear wheel center to steer axis point
     ce = mec.Point('ce')
-    ce.set_pos(do, d1 * C['1'])
+    ce.set_pos(do, d1*C['1'])
 
     # steer axis point to the front wheel center
     fo = mec.Point('fo')
-    fo.set_pos(ce, d2 * E['3'] + d3 * E['1'])
+    fo.set_pos(ce, d2*E['3'] + d3*E['1'])
 
     # front wheel center to front frame center
     eo = mec.Point('eo')
-    eo.set_pos(fo, l3 * E['1'] + l4 * E['3'])
+    eo.set_pos(fo, l3*E['1'] + l4*E['3'])
 
-    # front
+    # front wheel contact point
     fn = mec.Point('fn')
-    fn.set_pos(fo, rf * E['2'].cross(A['3']).cross(E['2']).normalize())
+    fn.set_pos(fo, rf*E['2'].cross(A['3']).cross(E['2']).normalize())
 
     ######################
     # Holonomic Constraint
@@ -230,12 +242,15 @@ def setup_symbolics():
 
     print('Defining angular velocities.')
 
-    A.set_ang_vel(N, u3 * N['3'])  # yaw rate
-    B.set_ang_vel(A, u4 * A['1'])  # roll rate
-    C.set_ang_vel(B, u5 * B['2'])  # pitch rate
-    D.set_ang_vel(C, u6 * C['2'])  # rear wheel rate
-    E.set_ang_vel(C, u7 * C['3'])  # steer rate
-    F.set_ang_vel(E, u8 * E['2'])  # front wheel rate
+    # Note that the wheel angular velocities are defined relative to the frame
+    # they are attached to.
+
+    A.set_ang_vel(N, u3*N['3'])  # yaw rate
+    B.set_ang_vel(A, u4*A['1'])  # roll rate
+    C.set_ang_vel(B, u5*B['2'])  # pitch rate
+    D.set_ang_vel(C, u6*C['2'])  # rear wheel rate
+    E.set_ang_vel(C, u7*C['3'])  # steer rate
+    F.set_ang_vel(E, u8*E['2'])  # front wheel rate
 
     ###################
     # Linear Velocities
@@ -245,7 +260,7 @@ def setup_symbolics():
 
     # rear wheel contact stays in ground plane and does not slip
     # TODO : Investigate setting to sm.S(0) and 0.
-    dn.set_vel(N, 0.0 * N['1'])
+    dn.set_vel(N, 0.0*N['1'])
 
     # mass centers
     do.v2pt_theory(dn, N, D)
@@ -287,9 +302,9 @@ def setup_symbolics():
 
     # NOTE : You cannot define the wheel inertias with respect to their
     # respective frames because the generalized inertia force calcs will fail
-    # because there is no direction cosine matrix relating the wheel frames back
-    # to the other reference frames so I define them here with respect to the
-    # rear and front frames.
+    # because there is no direction cosine matrix relating the wheel frames
+    # back to the other reference frames so I define them here with respect to
+    # the rear and front frames.
 
     # NOTE : Changing 0.0 to 0 or sm.S(0) changes the floating point errors.
 
@@ -318,15 +333,15 @@ def setup_symbolics():
     print('Defining the forces and torques.')
 
     # gravity
-    Fco = (co, mc * g * A['3'])
-    Fdo = (do, md * g * A['3'])
-    Feo = (eo, me * g * A['3'])
-    Ffo = (fo, mf * g * A['3'])
+    Fco = (co, mc*g*A['3'])
+    Fdo = (do, md*g*A['3'])
+    Feo = (eo, me*g*A['3'])
+    Ffo = (fo, mf*g*A['3'])
 
     # input torques
-    Tc = (C, T4 * A['1'] - T6 * B['2'] - T7 * C['3'])
-    Td = (D, T6 * C['2'])
-    Te = (E, T7 * C['3'])
+    Tc = (C, T4*A['1'] - T6*B['2'] - T7*C['3'])
+    Td = (D, T6*C['2'])
+    Te = (E, T7*C['3'])
 
     forces = [Fco, Fdo, Feo, Ffo, Tc, Td, Te]
 
