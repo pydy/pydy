@@ -259,10 +259,13 @@ def setup_symbolics():
 
     # rear wheel contact stays in ground plane and does not slip but the
     # auxiliary speed, u11, is included which  corresponds to the later force
-    dn.set_vel(N, u11*A['2'])
+    dn.set_vel(N, 0)
+    dn_ = mec.Point('dn')
+    dn_.set_pos(dn, 0)
+    dn_.set_vel(N, dn.vel(N) + u11*A['2'])
 
     # mass centers
-    do.v2pt_theory(dn, N, D)
+    do.v2pt_theory(dn_, N, D)
     co.v2pt_theory(do, N, C)
     ce.v2pt_theory(do, N, C)
     fo.v2pt_theory(ce, N, E)
@@ -279,8 +282,9 @@ def setup_symbolics():
     # contact path. A['3'] X G['1'] gives this unit vector.
     g1_hat = E['2'].cross(A['3'])
     g2_hat = A['3'].cross(g1_hat)
-    N_v_fn = fn.vel(N)
-    fn.set_vel(N, N_v_fn + u12*g2_hat)
+    fn_ = mec.Point('fn')
+    fn_.set_pos(fn, 0)
+    fn_.set_vel(N, fn.vel(N) + u12*g2_hat)
 
     ####################
     # Motion Constraints
@@ -290,9 +294,9 @@ def setup_symbolics():
 
     # TODO : Maybe these shouldn't include u11 and u12, not sure. Also dn is no
     # longer equal to zero, but that would just show that u11 must be zero.
-    nonholonomic = [fn.vel(N).dot(A['1']),
-                    fn.vel(N).dot(A['2']),
-                    fn.vel(N).dot(A['3'])]
+    nonholonomic = [fn_.vel(N).dot(A['1']),
+                    fn_.vel(N).dot(A['2']),
+                    fn_.vel(N).dot(A['3'])]
 
     #########
     # Inertia
@@ -338,14 +342,16 @@ def setup_symbolics():
 
     # lateral tire forces
     Fdn = (dn, Fr*A['2'])
+    Fdn_ = (dn_, -Fr*A['2'])
     Ffn = (fn, Ff*g2_hat)
+    Ffn_ = (fn_, -Ff*g2_hat)
 
     # input torques
     Tc = (C, T4*A['1'] - T6*B['2'] - T7*C['3'])
     Td = (D, T6*C['2'])
     Te = (E, T7*C['3'])
 
-    forces = [Fco, Fdo, Feo, Ffo, Fdn, Ffn, Tc, Td, Te]
+    forces = [Fco, Fdo, Feo, Ffo, Fdn, Ffn, Fdn_, Ffn_, Tc, Td, Te]
 
     # Manually compute the ground contact velocities.
     kindiffdict = sm.solve(kinematical, [q3.diff(t), q4.diff(t), q5.diff(t),
@@ -423,7 +429,8 @@ kane = mec.KanesMethod(
     u_auxiliary=symbolics['auxiliary speeds'],
 )
 
-kane.kanes_equations(symbolics['bodies'], loads=symbolics['loads'])
+Fr, Frstar = kane.kanes_equations(symbolics['bodies'], loads=symbolics['loads'])
+zero = Fr + Frstar
 
 mass_matrix = kane.mass_matrix
 print('The mass matrix is a function of these dynamic variables:')
@@ -436,6 +443,15 @@ print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
 
 print('The auxiliary equations are a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(kane.auxiliary_eqs))))
+
+A_pnh, B_pnh = decompose_linear_parts(
+    zero[-3:], [ui.diff() for ui in symbolics['dependent generalized speeds']])
+b_pnh = -B_pnh
+xs = list(sm.ordered(mec.find_dynamicsymbols(A_pnh).union(mec.find_dynamicsymbols(b_pnh))))
+ps = list(sm.ordered(A_pnh.free_symbols.union(b_pnh.free_symbols)))
+ps.remove(symbolics['time'])
+gen = OctaveMatrixGenerator([xs, ps], [A_pnh, b_pnh])
+gen.write('eval_dep_speed_derivs', path=os.path.dirname(__file__))
 
 # Create matrices for solving for the dependent speeds.
 A_nh, B_nh = decompose_linear_parts(symbolics['nonholonomic constraints'],
