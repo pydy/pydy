@@ -2,8 +2,8 @@
 
 """This file derives the non-linear equations of motion of the Carvallo-Whipple
 bicycle model ([Carvallo1899]_, [Whippl1899]_) following the description and
-nomenclature in [Moore2012]_. The resulting equations of motion are compared to
-the canonical values presented in [BasuMandal2007]_.
+nomenclature in [Moore2012]_ and produces at Octave/Matlab function that
+calculates the lateral wheel-ground constraint force for each wheel.
 
 References
 ==========
@@ -16,16 +16,6 @@ References
 .. [Moore2012] Moore, Jason K. "Human Control of a Bicycle." Doctor of
    Philosophy, University of California, 2012.
    http://moorepants.github.io/dissertation.
-.. [Meijaard2007] Meijaard, J. P., Jim M. Papadopoulos, Andy Ruina, and A. L.
-   Schwab. "Linearized Dynamics Equations for the Balance and Steer of a
-   Bicycle: A Benchmark and Review." Proceedings of the Royal Society A:
-   Mathematical, Physical and Engineering Sciences 463, no. 2084 (August 8,
-   2007): 1955–82.
-.. [Basu-Mandal2007] Basu-Mandal, Pradipta, Anindya Chatterjee, and J.M
-   Papadopoulos. "Hands-Free Circular Motions of a Benchmark Bicycle."
-   Proceedings of the Royal Society A: Mathematical, Physical and Engineering
-   Sciences 463, no. 2084 (August 8, 2007): 1983–2003.
-   https://doi.org/10.1098/rspa.2007.1849.
 
 """
 
@@ -36,16 +26,13 @@ import sys
 # the local installed pydy.
 sys.path.append(os.path.dirname(__file__))
 
+from pydy.codegen.octave_code import OctaveMatrixGenerator
 from pydy.codegen.ode_function_generators import CythonODEFunctionGenerator
 import numpy as np
 import sympy as sm
 import sympy.physics.mechanics as mec
 
-from utils import (
-    ReferenceFrame,
-    create_basu_output_from_moore_output,
-    create_moore_input_from_basu_input,
-)
+from utils import ReferenceFrame, decompose_linear_parts
 
 # NOTE : The default cache size is sometimes too low for these large expression
 # operations. This potentially helps.
@@ -84,6 +71,8 @@ def setup_symbolics():
     # All the following are a function of time.
     t = mec.dynamicsymbols._t
 
+    print('Defining time varying symbols.')
+
     # q1: perpendicular distance from the n2> axis to the rear contact
     #     point in the ground plane
     # q2: perpendicular distance from the n1> axis to the rear contact
@@ -98,15 +87,23 @@ def setup_symbolics():
     #     point in the ground plane
     # q10: perpendicular distance from the n1> axis to the front contact
     #     point in the ground plane
+    q1, q2, q3, q4 = mec.dynamicsymbols('q1, q2, q3, q4')
+    q5, q6, q7, q8 = mec.dynamicsymbols('q5, q6, q7, q8')
+    q10, q11 = mec.dynamicsymbols('q10, q11')
 
-    print('Defining time varying symbols.')
+    # u1: speed of the rear wheel contact point in the n1> direction
+    # u2: speed of the rear wheel contact point in the n2> direction
+    # u3: frame yaw angular rate
+    # u4: frame roll angular rate
+    # u5: frame pitch angular rate
+    # u6: rear wheel rotation angular rate
+    # u7: steering rotation angular rate
+    # u8: front wheel rotation angular rate
+    u1, u2, u3, u4 = mec.dynamicsymbols('u1, u2, u3, u4')
+    u5, u6, u7, u8 = mec.dynamicsymbols('u5, u6, u7, u8')
 
-    q1, q2, q3, q4 = mec.dynamicsymbols('q1 q2 q3 q4')
-    q5, q6, q7, q8 = mec.dynamicsymbols('q5 q6 q7 q8')
-
-    u1, u2, u3, u4 = mec.dynamicsymbols('u1 u2 u3 u4')
-    u5, u6, u7, u8 = mec.dynamicsymbols('u5 u6 u7 u8')
-
+    # u9: speed of the front wheel contact point in the n1> direction
+    # u10: speed of the front wheel contact point in the n2> direction
     # u11: auxiliary speed to determine the rear tire lateral force
     # u12: auxiliary speed to determine the front tire lateral force
     u9, u10, u11, u12 = mec.dynamicsymbols('u9, u10, u11, u12')
@@ -118,9 +115,10 @@ def setup_symbolics():
     print('Orienting frames.')
 
     # The following defines a 3-1-2 Tait-Bryan rotation with yaw (q3), roll
-    # (q4), pitch (q5) angles to orient the rear frame relative to the ground.
-    # The front frame is then rotated through the steer angle (q7) about the
-    # rear frame's 3 axis.
+    # (q4), pitch (q5) angles to orient the rear frame relative to the ground
+    # (Newtonian frame). The front frame is then rotated through the steer
+    # angle (q7) about the rear frame's 3 axis. The wheels are not oriented, as
+    # q6 and q8 end up being ignorable coordinates.
 
     # rear frame yaw
     A.orient(N, 'Axis', (q3, N['3']))
@@ -153,7 +151,6 @@ def setup_symbolics():
     #     the center of mass of the fork
     # l4: the distance in the e3> direction from the front wheel center to
     #     the center of mass of the fork
-
     rf, rr = sm.symbols('rf, rr')
     d1, d2, d3 = sm.symbols('d1, d2, d3')
     l1, l2, l3, l4 = sm.symbols('l1, l2, l3, l4')
@@ -161,10 +158,10 @@ def setup_symbolics():
     # acceleration due to gravity
     g = sm.symbols('g')
 
-    # mass
+    # mass for each rigid body: C, D, E, F
     mc, md, me, mf = sm.symbols('mc, md, me, mf')
 
-    # inertia components
+    # inertia components for each rigid body: C, D, E, F
     ic11, ic22, ic33, ic31 = sm.symbols('ic11, ic22, ic33, ic31')
     id11, id22 = sm.symbols('id11, id22')
     ie11, ie22, ie33, ie31 = sm.symbols('ie11, ie22, ie33, ie31')
@@ -178,8 +175,8 @@ def setup_symbolics():
     # T4 : roll torque
     # T6 : rear wheel torque
     # T7 : steer torque
-    # Fr : rear lateral force
-    # Ff : front lateral force
+    # Fr : rear wheel-ground contact lateral force
+    # Ff : front wheel-ground contact lateral force
     T4, T6, T7, Fr, Ff = mec.dynamicsymbols('T4, T6, T7, Fr, Ff')
 
     ##################
@@ -260,10 +257,9 @@ def setup_symbolics():
 
     print('Defining linear velocities.')
 
-    # rear wheel contact stays in ground plane and does not slip
-    # TODO : Investigate setting to sm.S(0) and 0.
-    # include the auxiliary speed corresponding to the later force
-    dn.set_vel(N, u11*B['2'])
+    # rear wheel contact stays in ground plane and does not slip but the
+    # auxiliary speed, u11, is included which  corresponds to the later force
+    dn.set_vel(N, u11*A['2'])
 
     # mass centers
     do.v2pt_theory(dn, N, D)
@@ -275,15 +271,16 @@ def setup_symbolics():
     # front wheel contact velocity
     fn.v2pt_theory(fo, N, F)
 
-    # create a front "yaw" frame that is equivalent to the B frame for the rear
+    # create a front "yaw" frame that is equivalent to the A frame for the rear
     # wheel.
     # G['1'] lies in the ground plane and points in the direction of the wheel
-    # contact path E['2'] X N['3'] gives this unit vector.
+    # contact path E['2'] X A['3'] gives this unit vector.
     # G['2'] lies in the ground plane and points perpendicular to the wheel
-    # contact path. N['3'] X G['1'] gives this unit vector.
-    g1_hat = E['2'].cross(N['3'])
-    g2_hat = N['3'].cross(g1_hat)
-    fn.set_vel(N, fn.vel(N) + u12*g2_hat)
+    # contact path. A['3'] X G['1'] gives this unit vector.
+    g1_hat = E['2'].cross(A['3'])
+    g2_hat = A['3'].cross(g1_hat)
+    N_v_fn = fn.vel(N)
+    fn.set_vel(N, N_v_fn + u12*g2_hat)
 
     ####################
     # Motion Constraints
@@ -291,6 +288,8 @@ def setup_symbolics():
 
     print('Defining nonholonomic constraints.')
 
+    # TODO : Maybe these shouldn't include u11 and u12, not sure. Also dn is no
+    # longer equal to zero, but that would just show that u11 must be zero.
     nonholonomic = [fn.vel(N).dot(A['1']),
                     fn.vel(N).dot(A['2']),
                     fn.vel(N).dot(A['3'])]
@@ -307,12 +306,10 @@ def setup_symbolics():
     # back to the other reference frames so I define them here with respect to
     # the rear and front frames.
 
-    # NOTE : Changing 0.0 to 0 or sm.S(0) changes the floating point errors.
-
-    Ic = mec.inertia(C, ic11, ic22, ic33, 0.0, 0.0, ic31)
-    Id = mec.inertia(C, id11, id22, id11, 0.0, 0.0, 0.0)
-    Ie = mec.inertia(E, ie11, ie22, ie33, 0.0, 0.0, ie31)
-    If = mec.inertia(E, if11, if22, if11, 0.0, 0.0, 0.0)
+    Ic = mec.inertia(C, ic11, ic22, ic33, 0, 0, ic31)
+    Id = mec.inertia(C, id11, id22, id11, 0, 0, 0)
+    Ie = mec.inertia(E, ie11, ie22, ie33, 0, 0, ie31)
+    If = mec.inertia(E, if11, if22, if11, 0, 0, 0)
 
     ##############
     # Rigid Bodies
@@ -340,7 +337,7 @@ def setup_symbolics():
     Ffo = (fo, mf*g*A['3'])
 
     # lateral tire forces
-    Fdn = (dn, Fr*B['2'])
+    Fdn = (dn, Fr*A['2'])
     Ffn = (fn, Ff*g2_hat)
 
     # input torques
@@ -440,25 +437,36 @@ print(list(sm.ordered(mec.find_dynamicsymbols(forcing_vector))))
 print('The auxiliary equations are a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(kane.auxiliary_eqs))))
 
+# Create matrices for solving for the dependent speeds.
+A_nh, B_nh = decompose_linear_parts(symbolics['nonholonomic constraints'],
+                                    symbolics['dependent generalized speeds'])
+b_nh = -B_nh
+xs = list(sm.ordered(mec.find_dynamicsymbols(A_nh).union(mec.find_dynamicsymbols(b_nh))))
+ps = list(sm.ordered(A_nh.free_symbols.union(b_nh.free_symbols)))
+ps.remove(symbolics['time'])
+gen = OctaveMatrixGenerator([xs, ps], [A_nh, b_nh])
+gen.write('eval_dep_speeds', path=os.path.dirname(__file__))
+
 u_aux = sm.Matrix(symbolics['auxiliary speeds'])
 lat_forces = sm.Matrix(symbolics['specified quantities'][-2:])
 zero_lat_forces = {f: 0 for f in lat_forces}
 
 """
-Should be linear in the forces?
+Should be linear in the forces? Or even always F1 + F2 + ... = 0, i.e.
+coefficient is 1?
 
 A(q, t)*[Fr] - b(u', u, q, t) = 0
         [Ff]
 
 """
 
-A = kane.auxiliary_eqs.jacobian(lat_forces)
-b = -kane.auxiliary_eqs.xreplace(zero_lat_forces)
+A, B = decompose_linear_parts(kane.auxiliary_eqs, lat_forces)
+b = -B
 
+print('A is a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(A))))
+print('b is a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(b))))
-
-from pydy.codegen.octave_code import OctaveMatrixGenerator
 
 us = symbolics['generalized speeds']
 u_dots = [mec.dynamicsymbols(ui.name + 'p') for ui in us]
@@ -471,4 +479,4 @@ ps = list(sm.ordered(A.free_symbols.union(b.free_symbols)))
 ps.remove(symbolics['time'])
 
 gen = OctaveMatrixGenerator([xs, ps], [A, b])
-gen.write('eval_lat_forces')
+gen.write('eval_lat_forces', path=os.path.dirname(__file__))

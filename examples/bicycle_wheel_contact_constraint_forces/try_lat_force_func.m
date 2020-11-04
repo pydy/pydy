@@ -27,22 +27,44 @@ const = [
  0.3, % rr
 ];
 
+rear_wheel_radius = 0.3;
+front_wheel_radius = 0.35;
+% steady turn taken from Table 2 in Basu-Mandal 2007 row 2
+roll_angle = 1.9178291654;
+steer_angle = 0.4049333918;
+rear_wheel_spin_rate = 10.3899258905;
+rear_wheel_traversal_radius = 2.2588798195;
+
+[q4, q5, q7, u11, u12, u4, u6, u7]
+
+[A, b] = eval_dep_speeds(
+res = A\b;
+u3 = res(1);
+u5 = res(2);
+u8 = res(3);
+
+rear_wheel_traversal_speed = rear_wheel_radius*rear_wheel_spin_rate;
+yaw_rate = rear_wheel_traversal_speed/rear_wheel_traversal_radius;
+% this is an estimate (not exact because front wheel doesn't have same
+% traversal radius)
+front_wheel_traversal_speed = rear_wheel_traversal_speed;
+front_wheel_spin_rate = front_wheel_traversal_speed/front_wheel_radius;
+
 var = [
-0.0, % q3
-0.314, %q4
+roll_angle, %q4
 0.0, %q5
-0.314, %q7
-0.314, %u3
+steer_angle, %q7
+yaw_rate, %u3
 0.0, %u3p
 0.0, %u4
 0.0, %u4p
 0.0, %u5
 0.0, %u5p
-0.0, %u6
+rear_wheel_spin_rate, %u6
 0.0, %u6p
-0.314, %u7
+0.0, %u7
 0.0, %u7p
-0.0, %u8
+front_wheel_spin_rate, %u8
 0.0 %u8p
 ];
 
@@ -51,5 +73,4 @@ var = [
 x = A\b;
 
 Fr = x(1)
-
 Ff = x(2)
