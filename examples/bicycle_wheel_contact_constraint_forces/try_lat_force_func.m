@@ -39,7 +39,7 @@ p.rr = 0.3;
 roll_angle = 5.0*pi/180;
 steer_angle = 5.0*pi/180;
 v = 10.0;  % forward speed of rear wheel center
-rear_wheel_spin_rate = -v/p.rf;
+rear_wheel_spin_rate = -v/p.rr;
 
 q = [roll_angle, steer_angle];
 u = [0.0, rear_wheel_spin_rate, 0.0];
