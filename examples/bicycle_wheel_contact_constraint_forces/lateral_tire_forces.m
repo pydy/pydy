@@ -1,8 +1,8 @@
-[Fr, Ff] = lateral_tire_forces(q, u, up, p)
+function [Ff, Fr] = lateral_tire_forces(q, u, up, p)
 % LATERAL_TIRE_FORCES - Returns the lateral tire constraint forces of the
 % Carvallo-Whipple model.
 %
-% Syntax: [Fr, Ff] = lateral_tire_forces(q, u, up, p)
+% Syntax: [Ff, Fr] = lateral_tire_forces(q, u, up, p)
 %
 % Inputs:
 %   q - Coordinates at time t, size 3x1 [q4 (roll angle); q7 (steer angle)]
@@ -15,8 +15,8 @@
 %       id22, ie11, ie22, ie31, ie33, if11, if22, l1, l2, l3, l4, mc, md,
 %       me, mf, rf, rr]
 % Outputs:
-%   Fr - Lateral constraint force at the rear wheel contact.
 %   Ff - Lateral constraint force at the front wheel contact.
+%   Fr - Lateral constraint force at the rear wheel contact.
 
 % unpack the function inputs
 q4 = q(1);
@@ -36,35 +36,37 @@ const = [p.d1, p.d2, p.d3, p.g, p.ic11, p.ic22, p.ic31, p.ic33, p.id11, ...
     p.l3, p.l4, p.mc, p.md, p.me, p.mf, p.rf, p.rr];
 
 % solve for the dependent pitch angle
-f = @(q5) holonomic_constraint([q4, q5, q7], ...
-                               [p.d1, p.d2, p.d3, p.rf, p.rr]);
-lam = TODO; % steer axis tilt
-q5 = fsolve(f, lam)
+f = @(q5) eval_holonomic([q4, q5, q7], [p.d1, p.d2, p.d3, p.rf, p.rr]);
+% TODO : Add the correct lam calculate here.
+lam = pi/10.0; % steer axis tilt
+q5 = fsolve(f, lam);
 
 % calculate the dependent generalized speeds
 [A_nh, b_nh] = eval_dep_speeds([q4, q5, q7], ...
-                               [u4, u5, u7], ...
+                               [u4, u6, u7], ...
                                [p.d1, p.d2, p.d3, p.rf, p.rr]);
 res_nh = A_nh\b_nh;
-
 u3 = res_nh(1);
 u5 = res_nh(2);
 u8 = res_nh(3);
 
 % calculate the time derivatives of the dependent generalized speeds
-[Ap_nh, bp_nh] = eval_dep_speed_derivs([q4, q5, q7], ...
-                                       [u3, u4, u5, u6, u7, u8], ...
-                                       [u4p, u6p, u7p], ...
-                                       const);
+[Ap_nh, bp_nh] = eval_dep_speeds_derivs([q4, q5, q7], ...
+                                        [u3, u4, u5, u6, u7, u8], ...
+                                        [u4p, u6p, u7p], ...
+                                        const);
 res = Ap_nh\bp_nh;
 u3p = res(1);
 u5p = res(2);
 u8p = res(3);
 
+% finally calculate the constraint forces
 [A, b] = eval_lat_forces([q4, q5, q7], ...
                          [u3, u4, u5, u6, u7, u8], ...
                          [u3p, u4p, u5p u6p, u7p, u8p], ...
                          const);
 x = A\b;
-Fr = x(1);
-Ff = x(2);
+Ff = x(1);
+Fr = x(2);
+
+end
