@@ -1,10 +1,12 @@
 These scripts generate functions to compute the lateral tire-ground constraint
 forces in the Carvallo-Whipple bicycle model. This assumes no-slip point
-contact. The coordinate and parameter definitions follow those in [Moore2012]_.
+contact. The coordinate and parameter definitions follow those in Chapter 1 of
+[Moore2012]_.
 
-.. [Moore2012] Moore, Jason K. "Human Control of a Bicycle." Doctor of
-   Philosophy, University of California, 2012.
-   http://moorepants.github.io/dissertation.
+.. [Moore2012] Moore, Jason K. (2012). Chapter 1: Bicycle Equations of Motion.
+   In "Human Control of a Bicycle", Doctor of Philosophy Dissertation,
+   University of California, 2012. Retrieved from
+   https://moorepants.github.io/dissertation/eom.html.
 
 Dependencies
 ============
