@@ -2,8 +2,9 @@
 
 """This file derives the non-linear equations of motion of the Carvallo-Whipple
 bicycle model ([Carvallo1899]_, [Whippl1899]_) following the description and
-nomenclature in [Moore2012]_ and produces at Octave/Matlab function that
-calculates the lateral wheel-ground constraint force for each wheel.
+nomenclature in [Moore2012]_ and produces Octave functions that calculates the
+lateral wheel-ground constraint force for each wheel given the essential
+kinematics of the vehicle.
 
 References
 ==========
@@ -20,15 +21,10 @@ References
 """
 
 import os
-import sys
 
-# NOTE : temporary hack so that python pydy/examples/bicycle/whipple.py uses
-# the local installed pydy.
-sys.path.append(os.path.dirname(__file__))
-
-from pydy.codegen.octave_code import OctaveMatrixGenerator
 import sympy as sm
 import sympy.physics.mechanics as mec
+from pydy.codegen.octave_code import OctaveMatrixGenerator
 
 # NOTE : The default cache size is sometimes too low for these large expression
 # operations. This potentially helps.
@@ -36,7 +32,7 @@ os.environ['SYMPY_CACHE_SIZE'] = '6000'
 
 
 class ReferenceFrame(mec.ReferenceFrame):
-    """Subclass that enforces the desired unit vector indice style."""
+    """Subclass that enforces the desired unit vector index style."""
 
     def __init__(self, *args, **kwargs):
 
@@ -275,9 +271,6 @@ print('Defining holonomic constraints.')
 # this constraint is enforced so that the front wheel contacts the ground
 holonomic = fn.pos_from(dn).dot(A['3'])
 
-print('The holonomic constraint is a function of these dynamic variables:')
-print(list(sm.ordered(mec.find_dynamicsymbols(holonomic))))
-
 ####################################
 # Kinematical Differential Equations
 ####################################
@@ -311,15 +304,15 @@ F.set_ang_vel(E, u8*E['2'])  # front wheel rate
 
 print('Defining linear velocities.')
 
-# rear wheel contact stays in ground plane and does not slip but the
-# auxiliary speed, u11, is included which  corresponds to the later force
+# rear wheel contact stays in ground plane and does not slip but the auxiliary
+# speed, u11, is included which corresponds to the later force
 dn.set_vel(N, 0)
 dn_ = mec.Point('dn')
 dn_.set_pos(dn, 0)
 dn_.set_vel(N, dn.vel(N) + u11*A['2'])
 
 # mass centers
-do.v2pt_theory(dn_, N, D)
+do.v2pt_theory(dn_, N, D)  # ensures u11 in present in velocities
 co.v2pt_theory(do, N, C)
 ce.v2pt_theory(do, N, C)
 fo.v2pt_theory(ce, N, E)
@@ -338,7 +331,7 @@ g1_hat = E['2'].cross(A['3'])
 g2_hat = A['3'].cross(g1_hat)
 fn_ = mec.Point('fn')
 fn_.set_pos(fn, 0)
-fn_.set_vel(N, fn.vel(N) + u12*g2_hat)
+fn_.set_vel(N, fn.vel(N) + u12*g2_hat)  # includes u11 and u12
 
 ####################
 # Motion Constraints
@@ -346,8 +339,6 @@ fn_.set_vel(N, fn.vel(N) + u12*g2_hat)
 
 print('Defining nonholonomic constraints.')
 
-# TODO : Maybe these shouldn't include u11 and u12, not sure. Also dn is no
-# longer equal to zero, but that would just show that u11 must be zero.
 nonholonomic = [fn_.vel(N).dot(A['1']),
                 fn_.vel(N).dot(A['2']),
                 fn_.vel(N).dot(A['3'])]
@@ -357,12 +348,6 @@ nonholonomic = [fn_.vel(N).dot(A['1']),
 #########
 
 print('Defining inertia.')
-
-# NOTE : You cannot define the wheel inertias with respect to their
-# respective frames because the generalized inertia force calcs will fail
-# because there is no direction cosine matrix relating the wheel frames
-# back to the other reference frames so I define them here with respect to
-# the rear and front frames.
 
 Ic = mec.inertia(C, ic11, ic22, ic33, 0, 0, ic31)
 Id = mec.inertia(C, id11, id22, id11, 0, 0, 0)
@@ -394,7 +379,7 @@ Fdo = (do, md*g*A['3'])
 Feo = (eo, me*g*A['3'])
 Ffo = (fo, mf*g*A['3'])
 
-# lateral tire forces
+# lateral tire forces, need equal and opposite forces
 Fdn = (dn, Fr*A['2'])
 Fdn_ = (dn_, -Fr*A['2'])
 Ffn = (fn, Ff*g2_hat)
@@ -415,29 +400,27 @@ u1p_def = u1_def.diff(t).xreplace(kindiffdict)
 u2_def = -rr*(u5 + u6)*sm.sin(q3)
 u2p_def = u2_def.diff(t).xreplace(kindiffdict)
 
-###############################
-# Prep symbolic data for output
-###############################
+####################
+# Prep symbolic data
+####################
 
 newto = N
 q_ind = (q3, q4, q7)  # yaw, roll, steer
 q_dep = (q5,)  # pitch
 # rear contact 1 dist, rear contact 2 dist, rear wheel angle, front wheel angle
 q_ign = (q1, q2, q6, q8)
+qs = tuple(sm.ordered(q_ign + q_ind + q_dep))
+
 u_ind = (u4, u6, u7)  # roll rate, rear wheel rate, steer rate
 u_dep = (u3, u5, u8)  # yaw rate, pitch rate, front wheel rate
 u_aux = (u11, u12)
+us = tuple(sm.ordered((u1, u2) + u_ind + u_dep + u_aux))
+
 const = (d1, d2, d3, g, ic11, ic22, ic31, ic33, id11, id22, ie11, ie22, ie31,
          ie33, if11, if22, l1, l2, l3, l4, mc, md, me, mf, rf, rr)
 speci = (T4, T6, T7, Fr, Ff)
 holon = [holonomic]
 nonho = tuple(nonholonomic)
-us = tuple(sm.ordered((u1, u2) + u_ind + u_dep + u_aux))
-qs = tuple(sm.ordered(q_ign + q_ind + q_dep))
-# TODO : Reduced these to work with formulate_equations_motion().
-spdef = {ui: qi.diff(t) for ui, qi in zip((u3, u4, u5, u7),
-                                          (q3, q4, q5, q7))}
-exdef = {u1: u1_def, u2: u2_def, u1.diff(t): u1p_def, u2.diff(t): u2p_def}
 
 ###############
 # Kane's Method
@@ -446,7 +429,7 @@ exdef = {u1: u1_def, u2: u2_def, u1.diff(t): u1p_def, u2.diff(t): u2p_def}
 print("Generating Kane's equations.")
 
 kane = mec.KanesMethod(
-    N,
+    newto,
     q_ind,
     u_ind,
     kd_eqs=kinematical,
@@ -488,7 +471,8 @@ u_dot_subs = {ui.diff(): upi for ui, upi in zip(us, u_dots)}
 
 nonholonomic_dot = nonholonomic_dot.xreplace(u_dot_subs)
 
-print('The derivatice of the nonholonomic constraints a function of these dynamic variables:')
+print('The derivative of the nonholonomic constraints a function of these '
+      'dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(nonholonomic_dot))))
 
 A_pnh, B_pnh = decompose_linear_parts(nonholonomic_dot,
@@ -501,6 +485,7 @@ gen = OctaveMatrixGenerator([[q4, q5, q7],
                             [A_pnh, b_pnh])
 gen.write('eval_dep_speeds_derivs', path=os.path.dirname(__file__))
 
+# Create function for solving for the lateral forces.
 """
 Should be linear in the forces? Or even always F1 + F2 + ... = 0, i.e.
 coefficient is 1?
@@ -510,7 +495,8 @@ A(q, t)*[Ff] - b(u', u, q, t) = 0
 
 """
 
-aux_eqs = kane.auxiliary_eqs.xreplace({u11: 0, u12: 0}).xreplace(u_dot_subs).xreplace(kane.kindiffdict())
+aux_eqs = kane.auxiliary_eqs.xreplace({u11: 0, u12: 0}).xreplace(
+    u_dot_subs).xreplace(kane.kindiffdict())
 print('The auxiliary equations are a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(aux_eqs))))
 
