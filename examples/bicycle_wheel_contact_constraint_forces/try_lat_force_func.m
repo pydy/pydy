@@ -1,3 +1,5 @@
+% These are the benchmark bicycle values converted to the parameter set in
+% [Moore2012].
 p.d1 = 0.9534570696121849;
 p.d2 = 0.2676445084476887;
 p.d3 = 0.03207142672761929;
@@ -30,6 +32,12 @@ roll_angle = 1.9178291654;
 steer_angle = 0.4049333918;
 rear_wheel_spin_rate = 10.3899258905;
 rear_wheel_traversal_radius = 2.2588798195;
+
+% try some steady turn values
+roll_angle = 5.0*pi/180;
+steer_angle = 5.0*pi/180;
+v = 10.0;
+rear_wheel_spin_rate = -v/p.rf;
 
 q = [roll_angle, steer_angle];
 u = [0.0, rear_wheel_spin_rate, 0.0];
