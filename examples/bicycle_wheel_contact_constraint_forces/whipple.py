@@ -30,11 +30,71 @@ from pydy.codegen.octave_code import OctaveMatrixGenerator
 import sympy as sm
 import sympy.physics.mechanics as mec
 
-from utils import ReferenceFrame, decompose_linear_parts
-
 # NOTE : The default cache size is sometimes too low for these large expression
 # operations. This potentially helps.
 os.environ['SYMPY_CACHE_SIZE'] = '6000'
+
+
+class ReferenceFrame(mec.ReferenceFrame):
+    """Subclass that enforces the desired unit vector indice style."""
+
+    def __init__(self, *args, **kwargs):
+
+        kwargs.pop('indices', None)
+        kwargs.pop('latexs', None)
+
+        lab = args[0].lower()
+        tex = r'\hat{{{}}}_{}'
+
+        super(ReferenceFrame, self).__init__(*args, indices=('1', '2', '3'),
+                                             latexs=(tex.format(lab, '1'),
+                                                     tex.format(lab, '2'),
+                                                     tex.format(lab, '3')),
+                                             **kwargs)
+
+
+def decompose_linear_parts(F, *x):
+    """Returns the linear coefficient matrices associated with the provided
+    vectors and the remainder vector. F must be able to be put into the
+    following form:
+
+    F = A1*x1 + A2*x2 + ... + An*xm + B = 0
+
+    - F : n x 1 vector of expressions
+    - Ai : n x pi matrix of expressions
+    - xi : pi x 1 vector of variables
+    - pi : length of vector xi
+    - m : number of xi vectors
+    - B : n x 1 vector of expressions
+
+    Parameters
+    ==========
+    F : Matrix, shape(n, 1)
+        Column matrix of expressions that linearly depend on entires of
+        x1,...,xm.
+    x : Sequence[Expr]
+        Column matrices representing x1,...,xm.
+
+    Returns
+    =======
+    Ai, ..., An : Matrix
+    B : Matrix, shape(n, 1)
+
+    Notes
+    =====
+    If xi = xj', then make sure xj'is passed in first to guarantee proper
+    replacement.
+
+    """
+    F = sm.Matrix(F)
+    matrices = []
+    for xi in x:
+        Ai = F.jacobian(xi)
+        matrices.append(Ai)
+        repl = {xij: 0 for xij in xi}
+        F = F.xreplace(repl)  # remove Ai*xi from F
+    matrices.append(F)
+    return tuple(matrices)
 
 
 ##################
