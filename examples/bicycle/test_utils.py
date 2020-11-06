@@ -56,6 +56,14 @@ def test_decompose_linear_parts():
 
     assert sm.simplify(exprs_for_uD_1 - exprs_for_uD_2) == sm.zeros(3, 1)
 
+    expr1 = uI[0] + uI[1] + a + b + c
+    expr2 = uI[0] + e + f + g
+
+    A, B = decompose_linear_parts([expr1, expr2], uI[0:2])
+    res = A.LUsolve(-B)
+    assert res[0] == -e - f - g
+    assert res[1] == -a - b - c + e + f + g
+
 
 def test_formulate_equations_of_motion():
     pass
