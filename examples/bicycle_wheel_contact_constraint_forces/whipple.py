@@ -2,7 +2,7 @@
 
 """This file derives the non-linear equations of motion of the Carvallo-Whipple
 bicycle model ([Carvallo1899]_, [Whippl1899]_) following the description and
-nomenclature in [Moore2012]_ and produces Octave functions that calculates the
+nomenclature in [Moore2012]_ and produces Octave functions that calculate the
 lateral wheel-ground constraint force for each wheel given the essential
 kinematics of the vehicle.
 
@@ -458,11 +458,10 @@ print('The nonholonomic constraints a function of these dynamic variables:')
 print(list(sm.ordered(mec.find_dynamicsymbols(nonholonomic))))
 
 A_nh, B_nh = decompose_linear_parts(nonholonomic, [u3, u5, u8])
-b_nh = -B_nh
 gen = OctaveMatrixGenerator([[q4, q5, q7],
                              [u4, u6, u7],
                              [d1, d2, d3, rf, rr]],
-                            [A_nh, b_nh])
+                            [A_nh, -B_nh])
 gen.write('eval_dep_speeds', path=os.path.dirname(__file__))
 
 # Create function for solving for the derivatives of the dependent speeds.
@@ -481,12 +480,11 @@ print(list(sm.ordered(mec.find_dynamicsymbols(nonholonomic_dot))))
 
 A_pnh, B_pnh = decompose_linear_parts(nonholonomic_dot,
                                       [u3p, u5p, u8p])
-b_pnh = -B_pnh
 gen = OctaveMatrixGenerator([[q4, q5, q7],
                              [u3, u4, u5, u6, u7, u8],
                              [u4p, u6p, u7p],
                              [d1, d2, d3, rf, rr]],
-                            [A_pnh, b_pnh])
+                            [A_pnh, -B_pnh])
 gen.write('eval_dep_speeds_derivs', path=os.path.dirname(__file__))
 
 # Create function for solving for the lateral forces.
