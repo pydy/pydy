@@ -442,6 +442,10 @@ kane = mec.KanesMethod(
 
 kane.kanes_equations(bodies, loads=forces)
 
+###########################
+# Generate Octave Functions
+###########################
+
 gen = OctaveMatrixGenerator([[q4, q5, q7],
                              [d1, d2, d3, rf, rr]],
                             [sm.Matrix([holonomic])])
