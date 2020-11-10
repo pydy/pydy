@@ -442,6 +442,68 @@ kane = mec.KanesMethod(
 
 kane.kanes_equations(bodies, loads=forces)
 
+###############
+# IMU Equations
+###############
+
+u4p, u6p, u7p = mec.dynamicsymbols('u4p, u6p, u7p')
+u3p, u5p, u8p = mec.dynamicsymbols('u3p, u5p, u8p')
+u_dots = [mec.dynamicsymbols(ui.name + 'p') for ui in us]
+u_dot_subs = {ui.diff(): upi for ui, upi in zip(us, u_dots)}
+
+diff_subs = {#u3.diff(): 0,  # assume yaw acceleration is small
+             u4.diff(): u4p,
+             u5.diff(): 0,  # assume no pitch motion
+             u6.diff(): 0,  # assume no constant rear wheel velocity
+             u7.diff(): u7p,
+             u11.diff(): 0,  # fictitious
+             u12.diff(): 0}  # fictitious
+non_diff_subs = {u5: 0,  # assume no pitch motion
+                 u11: 0,  # fictitious
+                 u12: 0}  # fictitious
+
+bx, bz, ex, ez = sm.symbols('bx, bz, ex, ez')
+# point in the rolled frame measured from rear wheel center
+P = do.locatenew('P', bx*B['1'] + bz*B['3'])
+P.v2pt_theory(do, N, B)
+
+# point in the steered frame measured from front wheel center
+Q = fo.locatenew('Q', ex*E['1'] + ez*E['3'])
+Q.v2pt_theory(fo, N, E)
+
+# acceleromter attached to rear frame on steer axis
+# Use B instead of C to assume no pitch
+
+# TODO : Add gravity to these linear acc calcs to match the accelerometer
+# readings. Not sure if it should be plus or minus. I think it is supposed to
+# be positive up for that contribution, so in our case negative.
+
+# This assumes that the smartphones XYZ axes are aligned with the B and E axes.
+
+eqs = sm.Matrix([
+    # body fixed angular velocity components of the roll frame (ignores pitch
+    # by selecting the B frame instead of the C frame)
+    B.ang_vel_in(N).dot(B['1']),
+    B.ang_vel_in(N).dot(B['2']),
+    B.ang_vel_in(N).dot(B['3']),
+    # body fixed linear acceleration of point P
+    (P.acc(N) - g*A['3']).dot(B['1']),
+    (P.acc(N) - g*A['3']).dot(B['2']),
+    (P.acc(N) - g*A['3']).dot(B['3']),
+    # body fixed angular velocity components of the steer frame (includes
+    # pitch)
+    E.ang_vel_in(N).dot(E['1']),
+    E.ang_vel_in(N).dot(E['2']),
+    E.ang_vel_in(N).dot(E['3']),
+    # body fixed linear acceleration components of a point on the steer frame
+    (Q.acc(N) - g*A['3']).dot(E['1']),
+    (Q.acc(N) - g*A['3']).dot(E['2']),
+    (Q.acc(N) - g*A['3']).dot(E['3']),
+])
+
+eqs = eqs.xreplace(kindiffdict).xreplace(diff_subs).xreplace(non_diff_subs)
+var = list(mec.find_dynamicsymbols(eqs))
+
 ###########################
 # Generate Octave Functions
 ###########################
@@ -466,11 +528,6 @@ gen.write('eval_dep_speeds', path=os.path.dirname(__file__))
 
 # Create function for solving for the derivatives of the dependent speeds.
 nonholonomic_dot = sm.Matrix(nonholonomic).diff(t).xreplace(kane.kindiffdict())
-
-u4p, u6p, u7p = mec.dynamicsymbols('u4p, u6p, u7p')
-u3p, u5p, u8p = mec.dynamicsymbols('u3p, u5p, u8p')
-u_dots = [mec.dynamicsymbols(ui.name + 'p') for ui in us]
-u_dot_subs = {ui.diff(): upi for ui, upi in zip(us, u_dots)}
 
 nonholonomic_dot = nonholonomic_dot.xreplace(u_dot_subs)
 
