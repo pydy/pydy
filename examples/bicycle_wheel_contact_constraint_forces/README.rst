@@ -29,18 +29,21 @@ First run the Python file::
 
    $ python whipple.py
 
-This generates 4 Octave files:
+This generates 5 Octave files:
 
-- ``eval_holonomic.m``
 - ``eval_dep_speeds.m``
 - ``eval_dep_speeds_derivs.m``
+- ``eval_holonomic.m``
+- ``eval_imu.m``
 - ``eval_lat_forces.m``
 
-These 4 files are also checked into the Git repository and you can skip
+These 5 files are also checked into the Git repository and you can skip
 regenerating them with Python.
 
 Once those files are available, the ``lateral_tire_forces.m`` provides a
-function to compute the forces given the kinematics of the system. To execute
-that function with some sample numerical values run::
+function to compute the forces given the kinematics of the system and the
+``imu_ouputs.m`` provides a function to calculate the IMU angular velocity and
+acceleration measurements given the generalized variables. To execute that
+function with some sample numerical values run::
 
    $ octave try_lateral_forces.m
