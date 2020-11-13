@@ -1,7 +1,7 @@
 function [C_angvel, E_angvel, P_acc, Q_acc] = imu_outputs(q, u, up, p)
 % IMU_OUTPUTS - Returns the IMU angular velocity and acceleration measures
 % given the generalized variables of the Carvallo-Whipple model. The IMU on
-% the rear frame is assumed to have its x axis paralled to the ground and
+% the rear frame is assumed to have its x axis parallel to the ground and
 % pointing forward, y axis parallel to the ground and pointing rightward,
 % and the z axis normal to the ground pointing downward when in the no roll,
 % no steer configuration. The IMU on the front frame is assumed to have it's
@@ -17,7 +17,7 @@ function [C_angvel, E_angvel, P_acc, Q_acc] = imu_outputs(q, u, up, p)
 %       rate), u6 (rear wheel rate), u7 (steer rate)]
 %   up - Derivatives of the generalized speeds at time t, size 4x1 [u3p (yaw
 %        ang acceleration), u4p (roll ang acceleration), u6p (rear ang
-%        acceleration), u7p (steer ang accerlation)]
+%        acceleration), u7p (steer ang acceleration)]
 %   p - Constant parameter structure which includes: [bx, bz, d1, d2, d3,
 %       ex, ez, g, rf, rr]. (bx, bz) and (ex, ez) are the distances along
 %       the IMU axes from the rear wheel or front wheel to the respective
