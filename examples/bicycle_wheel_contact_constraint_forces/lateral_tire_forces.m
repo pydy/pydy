@@ -36,11 +36,7 @@ const = [p.d1, p.d2, p.d3, p.g, p.ic11, p.ic22, p.ic31, p.ic33, p.id11, ...
     p.l3, p.l4, p.mc, p.md, p.me, p.mf, p.rf, p.rr];
 
 % solve for the dependent pitch angle, q5
-f = @(q5) eval_holonomic([q4, q5, q7], [p.d1, p.d2, p.d3, p.rf, p.rr]);
-g = @(lam) sin(lam) - (p.rf - p.rr + p.d2*cos(lam))/(p.d1 + p.d3);
-guess = atan(p.d2 / (p.d1 + p.d3));  % guess based on equal wheel radii
-lam = fsolve(g, guess); % steer axis tilt
-q5 = fsolve(f, lam);
+q5 = solve_for_pitch(q4, q7, p.d1, p.d2, p.d3, p.rf, p.rr);
 
 % calculate the dependent generalized speeds
 [A_nh, b_nh] = eval_dep_speeds([q4, q5, q7], ...
