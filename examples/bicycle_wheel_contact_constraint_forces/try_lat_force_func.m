@@ -29,6 +29,12 @@ p.mf = 3.0;
 p.rf = 0.35;
 p.rr = 0.3;
 
+% place IMUs at the mass centers of front and rear frames
+p.bx = p.l1;
+p.bz = p.l2;
+p.ex = p.l3;
+p.ez = p.l4;
+
 % steady turn taken from Table 2 in Basu-Mandal 2007 row 2
 %roll_angle = 1.9178291654;
 %steer_angle = 0.4049333918;
@@ -46,3 +52,11 @@ u = [0.0, rear_wheel_spin_rate, 0.0];
 up = [0.0, 0.0, 0.0];
 
 [Ff, Fr] = lateral_tire_forces(q, u, up, p)
+
+% a constant roll rate should give a centriptial acceleration in the z
+% direction of the rear frame IMU (plus the gravitational component).
+q = [0.0, 0.0];
+u = [0.0, 1.0, 0.0, 0.0];
+up = [0.0, 0.0, 0.0, 0.0];
+%p.g = 0.0;  % don't include the nominal gravity measure
+[C_angvel, E_angvel, P_acc, Q_acc] = imu_outputs(q, u, up, p)

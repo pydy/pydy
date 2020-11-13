@@ -451,47 +451,46 @@ u3p, u5p, u8p = mec.dynamicsymbols('u3p, u5p, u8p')
 u_dots = [mec.dynamicsymbols(ui.name + 'p') for ui in us]
 u_dot_subs = {ui.diff(): upi for ui, upi in zip(us, u_dots)}
 
-diff_subs = {#u3.diff(): 0,  # assume yaw acceleration is small
+diff_subs = {u3.diff(): u3p,
              u4.diff(): u4p,
-             u5.diff(): 0,  # assume no pitch motion
-             u6.diff(): 0,  # assume no constant rear wheel velocity
+             u5.diff(): u5p,
+             u6.diff(): u6p,
              u7.diff(): u7p,
              u11.diff(): 0,  # fictitious
              u12.diff(): 0}  # fictitious
-non_diff_subs = {u5: 0,  # assume no pitch motion
-                 u11: 0,  # fictitious
+non_diff_subs = {u11: 0,  # fictitious
                  u12: 0}  # fictitious
 
 bx, bz, ex, ez = sm.symbols('bx, bz, ex, ez')
-# point in the rolled frame measured from rear wheel center
-P = do.locatenew('P', bx*B['1'] + bz*B['3'])
-P.v2pt_theory(do, N, B)
+
+lam = sm.symbols('lambda')
+C_lam = C.orientnew('C_lam', 'Axis', (lam, -B['2']))
+
+# point in the rear frame measured from rear wheel center
+P = do.locatenew('P', bx*C_lam['1'] + bz*C_lam['3'])
+P.v2pt_theory(do, N, C_lam)
+P.a2pt_theory(do, N, C_lam)
 
 # point in the steered frame measured from front wheel center
 Q = fo.locatenew('Q', ex*E['1'] + ez*E['3'])
 Q.v2pt_theory(fo, N, E)
+Q.a2pt_theory(fo, N, E)
 
-# acceleromter attached to rear frame on steer axis
-# Use B instead of C to assume no pitch
-
-# TODO : Add gravity to these linear acc calcs to match the accelerometer
-# readings. Not sure if it should be plus or minus. I think it is supposed to
-# be positive up for that contribution, so in our case negative.
-
-# This assumes that the smartphones XYZ axes are aligned with the B and E axes.
+# NOTE : This assumes that the smartphones XYZ axes are aligned with the B and
+# E axes when in the no roll, pitch, steer configuration.
 
 eqs = sm.Matrix([
-    # body fixed angular velocity components of the roll frame (ignores pitch
-    # by selecting the B frame instead of the C frame)
-    B.ang_vel_in(N).dot(B['1']),
-    B.ang_vel_in(N).dot(B['2']),
-    B.ang_vel_in(N).dot(B['3']),
-    # body fixed linear acceleration of point P
-    (P.acc(N) - g*A['3']).dot(B['1']),
-    (P.acc(N) - g*A['3']).dot(B['2']),
-    (P.acc(N) - g*A['3']).dot(B['3']),
-    # body fixed angular velocity components of the steer frame (includes
-    # pitch)
+    # angular velocity components of the rear frame expressed in the roll frame
+    # because IMU is aligned with the roll frame coordinates
+    C.ang_vel_in(N).dot(C_lam['1']),
+    C.ang_vel_in(N).dot(C_lam['2']),
+    C.ang_vel_in(N).dot(C_lam['3']),
+    # body fixed linear acceleration of point P (including gravity) expressed
+    # in the roll frame because IMU is aligned with the roll frame coordinates
+    (P.acc(N) - g*A['3']).dot(C_lam['1']),
+    (P.acc(N) - g*A['3']).dot(C_lam['2']),
+    (P.acc(N) - g*A['3']).dot(C_lam['3']),
+    # body fixed angular velocity components of the steer frame
     E.ang_vel_in(N).dot(E['1']),
     E.ang_vel_in(N).dot(E['2']),
     E.ang_vel_in(N).dot(E['3']),
@@ -502,7 +501,14 @@ eqs = sm.Matrix([
 ])
 
 eqs = eqs.xreplace(kindiffdict).xreplace(diff_subs).xreplace(non_diff_subs)
-var = list(mec.find_dynamicsymbols(eqs))
+
+gen = OctaveMatrixGenerator([[q4, q5, q7],
+                             [u3, u4, u5, u6, u7],
+                             [u3p, u4p, u5p, u6p, u7p],
+                             [bx, bz, d1, d2, d3, ex, ez, g, lam, rr]],
+                            [eqs])
+gen.write('eval_imu', path=os.path.dirname(__file__))
+
 
 ###########################
 # Generate Octave Functions
