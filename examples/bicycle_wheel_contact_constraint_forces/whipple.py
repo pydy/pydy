@@ -461,18 +461,18 @@ diff_subs = {u3.diff(): u3p,
 non_diff_subs = {u11: 0,  # fictitious
                  u12: 0}  # fictitious
 
-bx, bz, ex, ez = sm.symbols('bx, bz, ex, ez')
+bx, by, bz, ex, ey, ez = sm.symbols('bx, by, bz, ex, ey, ez')
 
 lam = sm.symbols('lambda')
 C_lam = C.orientnew('C_lam', 'Axis', (lam, -B['2']))
 
 # point in the rear frame measured from rear wheel center
-P = do.locatenew('P', bx*C_lam['1'] + bz*C_lam['3'])
+P = do.locatenew('P', bx*C_lam['1'] + by*C_lam['2'] + bz*C_lam['3'])
 P.v2pt_theory(do, N, C_lam)
 P.a2pt_theory(do, N, C_lam)
 
 # point in the steered frame measured from front wheel center
-Q = fo.locatenew('Q', ex*E['1'] + ez*E['3'])
+Q = fo.locatenew('Q', ex*E['1'] + ey*E['2'] + ez*E['3'])
 Q.v2pt_theory(fo, N, E)
 Q.a2pt_theory(fo, N, E)
 
@@ -505,7 +505,7 @@ eqs = eqs.xreplace(kindiffdict).xreplace(diff_subs).xreplace(non_diff_subs)
 gen = OctaveMatrixGenerator([[q4, q5, q7],
                              [u3, u4, u5, u6, u7],
                              [u3p, u4p, u5p, u6p, u7p],
-                             [bx, bz, d1, d2, d3, ex, ez, g, lam, rr]],
+                             [bx, by, bz, d1, d2, d3, ex, ey, ez, g, lam, rr]],
                             [eqs])
 gen.write('eval_imu', path=os.path.dirname(__file__))
 

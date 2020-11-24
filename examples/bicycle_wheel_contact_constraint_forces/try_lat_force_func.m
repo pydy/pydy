@@ -31,8 +31,10 @@ p.rr = 0.3;
 
 % place IMUs at the mass centers of front and rear frames
 p.bx = p.l1;
+p.by = 0.0;
 p.bz = p.l2;
 p.ex = p.l3;
+p.ey = 0.0;
 p.ez = p.l4;
 
 % steady turn taken from Table 2 in Basu-Mandal 2007 row 2
