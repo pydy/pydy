@@ -533,6 +533,6 @@ Linearization
 
 
 References
-==========
+----------
 
 .. [Bualat2015] Bualat, M., Barlow, J., Fong, T., Provencher, C. and Smith, T., 2015. Astrobee: Developing a free-flying robot for the international space station. In AIAA SPACE 2015 Conference and Exposition (p. 4643).
