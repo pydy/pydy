@@ -334,8 +334,8 @@ The system of equations is linear in :math:`\dot{q}_1, \dot{q}_2,...`
 .. jupyter-execute::
 
     sollist_values_simple = []
-    for i in range(8):
-       sollist_values_simple.append(sm.factor(TR2(sollist_values[i]).simplify()))
+    for i in range(len(sollist_values)):
+        sollist_values_simple.append(sm.factor(TR2(sollist_values[i]).simplify()))
 
 .. jupyter-execute::
 
@@ -869,7 +869,7 @@ active forces
 
 
 References
-==========
+----------
 
 .. [Ge1982] Ge, Z., and Cheng, Y. (June 1, 1982). "Extended Kane’s Equations for Nonholonomic Variable Mass System." ASME. J. Appl. Mech. June 1982; 49(2): 429–431. https://doi.org/10.1115/1.3162105
 .. [Kane1978] Kane, T.R., 1978. Nonholonomic multibody systems containing gyrostats. In Dynamics of Multibody Systems (pp. 97-107). Springer, Berlin, Heidelberg.
