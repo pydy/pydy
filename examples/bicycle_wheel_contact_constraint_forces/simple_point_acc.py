@@ -19,7 +19,7 @@ A.orient(N, 'Axis', (q3, N.z))
 B.orient(A, 'Axis', (q4, A.x))
 
 A.set_ang_vel(N, u3*N.z)
-B.set_ang_vel(A, u4*N.x)
+B.set_ang_vel(A, u4*A.x)
 
 # origin
 O = me.Point('O')
