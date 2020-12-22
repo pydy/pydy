@@ -299,7 +299,7 @@ class Box(Shape):
 
     def __init__(self, width, height, depth, **kwargs):
         super(Box, self).__init__(**kwargs)
-        self.geometry_attrs.append(['width', 'height', 'depth'])
+        self.geometry_attrs += ['width', 'height', 'depth']
         self.width = width
         self.height = height
         self.depth = depth
