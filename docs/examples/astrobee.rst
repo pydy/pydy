@@ -5,8 +5,8 @@ Astrobee: A Holonomic Free-Flying Space Robot
 .. note::
 
    You can download this example as a Python script:
-   :jupyter-download:script:`Space_Robot` or Jupyter notebook:
-   :jupyter-download:notebook:`Space_Robot`.
+   :jupyter-download:script:`astrobee` or Jupyter notebook:
+   :jupyter-download:notebook:`astrobee`.
 
 Astrobee is a new generation of free-flying robots aboard the International
 Space Station (ISS). It is a cubic robot with sides measuring about 30 cm each.
