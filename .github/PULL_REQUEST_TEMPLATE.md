@@ -40,11 +40,14 @@ Bug Fix
 Example
 -------
 
-   - [ ] There are no merge conflicts.
-   - [ ] A figure (preferrably SVG) has been added for the example.
-   - [ ] The required versions of all dependencie have been noted. (For
-     notebooks, the [version information
-     extension](https://github.com/jrjohansson/version_information) is helpful
-     for this.)
-   - [ ] A `run.py` file that executes the example is included.
+   - [ ] There are no merge conflicts with the `master` branch.
+   - [ ] Examples rst file is placed in `docs/examples/`.
+   - [ ] An entry with a 200x200 pixel image has been added to
+     `docs/index.rst`.
+   - [ ] RsT and image filenames are kebab-case (lower case hyphen-separated).
+   - [ ] jupyter_sphinx RsT directives are used to ensure example is executed
+     on build.
+   - [ ] jupyter_sphinx `ipynb` and `py` download links are included.
+   - [ ] The example has adequate text and figures (preferably SVG) explaining
+     the problem.
    - [ ] All reviewer comments have been addressed.
