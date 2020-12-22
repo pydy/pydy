@@ -2,8 +2,7 @@
 Modeling of a Variable-Mass Nonholonomic Gyrostatic Rocket Car Using Extended Kane’s Equations
 ==============================================================================================
 
-This is an implementation of the rocket-engine-powered jet racing car
-example from [Ge1982]_.
+This is an implementation of the nonholonomic rocket-engine-powered jet racing car example from [Ge1982]_. This example provides insight into analytically modeling variable-mass systems using Kane's method and the extended Kane's equations for variable-mass systems. It also demonstrates the efficacy of Kane's method in the modeling of complex dynamical systems. 
 
 An idealized model of a jet racing car that is propelled by a rocket
 engine at point P is considered. The rocket engine is treated as a
