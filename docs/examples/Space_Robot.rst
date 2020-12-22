@@ -2,7 +2,7 @@
 Astrobee: A Holonomic Free-Flying Space Robot
 =============================================
 
-[Bualat2015]_
+Astrobee is a new generation of free-flying robots aboard the International Space Station (ISS). It is a cubic robot with sides measuring about 30 cm each. The robot is propelled by two fans located on the sides of the robot and servo-actuated louvred vent nozzles, which allow for full six degree-of-freedom holonomic control [Smith2016]_. Here, the nonlinear dynamics of Astrobee are modeled using Kane's method and the holonomic behavior of the system is demonstrated. After derivation of the nonlinear equations of motion, the system is linearized about a chosen operating point to obtain an explicit first order state-space representation, which can be used for control design.
 
 .. jupyter-execute::
 
@@ -299,20 +299,7 @@ Simulation
 
 .. jupyter-execute::
 
-    import matplotlib as mpl
-    mpl.rcParams['figure.dpi'] = 200
-    mpl.rc('font',**{'family':'serif','sans-serif':['Computer Modern Roman']})
-    ## for Palatino and other serif fonts use:
-    #rc('font',**{'family':'serif','serif':['Palatino']})
-    mpl.rc('text', usetex=True)
-    from matplotlib.pyplot import cm
-    color=cm.rainbow(np.linspace(0,1,12))
-    from cycler import cycler
-    mpl.rcParams['axes.prop_cycle'] = cycler(color=color)
-    mpl.rcParams.update({'figure.autolayout': True})
-    mpl.rcParams.update({'font.size': 12})
     import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D, art3d
 
 .. jupyter-execute::
 
@@ -329,117 +316,40 @@ Simulation
 
 .. jupyter-execute::
 
-    from pydy.viz.shapes import Cube, Cylinder, Sphere, Plane
-    from pydy.viz.visualization_frame import VisualizationFrame
-    from pydy.viz import Scene
-    from ipywidgets import Image, Video
-    import pythreejs as pjs
-    from stl import mesh
+    from pydy.viz import Box, Cube, Sphere, Cylinder, VisualizationFrame, Scene
 
 .. jupyter-execute::
 
+
     l = 0.32
-    
-    body_m_shape = Cube(l, color='black')
-    body_l_shape = Cube(l, color='green')
-    body_r_shape = Cube(l, color='green')
-    
+
+    body_m_shape = Box(l, (1/2) * l, (2/3) * l, color='black', name='body_m_shape')
+    body_l_shape = Box(l, (1/4) * l, l, color='green', name='body_l_shape')
+    body_r_shape = Box(l, (1/4) * l, l, color='green', name='body_r_shape')
+
     v1 = VisualizationFrame('Body_m',
                             B,
                             C.locatenew('C_m', (1/6) * l * B.z),
                             body_m_shape)
-    
+
     v2 = VisualizationFrame('Body_l',
                             B,
                             C.locatenew('C_l', (3/8) * l * -B.y),
                             body_l_shape)
-    
+
     v3 = VisualizationFrame('Body_r',
                             B,
                             C.locatenew('C_r', (3/8) * l * B.y),
                             body_r_shape)
-    
-    scene = Scene(ISS, O, v1, v2, v3, system=sys)
-    scene.create_static_html(overwrite=True, silent=True)
-    
-    body_m_mesh = pjs.Mesh(
-        pjs.BoxBufferGeometry(l, (1/2) * l, (2/3) * l),
-        pjs.MeshStandardMaterial(color='black'),
-        name="Body_m"
-    )
-    
-    body_l_mesh = pjs.Mesh(
-        pjs.BoxBufferGeometry(l, (1/4) * l, l),
-        pjs.MeshStandardMaterial(color='green'),
-        name="Body_l"
-    )
-    
-    body_r_mesh = pjs.Mesh(
-        pjs.BoxBufferGeometry(l, (1/4) * l, l),
-        pjs.MeshStandardMaterial(color='green'),
-        name="Body_r"
-    )
-    
-    body_m_matrices = v1.evaluate_transformation_matrix(states, list(sys.constants.values()))
-    body_l_matrices = v2.evaluate_transformation_matrix(states, list(sys.constants.values()))
-    body_r_matrices = v3.evaluate_transformation_matrix(states, list(sys.constants.values()))
-    
-    body_m_track = pjs.VectorKeyframeTrack(
-        name='scene/Body_m.matrix',
-        times=list(sys.times),
-        values=body_m_matrices)
-    
-    body_l_track = pjs.VectorKeyframeTrack(
-        name='scene/Body_l.matrix',
-        times=list(sys.times),
-        values=body_l_matrices)
-    
-    body_r_track = pjs.VectorKeyframeTrack(
-        name='scene/Body_r.matrix',
-        times=list(sys.times),
-        values=body_r_matrices)
-    
-    body_m_mesh.matrixAutoUpdate = False
-    body_l_mesh.matrixAutoUpdate = False
-    body_r_mesh.matrixAutoUpdate = False
-    
-    body_m_mesh.matrix = body_m_matrices[0]
-    body_l_mesh.matrix = body_l_matrices[0]
-    body_r_mesh.matrix = body_r_matrices[0]
-    
-    x_arrow = pjs.ArrowHelper(dir=[1, 0, 0], length=0.75, color='blue')
-    y_arrow = pjs.ArrowHelper(dir=[0, 1, 0], length=0.75, color='red')
-    z_arrow = pjs.ArrowHelper(dir=[0, 0, 1], length=0.75,color='green')
-    
-    view_width = 960
-    view_height = 720
-    
-    camera = pjs.PerspectiveCamera(position=[1, 1, 1],
-                                   aspect=view_width/view_height)
-    key_light = pjs.DirectionalLight(position=[1, 1, 0])
-    ambient_light = pjs.AmbientLight()
-    
-    scene_pjs = pjs.Scene(children=[body_m_mesh, body_l_mesh, body_r_mesh,
-                                    x_arrow, y_arrow, z_arrow, 
-                                    camera, key_light, ambient_light])
-    
-    controller = pjs.OrbitControls(controlling=camera)
-    renderer = pjs.Renderer(camera=camera, scene=scene_pjs, controls=[controller], width=view_width, height=view_height)
+
+    scene = Scene(ISS, O, system=sys)
+
+    scene.visualization_frames = [v1, v2, v3]
 
 
 .. jupyter-execute::
 
-    renderer
-
-
-.. jupyter-execute::
-
-    clip = pjs.AnimationClip(tracks=[body_m_track, body_l_track, body_r_track], duration=sys.times[-1])
-    
-    
-    action = pjs.AnimationAction(pjs.AnimationMixer(scene_pjs), clip, scene_pjs)
-    action
-
+    scene.display_jupyter(axes_arrow_length=1.0)
 
 
 Linearization
@@ -535,4 +445,4 @@ Linearization
 References
 ----------
 
-.. [Bualat2015] Bualat, M., Barlow, J., Fong, T., Provencher, C. and Smith, T., 2015. Astrobee: Developing a free-flying robot for the international space station. In AIAA SPACE 2015 Conference and Exposition (p. 4643).
+.. [Smith2016] Smith, T., Barlow, J., Bualat, M., Fong, T., Provencher, C., Sanchez, H., & Smith, E. (2016). Astrobee: A new platform for free-flying robotics on the international space station.
