@@ -2,7 +2,15 @@
 Astrobee: A Holonomic Free-Flying Space Robot
 =============================================
 
-Astrobee is a new generation of free-flying robots aboard the International Space Station (ISS). It is a cubic robot with sides measuring about 30 cm each. The robot is propelled by two fans located on the sides of the robot and servo-actuated louvred vent nozzles, which allow for full six degree-of-freedom holonomic control [Smith2016]_. Here, the nonlinear dynamics of Astrobee are modeled using Kane's method and the holonomic behavior of the system is demonstrated. After derivation of the nonlinear equations of motion, the system is linearized about a chosen operating point to obtain an explicit first order state-space representation, which can be used for control design.
+Astrobee is a new generation of free-flying robots aboard the International
+Space Station (ISS). It is a cubic robot with sides measuring about 30 cm each.
+The robot is propelled by two fans located on the sides of the robot and
+servo-actuated louvred vent nozzles, which allow for full six degree-of-freedom
+holonomic control [Smith2016]_. Here, the nonlinear dynamics of Astrobee are
+modeled using Kane's method and the holonomic behavior of the system is
+demonstrated. After derivation of the nonlinear equations of motion, the system
+is linearized about a chosen operating point to obtain an explicit first order
+state-space representation, which can be used for control design.
 
 .. jupyter-execute::
 
@@ -23,9 +31,9 @@ Reference Frames
 
     ISS = me.ReferenceFrame('N') # ISS RF
     B = me.ReferenceFrame('B') # body RF
-    
+
     q1, q2, q3 = me.dynamicsymbols('q1:4') # attitude coordinates (Euler angles)
-    
+
     B.orient(ISS, 'Body', (q1, q2, q3), 'xyz') # body RF
 
 .. jupyter-execute::
@@ -72,8 +80,6 @@ Kinematical Differential Equations
     u = sm.solve([z1, z2, z3, z4, z5, z6], x.diff(), y.diff(), z.diff(), q1.diff(), q2.diff(), q3.diff())
     u
 
-
-
 Translational Motion
 --------------------
 
@@ -84,9 +90,7 @@ Velocity
 
     C.set_vel(ISS, C.pos_from(O).dt(ISS).subs(u))
     V_B_ISS_ISS = C.vel(ISS)
-    V_B_ISS_ISS # "velocity of Astrobee CM w.r.t ISS RF expressed in ISS RF" 
-
-
+    V_B_ISS_ISS # "velocity of Astrobee CM w.r.t ISS RF expressed in ISS RF"
 
 Acceleration
 ~~~~~~~~~~~~
@@ -94,9 +98,7 @@ Acceleration
 .. jupyter-execute::
 
     A_B_ISS_ISS = C.acc(ISS).subs(u) #.subs(ud)
-    A_B_ISS_ISS # "acceleration of Astrobee CM w.r.t ISS RF expressed in ISS RF" 
-
-
+    A_B_ISS_ISS # "acceleration of Astrobee CM w.r.t ISS RF expressed in ISS RF"
 
 Angular Motion
 --------------
@@ -108,9 +110,7 @@ Angular Velocity
 
     B.set_ang_vel(ISS, B.ang_vel_in(ISS).subs(u))
     Omega_B_ISS_B = B.ang_vel_in(ISS)
-    Omega_B_ISS_B # "angular velocity of body RF w.r.t ISS RF expressed in body RF" 
-
-
+    Omega_B_ISS_B # "angular velocity of body RF w.r.t ISS RF expressed in body RF"
 
 Angular Acceleration
 ~~~~~~~~~~~~~~~~~~~~
@@ -118,10 +118,7 @@ Angular Acceleration
 .. jupyter-execute::
 
     Alpha_B_ISS_B = B.ang_acc_in(ISS).subs(u) #.subs(ud)
-    Alpha_B_ISS_B # "angular acceleration of body RF w.r.t ISS RF expressed in body RF" 
-
-
-
+    Alpha_B_ISS_B # "angular acceleration of body RF w.r.t ISS RF expressed in body RF"
 
 Mass and Inertia
 ----------------
@@ -129,14 +126,11 @@ Mass and Inertia
 .. jupyter-execute::
 
     m = sm.symbols('m') # Astrobee mass
-    
+
     Ix, Iy, Iz = sm.symbols('I_x, I_y, I_z') # principal moments of inertia
-    
+
     I = me.inertia(B, Ix, Iy, Iz) # inertia dyadic
     I
-
-
-
 
 Loads
 -----
@@ -147,16 +141,12 @@ Forces
 .. jupyter-execute::
 
     Fx_mag, Fy_mag, Fz_mag = me.dynamicsymbols('Fmag_x, Fmag_y, Fmag_z')
-    
+
     Fx = Fx_mag * ISS.x
     Fy = Fy_mag * ISS.y
     Fz = Fz_mag * ISS.z
-    
+
     Fx, Fy, Fz
-
-
-
-
 
 Torques
 ~~~~~~~
@@ -164,16 +154,12 @@ Torques
 .. jupyter-execute::
 
     T1_mag, T2_mag, T3_mag = me.dynamicsymbols('Tmag_1, Tmag_2, Tmag_3')
-    
+
     T1 = T1_mag * B.x
     T2 = T2_mag * B.y
     T3 = T3_mag * B.z
-    
+
     T1, T2, T3
-
-
-
-
 
 Kane’s Method
 -------------
@@ -206,8 +192,6 @@ Kane’s Method
 
     fr, frstar = kane.kanes_equations(bodies, loads=loads)
 
-
-
 Simulation
 ----------
 
@@ -218,8 +202,6 @@ Simulation
 .. jupyter-execute::
 
     sys.constants_symbols
-
-
 
 .. jupyter-execute::
 
@@ -234,8 +216,6 @@ Simulation
 
     sys.constants
 
-
-
 .. jupyter-execute::
 
     sys.times = np.linspace(0.0, 50.0, num=1000)
@@ -244,19 +224,13 @@ Simulation
 
     sys.coordinates
 
-
-
 .. jupyter-execute::
 
     sys.speeds
 
-
 .. jupyter-execute::
 
     sys.states
-
-
-
 
 .. jupyter-execute::
 
@@ -278,8 +252,6 @@ Simulation
 .. jupyter-execute::
 
     sys.specifieds_symbols
-
-
 
 
 .. jupyter-execute::
@@ -310,7 +282,6 @@ Simulation
     ax.legend(['$x$', '$y$', '$z$', '$q_1$', '$q_2$', '$q_3$', '$u_x$', '$u_y$', '$u_z$', '$u_1$', '$u_2$', '$u_3$'], fontsize=10)
     plt.show()
 
-
 3D Visualization
 ----------------
 
@@ -319,7 +290,6 @@ Simulation
     from pydy.viz import Box, Cube, Sphere, Cylinder, VisualizationFrame, Scene
 
 .. jupyter-execute::
-
 
     l = 0.32
 
@@ -351,7 +321,6 @@ Simulation
 
     scene.display_jupyter(axes_arrow_length=1.0)
 
-
 Linearization
 -------------
 
@@ -360,10 +329,9 @@ Linearization
     f = fr + frstar
     f
 
-
 .. jupyter-execute::
 
-    V = { 
+    V = {
           x: 0.0,
           y: 0.0,
           z: 0.0,
@@ -383,10 +351,9 @@ Linearization
           T2_mag: 0.0,
           T3_mag: 0.0
     }
-    
+
     V_keys = sm.Matrix([ v for v in V.keys() ])
     V_values = sm.Matrix([ v for v in V.values() ])
-
 
 .. jupyter-execute::
 
@@ -395,54 +362,39 @@ Linearization
     qs = sm.Matrix([x, y, z, q1, q2, q3])
     rs = sm.Matrix([Fx_mag, Fy_mag, Fz_mag, T1_mag, T2_mag, T3_mag])
 
-
-
 .. jupyter-execute::
 
     Ml = f.jacobian(us_diff).subs(sys.constants).subs(V)
     Ml
-
-
 
 .. jupyter-execute::
 
     Cl = f.jacobian(us).subs(V)
     Cl.subs(sys.constants)
 
-
-
-
 .. jupyter-execute::
 
     Kl = f.jacobian(qs).subs(V)
     sm.simplify(Kl.subs(sys.constants))
-
-
-
 
 .. jupyter-execute::
 
     Hl = -f.jacobian(rs).subs(V)
     sm.simplify(Hl.subs(sys.constants))
 
-
-
-
 .. jupyter-execute::
 
     A = sm.Matrix([[(-Ml.inv()*Cl), (-Ml.inv()*Kl)], [(sm.eye(6)), sm.zeros(6, 6)]])
     sm.simplify(A.subs(sys.constants))
-
-
 
 .. jupyter-execute::
 
     B = sm.Matrix([[Ml.inv() * Hl], [sm.zeros(6, 6)]])
     sm.nsimplify(B.subs(sys.constants))
 
-
-
 References
 ----------
 
-.. [Smith2016] Smith, T., Barlow, J., Bualat, M., Fong, T., Provencher, C., Sanchez, H., & Smith, E. (2016). Astrobee: A new platform for free-flying robotics on the international space station.
+.. [Smith2016] Smith, T., Barlow, J., Bualat, M., Fong, T., Provencher, C.,
+   Sanchez, H., & Smith, E. (2016). Astrobee: A new platform for free-flying
+   robotics on the international space station.
