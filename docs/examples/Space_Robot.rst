@@ -2,6 +2,12 @@
 Astrobee: A Holonomic Free-Flying Space Robot
 =============================================
 
+.. note::
+
+   You can download this example as a Python script:
+   :jupyter-download:script:`Space_Robot` or Jupyter notebook:
+   :jupyter-download:notebook:`Space_Robot`.
+
 Astrobee is a new generation of free-flying robots aboard the International
 Space Station (ISS). It is a cubic robot with sides measuring about 30 cm each.
 The robot is propelled by two fans located on the sides of the robot and
@@ -36,8 +42,6 @@ Reference Frames
 
     B.orient(ISS, 'Body', (q1, q2, q3), 'xyz') # body RF
 
-.. jupyter-execute::
-
     t = me.dynamicsymbols._t
 
 Significant Points
@@ -48,12 +52,8 @@ Significant Points
     O = me.Point('O') # fixed point in the ISS
     O.set_vel(ISS, 0)
 
-.. jupyter-execute::
-
     x, y, z = me.dynamicsymbols('x, y, z') # translation coordinates (position of the mass-center of Astrobee relative to 'O')
     l = sm.symbols('l') # length of Astrobee (side of cube)
-
-.. jupyter-execute::
 
     C = O.locatenew('C', x * ISS.x + y * ISS.y + z * ISS.z) # Astrobee CM
 
@@ -68,8 +68,6 @@ Kinematical Differential Equations
     u1 = me.dynamicsymbols('u_1')
     u2 = me.dynamicsymbols('u_2')
     u3 = me.dynamicsymbols('u_3')
-
-.. jupyter-execute::
 
     z1 = sm.Eq(ux, x.diff())
     z2 = sm.Eq(uy, y.diff())
@@ -166,14 +164,15 @@ Kane’s Method
 
 .. jupyter-execute::
 
-    kdes = [z1.rhs - z1.lhs, z2.rhs - z2.lhs, z3.rhs - z3.lhs, z4.rhs - z4.lhs, z5.rhs - z5.lhs, z6.rhs - z6.lhs]
-
-.. jupyter-execute::
+    kdes = [z1.rhs - z1.lhs,
+            z2.rhs - z2.lhs,
+            z3.rhs - z3.lhs,
+            z4.rhs - z4.lhs,
+            z5.rhs - z5.lhs,
+            z6.rhs - z6.lhs]
 
     body = me.RigidBody('body', C, B, m, (I, C))
     bodies = [body]
-
-.. jupyter-execute::
 
     loads = [
              (C, Fx),
@@ -184,11 +183,7 @@ Kane’s Method
              (B, T3)
             ]
 
-.. jupyter-execute::
-
     kane = me.KanesMethod(ISS, (x, y, z, q1, q2, q3), (ux, uy, uz, u1, u2, u3), kd_eqs=kdes)
-
-.. jupyter-execute::
 
     fr, frstar = kane.kanes_equations(bodies, loads=loads)
 
@@ -199,11 +194,7 @@ Simulation
 
     sys = System(kane)
 
-.. jupyter-execute::
-
     sys.constants_symbols
-
-.. jupyter-execute::
 
     sys.constants = {
                      Ix: 0.1083,
@@ -212,15 +203,11 @@ Simulation
                      m: 7
                     }
 
-.. jupyter-execute::
-
     sys.constants
 
 .. jupyter-execute::
 
     sys.times = np.linspace(0.0, 50.0, num=1000)
-
-.. jupyter-execute::
 
     sys.coordinates
 
@@ -319,7 +306,7 @@ Simulation
 
 .. jupyter-execute::
 
-    scene.display_jupyter(axes_arrow_length=1.0)
+   scene.display_jupyter(axes_arrow_length=1.0)
 
 Linearization
 -------------
