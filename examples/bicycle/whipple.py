@@ -47,6 +47,7 @@ from utils import (
     compare_to_basu_values,
     create_basu_output_from_moore_output,
     create_moore_input_from_basu_input,
+    decompose_linear_parts,
     evalf_with_symengine,
     write_matrix_to_file,
 )
@@ -447,6 +448,19 @@ dynamic_substitutions = sub_dicts[2]
 specified_subs = sub_dicts[3]
 moore_input = sub_dicts[4]
 bp = sub_dicts[5]
+
+# ensure that the motion constraints hold for the state inputs
+nonhol = symbolics['nonholonomic constraints']
+u_dep = symbolics['dependent generalized speeds']
+# K * u_dep + G = 0, u_dep = K^-1 * -G
+K, G = decompose_linear_parts(nonhol, u_dep)
+K_num = evalf_with_symengine(K, substitutions)
+G_num = evalf_with_symengine(G, substitutions)
+udep_num = np.squeeze(np.linalg.solve(K_num, -G_num))
+for udi, ud_numi in zip(u_dep, udep_num):
+    print('{:1.14f},{:1.14f}'.format(substitutions[udi], ud_numi))
+     substitutions[udi] = ud_numi
+    dynamic_substitutions[udi] = ud_numi
 
 print('Evaluating numerically with symengine')
 M_exact = evalf_with_symengine(mass_matrix, substitutions)
