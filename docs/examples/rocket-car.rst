@@ -2,7 +2,16 @@
 Modeling of a Variable-Mass Nonholonomic Gyrostatic Rocket Car Using Extended Kane’s Equations
 ==============================================================================================
 
+.. note::
+
+    You can download this example as a Python script:
+    :jupyter-download:script:`rocket-car` or Jupyter notebook:
+    :jupyter-download:notebook:`rocket-car`.
+
 This is an implementation of the nonholonomic rocket-engine-powered jet racing car example from [Ge1982]_. This example provides insight into analytically modeling variable-mass systems using Kane's method and the extended Kane's equations for variable-mass systems. It also demonstrates the efficacy of Kane's method in the modeling of complex dynamical systems. 
+
+.. image:: rocket-car.svg
+   :width: 600
 
 An idealized model of a jet racing car that is propelled by a rocket
 engine at point P is considered. The rocket engine is treated as a
@@ -20,7 +29,6 @@ Here, :math:`\{a_x: g_3, a_y: g_1, a_z: g_2\}`
     import matplotlib.pyplot as plt
     from scipy.integrate import odeint
     me.init_vprinting()
-
 
 
 Reference Frames, Generalized Coordinates, and Generalized Speeds
@@ -107,34 +115,25 @@ Nonholonomic Constraints: :math:`B_1`
     B1_center = Q.locatenew('B_1_center', a * A1.y)
     B1_center.pos_from(Q)
 
-
-
 .. jupyter-execute::
 
     B1_center.v2pt_theory(Q, N, A1)
     B1_center.vel(N).express(A1).simplify()
-
-
 
 .. jupyter-execute::
 
     B1_ground = B1_center.locatenew('B_1_ground', r1 * -A1.z)
     B1_ground.pos_from(B1_center)
 
-
-
 .. jupyter-execute::
 
     B1_ground.v2pt_theory(B1_center, N, B1)
     B1_ground.vel(N).simplify()
 
-
-
 .. jupyter-execute::
 
     B1_cons = [me.dot(B1_ground.vel(N).simplify(), uv) for uv in A1]
     sm.trigsimp(B1_cons)
-
 
 .. jupyter-execute::
 
@@ -146,8 +145,6 @@ Nonholonomic Constraints: :math:`B_1`
     eq2 = sm.Eq(B1_cons[1].simplify().subs(u), 0)
     eq2
 
-
-
 Nonholonomic Constraints: :math:`B_2`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -156,42 +153,35 @@ Nonholonomic Constraints: :math:`B_2`
     B2_center = Q.locatenew('B_1_center', a * -A1.y)
     B2_center.pos_from(Q)
 
-
 .. jupyter-execute::
 
     B2_center.v2pt_theory(Q, N, A1)
     B2_center.vel(N).express(A1).simplify()
-
 
 .. jupyter-execute::
 
     B2_ground = B2_center.locatenew('B_2_ground', r1 * -A1.z)
     B2_ground.pos_from(B2_center)
 
-
 .. jupyter-execute::
 
     B2_ground.v2pt_theory(B2_center, N, B2)
     B2_ground.vel(N).simplify()
-
 
 .. jupyter-execute::
 
     B2_cons = [me.dot(B2_ground.vel(N).simplify(), uv) for uv in A1]
     sm.trigsimp(B2_cons)
 
-
 .. jupyter-execute::
 
     eq3 = sm.Eq(B2_cons[0].simplify().subs(u), 0)
     eq3
 
-
 .. jupyter-execute::
 
     eq4 = sm.Eq(B2_cons[1].simplify().subs(u), 0)
     eq4
-
 
 Nonholonomic Constraints: :math:`B_3`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -201,44 +191,35 @@ Nonholonomic Constraints: :math:`B_3`
     B3_center = P.locatenew('B_3_center', b * A2.y)
     B3_center.pos_from(P)
 
-
 .. jupyter-execute::
 
     B3_center.v2pt_theory(P, N, A2)
     B3_center.vel(N).express(A2).simplify()
-
 
 .. jupyter-execute::
 
     B3_ground = B3_center.locatenew('B_3_ground', r2 * -A2.z)
     B3_ground.pos_from(B3_center)
 
-
 .. jupyter-execute::
 
     B3_ground.v2pt_theory(B3_center, N, B3)
     B3_ground.vel(N).simplify()
-
 
 .. jupyter-execute::
 
     B3_cons = [me.dot(B3_ground.vel(N).simplify(), uv) for uv in A2]
     sm.trigsimp(B3_cons)
 
-
-
 .. jupyter-execute::
 
     eq5 = sm.Eq(B3_cons[0].simplify().subs(u), 0)
     eq5
 
-
 .. jupyter-execute::
 
     eq6 = sm.Eq(B3_cons[1].simplify().subs(u), 0)
     eq6
-
-
 
 Nonholonomic Constraints: :math:`B_4`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -248,44 +229,35 @@ Nonholonomic Constraints: :math:`B_4`
     B4_center = P.locatenew('B_4_center', b * -A2.y)
     B4_center.pos_from(P)
 
-
 .. jupyter-execute::
 
     B4_center.v2pt_theory(P, N, A2)
-    # B4_center.vel(N).express(A2).simplify() # Invalid JSON
-
-
+    B4_center.vel(N).express(A2).simplify()
 
 .. jupyter-execute::
 
     B4_ground = B4_center.locatenew('B_4_ground', r2 * -A2.z)
     B4_ground.pos_from(B4_center)
 
-
-
 .. jupyter-execute::
 
     B4_ground.v2pt_theory(B4_center, N, B4)
     B4_ground.vel(N).simplify()
-
 
 .. jupyter-execute::
 
     B4_cons = [me.dot(B4_ground.vel(N).simplify(), uv) for uv in A2]
     sm.trigsimp(B4_cons)
 
-
 .. jupyter-execute::
 
     eq7 = sm.Eq(B4_cons[0].simplify().subs(u), 0)
     eq7
 
-
 .. jupyter-execute::
 
     eq8 = sm.Eq(B4_cons[1].simplify().subs(u), 0)
     eq8
-
 
 :math:`\text{LHS} \Longleftrightarrow \text{RHS}\ \text{in}\ z_1, z_2 \rightarrow \text{Equations}\ 9, 10`
 
@@ -294,12 +266,10 @@ Nonholonomic Constraints: :math:`B_4`
     eq9 = sm.Eq(A1.ang_vel_in(A2).dot(A1.z), u1)
     eq9
 
-
 .. jupyter-execute::
 
     eq10 = sm.Eq(Q.vel(N).dot(A1.x), u2)
     eq10
-
 
 Solving the System of Linear Equations
 --------------------------------------
@@ -314,21 +284,15 @@ The system of equations is linear in :math:`\dot{q}_1, \dot{q}_2,...`
 
     solution
 
-
-
 .. jupyter-execute::
 
     sollist_keys = list(solution.keys())
     sollist_keys
 
-
-
 .. jupyter-execute::
 
     sollist_values = list(solution.values())
     sollist_values
-
-
 
 .. jupyter-execute::
 
@@ -340,12 +304,10 @@ The system of equations is linear in :math:`\dot{q}_1, \dot{q}_2,...`
 
     sollist_values_simple
 
-
 .. jupyter-execute::
 
     soldict = dict(zip(sollist_keys, sollist_values_simple)) 
     soldict
-
 
 Reformulated Velocity and Angular Velocity Expressions
 ------------------------------------------------------
@@ -355,39 +317,25 @@ Reformulated Velocity and Angular Velocity Expressions
     N_v_Q = Q.vel(N).subs(soldict).express(A1).simplify()
     N_v_Q
 
-
-
-
 .. jupyter-execute::
 
     N_v_P = P.vel(N).subs(soldict).express(A2).simplify()
     N_v_P
-
-
-
 
 .. jupyter-execute::
 
     N_v_C = C.vel(N).subs(soldict).express(A2).simplify()
     N_v_C
 
-
-
 .. jupyter-execute::
 
     N_w_A1 = A1.ang_vel_in(N).subs(soldict).express(A1).simplify()
     N_w_A1
 
-
-
-
 .. jupyter-execute::
 
     N_w_A2 = A2.ang_vel_in(N).subs(soldict).express(A2).simplify()
     N_w_A2
-
-
-
 
 Partial Velocities and Partial Angular Velocities
 -------------------------------------------------
@@ -397,71 +345,50 @@ Partial Velocities and Partial Angular Velocities
     V_1_Q = N_v_Q.diff(u1, N)
     V_1_Q
 
-
 .. jupyter-execute::
 
     V_2_Q = N_v_Q.diff(u2, N)
     V_2_Q
-
-
 
 .. jupyter-execute::
 
     V_1_C = N_v_C.diff(u1, N)
     V_1_C
 
-
-
 .. jupyter-execute::
 
     V_2_C = N_v_C.diff(u2, N)
     V_2_C
-
-
-
 
 .. jupyter-execute::
 
     V_1_P = N_v_P.diff(u1, N)
     V_1_P
 
-
-
 .. jupyter-execute::
 
     V_2_P = N_v_P.diff(u2, N)
     V_2_P
-
-
 
 .. jupyter-execute::
 
     w_1_A1 = N_w_A1.diff(u1, N)
     w_1_A1
 
-
-
 .. jupyter-execute::
 
     w_2_A1 = N_w_A1.diff(u2, N)
     w_2_A1
-
-
 
 .. jupyter-execute::
 
     w_1_A2 = N_w_A2.diff(u1, N)
     w_1_A2
 
-
-
 .. jupyter-execute::
 
     w_2_A2 = N_w_A2.diff(u2, N)
     w_2_A2
-
-
-
 
 Accelerations and Angular Accelerations
 ---------------------------------------
@@ -475,31 +402,25 @@ Accelerations and Angular Accelerations
     N_a_P = N_v_P.dt(N).subs(soldict)
     N_a_P
 
-
 .. jupyter-execute::
 
     N_a_C = N_v_C.dt(N).subs(soldict)
     N_a_C
-
 
 .. jupyter-execute::
 
     N_a_Q = N_v_Q.dt(N).subs(soldict)
     N_a_Q
 
-
 .. jupyter-execute::
 
     N_aa_A1 = N_w_A1.dt(N).subs(soldict)
     N_aa_A1
 
-
 .. jupyter-execute::
 
     N_aa_A2 = N_w_A2.dt(N).subs(soldict)
     N_aa_A2
-
-
 
 Forces and Torques
 ------------------
@@ -543,13 +464,10 @@ Masses and Moments of Inertia
     I1 = me.inertia(A1, I1x, I1y, I1z)
     I1
 
-
 .. jupyter-execute::
 
     I2 = me.inertia(A2, I2x, I2y, I2z)
     I2
-
-
 
 Gyrostat :math:`G_1`
 --------------------
@@ -561,16 +479,12 @@ Gyrostat :math:`G_1`
     Fstar_G1 = -M1 * N_a_Q
     Fstar_G1
 
-
-
 :math:`\rightarrow {T_G}^* \overset{\Delta}{=} -[\alpha_A \cdot I_G + {\omega_r}^A \times (I_G \cdot {\omega_r}^A)]`
 
 .. jupyter-execute::
 
     Tstar_G1 = -(N_aa_A1.dot(I1) + me.cross(N_w_A1, I1.dot(N_w_A1)))
     Tstar_G1
-
-
 
 :math:`\rightarrow ({F_r}^*)_{GR} = {V_r}^G \cdot {F_G}^* + {\omega_r}^A \cdot {T_G}^*`
 
@@ -579,14 +493,10 @@ Gyrostat :math:`G_1`
     Fstar_1_G1_R = V_1_Q.dot(Fstar_G1) + w_1_A1.dot(Tstar_G1).subs(soldict)
     Fstar_1_G1_R.subs({N_w_A1.dt(N).subs(soldict).dot(A1.z): alpha__A1})
 
-
-
 .. jupyter-execute::
 
     Fstar_2_G1_R = V_2_Q.dot(Fstar_G1) + w_2_A1.dot(Tstar_G1).subs(soldict)
     Fstar_2_G1_R.subs({N_w_A1.dt(N).subs(soldict).dot(A1.z): alpha__A1})
-
-
 
 :math:`\rightarrow (F_r^*)_{GI} = -J\{\omega_r^A \cdot [\ddot{q_k} g_1 + \dot{q_k} (\omega_3^A g_2 - \omega_2^A g_3)] + C_{kr} (\dot{\omega}_1^A + \ddot{q_k}) \} \qquad (r=1,...,n-m)`
 
@@ -609,8 +519,6 @@ Here,
     
     Fstar_1_G1_I, C_51, C_61, Fstar_1_G1_I.subs({-C_51: -C51, -C_61: -C61}).simplify()
 
-
-
 .. jupyter-execute::
 
     # C_kr 
@@ -622,9 +530,6 @@ Here,
     
     Fstar_2_G1_I, C_52, C_62, Fstar_2_G1_I.subs({-C_52: -C52, -C_62: -C62}).simplify()
 
-
-
-
 :math:`\rightarrow (F_r^*)_G = (F_r^*)_{GR} + (F_r^*)_{GI}`
 
 .. jupyter-execute::
@@ -632,15 +537,10 @@ Here,
     Fstar_1_G1 = Fstar_1_G1_R + Fstar_1_G1_I
     Fstar_1_G1.subs({N_w_A1.dt(N).subs(soldict).dot(A1.z): alpha__A1}).subs({-C_51: -C51, -C_61: -C61}).simplify()
 
-
-
 .. jupyter-execute::
 
     Fstar_2_G1 = Fstar_2_G1_R + Fstar_2_G1_I
     Fstar_2_G1.subs({N_w_A1.dt(N).subs(soldict).dot(A1.z): alpha__A1}).subs({-C_52: -C52, -C_62: -C62}).simplify()
-
-
-
 
 Gyrostat :math:`G_2`
 --------------------
@@ -652,14 +552,12 @@ Gyrostat :math:`G_2`
     Fstar_G2 = -M2 * N_a_C
     Fstar_G2
 
-
 :math:`\rightarrow {T_G}^* \overset{\Delta}{=} -[\alpha_A \cdot I_G + {\omega_r}^A \times (I_G \cdot {\omega_r}^A)]`
 
 .. jupyter-execute::
 
     Tstar_G2 = -(N_aa_A2.dot(I2) + me.cross(N_w_A2, I2.dot(N_w_A2)))
     Tstar_G2
-
 
 :math:`\rightarrow ({F_r}^*)_{GR} = {V_r}^G \cdot {F_G}^* + {\omega_r}^A \cdot {T_G}^*`
 
@@ -668,13 +566,10 @@ Gyrostat :math:`G_2`
     Fstar_1_G2_R = V_1_C.dot(Fstar_G2) + w_1_A2.dot(Tstar_G2).subs(soldict)
     Fstar_1_G2_R.subs({N_w_A2.dt(N).subs(soldict).dot(A2.z): alpha__A2})
 
-
 .. jupyter-execute::
 
     Fstar_2_G2_R = V_2_C.dot(Fstar_G2) + w_2_A1.dot(Tstar_G2).subs(soldict)
     Fstar_2_G2_R.subs({N_w_A2.dt(N).subs(soldict).dot(A2.z): alpha__A2})
-
-
 
 :math:`\rightarrow (F_r^*)_{GI} = -J\{\omega_r^A \cdot [\ddot{q_k} g_1 + \dot{q_k} (\omega_3^A g_2 - \omega_2^A g_3)] + C_{kr} (\dot{\omega}_1^A + \ddot{q_k}) \} \qquad (r=1,...,n-m)`
 
@@ -697,8 +592,6 @@ Here,
     
     Fstar_1_G2_I, C_71, C_81, # Fstar_1_G2_I.subs({-C_71: -C71, -C_81: -C81}).simplify()
 
-
-
 .. jupyter-execute::
 
     # C_kr 
@@ -709,8 +602,6 @@ Here,
                    -J2 * (N_w_A2.dot(q8.diff().diff() * A2.y + q8.diff()*(N_w_A2.dot(A2.x)*A2.z - N_w_A2.dot(A2.z)*A2.x)) + C_82 * (N_w_A2.dot(A2.y).diff() + q8.diff().diff()))   # B1 \ B2
     
     Fstar_2_G2_I, C_72, C_82, Fstar_2_G2_I.subs({-C_72: -C72, -C_82: -C82}).simplify()
-
-
 
 :math:`\rightarrow (F_r^*)_G = (F_r^*)_{GR} + (F_r^*)_{GI}`
 
@@ -727,9 +618,6 @@ Here, :math:`\{a_1^C: a_2^C,\ a_2^C: a_3^C,\ a_3^C: a_1^C\}`
     Fstar_2_G2 = Fstar_2_G2_R + Fstar_2_G2_I
     Fstar_2_G2.subs({N_w_A2.dt(N).subs(soldict).dot(A2.z): alpha__A2}).subs({N_v_C.dt(N).subs(soldict).dot(A2.x): a_3__C}).subs({N_v_C.dt(N).subs(soldict).dot(A2.y): a_1__C}).subs({-C_72: -C72, -C_82: -C82}).simplify()
 
-
-
-
 Variable-Mass Particle, :math:`P`
 ---------------------------------
 
@@ -740,8 +628,6 @@ Variable-Mass Particle, :math:`P`
     Fstar_P = -m * N_a_P
     Fstar_P
 
-
-
 :math:`\rightarrow ({F_r}^*)_{GR} = {V_r}^G \cdot {F_G}^*`
 
 .. jupyter-execute::
@@ -749,16 +635,10 @@ Variable-Mass Particle, :math:`P`
     Fstar_1_P_R = V_1_P.dot(Fstar_P)
     Fstar_1_P_R
 
-
-
-
 .. jupyter-execute::
 
     Fstar_2_P_R = V_2_P.dot(Fstar_P) 
     Fstar_2_P_R
-
-
-
 
 :math:`\rightarrow (F_r^*)_G = (F_r^*)_{GR}`
 
@@ -767,19 +647,12 @@ Variable-Mass Particle, :math:`P`
     Fstar_1_P = Fstar_1_P_R
     Fstar_1_P
 
-
-
-
 Here, :math:`\{a_1^P: a_2^P,\ a_2^P: a_3^P,\ a_3^P: a_1^P\}`
 
 .. jupyter-execute::
 
     Fstar_2_P = Fstar_2_P_R
     Fstar_2_P.subs({N_v_P.dt(N).subs(soldict).dot(A2.x): a_3__P}).subs({N_v_P.dt(N).subs(soldict).dot(A2.y): a_1__P}).simplify()
-
-
-
-
 
 Generalized Inertia Forces
 --------------------------
@@ -791,15 +664,10 @@ Generalized Inertia Forces
     Fstar_1 = Fstar_1_G1 + Fstar_1_G2 + Fstar_1_P
     Fstar_1.subs(soldict).simplify()
 
-
-
-
 .. jupyter-execute::
 
     Fstar_2 = Fstar_2_G1 + Fstar_2_G2 + Fstar_2_P
     Fstar_2.subs(soldict).simplify()
-
-
 
 Velocity of material ejected at :math:`P` relative to
 :math:`A_2 \rightarrow -C(t)g_3^{'}`
@@ -812,8 +680,6 @@ Velocity of material ejected at :math:`P` relative to
     C_t = -C*A2.x
     C_t
 
-
-
 Generalized Thrust
 ------------------
 
@@ -824,14 +690,10 @@ Generalized Thrust
     Fprime_1 = V_1_P.dot(C_t)*m.diff()
     Fprime_1
 
-
-
 .. jupyter-execute::
 
     Fprime_2 = V_2_P.dot(C_t)*m.diff()
     Fprime_2
-
-
 
 Extended Kane’s Equations for Variable-Mass Systems
 ---------------------------------------------------
@@ -846,26 +708,20 @@ active forces
     kane_1 = Fstar_1.simplify() + Fprime_1.simplify()
     kane_1.subs(soldict).simplify()
 
-
-
 .. jupyter-execute::
 
     kane_2 = Fstar_2 + Fprime_2
     kane_2.subs(soldict).simplify()
-
-
 
 .. jupyter-execute::
 
     kane_1_eq = sm.Eq(kane_1.simplify().subs(soldict).simplify().subs(u).simplify(), 0)
     kane_1_eq
 
-
 .. jupyter-execute::
 
     kane_2_eq = sm.Eq(kane_2.simplify().subs(soldict).simplify().subs(u).simplify(), 0)
-    # kane_2_eq # Invalid JSON
-
+    kane_2_eq
 
 References
 ----------
