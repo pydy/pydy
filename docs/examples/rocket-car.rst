@@ -276,9 +276,11 @@ Solving the System of Linear Equations
 
 The system of equations is linear in :math:`\dot{q}_1, \dot{q}_2,...`
 
+Note: ``eq4`` :math:`\equiv` ``eq2``; ``eq8`` :math:`\equiv` ``eq6``
+
 .. jupyter-execute::
 
-    solution = sm.solve([eq1, eq2, eq3, eq4, eq5, eq6, eq7, eq8, eq9, eq10], q1.diff(), q2.diff(), q3.diff(),  q4.diff(), q5.diff(), q6.diff(), q7.diff(), q8.diff())
+    solution = sm.solve([eq1, eq2, eq3, eq5, eq6, eq7, eq9, eq10], q1.diff(), q2.diff(), q3.diff(),  q4.diff(), q5.diff(), q6.diff(), q7.diff(), q8.diff())
 
 .. jupyter-execute::
 
