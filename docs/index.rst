@@ -69,18 +69,17 @@ Table of Contents
              :width: 200px
              :target: examples/kane-levinson-1985-chapter-02.html
 
-             Nonholonomic Rocket Car.
-        - .. figure:: examples/rocket-car.png
-             :width: 200px
-             :target: examples/rocket-car.html
-
              Exercises from Chapter 2 of Kane & Levinson 1985.
       * - .. figure:: examples/kane-levinson-1985.png
              :width: 200px
              :target: examples/kane-levinson-1985-chapter-03.html
 
              Exercises from Chapter 3 of Kane & Levinson 1985.
-        -
+        - .. figure:: examples/rocket-car.png
+             :width: 200px
+             :target: examples/rocket-car.html
+
+             Nonholonomic Rocket Car.
 
 Indices and tables
 ==================
