@@ -32,6 +32,8 @@ Table of Contents
       examples/mass-spring-damper.rst
       examples/multidof-holonomic.rst
       examples/three-link-conical-pendulum.rst
+      examples/astrobee.rst
+      examples/rocket-car.rst
 
 .. ifconfig:: INCLUDE_EXAMPLES
 
