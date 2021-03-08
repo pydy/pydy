@@ -30,6 +30,10 @@ Here, :math:`\{a_x: g_3, a_y: g_1, a_z: g_2\}`
     from scipy.integrate import odeint
     me.init_vprinting()
 
+    from IPython.display import Latex, display
+    def print_answer(x, x_res):
+        for xi, xri in zip(x, x_res):
+            display(Latex(sm.latex(sm.Eq(xi, xri), mode='inline')))
 
 Reference Frames, Generalized Coordinates, and Generalized Speeds
 -----------------------------------------------------------------
@@ -133,7 +137,8 @@ Nonholonomic Constraints: :math:`B_1`
 .. jupyter-execute::
 
     B1_cons = [me.dot(B1_ground.vel(N).simplify(), uv) for uv in A1]
-    sm.trigsimp(B1_cons)
+    for i in range(len(B1_cons)):
+        display(sm.trigsimp(B1_cons[i]))
 
 .. jupyter-execute::
 
@@ -171,7 +176,8 @@ Nonholonomic Constraints: :math:`B_2`
 .. jupyter-execute::
 
     B2_cons = [me.dot(B2_ground.vel(N).simplify(), uv) for uv in A1]
-    sm.trigsimp(B2_cons)
+    for i in range(len(B2_cons)):
+        display(sm.trigsimp(B2_cons[i]))
 
 .. jupyter-execute::
 
@@ -209,7 +215,8 @@ Nonholonomic Constraints: :math:`B_3`
 .. jupyter-execute::
 
     B3_cons = [me.dot(B3_ground.vel(N).simplify(), uv) for uv in A2]
-    sm.trigsimp(B3_cons)
+    for i in range(len(B3_cons)):
+        display(sm.trigsimp(B3_cons[i]))
 
 .. jupyter-execute::
 
@@ -247,7 +254,8 @@ Nonholonomic Constraints: :math:`B_4`
 .. jupyter-execute::
 
     B4_cons = [me.dot(B4_ground.vel(N).simplify(), uv) for uv in A2]
-    sm.trigsimp(B4_cons)
+    for i in range(len(B4_cons)):
+        display(sm.trigsimp(B4_cons[i]))
 
 .. jupyter-execute::
 
@@ -284,17 +292,12 @@ Note: ``eq4`` :math:`\equiv` ``eq2``; ``eq8`` :math:`\equiv` ``eq6``
 
 .. jupyter-execute::
 
-    solution
-
-.. jupyter-execute::
-
     sollist_keys = [q1.diff(), q2.diff(), q3.diff(),  q4.diff(), q5.diff(), q6.diff(), q7.diff(), q8.diff()]
     sollist_keys
 
 .. jupyter-execute::
 
     sollist_values = list(solution.args[0])
-    sollist_values
 
 .. jupyter-execute::
 
@@ -304,12 +307,8 @@ Note: ``eq4`` :math:`\equiv` ``eq2``; ``eq8`` :math:`\equiv` ``eq6``
 
 .. jupyter-execute::
 
-    sollist_values_simple
-
-.. jupyter-execute::
-
     soldict = dict(zip(sollist_keys, sollist_values_simple)) 
-    soldict
+    print_answer(sollist_keys, sollist_values_simple)
 
 Reformulated Velocity and Angular Velocity Expressions
 ------------------------------------------------------
@@ -530,7 +529,10 @@ Here,
     Fstar_2_G1_I = -J1 * (N_w_A1.dot(q5.diff().diff() * A1.y + q5.diff()*(N_w_A1.dot(A1.x)*A1.z - N_w_A1.dot(A1.z)*A1.x)) + C_52 * (N_w_A1.dot(A1.y).diff() + q5.diff().diff())) \
                    -J1 * (N_w_A1.dot(q6.diff().diff() * A1.y + q6.diff()*(N_w_A1.dot(A1.x)*A1.z - N_w_A1.dot(A1.z)*A1.x)) + C_62 * (N_w_A1.dot(A1.y).diff() + q6.diff().diff()))   # B1 \ B2
     
-    Fstar_2_G1_I, C_52, C_62, Fstar_2_G1_I.subs({-C_52: -C52, -C_62: -C62}).simplify()
+    display(Fstar_2_G1_I),
+    display(C_52)
+    display(C_62)
+    display(Fstar_2_G1_I.subs({-C_52: -C52, -C_62: -C62}).simplify())
 
 :math:`\rightarrow (F_r^*)_G = (F_r^*)_{GR} + (F_r^*)_{GI}`
 
@@ -603,7 +605,10 @@ Here,
     Fstar_2_G2_I = -J2 * (N_w_A2.dot(q7.diff().diff() * A2.y + q7.diff()*(N_w_A2.dot(A2.x)*A2.z - N_w_A2.dot(A2.z)*A2.x)) + C_72 * (N_w_A2.dot(A2.y).diff() + q7.diff().diff())) \
                    -J2 * (N_w_A2.dot(q8.diff().diff() * A2.y + q8.diff()*(N_w_A2.dot(A2.x)*A2.z - N_w_A2.dot(A2.z)*A2.x)) + C_82 * (N_w_A2.dot(A2.y).diff() + q8.diff().diff()))   # B1 \ B2
     
-    Fstar_2_G2_I, C_72, C_82, Fstar_2_G2_I.subs({-C_72: -C72, -C_82: -C82}).simplify()
+    display(Fstar_2_G2_I) 
+    display(C_72) 
+    display(C_82)
+    display(Fstar_2_G2_I.subs({-C_72: -C72, -C_82: -C82}).simplify())
 
 :math:`\rightarrow (F_r^*)_G = (F_r^*)_{GR} + (F_r^*)_{GI}`
 
