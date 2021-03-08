@@ -280,7 +280,7 @@ Note: ``eq4`` :math:`\equiv` ``eq2``; ``eq8`` :math:`\equiv` ``eq6``
 
 .. jupyter-execute::
 
-    solution = sm.solve([eq1, eq2, eq3, eq5, eq6, eq7, eq9, eq10], q1.diff(), q2.diff(), q3.diff(),  q4.diff(), q5.diff(), q6.diff(), q7.diff(), q8.diff())
+    solution = sm.linsolve([eq1, eq2, eq3, eq5, eq6, eq7, eq9, eq10], q1.diff(), q2.diff(), q3.diff(),  q4.diff(), q5.diff(), q6.diff(), q7.diff(), q8.diff())
 
 .. jupyter-execute::
 
@@ -288,12 +288,12 @@ Note: ``eq4`` :math:`\equiv` ``eq2``; ``eq8`` :math:`\equiv` ``eq6``
 
 .. jupyter-execute::
 
-    sollist_keys = list(solution.keys())
+    sollist_keys = [q1.diff(), q2.diff(), q3.diff(),  q4.diff(), q5.diff(), q6.diff(), q7.diff(), q8.diff()]
     sollist_keys
 
 .. jupyter-execute::
 
-    sollist_values = list(solution.values())
+    sollist_values = list(solution.args[0])
     sollist_values
 
 .. jupyter-execute::
