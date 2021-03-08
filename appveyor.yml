@@ -35,11 +35,13 @@ install:
   - ps: "ls \"C:/Program Files/Microsoft SDKs/Windows\""
 
   # This upates conda and installs the necessary packages.
+  # TODO : The latest pythreejs fails on Python 2.7, so it has been removed.
+  # Need to drop PyDy 2.7 support or adjust this test.
   - "%PYTHON%\\Scripts\\conda.exe clean --yes --all"
   - "%PYTHON%\\Scripts\\conda.exe update --yes conda"
   - "%PYTHON%\\Scripts\\conda.exe update -y --all"
   - "%PYTHON%\\Scripts\\conda.exe config --prepend channels conda-forge"
-  - '%PYTHON%\\Scripts\\conda.exe install --yes numpy scipy sympy cython pywin32 pythreejs nose coverage'
+  - '%PYTHON%\\Scripts\\conda.exe install --yes numpy scipy sympy cython pywin32 nose coverage'
   - "%PYTHON%\\Scripts\\conda.exe update -y --all"
   - "%PYTHON%\\Scripts\\conda.exe info"
   - "%PYTHON%\\Scripts\\conda.exe list"

@@ -32,6 +32,8 @@ Table of Contents
       examples/mass-spring-damper.rst
       examples/multidof-holonomic.rst
       examples/three-link-conical-pendulum.rst
+      examples/astrobee.rst
+      examples/rocket-car.rst
 
 .. ifconfig:: INCLUDE_EXAMPLES
 
@@ -75,7 +77,11 @@ Table of Contents
              :target: examples/kane-levinson-1985-chapter-03.html
 
              Exercises from Chapter 3 of Kane & Levinson 1985.
-        -
+        - .. figure:: examples/rocket-car.png
+             :width: 200px
+             :target: examples/rocket-car.html
+
+             Nonholonomic Rocket Car.
 
 Indices and tables
 ==================
