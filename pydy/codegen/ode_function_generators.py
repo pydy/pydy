@@ -20,7 +20,7 @@ if theano:
 
 from .c_code import _CLUsolveGenerator
 from .cython_code import CythonMatrixGenerator
-
+from ..backend import USE_SYMENGINE
 
 class ODEFunctionGenerator(object):
     """This is an abstract base class for all of the generators. A subclass
@@ -725,6 +725,7 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
         # done) but there may be some limitations on number of args.
         subs = {}
         vec_inputs = []
+        inputs = []
         if self.specifieds is None:
             def_vecs = ['q', 'u', 'p']
         else:
@@ -734,6 +735,7 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
             v = sm.DeferredVector(vec_name)
             for i, sym in enumerate(syms):
                 subs[sym] = v[i]
+                inputs.append(v[i])
             vec_inputs.append(v)
 
         try:
@@ -742,9 +744,30 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
             # msubs doesn't exist in SymPy < 0.7.6.
             outputs = [output.subs(subs) for output in outputs]
 
-        modules = [{'ImmutableMatrix': np.array}, 'numpy']
-
-        return sm.lambdify(vec_inputs, outputs, modules=modules)
+        if USE_SYMENGINE:
+            import symengine
+            outputs_ravel = list(chain(*outputs))
+            try:
+                cb = symengine.Lambdify(inputs, outputs_ravel, backend="llvm")
+            except (TypeError, ValueError):
+                # TypeError if symengine is old, ValueError if symengine is
+                # not compiled with llvm support
+                cb = symengine.Lambdify(inputs, outputs_ravel)
+            def func(*args):
+                result = []
+                n = np.empty(len(outputs_ravel))
+                cb.unsafe_real(np.concatenate([a.ravel() for a in args]), n)
+                start = 0
+                for output in outputs:
+                    elems = reduce(mul, output.shape)
+                    result.append(n[start : (start + elems)]
+                                        .reshape(output.shape))
+                    start += elems
+                return result
+            return func
+        else:
+            modules = [{'ImmutableMatrix': np.array}, 'numpy']
+            return sm.lambdify(vec_inputs, outputs, modules=modules)
 
     def generate_full_rhs_function(self):
 

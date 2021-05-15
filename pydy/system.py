@@ -52,7 +52,8 @@ import warnings
 from itertools import repeat
 
 import numpy as np
-import sympy as sm
+import sympy
+from .backend import sm
 from sympy.physics.mechanics import dynamicsymbols
 from sympy.physics.mechanics.functions import find_dynamicsymbols
 from scipy.integrate import odeint
@@ -60,7 +61,7 @@ from scipy.integrate import odeint
 from .codegen.ode_function_generators import generate_ode_function
 from .utils import PyDyFutureWarning
 
-SYMPY_VERSION = sm.__version__
+SYMPY_VERSION = sympy.__version__
 
 
 warnings.simplefilter('once', PyDyFutureWarning)

@@ -9,15 +9,18 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from pydy.models import n_link_pendulum_on_cart
-from sympy import symbols
 
+from pydy.backend import sm, USE_SYMENGINE
 
 def run_benchmark(max_num_links, num_time_steps=1000):
     """Runs the n link pendulum derivation, code generation, and integration
     for each n up to the max number provided and generates a plot of the
     results."""
 
-    methods = ['lambdify', 'theano', 'cython']
+    if USE_SYMENGINE:
+        methods = ['lambdify']
+    else:
+        methods = ['lambdify', 'theano', 'cython']
 
     link_numbers = range(1, max_num_links + 1)
 
@@ -34,9 +37,9 @@ def run_benchmark(max_num_links, num_time_steps=1000):
         start = time.time()
         sys = n_link_pendulum_on_cart(n, cart_force=False)
 
-        m = symbols('m:{}'.format(n + 1))
-        l = symbols('l:{}'.format(n))
-        g = symbols('g')
+        m = sm.symbols('m:{}'.format(n + 1))
+        l = sm.symbols('l:{}'.format(n))
+        g = sm.symbols('g')
 
         derivation_times[j] = time.time() - start
         print('The derivation took {:1.5f} seconds.\n'.format(derivation_times[j]))
