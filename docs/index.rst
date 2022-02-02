@@ -34,6 +34,7 @@ Table of Contents
       examples/three-link-conical-pendulum.rst
       examples/astrobee.rst
       examples/rocket-car.rst
+      examples/chaos-pendulum.rst
 
 .. ifconfig:: INCLUDE_EXAMPLES
 
@@ -67,21 +68,28 @@ Table of Contents
              :target: examples/astrobee.html
 
              Astrobee free-flying ISS robot.
-        - .. figure:: examples/kane-levinson-1985.png
+        - .. figure:: examples/chaos-pendulum.svg
+             :width: 200px
+             :target: examples/chaos-pendulum.html
+
+             3D perpendicular axis double pendulum that exhibits chaos.
+
+      * - .. figure:: examples/kane-levinson-1985.png
              :width: 200px
              :target: examples/kane-levinson-1985-chapter-02.html
 
              Exercises from Chapter 2 of Kane & Levinson 1985.
-      * - .. figure:: examples/kane-levinson-1985.png
+        - .. figure:: examples/kane-levinson-1985.png
              :width: 200px
              :target: examples/kane-levinson-1985-chapter-03.html
 
              Exercises from Chapter 3 of Kane & Levinson 1985.
-        - .. figure:: examples/rocket-car.png
+      * - .. figure:: examples/rocket-car.png
              :width: 200px
              :target: examples/rocket-car.html
 
              Nonholonomic Rocket Car.
+        -
 
 Indices and tables
 ==================
