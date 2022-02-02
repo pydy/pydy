@@ -26,9 +26,8 @@ PyDy
 
 PyDy_, short for Python Dynamics, is a tool kit written in the Python
 programming language that utilizes an array of scientific programs to enable
-the study of multibody dynamics. The goal is to have a modular framework and
-eventually a physics abstraction layer which utilizes a variety of backends
-that can provide the user with their desired workflow, including:
+the study of multibody dynamics. The goal is to have a modular framework that
+can provide the user with their desired workflow, including:
 
 - Model specification
 - Equation of motion generation

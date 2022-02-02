@@ -26,6 +26,7 @@ Table of Contents
    .. toctree::
       :hidden:
 
+      examples/astrobee.rst
       examples/carvallo-whipple.rst
       examples/kane-levinson-1985-chapter-02.rst
       examples/kane-levinson-1985-chapter-03.rst
