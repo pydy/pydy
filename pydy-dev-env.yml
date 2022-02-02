@@ -3,10 +3,6 @@
 # the documentation. After the environment is activated, you can install the
 # development version of PyDy into this environment with:
 #
-# `python setup.py develop --no-deps`
-#
-# or
-#
 # `pip install --no-deps -e .`
 #
 name: pydy-dev
