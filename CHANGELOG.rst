@@ -5,6 +5,7 @@ Release Notes
 0.6.0 (TBA)
 ===========
 
+- Added Astrobee example [PR `#453`_]
 - Added the ability to pass optional arguments to the ODE solver in System. [PR
   `#447`_]
 - Cylinders, Spheres, and Circles loaded via PyThreeJS will appear more round.
@@ -27,6 +28,7 @@ Release Notes
   [PR `#415`_]
 - Recommend installing from Conda Forge [PR `#411`_]
 
+.. _#453: https://github.com/pydy/pydy/pull/453
 .. _#447: https://github.com/pydy/pydy/pull/447
 .. _#442: https://github.com/pydy/pydy/pull/442
 .. _#440: https://github.com/pydy/pydy/pull/440
