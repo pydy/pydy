@@ -15,7 +15,7 @@ the rod a flat plate is attached via a second revolute joint allowing
 the plate to rotate about the rod’s axis with aligns with the
 :math:`\hat{\mathbf{a}_z}` unit vector.
 
-.. image:: chaos_pendulum.svg
+.. image:: chaos-pendulum.svg
 
 Setup
 =====
@@ -86,10 +86,6 @@ the ``KanesMethod`` class:
     kin_diff = (omega - theta.diff(), alpha - phi.diff())
     kin_diff
 
-.. math::
-
-    \displaystyle \left( \omega - \dot{\theta}, \  \alpha - \dot{\phi}\right)
-
 Define Orientations
 ===================
 
@@ -158,17 +154,9 @@ point having a velocity of zero.
 
     Ao.v2pt_theory(No, N, A)
 
-.. math::
-
-    \displaystyle \left(\frac{L_{B}}{2} - \frac{h}{4}\right) \omega\mathbf{\hat{a}_x}
-
 .. jupyter-execute::
 
     Bo.v2pt_theory(No, N, A)
-
-.. math::
-
-    \displaystyle L_{B} \omega\mathbf{\hat{a}_x}
 
 Inertia
 =======
@@ -190,10 +178,6 @@ This gives the inertia tensor:
 
     IA[0].to_matrix(A)
 
-.. math::
-
-    \displaystyle \left[\begin{matrix}\frac{m_{A} \left(L_{B} - \frac{h}{2}\right)^{2}}{12} & 0 & 0\\0 & \frac{m_{A} \left(L_{B} - \frac{h}{2}\right)^{2}}{12} & 0\\0 & 0 & 0\end{matrix}\right]
-
 The central inerita of the symmetric plate with respect to its reference
 frame is a function of its width and height.
 
@@ -208,10 +192,6 @@ frame is a function of its width and height.
 .. jupyter-execute::
 
     IB[0].to_matrix(B)
-
-.. math::
-
-    \displaystyle \left[\begin{matrix}\frac{h^{2} m_{B}}{12} & 0 & 0\\0 & \frac{m_{B} \left(h^{2} + w^{2}\right)}{12} & 0\\0 & 0 & \frac{m_{B} w^{2}}{12}\end{matrix}\right]
 
 All of the information to define the two rigid bodies are now available.
 This information is used to create an object for the rod and the plate.
@@ -264,17 +244,9 @@ loads and bodies to the ``kanes_equations`` method. This produces
 
     sm.trigsimp(fr)
 
-.. math::
-
-    \displaystyle \left[\begin{matrix}g \left(- \frac{L_{B} m_{A}}{2} - L_{B} m_{B} + \frac{h m_{A}}{4}\right) \sin{\left(\theta \right)}\\0\end{matrix}\right]
-
 .. jupyter-execute::
 
     sm.trigsimp(frstar)
-
-.. math::
-
-    \displaystyle \left[\begin{matrix}\frac{m_{B} w^{2} \alpha \omega \sin{\left(2 \phi \right)}}{12} - \left(\frac{L_{B}^{2} m_{A}}{3} + L_{B}^{2} m_{B} - \frac{L_{B} h m_{A}}{3} + \frac{h^{2} m_{A}}{12} + \frac{h^{2} m_{B}}{12} + \frac{m_{B} w^{2} \cos^{2}{\left(\phi \right)}}{12}\right) \dot{\omega}\\- \frac{m_{B} w^{2} \left(\omega^{2} \sin{\left(2 \phi \right)} + 2 \dot{\alpha}\right)}{24}\end{matrix}\right]
 
 Simulation
 ==========
