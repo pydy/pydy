@@ -1,5 +1,6 @@
-Introduction
-============
+==============
+Chaos Pendulum
+==============
 
 .. note::
 
