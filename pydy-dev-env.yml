@@ -20,6 +20,7 @@ dependencies:
         - jupyter
         - jupyter_sphinx
         - jupyterlab
+        - jupyter_client <7  # avoid the json deprecation warning
         - matplotlib
         - nose
         - numpy
