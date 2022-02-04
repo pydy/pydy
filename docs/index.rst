@@ -28,14 +28,13 @@ Table of Contents
 
       examples/astrobee.rst
       examples/carvallo-whipple.rst
+      examples/chaos-pendulum.rst
       examples/kane-levinson-1985-chapter-02.rst
       examples/kane-levinson-1985-chapter-03.rst
       examples/mass-spring-damper.rst
       examples/multidof-holonomic.rst
-      examples/three-link-conical-pendulum.rst
-      examples/astrobee.rst
       examples/rocket-car.rst
-      examples/chaos-pendulum.rst
+      examples/three-link-conical-pendulum.rst
 
 .. ifconfig:: INCLUDE_EXAMPLES
 
