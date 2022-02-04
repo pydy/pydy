@@ -2,7 +2,7 @@
 PyDy
 ====
 
-|pypi| |anaconda| |rtd-docs| |travis-build| |appveyor| |gitter|
+|pypi| |anaconda| |rtd-docs| |github-build| |appveyor| |gitter|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pydy.svg
    :target: https://pypi.python.org/pypi/pydy
@@ -15,8 +15,8 @@ PyDy
    :target: https://pydy.readthedocs.io/en/stable/?badge=stable
    :alt: Documentation Status
 
-.. |travis-build| image:: https://travis-ci.org/pydy/pydy.png?branch=master
-   :target: https://travis-ci.org/pydy/pydy
+.. |github-build| image:: https://github.com/github/docs/actions/workflows/tests.yml/badge.svg
+   :target: https://github.com/pydy/pydy/actions
 
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/orj87gyb0c1wqc6j/branch/master?svg=true
    :target: https://ci.appveyor.com/project/moorepants/pydy/branch/master
