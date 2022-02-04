@@ -2,8 +2,11 @@
 Release Notes
 =============
 
-0.6.0
-=====
+0.7.0 (TBA)
+===========
+
+0.6.0 (February 4, 2022)
+========================
 
 - Dropped support for Python 2.7 and 3.6. [PR `#459`]_
 - Moved chaos pendulum example to Sphinx docs.
