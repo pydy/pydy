@@ -1,0 +1,39 @@
+name: tests
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+
+jobs:
+  build:
+    name: Build and run tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, macos-latest, windows-latest]
+        python-version: [3.7, 3.8, 3.9]
+
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          activate-environment: test-environment
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge
+          conda-build-version: 3.21.4
+      - name: Install basic dependencies
+        run: conda install -q -y coverage cython ipython theano ipywidgets jupyter jupyter_sphinx jupyterlab jupyter_client matplotlib nose numpy numpydoc pydy pythreejs sphinx sympy
+      - name: Test with nose
+        run: nosetests -v --with-coverage --cover-package=pydy
+      - name: Test installation of PyDy
+        run: python setup.py install
+      - name: Run the pydy benchmark script
+        run: python bin/benchmark_pydy_code_gen.py 1 10

@@ -1,0 +1,29 @@
+name: docs
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build and generate documentation
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9]
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Checkout CyIpopt
+        uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          activate-environment: test-environment
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge
+          conda-build-version: 3.21.4
+      - name: Install basic dependencies
+        run: conda install -q -y cython jupyter jupyter_sphinx matplotlib numpy numpydoc pydy pythreejs sphinx sympy
+      - name: Test building documentation
+        run: cd docs && make clean && make html && cd ..
