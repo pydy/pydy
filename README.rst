@@ -118,7 +118,7 @@ PyDy has hard dependencies on the following software\ [#]_:
        are provided in the Ubuntu 20.04 packages. Previous versions may work.
 
 - Python >= 3.7
-- setuptools >= 20.7.0
+- setuptools >= 44.0.0
 - NumPy_ >= 1.16.5
 - SciPy_ >= 1.3.3
 - SymPy_ >= 1.5.1
