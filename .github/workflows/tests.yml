@@ -30,10 +30,8 @@ jobs:
           channels: conda-forge
           conda-build-version: 3.21.4
       - name: Install basic dependencies
-        run: conda install -q -y coverage cython ipython theano ipywidgets jupyter jupyter_sphinx jupyterlab jupyter_client matplotlib nose numpy numpydoc pydy pythreejs sphinx sympy
+        run: conda install -q -y coverage cython matplotlib nose numpy pythreejs sympy
       - name: Test with nose
         run: nosetests -v --with-coverage --cover-package=pydy
       - name: Test installation of PyDy
         run: python setup.py install
-      - name: Run the pydy benchmark script
-        run: python bin/benchmark_pydy_code_gen.py 1 10
