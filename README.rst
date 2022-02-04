@@ -15,7 +15,7 @@ PyDy
    :target: https://pydy.readthedocs.io/en/stable/?badge=stable
    :alt: Documentation Status
 
-.. |github-build| image:: https://github.com/github/docs/actions/workflows/tests.yml/badge.svg
+.. |github-build| image:: https://github.com/pydy/pydy/actions/workflows/tests.yml/badge.svg
    :target: https://github.com/pydy/pydy/actions
 
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/orj87gyb0c1wqc6j/branch/master?svg=true
