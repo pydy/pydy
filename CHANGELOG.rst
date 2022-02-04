@@ -5,6 +5,7 @@ Release Notes
 0.6.0 (TBA)
 ===========
 
+- Dropped support for Python 2.7 and 3.6.
 - Moved chaos pendulum example to Sphinx docs.
 - Added Astrobee example [PR `#453`_]
 - Added the ability to pass optional arguments to the ODE solver in System. [PR

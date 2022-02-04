@@ -2,35 +2,24 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 
 from setuptools import setup, find_packages
 
 exec(open('pydy/version.py').read())
 
-if sys.version_info[0] < 3:  # Python 2
-    install_requires = ['numpy<1.17',
-                        'scipy<1.3',
-                        'sympy<1.6']
-    extras_require = {'doc': ['sphinx<2',
-                              'numpydoc<1'],
-                      'codegen': ['Cython>=0.29.14',
-                                  'Theano>=1.0.4'],
-                      'examples': ['matplotlib<3',
-                                   'notebook>=4.0.0,<5.0.0',
-                                   'ipywidgets>=4.0.0,<5.0.0'],
-                      }
-else:  # Python 3
-    install_requires = ['numpy>=1.16.5',
-                        'scipy>=1.3.3',
-                        'sympy>=1.5.1']
-    extras_require = {'doc': ['sphinx', 'numpydoc'],
-                      'codegen': ['Cython>=0.29.14',
-                                  'Theano>=1.0.4'],
-                      'examples': ['matplotlib>=3.1.2',
-                                   'notebook>=4.0.0,<5.0.0',
-                                   'ipywidgets>=4.0.0,<5.0.0'],
-                      }
+install_requires = [
+    'numpy>=1.16.5',
+    'scipy>=1.3.3',
+    'sympy>=1.5.1'
+]
+
+extras_require = {
+    'doc': ['sphinx', 'numpydoc'],
+    'codegen': ['Cython>=0.29.14', 'Theano>=1.0.4'],
+    'examples': ['matplotlib>=3.1.2',
+                 'notebook>=4.0.0,<5.0.0',
+                 'ipywidgets>=4.0.0,<5.0.0'],
+}
 
 if os.name == 'nt':
     install_requires.append('PyWin32>=219')
@@ -54,10 +43,9 @@ setup(
     classifiers=['Development Status :: 4 - Beta',
                  'Intended Audience :: Science/Research',
                  'Operating System :: OS Independent',
-                 'Programming Language :: Python :: 2.7',
-                 'Programming Language :: Python :: 3.6',
                  'Programming Language :: Python :: 3.7',
                  'Programming Language :: Python :: 3.8',
+                 'Programming Language :: Python :: 3.9',
                  'Topic :: Scientific/Engineering :: Physics',
                  ],
 )

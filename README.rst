@@ -117,7 +117,7 @@ PyDy has hard dependencies on the following software\ [#]_:
 .. [#] We only test PyDy with these minimum dependencies; these module versions
        are provided in the Ubuntu 20.04 packages. Previous versions may work.
 
-- 2.7 <= Python < 3.0 or Python >= 3.6
+- Python >= 3.7
 - setuptools >= 20.7.0
 - NumPy_ >= 1.16.5
 - SciPy_ >= 1.3.3
@@ -392,9 +392,9 @@ Related Packages
 These are various related and similar Python packages:
 
 - https://github.com/cdsousa/sympybotics
-- https://pypi.python.org/pypi/Hamilton
-- https://pypi.python.org/pypi/arboris
-- https://pypi.python.org/pypi/PyODE
-- https://pypi.python.org/pypi/odeViz
 - https://pypi.python.org/pypi/ARS
+- https://pypi.python.org/pypi/Hamilton
+- https://pypi.python.org/pypi/PyODE
+- https://pypi.python.org/pypi/arboris
+- https://pypi.python.org/pypi/odeViz
 - https://pypi.python.org/pypi/pymunk

@@ -28,8 +28,7 @@ from .light import PointLight
 from ..system import System
 from ..utils import PyDyImportWarning
 
-if sys.version_info > (3, 0):
-    raw_input = input
+raw_input = input
 
 __all__ = ['Scene']
 
