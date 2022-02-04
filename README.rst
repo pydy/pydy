@@ -26,9 +26,8 @@ PyDy
 
 PyDy_, short for Python Dynamics, is a tool kit written in the Python
 programming language that utilizes an array of scientific programs to enable
-the study of multibody dynamics. The goal is to have a modular framework and
-eventually a physics abstraction layer which utilizes a variety of backends
-that can provide the user with their desired workflow, including:
+the study of multibody dynamics. The goal is to have a modular framework that
+can provide the user with their desired workflow, including:
 
 - Model specification
 - Equation of motion generation
@@ -118,8 +117,8 @@ PyDy has hard dependencies on the following software\ [#]_:
 .. [#] We only test PyDy with these minimum dependencies; these module versions
        are provided in the Ubuntu 20.04 packages. Previous versions may work.
 
-- 2.7 <= Python < 3.0 or Python >= 3.6
-- setuptools >= 20.7.0
+- Python >= 3.7
+- setuptools >= 44.0.0
 - NumPy_ >= 1.16.5
 - SciPy_ >= 1.3.3
 - SymPy_ >= 1.5.1
@@ -393,9 +392,9 @@ Related Packages
 These are various related and similar Python packages:
 
 - https://github.com/cdsousa/sympybotics
-- https://pypi.python.org/pypi/Hamilton
-- https://pypi.python.org/pypi/arboris
-- https://pypi.python.org/pypi/PyODE
-- https://pypi.python.org/pypi/odeViz
 - https://pypi.python.org/pypi/ARS
+- https://pypi.python.org/pypi/Hamilton
+- https://pypi.python.org/pypi/PyODE
+- https://pypi.python.org/pypi/arboris
+- https://pypi.python.org/pypi/odeViz
 - https://pypi.python.org/pypi/pymunk

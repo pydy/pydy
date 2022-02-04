@@ -5,6 +5,9 @@ Release Notes
 0.6.0 (TBA)
 ===========
 
+- Dropped support for Python 2.7 and 3.6. [PR `#459`]_
+- Moved chaos pendulum example to Sphinx docs. [PR `#459`]_
+- Added Astrobee example [PR `#453`_]
 - Added the ability to pass optional arguments to the ODE solver in System. [PR
   `#447`_]
 - Cylinders, Spheres, and Circles loaded via PyThreeJS will appear more round.
@@ -27,10 +30,13 @@ Release Notes
   [PR `#415`_]
 - Recommend installing from Conda Forge [PR `#411`_]
 
+.. _#459: https://github.com/pydy/pydy/pull/459
+.. _#453: https://github.com/pydy/pydy/pull/453
 .. _#447: https://github.com/pydy/pydy/pull/447
 .. _#442: https://github.com/pydy/pydy/pull/442
 .. _#440: https://github.com/pydy/pydy/pull/440
 .. _#432: https://github.com/pydy/pydy/pull/432
+.. _#429: https://github.com/pydy/pydy/pull/429
 .. _#424: https://github.com/pydy/pydy/pull/424
 .. _#423: https://github.com/pydy/pydy/pull/423
 .. _#421: https://github.com/pydy/pydy/pull/421

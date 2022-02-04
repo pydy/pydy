@@ -497,7 +497,7 @@ r : dictionary
 
             return rhs
 
-        if p_arg_type is 'dictionary':
+        if p_arg_type == 'dictionary':
             p = lambda *li : self._convert_constants_dict_to_array(li[-1])
 
         else:
@@ -507,13 +507,13 @@ r : dictionary
             if self.specifieds is not None:
                 r = lambda *li : self._parse_specifieds(*li)[-2]
 
-        elif r_arg_type is 'array':
+        elif r_arg_type == 'array':
             r = lambda *li : (li)[-2]
 
-        elif r_arg_type is 'dictionary':
+        elif r_arg_type == 'dictionary':
             r = lambda *li : self._convert_specifieds_dict_to_array(*li[:3])
 
-        elif r_arg_type is 'function':
+        elif r_arg_type == 'function':
             r = lambda *li: li[2](*li[2:])
 
         def rhs(*args):

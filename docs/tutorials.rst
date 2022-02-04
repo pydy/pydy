@@ -11,10 +11,9 @@ form of IPython notebooks.
 
 Tutorials:
 
-  - `Mass Spring Damper example`_
+  - :ref:`Linear Mass-Spring-Damper with Gravity <mass-spring-damper>`
   - `Inverted pendulum model of a standing human`_
 
-.. _`Mass Spring Damper example`: https://nbviewer.jupyter.org/github/pydy/pydy/blob/v0.5.0/examples/mass_spring_damper/mass_spring_damper.ipynb
 .. _`Inverted pendulum model of a standing human`: http://nbviewer.ipython.org/github/pydy/pydy-tutorial-human-standing/blob/online-read/notebooks/n00_python_intro.ipynb
 
 Advanced

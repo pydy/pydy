@@ -20,6 +20,10 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
+      - name: Cancel previous workflows
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
       - name: Checkout repository
         uses: actions/checkout@v2
       - uses: conda-incubator/setup-miniconda@v2
@@ -30,10 +34,8 @@ jobs:
           channels: conda-forge
           conda-build-version: 3.21.4
       - name: Install basic dependencies
-        run: conda install -q -y coverage cython ipython theano ipywidgets jupyter jupyter_sphinx jupyterlab jupyter_client matplotlib nose numpy numpydoc pydy pythreejs sphinx sympy
+        run: conda install -q -y coverage cython matplotlib nose numpy pythreejs sympy scipy
       - name: Test with nose
         run: nosetests -v --with-coverage --cover-package=pydy
       - name: Test installation of PyDy
         run: python setup.py install
-      - name: Run the pydy benchmark script
-        run: python bin/benchmark_pydy_code_gen.py 1 10

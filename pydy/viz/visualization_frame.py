@@ -1,10 +1,7 @@
 __all__ = ['VisualizationFrame']
 
 import sys
-if sys.version_info < (3, 0):
-    from collections import Iterator
-else:
-    from collections.abc import Iterator
+from collections.abc import Iterator
 import numpy as np
 from sympy import Dummy, lambdify
 from sympy.matrices.expressions import Identity

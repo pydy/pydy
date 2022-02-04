@@ -1,24 +1,18 @@
 #!/usr/bin/env python
 
 import os
-import sys
 import signal
 import socket
 import threading
 import webbrowser
 
-if os.name == 'nt': # windows
+if os.name == 'nt':  # windows
     import win32api
     import win32con
 
-# For python 2 and python 3 compatibility
-if sys.version_info < (3, 0):
-    from SimpleHTTPServer import SimpleHTTPRequestHandler
-    from BaseHTTPServer import HTTPServer
-else:
-    from http.server import SimpleHTTPRequestHandler
-    from http.server import HTTPServer
-    raw_input = input
+from http.server import SimpleHTTPRequestHandler
+from http.server import HTTPServer
+raw_input = input
 
 __all__ = ['Server']
 
