@@ -1,3 +1,5 @@
+.. _mass-spring-damper:
+
 ======================================
 Linear Mass-Spring-Damper with Gravity
 ======================================

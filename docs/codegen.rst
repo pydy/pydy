@@ -5,25 +5,25 @@ codegen
 Introduction
 ============
 
-The `pydy.codegen` package contains various tools to generate numerical code
-from symbolic descriptions of the equations of motion of systems. It allows you
-to generate code using a variety of backends depending on your needs. The
-generated code can also be auto-wrapped for immediate use in a Python session
-or script. Each component of the code generators and wrappers are accessible so
-that you can use just the raw code or the wrapper versions.
+The :py:mod:`pydy.codegen` package contains various tools to generate numerical
+code from symbolic descriptions of the equations of motion of systems. It
+allows you to generate code using a variety of backends depending on your
+needs. The generated code can also be auto-wrapped for immediate use in a
+Python session or script. Each component of the code generators and wrappers
+are accessible so that you can use just the raw code or the wrapper versions.
 
 We currently support three backends:
 
-`lambdify`
-   This generates NumPy-aware Python code which is defined in a Python `lambda`
-   function, using the `sympy.utilities.lambdify` module and is the default
-   generator.
-`Theano`
+``lambdify``
+   This generates NumPy-aware Python code which is defined in a Python
+   ``lambda`` function, using the ``sympy.utilities.lambdify`` module and is
+   the default generator.
+``Theano``
    This generates Theano trees that are compiled into low level code, using the
-   `sympy.printers.theano_code` module.
-`Cython`
-   This generates C code that can be called from Python, using
-   SymPy's C code printer utilities and Cython.
+   ``sympy.printers.theano_code`` module.
+``Cython``
+   This generates C code that can be called from Python, using SymPy's C code
+   printer utilities and Cython.
 
 On Windows
 ==========
@@ -32,13 +32,13 @@ For the Cython backend to work on Windows you must install a suitable compiler.
 See this `Cython wiki page
 <https://github.com/cython/cython/wiki/CythonExtensionsOnWindows>`_ for
 instructions on getting a compiler installed. The easiest solution is to use
-the Microsoft Visual C++ Compiler for Python 2.7.
+the Microsoft Visual C++ Compiler for Python.
 
 Example Use
 ===========
 
-The simplest entry point to the code generation tools is through the `System`
-class.
+The simplest entry point to the code generation tools is through the
+:py:class:`~pydy.system.System` class.
 
 .. code:: pycon
 
@@ -95,8 +95,8 @@ classes:
    >>> rhs(array([1.0, 2.0]), 0.0, array([1.0, 2.0, 3.0]))
    array([ 2., -7.])
 
-Other backends can be used by simply passing in the `generator` keyword
-argument, e.g.:
+Other backends can be used by passing in the ``generator`` keyword argument,
+e.g.:
 
 .. code:: pycon
 
@@ -104,8 +104,9 @@ argument, e.g.:
    >>> rhs(array([1.0, 2.0]), 0.0, array([1.0, 2.0, 3.0]))
    array([ 2., -7.])
 
-The backends are implemented as subclasses of `ODEFunctionGenerator`. You can
-make use of the `ODEFunctionGenerator` classes directly:
+The backends are implemented as subclasses of
+:py:class:`~pydy.codegen.ode_function_generators.ODEFunctionGenerator`. You can
+make use of the ``ODEFunctionGenerator`` classes directly:
 
 .. code:: pycon
 
@@ -116,9 +117,10 @@ make use of the `ODEFunctionGenerator` classes directly:
    array([ 2., -7.])
 
 Furthermore, for direct control over evaluating matrices you can use the
-`lamdify` and `theano_functions` in SymPy or utilize the
-`CythonMatrixGenerator` class in PyDy. For example, this shows you how to
-generate C and Cython code to evaluate matrices:
+``lamdify`` and ``theano_functions`` in SymPy or utilize the
+:py:class:`~pydy.codegen.cython_code.CythonMatrixGenerator` class
+in PyDy. For example, this shows you how to generate C and Cython code to
+evaluate matrices:
 
 .. code:: pycon
 

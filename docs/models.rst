@@ -5,15 +5,15 @@ models
 Introduction
 ============
 
-The :py:mod:`models` file provides canned symbolic models of classical dynamic
-systems that are mostly for testing and example purposes. There are currently
-two models:
+The :py:mod:`pydy.models` file provides canned symbolic models of classical
+dynamic systems that are mostly for testing and example purposes. There are
+currently two models:
 
-`multi_mass_spring_damper`
+:py:func:`~pydy.models.multi_mass_spring_damper`
    A one dimensional series of masses connected by linear dampers and springs
    that can optionally be under the influence of gravity and an arbitrary
    force.
-`n_link_pendulum_on_a_cart`
+:py:func:`~pydy.models.n_link_pendulum_on_cart`
    This is an extension to the classic two dimensional inverted pendulum on a
    cart to multiple links. You can optionally apply an arbitrary lateral
    force to the cart and/or apply arbitrary torques between each link.
