@@ -719,6 +719,17 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
 
 class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
 
+    def __init__(self, *args, **kwargs):
+
+        self._options = {'cse': True}
+
+        for k, v in self._options.items():
+            self._options[k] = kwargs.pop(k, v)
+
+        super(LambdifyODEFunctionGenerator, self).__init__(*args, **kwargs)
+
+    __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
+
     def _lambdify(self, outputs):
         # TODO : We could forgo this substitution for generation speed
         # purposes and have lots of args for lambdify (like it used to be
@@ -744,7 +755,11 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
 
         modules = [{'ImmutableMatrix': np.array}, 'numpy']
 
-        return sm.lambdify(vec_inputs, outputs, modules=modules)
+        try:
+            return sm.lambdify(vec_inputs, outputs, modules=modules,
+                               cse=self._options['cse'])
+        except TypeError:  # cse added in SymPy 1.9
+            return sm.lambdify(vec_inputs, outputs, modules=modules)
 
     def generate_full_rhs_function(self):
 
