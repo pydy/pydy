@@ -470,7 +470,8 @@ it is helpful to use the `cython` generator for faster numerical evaluation.
 
 .. jupyter-execute::
 
-   sys.generate_ode_function(generator='cython')
+   #sys.generate_ode_function(generator='cython')
+   sys.generate_ode_function()
 
    x_trajectory = sys.integrate()
 
