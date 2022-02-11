@@ -2,7 +2,7 @@
 PyDy
 ====
 
-|pypi| |anaconda| |rtd-docs| |github-build| |appveyor| |gitter|
+|pypi| |anaconda| |rtd-docs| |github-build| |gitter|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pydy.svg
    :target: https://pypi.python.org/pypi/pydy
@@ -17,9 +17,6 @@ PyDy
 
 .. |github-build| image:: https://github.com/pydy/pydy/actions/workflows/tests.yml/badge.svg
    :target: https://github.com/pydy/pydy/actions
-
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/orj87gyb0c1wqc6j/branch/master?svg=true
-   :target: https://ci.appveyor.com/project/moorepants/pydy/branch/master
 
 .. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/pydy/pydy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
