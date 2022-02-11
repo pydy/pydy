@@ -5,6 +5,12 @@ Release Notes
 0.7.0 (TBA)
 ===========
 
+- ``LambdifyODEFunctionGenerator`` now accepts a ``cse=True/False`` kwarg and
+  if SymPy >=1.9 is installed, then the underlying generated code by
+  ``lambdify`` will be simplified. It is ``True`` by default. [PR `#464`_]
+
+.. _#464: https://github.com/pydy/pydy/pull/464
+
 0.6.0 (February 4, 2022)
 ========================
 
