@@ -117,11 +117,35 @@ def test_cse_same_numerical_results():
         cse=True)
     rhs_func_cse = g_cse.generate()
 
+    g_lam_cse = LambdifyODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        cse=True)
+    rhs_func_lam_cse = g_lam_cse.generate()
+
+    g_lam_no_cse = LambdifyODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        cse=False)
+    rhs_func_lam_no_cse = g_lam_no_cse.generate()
+
     x = np.random.random(g_cse.num_coordinates + g_cse.num_speeds)
     t = 5.125
     p = np.random.random(g_cse.num_constants)
 
     np.testing.assert_allclose(rhs_func_no_cse(x, t, p),
+                               rhs_func_cse(x, t, p))
+
+    np.testing.assert_allclose(rhs_func_lam_no_cse(x, t, p),
+                               rhs_func_lam_cse(x, t, p))
+
+    np.testing.assert_allclose(rhs_func_lam_cse(x, t, p),
                                rhs_func_cse(x, t, p))
 
 
