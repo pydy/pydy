@@ -1,9 +1,14 @@
-.. jupiter-execute::
-   #========================================================================
-   # 3D, n body pendulum, with ideally elastic and ideally slick bodies
-   #========================================================================
+.. jupyter-execute::
+   #===================
+   # 3d_n_body_pendulum
+   #===================
+.. note::
 
-.. jupiter-execute::
+   You can download this example as a Python script:
+   :jupyter-download:script:`3d_n_body_pendulum` or Jupyter notebook:
+   :jupyter-download:notebook:`3d_n_body_pendulum`.
+
+.. jupyter-execute::
     import sympy as sm
     import sympy.physics.mechanics as me
     import time
@@ -17,7 +22,7 @@
     import pythreejs as p3js
 
 
-.. jupiter-execute::
+.. jupyter-execute::
 
     '''
     A pendulum consisting on n massless rods of length l. A ball of mass m and radius r is attached to each
@@ -37,7 +42,7 @@
     '''
     start = time.time()
     
-.. jupiter-execute::
+.. jupyter-execute::
 
     #==========================================================================
     n = 3                   # number of pendulum bodies, labelled 0, 1, .., n-1, must be two ore more.
@@ -45,7 +50,7 @@
                             # MUCH faster
     #==========================================================================
     
-.. jupiter-execute::
+.. jupyter-execute::
     m, m1, g, r, l, reibung, k, t = sm.symbols('m, m1, g, r, l, reibung, k, t')
     iXX, iYY, iZZ = sm.symbols('iXX, iYY, iZZ')
     
@@ -202,7 +207,7 @@
 
 
 
-.. jupiter-execute::
+.. jupyter-execute::
 
     # numerical integration
     start = time.time()
@@ -255,7 +260,7 @@
 
 
 
-.. jupiter-execute::
+.. jupyter-execute::
 
     # plot the energies
     
@@ -294,7 +299,7 @@
     ax.legend();
 
 
-.. jupiter-execute::
+.. jupyter-execute::
 
     '''
     Animation using pythreejs.
@@ -483,7 +488,7 @@
     renderer
 
 
-.. jupiter-execute::
+.. jupyter-execute::
 
     action
 
