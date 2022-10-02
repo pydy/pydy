@@ -1,4 +1,7 @@
-.. code:: ipython3
+#========================================================================
+# 3D, n body pendulum, with ideally elastic and ideally slick bodies
+#========================================================================
+.. jupiter-execute::
 
     import sympy as sm
     import sympy.physics.mechanics as me
@@ -32,11 +35,16 @@
     cse = True reduced the time it take to integrate substantially, by a factor of over 50
     '''
     start = time.time()
+    
+.. jupiter-execute::
+
     #==========================================================================
     n = 3                   # number of pendulum bodies, labelled 0, 1, .., n-1, must be two ore more.
     cse1 = False            # if you have sympy 1.11.1 or better, set it to True. Makes numerical integration
                             # MUCH faster
     #==========================================================================
+    
+.. jupiter-execute::
     m, m1, g, r, l, reibung, k, t = sm.symbols('m, m1, g, r, l, reibung, k, t')
     iXX, iYY, iZZ = sm.symbols('iXX, iYY, iZZ')
     
@@ -132,6 +140,7 @@
     # kinematic equations
     kd = []
     for i in range(n):
+    # It is very important that below the frames A[i] be used, not N. Otherwise the equations of motion become very large. 
         for uv in A[i]:
             kd.append(me.dot(rot[i] - rot1[i], uv))
         
@@ -191,18 +200,6 @@
     print('it took {:.3f} sec to set up Kanes equations'.format(time.time() - start))
 
 
-.. parsed-literal::
-
-    MM DS {qx1(t), qy1(t), qx2(t), qz2(t), qz1(t), qy2(t)}
-    MM free symbols {iXX, m1, iYY, iZZ, m, r, l, t}
-    MM contains 2067 operations 
-    
-    force DS {qy0(t), ux2(t), qx1(t), qx0(t), uy2(t), qx2(t), uz0(t), ux0(t), uz2(t), uy0(t), qy2(t), qz1(t), uz1(t), qz0(t), ux1(t), qy1(t), qz2(t), uy1(t)}
-    force free symbols {m1, g, iXX, r, l, k, iYY, iZZ, m, t}
-    force contains 12757 operations 
-    
-    it took 7.903 sec to set up Kanes equations
-
 
 .. jupiter-execute::
 
@@ -256,13 +253,6 @@
      
 
 
-.. parsed-literal::
-
-    Starting values:  [0.2, 0.2, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 7.5, 0.0, 0.0, 7.5, 0.0, 0.0, 7.5, 0.0]
-    shape of resultat (2500, 18)
-    Integration finished successfully
-    To numerically integrate an intervall of 25.000 sec the routine cycled 17365 times and it took 933.200 sec
-
 
 .. jupiter-execute::
 
@@ -301,20 +291,6 @@
             label='rotational speed of body {} in Y direction in its coordinate system'.format(i-n))
     ax.set_title('Rotational speeds')
     ax.legend();
-
-
-
-.. parsed-literal::
-
-    deviation of total energy from being constant is 0.47471 % of max. total energy
-
-
-
-.. image:: output_3_1.png
-
-
-
-.. image:: output_3_2.png
 
 
 .. jupiter-execute::
@@ -506,35 +482,9 @@
     renderer
 
 
-.. parsed-literal::
-
-    7 7 35
-
-
-.. parsed-literal::
-
-    /private/var/containers/Bundle/Application/ABEAF8E1-C18D-48D1-8E9B-9D0C1B69346E/Carnets-sci.app/Library/lib/python3.9/site-packages/jupyter_client/session.py:718: UserWarning: Message serialization failed with:
-    Out of range float values are not JSON compliant
-    Supporting this message is deprecated in jupyter-client 7, please make sure your message is JSON-compliant
-      content = self.pack(content)
-    /var/mobile/Containers/Data/Application/3B0A5C7E-6A59-44F1-BAD8-372883920B79/Library/lib/python3.9/site-packages/pythreejs/traits.py:203: UserWarning: 64-bit data types not supported for WebGL data, casting to 32-bit.
-      warnings.warn('64-bit data types not supported for WebGL '
-
-
-
-.. parsed-literal::
-
-    Renderer(camera=PerspectiveCamera(aspect=3.0, position=(7.0, 7.0, 35.0), projectionMatrix=(1.0, 0.0, 0.0, 0.0,…
-
-
 .. jupiter-execute::
 
     action
 
-
-
-.. parsed-literal::
-
-    AnimationAction(clip=AnimationClip(duration=25.0, tracks=(VectorKeyframeTrack(name='scene/ball_0.matrix', time…
 
 
