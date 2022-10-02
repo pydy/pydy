@@ -1,8 +1,9 @@
+.. jupiter-execute::
 #========================================================================
 # 3D, n body pendulum, with ideally elastic and ideally slick bodies
 #========================================================================
-.. jupiter-execute::
 
+.. jupiter-execute::
     import sympy as sm
     import sympy.physics.mechanics as me
     import time
