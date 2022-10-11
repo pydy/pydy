@@ -36,9 +36,6 @@
     As method = 'Radau' in solve_ivp gives much 'better' results than no method (e.g. 15% deviation vs. 0.3% in 
     some cases), I assume that this is due to numerical errors in the integration.
     - of course I do not know for sure.
-    
-    
-    cse = True reduced the time it take to integrate substantially, by a factor of over 50
     '''
     start = time.time()
     
@@ -46,8 +43,6 @@
 
     #==========================================================================
     n = 3                   # number of pendulum bodies, labelled 0, 1, .., n-1, must be two ore more.
-    cse1 = False            # if you have sympy 1.11.1 or better, set it to True. Makes numerical integration
-                            # MUCH faster
     #==========================================================================
     
 .. jupyter-execute::
@@ -193,15 +188,15 @@
     qL = q1 + u1
     pL = [m, m1, g, r, l, iXX, iYY, iZZ, reibung, k]
     
-    MM_lam = sm.lambdify(qL + pL, MM, cse=cse1)
-    force_lam = sm.lambdify(qL + pL, force, cse=cse1)
+    MM_lam = sm.lambdify(qL + pL, MM)
+    force_lam = sm.lambdify(qL + pL, force)
     
-    pot_lam = sm.lambdify(qL + pL, pot_energie, cse=cse1)
-    kin_lam = sm.lambdify(qL + pL, kin_energie, cse=cse1)
-    spring_lam = sm.lambdify(qL + pL, spring_energie, cse=cse1)
+    pot_lam = sm.lambdify(qL + pL, pot_energie)
+    kin_lam = sm.lambdify(qL + pL, kin_energie)
+    spring_lam = sm.lambdify(qL + pL, spring_energie)
     
-    Dmc_loc_lam = sm.lambdify(qL + pL, Dmc_loc, cse=cse1)
-    punkt_loc_lam = sm.lambdify(qL + pL, punkt_loc, cse=cse1)
+    Dmc_loc_lam = sm.lambdify(qL + pL, Dmc_loc)
+    punkt_loc_lam = sm.lambdify(qL + pL, punkt_loc)
     
     print('it took {:.3f} sec to set up Kanes equations'.format(time.time() - start))
 
@@ -216,7 +211,7 @@
     #=====================================================================
     r1 = 1.5                                 # radius of the ball
     m1 = 1.                                  # mass of the ball
-    m11 = m1 / 5.                           # mass of the red dot
+    m11 = m1 / 5.                            # mass of the red dot
     l1 = 6.                                  # length of the massless rod of the pendulum
     k1 = 1000.                               # 'spring constant' of the balls
     reibung1 = 0.                            # friction of the ball against the rod
@@ -231,7 +226,7 @@
     #======================================================================
     schritte = 100 * int(intervall)
     times = np.linspace(0., intervall, schritte)
-    iXX1 = 2./5. * m1 * r1**2   # from the internet
+    iXX1 = 2./5. * m1 * r1**2                # from the internet
     iYY1 = iXX1
     iZZ1 = iXX1
     
@@ -244,8 +239,7 @@
     t_span = (0., intervall)
     
     def gradient(t, y, args):
-    #        vals = np.concatenate((y, args))
-        sol = np.linalg.solve(MM_lam(*y, *args), force_lam(*y, *args))
+          sol = np.linalg.solve(MM_lam(*y, *args), force_lam(*y, *args))
         return np.array(sol).T[0]
         
     resultat1 = solve_ivp(gradient, t_span, y0, t_eval = times, args=(pL_vals,), method='Radau')
