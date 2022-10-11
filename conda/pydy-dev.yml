@@ -1,0 +1,19 @@
+name: pydy-dev
+channels:
+  - conda-forge
+dependencies:
+  - coverage
+  - cython
+  - ipython
+  - ipywidgets
+  - jupyter
+  - jupyter_sphinx
+  - matplotlib
+  - nose
+  - numpy
+  - numpydoc
+  - python
+  - pythreejs
+  - scipy
+  - sphinx
+  - sympy
