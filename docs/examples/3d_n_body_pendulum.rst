@@ -242,7 +242,7 @@ some cases), I assume that this is due to numerical errors in the integration.
     t_span = (0., intervall)
     
     def gradient(t, y, args):
-          sol = np.linalg.solve(MM_lam(*y, *args), force_lam(*y, *args))
+        sol = np.linalg.solve(MM_lam(*y, *args), force_lam(*y, *args))
         return np.array(sol).T[0]
         
     resultat1 = solve_ivp(gradient, t_span, y0, t_eval = times, args=(pL_vals,), method='Radau')
