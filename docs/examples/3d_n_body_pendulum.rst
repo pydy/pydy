@@ -9,6 +9,7 @@
    :jupyter-download:notebook:`3d_n_body_pendulum`.
 
 .. jupyter-execute::
+
     import sympy as sm
     import sympy.physics.mechanics as me
     import time
@@ -41,6 +42,7 @@ some cases), I assume that this is due to numerical errors in the integration.
 
     
 .. jupyter-execute::
+
     start = time.time()
     #==========================================================================
     n = 3                   # number of pendulum bodies, labelled 0, 1, .., n-1, must be two ore more.
@@ -314,6 +316,7 @@ reasonable.
 
     
 .. jupyter-execute::   
+
     winkel = sm.symbols('winkel')
     Rotation1 = sm.Matrix([[sm.cos(winkel), -sm.sin(winkel), 0], [sm.sin(winkel), sm.cos(winkel), 0], [0., 0., 1]])
     Rot_lam = sm.lambdify(winkel, Rotation1.T)
