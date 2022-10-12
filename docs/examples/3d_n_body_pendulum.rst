@@ -1,7 +1,7 @@
-.. jupyter-execute::
-   #===================
-   # 3d_n_body_pendulum
-   #===================
+
+===================
+3d_n_body_pendulum
+===================
 .. note::
 
    You can download this example as a Python script:
@@ -22,30 +22,31 @@
     import pythreejs as p3js
 
 
-.. jupyter-execute::
 
-    '''
-    A pendulum consisting on n massless rods of length l. A ball of mass m and radius r is attached to each
-    rod, such that the rod goes through the center of each ball. the center of the ball is fixed at the middle
-    of the rod. the ball rotates around the rod.
-    If two balls collide, they are ideally elastic, with 'spring constant' k.
-    The collision is modeled using the sm.Heaviside(..) function.
-    The balls are ideally slick, so collisions will not affect their rotation.
+
+A pendulum consisting on n massless rods of length l. A ball of mass m and radius r is attached to each
+rod, such that the rod goes through the center of each ball. the center of the ball is fixed at the middle
+of the rod. the ball rotates around the rod.
+If two balls collide, they are ideally elastic, with 'spring constant' k.
+The collision is modeled using the sm.Heaviside(..) function.
+The balls are ideally slick, so collisions will not affect their rotation.
     
-    The total energy does not always remain constant.
-    As method = 'Radau' in solve_ivp gives much 'better' results than no method (e.g. 15% deviation vs. 0.3% in 
-    some cases), I assume that this is due to numerical errors in the integration.
-    - of course I do not know for sure.
-    '''
+The total energy does not always remain constant.
+As method = 'Radau' in solve_ivp gives much 'better' results than no method (e.g. 15% deviation vs. 0.3% in 
+some cases), I assume that this is due to numerical errors in the integration.
+- of course I do not know for sure.
+ 
+ 
+    
+
+    
+.. jupyter-execute::
     start = time.time()
-    
-.. jupyter-execute::
-
     #==========================================================================
     n = 3                   # number of pendulum bodies, labelled 0, 1, .., n-1, must be two ore more.
     #==========================================================================
     
-.. jupyter-execute::
+    
     m, m1, g, r, l, reibung, k, t = sm.symbols('m, m1, g, r, l, reibung, k, t')
     iXX, iYY, iZZ = sm.symbols('iXX, iYY, iZZ')
     
@@ -293,25 +294,26 @@
     ax.legend();
 
 
-.. jupyter-execute::
 
-    '''
-    Animation using pythreejs.
-    This is basically copied from a program by Jason Moore, just adapted to my needs here.
+
+Animation using pythreejs.
+This is basically copied from a program by Jason Moore, just adapted to my needs here.
     
-    NOTE: the 'reference frame' for pythreejs seems to be:
-    X - axis downwards, color red
-    Y - axis to the right, color green (hence:)
-    Z - axis pointing to the observer, color blue
+NOTE: the 'reference frame' for pythreejs seems to be:
+X - axis downwards, color red
+Y - axis to the right, color green (hence:)
+Z - axis pointing to the observer, color blue
     
-    Rotation is used to transform my coordinate system used above to set up the equations of motion 
-    to the one prescribed by pythreejs.
+Rotation is used to transform my coordinate system used above to set up the equations of motion 
+to the one prescribed by pythreejs.
     
-    If you know from the beginning, that you want to use pythreejs it is probably better to use its
-    orientation of coordinates, when setting up Kane's equations. Saves the trouble of guessing, which
-    rotation is correct. I am not sure my rotation is fully correct, just played around until it 'looked'
-    reasonable.
-    '''
+If you know from the beginning, that you want to use pythreejs it is probably better to use its
+orientation of coordinates, when setting up Kane's equations. Saves the trouble of guessing, which
+rotation is correct. I am not sure my rotation is fully correct, just played around until it 'looked'
+reasonable.
+
+    
+.. jupyter-execute::   
     winkel = sm.symbols('winkel')
     Rotation1 = sm.Matrix([[sm.cos(winkel), -sm.sin(winkel), 0], [sm.sin(winkel), sm.cos(winkel), 0], [0., 0., 1]])
     Rot_lam = sm.lambdify(winkel, Rotation1.T)
