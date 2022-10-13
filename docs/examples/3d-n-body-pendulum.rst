@@ -217,7 +217,7 @@ integration.  - of course I do not know for sure.
     omega1 = 7.5                             # initial rotation speed of ball_i around A[i].y
     u1x, u1y, u1z = 0., omega1, 0.           # initial rotational speed of the ball
 
-    intervall = 5.
+    intervall = 4.
     #======================================================================
     schritte = 100 * int(intervall)
     times = np.linspace(0., intervall, schritte)
