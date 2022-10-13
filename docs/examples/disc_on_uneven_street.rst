@@ -2,7 +2,7 @@
 ... note::
 
 You can download this example as a Python script:
-:jupyter-download:script: disc_on_uneven_stree or Jupyter notebook:
+:jupyter-download:script: disc_on_uneven_street or Jupyter notebook:
 :jupyter-download:notebook: disc_on_uneven_street.
 
 .. jupyter_execute::
@@ -23,30 +23,28 @@ You can download this example as a Python script:
     
     import time
 
-.. code:: ipython3
+A homogeneous disc with radius r and mass m is running on an uneven 'street' without sliding. 
+The disc is not allowed to jump, hence I can calculate the reaction forces needed to hold it on the
+street at all times
+    
+The 'overall' shape of the street is modelled as a parabola (called strassen_form), the unevenness is 
+modelled as a sum of sin functions (called strasse) with each term having a smaller amplitude and higher 
+frequency as the previous one.
+the 'street itself' is the sum of strasse and strassen_form.
+    
+NOTE: The disc must always have only have one contact point, hence this inequality 
+must hold: r < abs( (1 + strasse.diff(t)**2)**3/2 / strasse.diff(t, 2) ), 
+formula for bevel radius (Krümmungsradius) from Wikipedia.
+    
+Using simplify() on intermediate results (which are small enough so it ends in good time!) 
+reduce the number of operations substantially.
+    
+The total energy is not constant. I think, these are numerical inaccuracies, as this becomes worse 
+if the radius of the disc is close to the 'bevel radius'.
+method = 'Radau' in solve_ivp seems to be best.
 
-    '''
-    A homogeneous disc with radius r and mass m is running on an uneven 'street' without sliding. 
-    The disc is not allowed to jump, hence I can calculate the reaction forces needed to hold it on the
-    street at all times
-    
-    The 'overall' shape of the street is modelled as a parabola (called strassen_form), the unevenness is 
-    modelled as a sum of sin functions (called strasse) with each term having a smaller amplitude and higher 
-    frequency as the previous one.
-    the 'street itself' is the sum of strasse and strassen_form.
-    
-    NOTE: The disc must always have only have one contact point, hence this inequality 
-    must hold: r < abs( (1 + strasse.diff(t)**2)**3/2 / strasse.diff(t, 2) ), 
-    formula for bevel radius (Krümmungsradius) from Wikipedia.
-    
-    Using simplify() on intermediate results (which are small enough so it ends in good time!) 
-    reduce the number of operations substantially.
-    
-    The total energy is not constant. I think, these are numerical inaccuracies, as this becomes worse 
-    if the radius of the disc is close to the 'bevel radius'.
-    method = 'Radau' in solve_ivp seems to be best.
-    '''
-    
+.. jupyter_execute::
+
     start = time.time()
     
     # q1 is the angle of the disc, x is the horizontal position of contact point CP
@@ -77,32 +75,35 @@ You can download this example as a Python script:
     gesamt = strassen_form + strasse
     #===========================================
     
-    '''
-    Relationship of x(t) to q1:
-    x(t) is the horizontal position of the contact point.
-    The arc length of a function f(k) from 0 to x is integral[0, x](sqrt(1 + f(k).diff(t)**2)dk) [I found this
-    in the internet]
-    If the disc turns by an angle q1, the contact point moves a distance q1 * r , hence
-    r * (-q(t)) = arc length of f(k)[0, x(t)]  = integral[0, x](sqrt(1 + f(k).diff(k)**2)dk) [the minus sign
-    is 'dicated' by the right hand rule].  Hence:
-    d/dt(r * q) = r * d/dt(q(t)) =  d/dt(arc length(..)) = sqrt(1 + strasse.diff(x)**2) * d/dt(x). 
-    hence:
-    d/dt(x) = -r * u / sqrt(1 + strasse.diff(x)**2) is the sought after differential equation to determine x(q(t)).
-    '''
+    
+Relationship of x(t) to q1:
+x(t) is the horizontal position of the contact point.
+The arc length of a function f(k) from 0 to x is integral[0, x](sqrt(1 + f(k).diff(t)**2)dk) [I found this
+in the internet]
+If the disc turns by an angle q1, the contact point moves a distance q1 * r , hence
+r * (-q(t)) = arc length of f(k)[0, x(t)]  = integral[0, x](sqrt(1 + f(k).diff(k)**2)dk) [the minus sign
+is 'dicated' by the right hand rule].  Hence:
+d/dt(r * q) = r * d/dt(q(t)) =  d/dt(arc length(..)) = sqrt(1 + strasse.diff(x)**2) * d/dt(x). 
+hence:
+d/dt(x) = -r * u / sqrt(1 + strasse.diff(x)**2) is the sought after differential equation to determine x(q(t)).
+
+.. jupyter_execute::
+
     rhs3 = (-u1 * r / sm.sqrt(1. + gesamt.diff(x)**2)).simplify()
     
-    
-    '''
-    this is to determine the maximum radius of the wheel so it have only one contact point.
-    the radius of the wheel must be smaller than the smallest bevel radius (Schmiegekreis) of the
-    function of the road. 
-    '''
+this is to determine the maximum radius of the wheel so it have only one contact point.
+the radius of the wheel must be smaller than the smallest bevel radius (Schmiegekreis) of the
+function of the road. 
+
+.. jupyter_execute::
+
     r_max = (sm.S(1.) + (gesamt.diff(x))**2 )**sm.S(3/2)/gesamt.diff(x, 2)
     
-    '''
-    The vector perpendicular to the strasse is -(gesamt.diff(x), - 1). The leading minus sign, because directed
-    'inward'. It points from the contact point CP to the geometric center of the discDmc
-    '''
+The vector perpendicular to the strasse is -(gesamt.diff(x), - 1). The leading minus sign, because directed
+'inward'. It points from the contact point CP to the geometric center of the discDmc
+
+.. jupyter_execute::
+
     vector = (-(gesamt.diff(x)*N.x - N.y)).simplify()
     A2.orient_axis(N, q1, N.z)
     A2.set_ang_vel(N, u1 * N.z)
@@ -127,11 +128,13 @@ You can download this example as a Python script:
     Body = me.RigidBody('Body', Dmc, A2, m, (I, Dmc))                               
     BODY = [Body]
     
-    '''
-    A necessary, but by no means sufficient condition for the correctness of the equations of motion is that,
-    absent any friction, the total energy be constant.
-    Hence I like to look at this.
-    '''
+
+A necessary, but by no means sufficient condition for the correctness of the equations of motion is that,
+absent any friction, the total energy be constant.
+Hence I like to look at this.
+
+.. jupyter_execute::
+
     kin_energie = Body.kinetic_energy(N).subs({auxx: 0., auxy:  0.})
     pos_energie = m * g * me.dot(Dmc.pos_from(P0), N.y)
     
@@ -148,10 +151,12 @@ You can download this example as a Python script:
     (fr, frstar) = KM.kanes_equations(BODY, FL)
     MM = KM.mass_matrix_full
     force = KM.forcing_full
-    '''
-    rhs is needed for the reaction forces. Here it is small enough to use it symbolically. If it becomes
-    large, it is better to calculate it numerically.
-    '''
+    
+rhs is needed for the reaction forces. Here it is small enough to use it symbolically. If it becomes
+large, it is better to calculate it numerically.
+
+.. jupyter_execute::
+
     rhs = KM.rhs().subs({sm.Derivative(x, t): rhs3})
     print('rhs DS', me.find_dynamicsymbols(rhs))
     print('rhs free symbols', rhs.free_symbols)
@@ -204,7 +209,7 @@ You can download this example as a Python script:
     print('it took {:.3f} sec to establish Kanes equations'.format(time.time() - start))
 
 
-.. code:: ipython3
+.. jupyter_execute::
 
     # Integrate numerically
     
@@ -269,8 +274,7 @@ You can download this example as a Python script:
     
     print("To numerically integrate an intervall of {} sec the routine cycled {} times and it took {:.5f} sec ".format(intervall, resultat1.nfev, time.time() - start))
 
-
-.. code:: ipython3
+.. jupyter_execute::
 
     # plot results
     
@@ -353,7 +357,7 @@ You can download this example as a Python script:
     print('it took {:.3f} sec to calculate the forces and plot the graphs'.format(time.time() - start))
 
 
-.. code:: ipython3
+.. jupyter_execute::
 
     #Animation
     # Location of the center of the disc
