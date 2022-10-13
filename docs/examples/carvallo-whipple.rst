@@ -501,7 +501,8 @@ Plot the State Trajectories
    axes[-1].plot(sys.times, np.squeeze(holonomic_vs_time))
    axes[-1].set_ylabel('Holonomic\nconstraint [m]')
    axes[-1].set_xlabel('Time [s]')
-   plt.tight_layout()
+   # Re-enable (was causing a CI build issue (#471))
+   #plt.tight_layout()
 
 Visualizing the System Motion
 =============================
