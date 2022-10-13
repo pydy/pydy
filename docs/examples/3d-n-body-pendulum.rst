@@ -185,15 +185,15 @@ integration.  - of course I do not know for sure.
     qL = q1 + u1
     pL = [m, m1, g, r, l, iXX, iYY, iZZ, reibung, k]
 
-    MM_lam = sm.lambdify(qL + pL, MM)
-    force_lam = sm.lambdify(qL + pL, force)
+    MM_lam = sm.lambdify(qL + pL, MM, cse=True)
+    force_lam = sm.lambdify(qL + pL, force, cse=True)
 
-    pot_lam = sm.lambdify(qL + pL, pot_energie)
-    kin_lam = sm.lambdify(qL + pL, kin_energie)
-    spring_lam = sm.lambdify(qL + pL, spring_energie)
+    pot_lam = sm.lambdify(qL + pL, pot_energie, cse=True)
+    kin_lam = sm.lambdify(qL + pL, kin_energie, cse=True)
+    spring_lam = sm.lambdify(qL + pL, spring_energie, cse=True)
 
-    Dmc_loc_lam = sm.lambdify(qL + pL, Dmc_loc)
-    punkt_loc_lam = sm.lambdify(qL + pL, punkt_loc)
+    Dmc_loc_lam = sm.lambdify(qL + pL, Dmc_loc, cse=True)
+    punkt_loc_lam = sm.lambdify(qL + pL, punkt_loc, cse=True)
 
     print('it took {:.3f} sec to set up Kanes equations'.format(time.time() - start))
 
@@ -304,7 +304,7 @@ rotation is fully correct, just played around until it 'looked' reasonable.
 
     winkel = sm.symbols('winkel')
     Rotation1 = sm.Matrix([[sm.cos(winkel), -sm.sin(winkel), 0], [sm.sin(winkel), sm.cos(winkel), 0], [0., 0., 1]])
-    Rot_lam = sm.lambdify(winkel, Rotation1.T)
+    Rot_lam = sm.lambdify(winkel, Rotation1.T, cse=True)
     Rotation = Rot_lam(np.pi/2.)
 
     TC_store = []
@@ -318,17 +318,17 @@ rotation is fully correct, just played around until it 'looked' reasonable.
         TC = sm.eye(4)
         TC[:3, :3] = (A[i].dcm(N)) * Rotation
         TC = TC.reshape(16, 1)
-        TC_lam = sm.lambdify(qL + pL, TC)
+        TC_lam = sm.lambdify(qL + pL, TC, cse=True)
 
         TR = sm.eye(4)
         TR[:3, :3] = (A[i].dcm(N)) * Rotation
         TR = TR.reshape(16, 1)
-        TR_lam = sm.lambdify(qL + pL, TR)
+        TR_lam = sm.lambdify(qL + pL, TR, cse=True)
 
         TP = sm.eye(4)
         TP[:3, :3] = (A[i].dcm(N)) * Rotation
         TP = TP.reshape(16, 1)
-        TP_lam = sm.lambdify(qL + pL, TP)
+        TP_lam = sm.lambdify(qL + pL, TP, cse=True)
 
 
     # store the information about the body, expressed in TAc for every time step.
