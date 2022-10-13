@@ -35,6 +35,7 @@ Table of Contents
       examples/multidof-holonomic.rst
       examples/rocket-car.rst
       examples/three-link-conical-pendulum.rst
+      examples/3d_n_body_pendulum
 
 .. ifconfig:: INCLUDE_EXAMPLES
 
