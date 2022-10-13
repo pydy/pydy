@@ -5,8 +5,8 @@
 .. note::
 
    You can download this example as a Python script:
-   :jupyter-download:script:`3d_n_body_pendulum` or Jupyter notebook:
-   :jupyter-download:notebook:`3d_n_body_pendulum`.
+   :jupyter-download:script:`3d-n-body-pendulum` or Jupyter notebook:
+   :jupyter-download:notebook:`3d-n-body-pendulum`.
 
 .. jupyter-execute::
 
@@ -217,7 +217,7 @@ integration.  - of course I do not know for sure.
     omega1 = 7.5                             # initial rotation speed of ball_i around A[i].y
     u1x, u1y, u1z = 0., omega1, 0.           # initial rotational speed of the ball
 
-    intervall = 25.
+    intervall = 2.
     #======================================================================
     schritte = 100 * int(intervall)
     times = np.linspace(0., intervall, schritte)
