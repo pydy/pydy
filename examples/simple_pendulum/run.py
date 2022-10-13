@@ -4,6 +4,7 @@ from sympy import *
 from sympy.physics.mechanics import LagrangesMethod, Lagrangian
 from sympy.physics.mechanics import ReferenceFrame, Particle, Point
 from sympy.physics.mechanics import dynamicsymbols
+from pydy.system import System
 
 # System state variables
 theta = dynamicsymbols('theta')
@@ -39,3 +40,21 @@ fl = [(P, g * m * N.x)]
 l = LagrangesMethod(L, [theta], forcelist=fl, frame=N)
 
 pprint(l.form_lagranges_equations())
+
+# Create a system from the lagranges equations
+sys = System(l)
+
+# Set up the system for simulation
+sys.times = linspace(0, 10, num=100)
+sys.constants = {m: 10, l: 5, g: 9.8}
+sys.initial_conditions = {theta: 60, thetad: 0}
+
+# Simulate the system
+out = sys.integrate()
+
+# Display the kinetic energy change in time (obtained from the particle in the
+# bodies list)
+KE = sys.body_kinetic_energies()
+
+# Plot the coordinate outputs
+sys.plot_coordinates()
