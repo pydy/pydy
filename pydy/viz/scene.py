@@ -516,7 +516,8 @@ class Scene(object):
                                  controls=[controller],
                                  width=view_width, height=view_height)
 
-        clip = p3js.AnimationClip(tracks=self._tracks, duration=self.times[-1])
+        clip = p3js.AnimationClip(tracks=self._tracks,
+                                  duration=self.times[-1] - self.times[0])
         action = p3js.AnimationAction(p3js.AnimationMixer(scene), clip, scene)
 
         return widgets.VBox([action, renderer])
