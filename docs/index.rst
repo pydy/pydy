@@ -36,7 +36,7 @@ Table of Contents
       examples/rocket-car.rst
       examples/three-link-conical-pendulum.rst
       examples/3d-n-body-pendulum
-
+      examples/rolling_ball_uneven_street
 .. ifconfig:: INCLUDE_EXAMPLES
 
    Examples
