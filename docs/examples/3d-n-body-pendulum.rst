@@ -1,5 +1,5 @@
 ==================
-3D N-Body Pendulum
+3d n-body_pendulum
 ==================
 
 .. note::
