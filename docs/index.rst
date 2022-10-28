@@ -33,6 +33,7 @@ Table of Contents
       examples/kane-levinson-1985-chapter-03.rst
       examples/mass-spring-damper.rst
       examples/multidof-holonomic.rst
+      examples/2d_pendulum_white_noise
       examples/rocket-car.rst
       examples/three-link-conical-pendulum.rst
       examples/3d-n-body-pendulum
