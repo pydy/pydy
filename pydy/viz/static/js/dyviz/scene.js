@@ -245,6 +245,14 @@ DynamicsVisualizer.Scene = Object.extend(DynamicsVisualizer, {
                                   50, 50, 50);
                 break;
 
+            case "Box":
+                var geometry = new THREE.CubeGeometry(
+                                  object.width,
+                                  object.height,
+                                  object.depth,
+                                  50, 50, 50);
+                break;
+                
             case "Sphere":
                 var geometry = new THREE.SphereGeometry(
                                                object.radius, 100);
