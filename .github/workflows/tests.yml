@@ -34,7 +34,7 @@ jobs:
           channels: conda-forge
           miniforge-variant: Mambaforge
       - name: Install basic dependencies
-        run: mamba install -q -y coverage cython matplotlib nose numpy pythreejs "sympy<1.10" scipy
+        run: mamba install -q -y coverage cython matplotlib nose numpy pythreejs 'sympy<1.10' scipy
       - name: Test with nose
         run: nosetests -v --with-coverage --cover-package=pydy
       - name: Test installation of PyDy
