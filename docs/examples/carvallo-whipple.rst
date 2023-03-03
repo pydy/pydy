@@ -10,14 +10,8 @@ Carvallo-Whipple Bicycle Model
 
 This example creates a nonlinear model and simulation of the Carvallo-Whipple
 Bicycle Model ([Carvallo1899]_, [Whipple1899]_). This formulation uses the
-conventions described in [Moore2012]_ which are equivalent to and based on the
-models described in [Meijaard2007]_ and [Basu-Mandal2007]_.
-
-.. warning::
-
-   This model does not currently match the [Basu-Mandal2007]_ model to machine
-   precision. Beware if you require that level of precision. See
-   https://github.com/pydy/pydy/pull/122 for discussion on this issue.
+conventions described in [Moore2012]_ which are equivalent to the models
+described in [Meijaard2007]_ and [Basu-Mandal2007]_.
 
 Import the necessary libraries, classes, and functions:
 
@@ -290,11 +284,17 @@ of ``nonholonomic`` above. It is not a nonholonomic constraint, but we include
 it because we can't easy eliminate a dependent generalized coordinate with
 ``nonholonmic``.
 
+.. warning:: The floating point numerical stability of the solution is affected
+   by the order of the nonholonomic constraint expressions in the following
+   list. If ordered ``A['1'],A['2'],A['3']`` stability degrades.
+
 .. jupyter-execute::
 
-   nonholonomic = [fn.vel(N).dot(A['1']),
-                   fn.vel(N).dot(A['2']),
-                   fn.vel(N).dot(A['3'])]
+   nonholonomic = [
+       fn.vel(N).dot(A['1']),
+       fn.vel(N).dot(A['3']),
+       fn.vel(N).dot(A['2']),
+   ]
 
 Inertia
 =======
@@ -453,8 +453,8 @@ Generate a time vector over which the integration will be carried out.
 
 .. jupyter-execute::
 
-    fps = 60  # frames per second
-    duration = 5.0  # seconds
+    fps = 30  # frames per second
+    duration = 6.0  # seconds
     sys.times = np.linspace(0.0, duration, num=int(duration*fps))
 
 The trajectory of the states over time can be found by calling the
@@ -501,8 +501,7 @@ Plot the State Trajectories
    axes[-1].plot(sys.times, np.squeeze(holonomic_vs_time))
    axes[-1].set_ylabel('Holonomic\nconstraint [m]')
    axes[-1].set_xlabel('Time [s]')
-   # Re-enable (was causing a CI build issue (#471))
-   #plt.tight_layout()
+   plt.tight_layout()
 
 Visualizing the System Motion
 =============================
