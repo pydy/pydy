@@ -279,9 +279,11 @@ def setup_symbolics():
 
     print('Defining nonholonomic constraints.')
 
-    nonholonomic = [fn.vel(N).dot(A['1']),
-                    fn.vel(N).dot(A['2']),
-                    fn.vel(N).dot(A['3'])]
+    nonholonomic = [
+        fn.vel(N).dot(A['1']),
+        fn.vel(N).dot(A['3']),
+        fn.vel(N).dot(A['2']),
+    ]
 
     # TODO : Move this out of the setup function.
     nh1 = fn.vel(N).dot(A['3'])
@@ -459,7 +461,7 @@ G_num = evalf_with_symengine(G, substitutions)
 udep_num = np.squeeze(np.linalg.solve(K_num, -G_num))
 for udi, ud_numi in zip(u_dep, udep_num):
     print('{:1.14f},{:1.14f}'.format(substitutions[udi], ud_numi))
-     substitutions[udi] = ud_numi
+    substitutions[udi] = ud_numi
     dynamic_substitutions[udi] = ud_numi
 
 print('Evaluating numerically with symengine')
