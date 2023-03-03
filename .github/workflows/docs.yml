@@ -26,8 +26,8 @@ jobs:
           activate-environment: test-environment
           python-version: ${{ matrix.python-version }}
           channels: conda-forge
-          conda-build-version: 3.21.4
+          miniforge-variant: Mambaforge
       - name: Install basic dependencies
-        run: conda install -q -y cython jupyter_sphinx matplotlib numpy numpydoc pythreejs sphinx sympy scipy
+        run: mamba install -q -y cython jupyter_sphinx matplotlib numpy numpydoc pythreejs sphinx sympy scipy
       - name: Test building documentation
         run: cd docs && make clean && make html && cd ..
