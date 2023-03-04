@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: master
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   build:
     name: Build and run tests
@@ -20,10 +24,6 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - name: Cancel previous workflows
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
       - name: Checkout repository
         uses: actions/checkout@v2
       - uses: conda-incubator/setup-miniconda@v2
