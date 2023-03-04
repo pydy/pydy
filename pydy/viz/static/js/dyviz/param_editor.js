@@ -119,6 +119,12 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
                 updated_object.length = jQuery("#_length").val()
                 break;
 
+            case "Box":
+                updated_object.width = jQuery("#_width").val()
+                updated_object.height = jQuery("#_height").val()
+                updated_object.depth = jQuery("#_depth").val()
+                break;
+
         }
 
         jQuery.extend(true,self.model.objects[int_id],updated_object);
@@ -177,6 +183,18 @@ DynamicsVisualizer.ParamEditor = Object.extend(DynamicsVisualizer, {
                 div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Length'));
                 div2.append(jQuery('<input />',{ type:'text', id: "_length", class: 'form-control', value: toLoad.length || 1.0}));
                 break;
+
+            case "Box":
+                div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Width'));
+                div2.append(jQuery('<input />',{ type:'text', id: "_width", class: 'form-control', value: toLoad.width || 1.0}));
+                
+                div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Height'));
+                div2.append(jQuery('<input />',{ type:'text', id: "_height", class: 'form-control', value: toLoad.height || 0.5}));
+                
+                div2.append(jQuery('<span \>',{ class:'input-group-addon',}).html('Depth'));
+                div2.append(jQuery('<input />',{ type:'text', id: "_depth", class: 'form-control', value: toLoad.depth || 0.5}));
+                break;
+
 
         }
     },
