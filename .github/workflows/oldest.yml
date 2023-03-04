@@ -1,6 +1,10 @@
-name: docs
+name: oldest
 
-on: [push, pull_request]
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -8,17 +12,19 @@ concurrency:
 
 jobs:
   build:
-    name: Build and generate documentation
-    runs-on: ubuntu-22.04
+    name: Build and run tests
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11"]
+        os: ["ubuntu-20.04"]
+        python-version: ["3.7"]
+
     defaults:
       run:
         shell: bash -l {0}
     steps:
-      - name: Checkout CyIpopt
+      - name: Checkout repository
         uses: actions/checkout@v2
       - uses: conda-incubator/setup-miniconda@v2
         with:
@@ -28,6 +34,9 @@ jobs:
           channels: conda-forge
           miniforge-variant: Mambaforge
       - name: Install basic dependencies
-        run: mamba install -q -y cython jupyter_sphinx matplotlib numpy numpydoc pythreejs sphinx sympy scipy
-      - name: Test building documentation
-        run: cd docs && make clean && make html && cd ..
+        run: |
+          mamba install -q -y coverage cython=0.29.* matplotlib=3.1.* nose numpy=1.16.* pythreejs sympy=1.5.* scipy=1.3.*
+      - name: Test with nose
+        run: nosetests -v --with-coverage --cover-package=pydy
+      - name: Test installation of PyDy
+        run: python setup.py install
