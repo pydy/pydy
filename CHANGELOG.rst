@@ -5,12 +5,22 @@ Release Notes
 0.7.0 (TBA)
 ===========
 
-- Support Python 3.10 and 3.11.
+- Support Python 3.10 and 3.11. [PR `#488`_]
+- Fixed the Carvallo-Whipple bicycle model to match Basu-Mandal benchmark
+  numbers. [PR `#486`_]
+- Updated the three link conical pendulum example to use new kanes_equations()
+  syntax. [PR `#481`_]
+- Added example of a 3D multilink pendulum with colliding bobs. [PR `#467`_]
 - ``LambdifyODEFunctionGenerator`` now accepts a ``cse=True/False`` kwarg and
   if SymPy >=1.9 is installed, then the underlying generated code by
   ``lambdify`` will be simplified. It is ``True`` by default. [PR `#464`_]
+- Visualization supports durations that don't start at 0.
 
 .. _#464: https://github.com/pydy/pydy/pull/464
+.. _#467: https://github.com/pydy/pydy/pull/467
+.. _#481: https://github.com/pydy/pydy/pull/481
+.. _#486: https://github.com/pydy/pydy/pull/486
+.. _#488: https://github.com/pydy/pydy/pull/488
 
 0.6.0 (February 4, 2022)
 ========================
