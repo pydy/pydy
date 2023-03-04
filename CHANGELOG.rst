@@ -8,6 +8,7 @@ Release Notes
 - Support Python 3.10 and 3.11. [PR `#488`_]
 - Fixed the Carvallo-Whipple bicycle model to match Basu-Mandal benchmark
   numbers. [PR `#486`_]
+- Added Box geometry to the javascript GUI [PR `#484`_]
 - Updated the three link conical pendulum example to use new kanes_equations()
   syntax. [PR `#481`_]
 - Added example of a 3D multilink pendulum with colliding bobs. [PR `#467`_]
@@ -19,6 +20,7 @@ Release Notes
 .. _#464: https://github.com/pydy/pydy/pull/464
 .. _#467: https://github.com/pydy/pydy/pull/467
 .. _#481: https://github.com/pydy/pydy/pull/481
+.. _#484: https://github.com/pydy/pydy/pull/484
 .. _#486: https://github.com/pydy/pydy/pull/486
 .. _#488: https://github.com/pydy/pydy/pull/488
 
