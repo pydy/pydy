@@ -5,6 +5,7 @@ Release Notes
 0.7.0 (TBA)
 ===========
 
+- Support Python 3.10 and 3.11.
 - ``LambdifyODEFunctionGenerator`` now accepts a ``cse=True/False`` kwarg and
   if SymPy >=1.9 is installed, then the underlying generated code by
   ``lambdify`` will be simplified. It is ``True`` by default. [PR `#464`_]
