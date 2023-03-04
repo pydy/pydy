@@ -2,8 +2,8 @@
 Release Notes
 =============
 
-0.7.0 (TBA)
-===========
+0.7.0 (March 4, 2023)
+=====================
 
 - Support Python 3.10 and 3.11. [PR `#488`_]
 - Fixed the Carvallo-Whipple bicycle model to match Basu-Mandal benchmark
