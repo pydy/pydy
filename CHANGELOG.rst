@@ -2,6 +2,11 @@
 Release Notes
 =============
 
+0.7.1 (March 4, 2023)
+=====================
+
+- Reduced sdist size by moving the MANIFEST.in prune command last.
+
 0.7.0 (March 4, 2023)
 =====================
 

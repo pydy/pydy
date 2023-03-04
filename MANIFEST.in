@@ -1,6 +1,6 @@
 include *.rst
 include LICENSE.txt
 include bin/*.py
-prune docs/_build
 recursive-include docs *
 recursive-include pydy/viz/static *
+prune docs/_build
