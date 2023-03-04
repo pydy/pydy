@@ -52,7 +52,31 @@ class TestCMatrixGenerator():
         v0, v1, v2, v3, v4, v5 = self.arguments[2]
         f0, f1, f2, f3, f4, f5 = self.arguments[3]
 
-        if parse_version(SYMPY_VERSION) >= parse_version('1.2'):
+        if parse_version(SYMPY_VERSION) >= parse_version('1.10'):
+            expected_subexprs = [
+                (pd[0], m4 + m5),
+                (pd[1], m3 + pd[0]),
+                (pd[2], m2 + pd[1]),
+                (pd[3], m1 + pd[2]),
+                (pd[4], f5),
+                (pd[5], g*m4 + g*m5 + pd[4] + f4),
+                (pd[6], g*m3 + pd[5] + f3),
+                (pd[7], g*m2 + pd[6] + f2),
+                (pd[8], g*m1 + pd[7] + f1)]
+            expected_simplified_matrices = (
+                sm.Matrix([[m0 + pd[3], pd[3], pd[2], pd[1], pd[0], m5],
+                           [pd[3], pd[3], pd[2], pd[1], pd[0], m5],
+                           [pd[2], pd[2], pd[2], pd[1], pd[0], m5],
+                           [pd[1], pd[1], pd[1], pd[1], pd[0], m5],
+                           [pd[0], pd[0], pd[0], pd[0], pd[0], m5],
+                           [m5,     m5,     m5,     m5,     m5, m5]]),
+                sm.Matrix([[-c0*v0 + g*m0 - k0*x0 + pd[8] + f0],
+                           [-c1*v1 - k1*x1 + pd[8]],
+                           [-c2*v2 - k2*x2 + pd[7]],
+                           [-c3*v3 - k3*x3 + pd[6]],
+                           [-c4*v4 - k4*x4 + pd[5]],
+                           [-c5*v5 + g*m5 - k5*x5 + pd[4]]]))
+        elif parse_version(SYMPY_VERSION) >= parse_version('1.2'):
             expected_subexprs = [
                 (pd[0], m4 + m5),
                 (pd[1], m3 + pd[0]),
