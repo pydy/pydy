@@ -2,7 +2,7 @@
 PyDy
 ====
 
-|pypi| |anaconda| |rtd-docs| |github-build| |gitter|
+|pypi| |anaconda| |rtd-docs| |github-build|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pydy.svg
    :target: https://pypi.python.org/pypi/pydy
@@ -17,9 +17,6 @@ PyDy
 
 .. |github-build| image:: https://github.com/pydy/pydy/actions/workflows/tests.yml/badge.svg
    :target: https://github.com/pydy/pydy/actions
-
-.. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
-   :target: https://gitter.im/pydy/pydy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 PyDy_, short for Python Dynamics, is a tool kit written in the Python
 programming language that utilizes an array of scientific programs to enable
@@ -373,10 +370,9 @@ Questions, Bugs, Feature Requests
 =================================
 
 If you have any question about installation, usage, etc, feel free send a
-message to our public `mailing list`_ or visit our `Gitter chatroom`_.
+message to our public `mailing list`_.
 
 .. _mailing list: http://groups.google.com/group/pydy
-.. _Gitter chatroom: https://gitter.im/pydy/pydy
 
 If you think there’s a bug or you would like to request a feature, please open
 an `issue`_ on Github.
