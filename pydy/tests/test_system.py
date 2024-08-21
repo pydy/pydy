@@ -24,7 +24,7 @@ warnings.simplefilter('once', PyDyImportWarning)
 
 class TestSystem():
 
-    def setup(self):
+    def setup_method(self):
 
         # Create a simple system with one specified quantity.
         self.sys = multi_mass_spring_damper(1, apply_gravity=True,

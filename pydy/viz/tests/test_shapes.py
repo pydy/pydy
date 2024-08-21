@@ -2,9 +2,11 @@
 
 # external
 import numpy as np
+import pytest
+
 from sympy import symbols
 from numpy.testing import assert_allclose
-from nose.tools import assert_raises
+
 try:
     import pythreejs as p3js
 except ImportError:
@@ -29,19 +31,19 @@ def test_shape():
 
     shape.name = 'shape1'
     assert shape.name == 'shape1'
-    with assert_raises(TypeError):
+    with pytest.raises(TypeError):
         shape.name = 1
 
     shape.color = 'red'
     assert shape.color == 'red'
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         shape.color = 'puke'
 
     shape.material = "water"
     assert shape.material == "water"
     shape.material = "WATER"
     assert shape.material == "WATER"
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         shape.material = 'fluffy cloth'
 
     assert shape.generate_dict() == {"color": "red",

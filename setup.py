@@ -50,8 +50,7 @@ setup(
     packages=find_packages(),
     install_requires=install_requires,
     extras_require=extras_require,
-    tests_require=['nose>=1.3.7'],
-    test_suite='nose.collector',
+    tests_require=['pytest', 'pytest-coverage'],
     include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',

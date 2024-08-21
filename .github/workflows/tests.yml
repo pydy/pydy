@@ -35,8 +35,12 @@ jobs:
           miniforge-variant: Mambaforge
       - name: Install basic dependencies
         run: |
-          mamba install -q -y coverage cython matplotlib nose numpy pythreejs sympy scipy
-      - name: Test with nose
-        run: nosetests -v --with-coverage --cover-package=pydy
+          mamba install -q -y coverage cython matplotlib pytest pytest-cov numpy pythreejs sympy scipy
+      - name: Install window dependencies
+        if: ${{ matrix.os=='windows-latest' }}
+        run: |
+          mamba install -q -y pywin32
+      - name: Test with pytest
+        run: pytest --cov . 
       - name: Test installation of PyDy
         run: python setup.py install
