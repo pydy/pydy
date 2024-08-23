@@ -4,11 +4,12 @@ import os
 import shutil
 import glob
 
+import pytest
+
 import numpy as np
 from numpy.testing import assert_allclose
 from sympy import symbols
 import sympy.physics.mechanics as me
-from nose.tools import assert_raises
 
 from ...system import System
 from ..shapes import Sphere
@@ -21,7 +22,7 @@ from ...utils import sympy_newer_than
 
 class TestScene(object):
 
-    def setup(self):
+    def setup_method(self):
         """Setups a simple 1 DoF mass spring damper system visualization."""
 
         mass, stiffness, damping, gravity = symbols('m, k, c, g')
@@ -129,13 +130,13 @@ class TestScene(object):
         scene = Scene(self.ref_frame, self.origin, self.viz_frame,
                       times=self.sys.times)
 
-        with assert_raises(ValueError):
+        with pytest.raises(ValueError):
             scene.system = self.sys
 
         scene = Scene(self.ref_frame, self.origin, self.viz_frame,
                       system=self.sys)
 
-        with assert_raises(ValueError):
+        with pytest.raises(ValueError):
             scene.times = self.sys.times
 
     def test_clear_trajectories(self):
@@ -314,7 +315,7 @@ class TestScene(object):
         assert scene._scene_info['constant_map'] == {'m': 1.0, 'k': 2.0,
                                                      'c': 3.0, 'g': 9.8}
 
-    def teardown(self):
+    def teardown_method(self):
 
         try:
             shutil.rmtree(Scene.pydy_directory)
