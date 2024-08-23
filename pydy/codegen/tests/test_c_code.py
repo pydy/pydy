@@ -2,9 +2,10 @@
 
 import os
 
+import pytest
+
 from pkg_resources import parse_version
 import sympy as sm
-from nose.tools import assert_raises
 
 from ...models import multi_mass_spring_damper
 from ..c_code import CMatrixGenerator
@@ -14,7 +15,7 @@ SYMPY_VERSION = sm.__version__
 
 class TestCMatrixGenerator():
 
-    def setup(self):
+    def setup_method(self):
 
         self.prefix = 'boogly_bee'
 
@@ -40,7 +41,8 @@ class TestCMatrixGenerator():
         # Make sure an error is risen if not enough arguments are provided.
         arguments = self.arguments[:-1]
 
-        assert_raises(ValueError, CMatrixGenerator, arguments, self.matrices)
+        with pytest.raises(ValueError):
+            CMatrixGenerator(arguments, self.matrices)
 
     def test_generate_cse(self):
 
@@ -1177,7 +1179,7 @@ void evaluate(
         with open(self.prefix + '.c') as f:
             assert f.read() == source
 
-    def teardown(self):
+    def teardown_method(self):
 
         if os.path.isfile(self.prefix + '.h'):
             os.remove(self.prefix + '.h')

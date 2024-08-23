@@ -12,7 +12,7 @@ from ..cython_code import CythonMatrixGenerator
 
 class TestCythonMatrixGenerator(object):
 
-    def setup(self):
+    def setup_method(self):
 
         self.prefix = 'boogly_bee'
 
@@ -187,7 +187,7 @@ setup(name="boogly_bee",
 
             np.testing.assert_allclose(output, expected)
 
-    def teardown(self):
+    def teardown_method(self):
 
         for suffix in ['_c.h', '_c.c', '_setup.py', '.pyx']:
             filename = self.prefix + suffix

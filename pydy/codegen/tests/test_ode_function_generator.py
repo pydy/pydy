@@ -151,7 +151,7 @@ def test_cse_same_numerical_results():
 
 class TestODEFunctionGenerator(object):
 
-    def setup(self):
+    def setup_method(self):
 
         self.sys = models.multi_mass_spring_damper(2)
         self.rhs = self.sys.eom_method.rhs()
@@ -275,7 +275,7 @@ class TestODEFunctionGeneratorSubclasses(object):
         warnings.warn("Theano was not found so the related tests are being"
                       " skipped.", PyDyImportWarning)
 
-    def setup(self):
+    def setup_method(self):
 
         self.sys = models.multi_mass_spring_damper()
         # Best keep these in order, otherwise it may change between SymPy
