@@ -12,12 +12,11 @@ constants = {l: 10.0, m: 10.0, g: 9.81}
 
 initial_conditions = {q1: 1.0, q2: 0.0, u1: 0.0, u2: 0.0}
 
-sys = System(KM, constants=constants,
-        initial_conditions=initial_conditions)
+sys = System(KM, constants=constants, initial_conditions=initial_conditions)
 
 frames_per_sec = 60
 final_time = 5.0
 
-times = linspace(0.0, final_time, final_time * frames_per_sec)
+times = linspace(0.0, final_time, int(final_time * frames_per_sec))
 sys.times = times
 x = sys.integrate()
