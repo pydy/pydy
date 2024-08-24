@@ -1,4 +1,4 @@
-Copyright (c) 2009-2023, PyDy Authors
+Copyright (c) 2009-2024, PyDy Authors
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
