@@ -111,17 +111,17 @@ PyDy has hard dependencies on the following software\ [#]_:
 .. [#] We only test PyDy with these minimum dependencies; these module versions
        are provided in the Ubuntu 20.04 packages. Previous versions may work.
 
-- Python >= 3.7
-- setuptools >= 44.0.0
-- NumPy_ >= 1.16.5
-- SciPy_ >= 1.3.3
-- SymPy_ >= 1.5.1
-- PyWin32 >= 219 (Windows Only)
+- Python >= 3.9
+- setuptools >= 44.1.1
+- NumPy_ >= 1.21.5
+- SciPy_ >= 1.8.0
+- SymPy_ >= 1.9
+- PyWin32 >= 303 (Windows Only)
 
 PyDy has optional dependencies for extended code generation on:
 
-- Cython_ >= 0.29.14
-- Theano_ >= 1.0.4
+- Cython_ >= 0.29.28
+- Theano_ >= 1.0.5
 
 and animated visualizations with ``Scene.display_jupyter()`` on:
 
@@ -141,7 +141,7 @@ or interactive animated visualizations with ``Scene.display_ipython()`` on:
 
 The examples may require these dependencies:
 
-- matplotlib_ >= 3.1.2
+- matplotlib_ >= 3.5.1
 - version_information_
 
 .. _version_information: https://pypi.python.org/pypi/version_information
@@ -302,10 +302,9 @@ repository from Github with::
 
 You should then install the dependencies for running the tests:
 
-- nose_: 1.3.7
+- pytest
 - phantomjs_: 1.9.0
 
-.. _nose: https://nose.readthedocs.org
 .. _phantomjs: http://phantomjs.org
 
 Isolated Environments
@@ -338,7 +337,7 @@ Or with conda_::
 
 The full Python test suite can be run with::
 
-   (pydy-dev)$ nosetests
+   (pydy-dev)$ pytest pydy/
 
 For the JavaScript tests the Jasmine and blanket.js libraries are used. Both
 of these libraries are included in pydy.viz with the source. To run the
