@@ -50,16 +50,16 @@ setup(
     packages=find_packages(),
     install_requires=install_requires,
     extras_require=extras_require,
-    tests_require=['pytest', 'pytest-coverage'],
+    tests_require=['pytest'],
     include_package_data=True,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Scientific/Engineering :: Physics',
     ],
 )
