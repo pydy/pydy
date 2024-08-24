@@ -350,7 +350,7 @@ Benchmark
 
 Run the benchmark to test the n-link pendulum problem with the various backends::
 
-   $ python bin/benchmark_pydy_code_gen.py <max # of links> <# of time steps>
+   $ python bin/benchmark_pydy_code_gen.py <max # of links> <# of time steps> <duration>
 
 Citation
 ========
