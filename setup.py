@@ -7,35 +7,35 @@ from setuptools import setup, find_packages
 
 exec(open('pydy/version.py').read())
 
-# The lower bounds for the dependencies match those in Ubuntu 20.04 LTS.
+# The lower bounds for the dependencies match those in Ubuntu 22.04 LTS.
 
 install_requires = [
-    'numpy>=1.16.5',
-    'setuptools>=44.0.0',
-    'scipy>=1.3.3',
-    'sympy>=1.5.1',
+    'numpy>=1.21.5',
+    'scipy>=1.8.0',
+    'setuptools>=44.1.1',
+    'sympy>=1.9',
 ]
 
 extras_require = {
     'doc': [
-        'jupyter_sphinx',  # not in Ubuntu repos
-        'numpydoc>=0.70',
+        'jupyter_sphinx>=0.3.2',
+        'numpydoc>=1.2',
         'pythreejs',  # not in Ubuntu repos
-        'sphinx>=1.8.5',
+        'sphinx>=4.3.2',
     ],
     'codegen': [
-        'Cython>=0.29.14',
-        'Theano>=1.0.4'
+        'Cython>=0.29.28',
+        'Theano>=1.0.5'
     ],
     'examples': [
-        'matplotlib>=3.1.2',
+        'matplotlib>=3.5.1',
         'notebook>=4.0.0,<5.0.0',  # for display_ipython()
         'ipywidgets>=4.0.0,<5.0.0'  # for display_ipython()
     ],
 }
 
 if os.name == 'nt':
-    install_requires.append('PyWin32>=219')
+    install_requires.append('PyWin32>=303')
 
 setup(
     name='pydy',
@@ -50,16 +50,16 @@ setup(
     packages=find_packages(),
     install_requires=install_requires,
     extras_require=extras_require,
-    tests_require=['pytest', 'pytest-coverage'],
+    tests_require=['pytest'],
     include_package_data=True,
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Scientific/Engineering :: Physics',
     ],
 )

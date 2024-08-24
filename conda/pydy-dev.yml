@@ -9,9 +9,9 @@ dependencies:
   - jupyter
   - jupyter_sphinx
   - matplotlib
-  - nose
   - numpy
   - numpydoc
+  - pytest
   - python
   - pythreejs
   - scipy
