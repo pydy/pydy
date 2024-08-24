@@ -7,22 +7,21 @@
 #
 name: pydy-dev
 channels:
-        - conda-forge
+  - conda-forge
 dependencies:
-        - coverage
-        - cython
-        - ipython
-        - ipywidgets
-        - jupyter
-        - jupyter_sphinx
-        - jupyterlab
-        - jupyter_client <7  # avoid the json deprecation warning
-        - matplotlib
-        - nose
-        - numpy
-        - numpydoc
-        - pydy
-        - python=3.*
-        - pythreejs
-        - sphinx
-        - sympy
+  - coverage
+  - cython
+  - ipython
+  - ipywidgets
+  - jupyter
+  - jupyter_sphinx
+  - jupyterlab
+  - matplotlib
+  - numpy
+  - numpydoc
+  - pydy
+  - pytest
+  - python=3.*
+  - pythreejs
+  - sphinx
+  - sympy
