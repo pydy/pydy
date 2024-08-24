@@ -32,12 +32,9 @@ BL = [ParP, ParR]
 
 KM = KanesMethod(N, q_ind=[q1, q2], u_ind=[u1, u2], kd_eqs=kd)
 
-
-KM.kanes_equations(FL, BL)
-#kdd = KM.kindiffdict()
-#mass_matrix = KM.mass_matrix_full
-#forcing_vector = KM.forcing_full
-#qudots = mass_matrix.inv() * forcing_vector
-#qudots = qudots.subs(kdd)
-#qudots.simplify()
-#
+KM.kanes_equations(BL, loads=FL)
+kdd = KM.kindiffdict()
+mass_matrix = KM.mass_matrix_full
+forcing_vector = KM.forcing_full
+qudots = mass_matrix.inv() * forcing_vector
+qudots = qudots.subs(kdd)
