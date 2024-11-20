@@ -930,3 +930,56 @@ class Tube(Shape):
     @points.setter
     def points(self, new_points):
         self._points = np.asarray(new_points)
+
+
+class Mesh(Shape):
+    """Instantiates a general mesh surface from the given points.
+
+    Parameters
+    ==========
+    points : array_like, shape(n, 3)
+        n sets of (x, y, z) coordinates that describe a surface mesh.
+
+    Examples
+    ========
+
+    >>> from pydy.viz.shapes import Mesh
+    >>> points = [[1.0, 2.0, 1.0], [2.0, 1.0, 1.0], [2.0, 3.0, 4.0]]
+    >>> s = Mesh(points)
+    >>> s.name
+    'unnamed'
+    >>> s.color
+    'grey'
+    >>> s.points
+    [[1.0, 2.0, 1.0], [2.0, 1.0, 1.0], [2.0, 3.0, 4.0]]
+    >>> s.name = 'my-shape1'
+    >>> s.name
+    'my-shape1'
+    >>> s.color = 'blue'
+    >>> s.color
+    'blue'
+    >>> s.points = [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0], [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
+    >>> s.points
+    [[2.0, 1.0, 4.0], [1.0, 2.0, 4.0], [2.0, 3.0, 1.0], [1.0, 1.0, 3.0]]
+    >>> a = Mesh(points, name='my-shape2', color='red')
+    >>> a.name
+    'my-shape2'
+    >>> a.color
+    'red'
+    >>> a.points
+    [[1.0, 2.0, 1.0], [2.0, 1.0, 1.0], [2.0, 3.0, 4.0]]
+
+    """
+
+    def __init__(self, points, **kwargs):
+        super(Mesh, self).__init__(**kwargs)
+        self.geometry_attrs += ['points']
+        self.points = points
+
+    @property
+    def points(self):
+        return self._points
+
+    @points.setter
+    def points(self, new_points):
+        self._points = np.asarray(new_points)
