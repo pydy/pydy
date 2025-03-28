@@ -10,6 +10,7 @@ import distutils
 import distutils.dir_util
 import datetime
 from collections import OrderedDict
+import time
 
 # external
 from pkg_resources import parse_version
@@ -20,6 +21,10 @@ try:
     import pythreejs as p3js
 except ImportError:
     p3js = None
+try:
+    import pyvista
+except ImportError:
+    pyvista = None
 
 # local
 from .camera import PerspectiveCamera
@@ -835,3 +840,71 @@ class Scene(object):
                                   ("canvas", "padding-right", "10px")]
 
         display(self._html_widget)
+
+    def _generate_pyvista_mesh_tracks(self):
+        """Creates KeyFrameTrack for each visualization frame."""
+
+        self._meshes = []
+        self._transform_mats = []
+
+        traj = self.states_trajectories
+
+        for vizframe in self.visualization_frames:
+            vizframe.generate_transformation_matrix(self.reference_frame,
+                                                    self.origin)
+            vizframe.generate_numeric_transform_function(self.states_symbols,
+                                                         self.constants.keys())
+            vizframe._create_pyvista_track(self.times, traj,
+                                           list(self.constants.values()),
+                                           constant_map=self.constants)
+            self._transform_mats.append(vizframe._transform_mats)
+            self._meshes.append(vizframe._mesh)
+
+    def display_pyvista(self, axes_arrow_length=None,
+                        plotter_kwargs={}):
+        """Returns a pyvista.Plotter containing the scene.
+
+        Parameters
+        ==========
+        axes_arrow_length : float
+            If a positive value is supplied a red (x), green (y), and blue (z)
+            arrows of the supplied length will be displayed as arrows for the
+            global axes.
+        plotter_kwargs : dictionary
+            Passed to ``pyvista.Plotter(**plotter_kwargs)``.
+
+        Returns
+        =======
+        pyvista.Plotter
+
+        """
+        if pyvista is None:
+            raise ImportError('pyvista needs to be installed.')
+
+        plotter = pyvista.Plotter(**plotter_kwargs)
+        plotter.add_axes()
+
+        self._generate_pyvista_mesh_tracks()  # creates _meshes
+
+        actors = []
+        for mesh, vf in zip(self._meshes, self.visualization_frames):
+            actors.append(plotter.add_mesh(mesh, color=vf.shape.color))
+
+        def callback(i):
+            #i = int(i)  # needed for slider
+            for actor, trnf_mat in zip(actors, self._transform_mats):
+                actor.user_matrix = np.array(trnf_mat[i]).reshape(4, 4).T
+            #time.sleep(0.1)
+
+        plotter.add_timer_event(
+            max_steps=len(self.times),
+            duration=500,
+            callback=callback,
+        )
+
+        #plotter.add_slider_widget(callback, (0, len(self.times)))
+        #plotter.camera.position = (1.0, 1.0, 0.0)
+        #plotter.camera.focal_point = (0.0, 0.0, 0.0)
+        plotter.show()
+
+        return plotter
