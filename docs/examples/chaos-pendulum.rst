@@ -365,3 +365,7 @@ the system.
 .. jupyter-execute::
 
     scene.display_jupyter(axes_arrow_length=1.0)
+
+.. jupyter-execute::
+
+    scene.display_pyvista(plotter_kwargs={'notebook': True})

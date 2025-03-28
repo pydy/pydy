@@ -905,6 +905,14 @@ class Scene(object):
         #plotter.add_slider_widget(callback, (0, len(self.times)))
         #plotter.camera.position = (1.0, 1.0, 0.0)
         #plotter.camera.focal_point = (0.0, 0.0, 0.0)
-        plotter.show()
+        try:
+            plotter_kwargs['notebook']
+        except KeyError:
+            plotter.show()
+        else:
+            if plotter_kwargs['notebook']:
+                plotter.show(jupyter_backend='client')
+            else:
+                plotter.show()
 
         return plotter
