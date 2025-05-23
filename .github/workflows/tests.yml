@@ -34,7 +34,7 @@ jobs:
           channels: conda-forge
       - name: Install basic dependencies
         run: |
-          conda install -q -y coverage cython matplotlib pytest pytest-cov numpy pythreejs sympy scipy
+          conda install -q -y setuptools coverage cython matplotlib pytest pytest-cov numpy pythreejs sympy scipy
       - name: Install window dependencies
         if: ${{ matrix.os=='windows-latest' }}
         run: |
