@@ -109,7 +109,7 @@ Dependencies
 PyDy has hard dependencies on the following software\ [#]_:
 
 .. [#] We only test PyDy with these minimum dependencies; these module versions
-       are provided in the Ubuntu 20.04 packages. Previous versions may work.
+       are provided in the Ubuntu 22.04 packages. Previous versions may work.
 
 - Python >= 3.9
 - setuptools >= 44.1.1

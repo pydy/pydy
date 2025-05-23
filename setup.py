@@ -56,10 +56,11 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
-        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.13',
         'Topic :: Scientific/Engineering :: Physics',
     ],
 )
