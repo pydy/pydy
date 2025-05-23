@@ -430,23 +430,22 @@ class TestODEFunctionGeneratorSubclasses(object):
         p['array'] = p_array
         p['dictionary'] = p_dct
 
-        r_array = np.array([1.0, 2.0, 3.0, 4.0])
+        x = np.random.random(len(sys.states))
+        t_val = 1.23
+
+        r_array = t_val*x[:4]
         r_dct_1 = dict(zip(specifieds, r_array))
-        r_dct_2 = {tuple(specifieds):
-                   lambda x, t: r_array}
-        r_dct_3 = {specifieds[0]: lambda x, t: np.ones(1),
-                   (specifieds[3], specifieds[1]):
-                   lambda x, t: np.array([4.0, 2.0]),
-                   specifieds[2]: 3.0 * np.ones(1)}
-        r_func = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
+        r_dct_2 = {tuple(specifieds): lambda x, t: t*x[:4]}
+        r_dct_3 = {specifieds[0]: lambda x, t: t*x[0],
+                   (specifieds[3], specifieds[1]): lambda x, t: t*x[[3, 1]],
+                   specifieds[2]: r_array[2]}
+        r_func = lambda x, t: t*x[:4]
 
         r = {}
         r[None] = choice([r_array, r_dct_1, r_dct_2, r_dct_3, r_func])
         r['array'] = r_array
         r['dictionary'] = choice([r_dct_1, r_dct_2, r_dct_3])
         r['function'] = r_func
-
-        x = np.random.random(len(sys.states))
 
         for p_arg_type in constants_arg_types:
             for r_arg_type in specifieds_arg_types:
@@ -460,7 +459,7 @@ class TestODEFunctionGeneratorSubclasses(object):
                                                  specifieds_arg_type=r_arg_type)
                 rhs = g.generate()
 
-                xdot = rhs(x, 0.0, r[r_arg_type], p[p_arg_type])
+                xdot = rhs(x, t_val, r[r_arg_type], p[p_arg_type])
 
                 try:
                     np.testing.assert_allclose(xdot, last_xdot)
@@ -490,7 +489,7 @@ class TestODEFunctionGeneratorSubclasses(object):
 
                 rhs = g.generate()
 
-                xdot = rhs(x, 0.0, p[p_arg_type])
+                xdot = rhs(x, t_val, p[p_arg_type])
 
                 try:
                     np.testing.assert_allclose(xdot, last_xdot)

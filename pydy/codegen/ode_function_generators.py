@@ -514,7 +514,7 @@ r : dictionary
             r = lambda *li : self._convert_specifieds_dict_to_array(*li[:3])
 
         elif r_arg_type == 'function':
-            r = lambda *li: li[2](*li[2:])
+            r = lambda *li: li[2](*li[:2])
 
         def rhs(*args):
             # args: x, t, p
