@@ -23,5 +23,6 @@ dependencies:
   - pytest
   - python=3.*
   - pythreejs
+  - pyvista
   - sphinx
   - sympy

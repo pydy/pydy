@@ -10,6 +10,10 @@ try:
     import pythreejs as p3js
 except ImportError:
     p3js = None
+try:
+    import pyvista
+except ImportError:
+    pyvista = None
 
 from .shapes import Shape
 from ..utils import sympy_equal_to_or_newer_than
@@ -470,3 +474,39 @@ class VisualizationFrame(object):
                                          values=matrices)
 
         self._track = track
+
+    def _create_pyvista_track(self, times, dynamic_values, constant_values,
+                              constant_map=None):
+        """Sets attributes with a pyvista mesh and transformation matrices for
+        animating this visualization frame.
+
+        Parameters
+        ==========
+        times : ndarray, shape(n,)
+            Array of monotonically increasing or decreasing values of time.
+        dynamics_values : ndarray, shape(n, m)
+            Array of state values for each time.
+        constant_values : array_like, shape(p,)
+            Array of values for the constants.
+        constant_map : dictionary
+            A key value pair mapping from SymPy symbols to floating point
+            values.
+
+        """
+        if pyvista is None:
+            raise ImportError('pyvista must be installed.')
+
+        # TODO : Passing in constant_values and constant_map is redundant,
+        # right?
+        self._mesh = self.shape._pyvista_mesh(constant_map=constant_map)
+
+        # TODO : Transform these in bulk to a shape(n, 4, 4) matrix here.
+        self._transform_mats = self.evaluate_transformation_matrix(
+            dynamic_values, constant_values)
+
+        # Set initial configuration.
+        # Transformation matrices for a vizualization frame are store in a list
+        # of lists with shape(n, 16). It seems pyvista needs the transpose of
+        # what we store.
+        trnf_mat = np.array(self._transform_mats[0]).reshape(4, 4).T
+        self._mesh.user_matrix = trnf_mat

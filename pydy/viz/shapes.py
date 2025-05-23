@@ -5,6 +5,10 @@ try:
     import pythreejs as p3js
 except ImportError:
     p3js = None
+try:
+    import pyvista
+except ImportError:
+    pyvista = None
 
 __all__ = [
            'Box',
@@ -256,6 +260,29 @@ class Shape(object):
 
         return mesh
 
+    def _pyvista_mesh(self, constant_map={}):
+        """Returns a PyVista mesh object that corresponds to this shape."""
+
+        if pyvista is None:
+            raise ImportError('pyvista is not installed.')
+
+        data = self.generate_dict(constant_map=constant_map)
+
+        attrs = dict()
+
+        for k, v in self._pyvista_attribute_map.items():
+            try:
+                attrs[k] = data[v]
+            except KeyError:
+                attrs[k] = v
+
+        Geometry = getattr(pyvista, self._pyvista_geometry_type)
+        mesh = Geometry(**attrs)
+
+        self._mesh = mesh
+
+        return mesh
+
 
 class Box(Shape):
     """Instantiates a box of a given size.
@@ -296,6 +323,13 @@ class Box(Shape):
     _p3js_attribute_map = {'width': 'width',
                            'height': 'height',
                            'depth': 'depth'}
+
+    _pyvista_geometry_type = 'Cube'
+    _pyvista_attribute_map = {
+        'x_length': 'width',
+        'y_length': 'height',
+        'z_length': 'depth',
+    }
 
     def __init__(self, width, height, depth, **kwargs):
         super(Box, self).__init__(**kwargs)
@@ -346,6 +380,13 @@ class Cube(Shape):
     _p3js_attribute_map = {'width': 'length',
                            'height': 'length',
                            'depth': 'length'}
+
+    _pyvista_geometry_type = 'Cube'
+    _pyvista_attribute_map = {
+        'x_length': 'length',
+        'y_length': 'length',
+        'z_length': 'length',
+    }
 
     def __init__(self, length, **kwargs):
         super(Cube, self).__init__(**kwargs)
@@ -406,6 +447,13 @@ class Cylinder(Shape):
                            'radialSegments': 100,
                            'height': 'length'}
 
+    _pyvista_geometry_type = 'Cylinder'
+    _pyvista_attribute_map = {
+        'radius': 'radius',
+        'height': 'length',
+        'direction': (0, 1, 0),
+    }
+
     def __init__(self, length, radius, **kwargs):
         super(Cylinder, self).__init__(**kwargs)
         self.geometry_attrs += ['length', 'radius']
@@ -464,6 +512,12 @@ class Cone(Shape):
                            'radiusBottom': 'radius',
                            'height': 'length'}
 
+    _pyvista_geometry_type = 'Cone'
+    _pyvista_attribute_map = {
+        'radius': 'radius',
+        'height': 'length',
+    }
+
     def __init__(self, length, radius, **kwargs):
         super(Cone, self).__init__(**kwargs)
         self.geometry_attrs += ['length', 'radius']
@@ -513,6 +567,11 @@ class Sphere(Shape):
                            'widthSegments': 100,
                            'heightSegments': 100}
 
+    _pyvista_geometry_type = 'Sphere'
+    _pyvista_attribute_map = {
+        'radius': 'radius',
+    }
+
     def __init__(self, radius=10.0, **kwargs):
         super(Sphere, self).__init__(**kwargs)
         self.geometry_attrs += ['radius']
@@ -559,6 +618,11 @@ class Circle(Sphere):
     _p3js_geometry_type = 'Circle'
     _p3js_attribute_map = {'radius': 'radius',
                            'segments': 100}
+
+    _pyvista_geometry_type = 'Circle'
+    _pyvista_attribute_map = {
+        'radius': 'radius',
+    }
 
 
 class Plane(Shape):
@@ -612,6 +676,12 @@ class Plane(Shape):
                            'height': 'length'}
     _p3js_material_attributes = {'side': 'DoubleSide'}
 
+    _pyvista_geometry_type = 'Plane'
+    _pyvista_attribute_map = {
+        'i_size': 'width',
+        'j_size': 'length',
+    }
+
     def __init__(self, length=10.0, width=5.0, **kwargs):
         super(Plane, self).__init__(**kwargs)
         self.geometry_attrs += ['length', 'width']
@@ -659,6 +729,11 @@ class Tetrahedron(Sphere):
     _p3js_geometry_type = 'Tetrahedron'
     _p3js_attribute_map = {'radius': 'radius'}
 
+    _pyvista_geometry_type = 'Tetrahedron'
+    _pyvista_attribute_map = {
+        'radius': 'radius',
+    }
+
 
 class Octahedron(Sphere):
     """Instantiaties an Octahedron inscribed in a circle of the given
@@ -700,6 +775,9 @@ class Octahedron(Sphere):
     """
     _p3js_geometry_type = 'Octahedron'
     _p3js_attribute_map = {'radius': 'radius'}
+
+    _pyvista_geometry_type = 'Octahedron'
+    _pyvista_attribute_map = {'radius': 'radius'}
 
 
 class Icosahedron(Sphere):
@@ -743,6 +821,9 @@ class Icosahedron(Sphere):
     """
     _p3js_geometry_type = 'Icosahedron'
     _p3js_attribute_map = {'radius': 'radius'}
+
+    _pyvista_geometry_type = 'Icosahedron'
+    _pyvista_attribute_map = {'radius': 'radius'}
 
 
 class Torus(Shape):
@@ -794,6 +875,10 @@ class Torus(Shape):
     _p3js_geometry_type = 'Torus'
     _p3js_attribute_map = {'radius': 'radius',
                            'tube': 'tube_radius'}
+
+    _pyvista_geometry_type = 'ParametricTorus'
+    _pyvista_attribute_map = {'ringradius': 'radius',
+                              'crosssectionradius': 'tube_radius'}
 
     def __init__(self, radius, tube_radius, **kwargs):
         super(Torus, self).__init__(**kwargs)
