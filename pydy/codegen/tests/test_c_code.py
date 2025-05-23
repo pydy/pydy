@@ -1155,6 +1155,8 @@ void evaluate(
 
 }\
 """
+        if os.name == 'nt':
+            expected_source = '#define _USE_MATH_DEFINES\n' + expected_source
 
         header, source = self.generator.doprint()
 
