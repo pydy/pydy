@@ -1155,12 +1155,17 @@ void evaluate(
 
 }\
 """
-
         header, source = self.generator.doprint()
 
         assert header == expected_header
         lines = expected_source.split('\n')
-        assert source == '\n'.join(lines[:1] + lines[2:])
+        expected_source2 = '\n'.join(lines[:1] + lines[2:])
+        if os.name == 'nt':
+            expected_source2 = '#define _USE_MATH_DEFINES\n' + expected_source2
+        assert source == expected_source2
+
+        if os.name == 'nt':
+            expected_source = '#define _USE_MATH_DEFINES\n' + expected_source
 
         header, source = self.generator.doprint(prefix=self.prefix)
 

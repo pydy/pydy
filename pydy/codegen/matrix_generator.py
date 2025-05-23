@@ -53,7 +53,8 @@ class MatrixGenerator(object):
             required_args |= set().union(*[i.free_symbols for i in matrix])
             required_args |= find_dynamicsymbols(matrix)
 
-        required_args.remove(me.dynamicsymbols._t)
+        if me.dynamicsymbols._t in required_args:
+            required_args.remove(me.dynamicsymbols._t)
 
         all_arguments = set(itertools.chain(*arguments))
 

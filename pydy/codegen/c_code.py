@@ -47,7 +47,7 @@ void evaluate(
 */"""
 
     _c_source_template = """\
-#include <math.h>{header_include}
+{win_math_def}#include <math.h>{header_include}
 
 void evaluate(
 {input_args}
@@ -127,11 +127,15 @@ void evaluate(
             include statement to to be added to the source.
 
         """
-
         if prefix is not None:
             filling = {'header_include': '\n#include "{}.h"'.format(prefix)}
         else:
             filling = {'header_include': ''}
+
+        if os.name == 'nt':
+            filling['win_math_def'] = '#define _USE_MATH_DEFINES\n'
+        else:
+            filling['win_math_def'] = ''
 
         filling.update(self.code_blocks)
 

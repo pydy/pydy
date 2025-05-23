@@ -10,6 +10,18 @@ from ..c_code import _CLUsolveGenerator
 from ..cython_code import CythonMatrixGenerator
 
 
+def test_pi_windows():
+    # Fix for issue #499: Windows needs a define for math constants in C
+    a, b = sm.symbols('a, b')
+    matrices = (sm.Matrix([a*sm.pi, b*sm.cos(sm.pi)]),)
+    generator = CythonMatrixGenerator(((a, b),), matrices)
+    f = generator.compile()
+    outp = np.empty(2)
+    inp = np.array([1.0, 4.5])
+    f(inp, outp)
+    np.testing.assert_allclose([np.pi, -4.5], outp)
+
+
 class TestCythonMatrixGenerator(object):
 
     def setup_method(self):
