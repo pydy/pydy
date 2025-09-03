@@ -740,28 +740,7 @@ class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
     __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
 
     def _lambdify(self, outputs):
-        # TODO : We could forgo this substitution for generation speed
-        # purposes and have lots of args for lambdify (like it used to be
-        # done) but there may be some limitations on number of args.
-        subs = {}
-        vec_inputs = []
-        if self.specifieds is None:
-            def_vecs = ['q', 'u', 'p']
-        else:
-            def_vecs = ['q', 'u', 'r', 'p']
-
-        for syms, vec_name in zip(self.inputs, def_vecs):
-            v = sm.DeferredVector(vec_name)
-            for i, sym in enumerate(syms):
-                subs[sym] = v[i]
-            vec_inputs.append(v)
-
-        outputs = [me.msubs(output, subs) for output in outputs]
-
-        modules = [{'ImmutableMatrix': np.array}, 'numpy']
-
-        return sm.lambdify(vec_inputs, outputs, modules=modules,
-                           cse=self._options['cse'])
+        return sm.lambdify(self.inputs, outputs, cse=self._options['cse'])
 
     def generate_full_rhs_function(self):
 
