@@ -14,11 +14,10 @@
     import sympy.physics.mechanics as me
     import time
     import numpy as np
-    from scipy.integrate import odeint, solve_ivp
+    from scipy.integrate import solve_ivp
     from scipy.optimize import fsolve, minimize
     import matplotlib.pyplot as plt
     import matplotlib
-    %matplotlib inline
 
     import pythreejs as p3js
 
@@ -74,10 +73,14 @@ integration.  - of course I do not know for sure.
     rot = []      # for kinetatic equations
     rot1 = []     # dto
 
+It is VERY important, that the angular speed be expressed in therms of the 'child frame', otherwise the equations of motion become very large!
+rot and rot1 are used for the kinematic equations further down.
+
+.. jupyter-execute::
+
     A[0].orient_body_fixed(N, (q[0], q[1], q[2]), '123')
     rot.append(A[0].ang_vel_in(N))
-    # it is VERY important, that the angular speed be expressed in therms of the 'child frame', otherwise
-    # the equations of motion become very large!
+    
     A[0].set_ang_vel(N, u[0]*A[0].x + u[1]*A[0].y + u[2]*A[0].z )
     rot1.append(A[0].ang_vel_in(N))
 
@@ -85,13 +88,14 @@ integration.  - of course I do not know for sure.
     for i in range(1, n):
         A[i].orient_body_fixed(A[i-1], (q[3*i], q[3*i+1],q[3*i+2]), '123')
         rot.append(A[i].ang_vel_in(N))             # needed for the kinematiic equations below
-    # it is VERY important, that the angular speed be expressed in therms of the 'child frame', otherwise
-    # the equations of motion become very large!
         A[i].set_ang_vel(N, u[3*i]*A[i].x + u[3*i+1]*A[i].y + u[3*i+2]*A[i].z)
         rot1.append(A[i].ang_vel_in(N))            #         dto.
 
 
-    # locate the various points, and define their speeds
+Locate the various points, and define their speeds.
+
+.. jupyter-execute::
+
     P[0].set_pos(P0, 0.)
     P[0].set_vel(N, 0.)             # fixed point
     Dmc[0].set_pos(P[0], l/2. * A[0].y)
@@ -108,20 +112,25 @@ integration.  - of course I do not know for sure.
         punkt[i].v2pt_theory(Dmc[i], N, A[i])
 
 
-    # make the list of the bodies
+Make the list of the bodies.
+
+.. jupyter-execute::
+
     BODY = []
     for i in range(n):
         I = me.inertia(A[i], iXX, iYY, iZZ)
         BODY.append(me.RigidBody('body' + str(i), Dmc[i], A[i], m, (I, Dmc[i])))
         BODY.append(me.Particle('punct' + str(I), punkt[i], m1))  # the red dot may have a mass
 
+When the balls collide, they are ideally elastic, with 'spring constant' k. They are also completely
+slick, so collisions will not affect their rotational speeds. A collission of ball x with ball y is equivalent to
+a collission of ball y with ball x - but the reaction forces must be taken care of.
+My assumption here is that three or more balls will not collide simultaneously, of course this could happen, but probably
+VERY unlikely, as it would have to happen at very same short period of time.
 
-    # set up the forces
-    # weights
+.. jupyter-execute::
+    
     FG = [(Dmc[i], -m*g*N.y) for i in range(n)] + [(punkt[i], -m1*g*N.y) for i in range(n)]
-
-    # when the balls collide, they are ideally elastic, with 'spring constant' k. They are also completely
-    # slick, so collisions will not affect their rotational speeds
     FB = []
     for i in range(n):
         for j in range(i+1, n):
@@ -133,16 +142,21 @@ integration.  - of course I do not know for sure.
             forceji = (Dmc[i], -k * (2*r - bb) * aa * sm.Heaviside(2.*r - bb))
             FB.append(forceji)
 
-    FL = FG + FB       # list of forces
+    FL = FG + FB
+    
+it is very important that the frames A[i] are used, not frame N. Otherwise the equations of motion become very large.
 
-    # kinematic equations
+.. jupyter-execute::
+
     kd = []
     for i in range(n):
-    # It is very important that below the frames A[i] be used, not N. Otherwise the equations of motion become very large.
         for uv in A[i]:
             kd.append(me.dot(rot[i] - rot1[i], uv))
 
-    # Kanes's equations
+Set up Kanes's equations.
+
+.. jupyter-execute::
+
     q1 = q
     u1 = u
 
@@ -161,7 +175,10 @@ integration.  - of course I do not know for sure.
     print('force contains {} operations'.format(sum([force[i].count_ops(visual=False)
             for i in range(force.shape[0])])), '\n')
 
-    # set up the energy equations. Absent ary friction the total energie should be cnstant
+Set up the energy equations. Absent any friction the total energie should be constant.
+
+.. jupyter-execute::
+
     pot_energie = sum([m*g*me.dot(Dmc[i].pos_from(P[0]), N.y) for i in range(n)]) + sum([m1*g*me.dot(punkt[i]
                             .pos_from(P[0]), N.y) for i in range(n)])
     kin_energie = sum([BODY[i].kinetic_energy(N) for i in range(2*n)])
@@ -174,14 +191,20 @@ integration.  - of course I do not know for sure.
             spring_energie  += 0.5 * k * (2*r - bb)**2 * sm.Heaviside(2.*r - bb)
 
 
-    # position of the centers of the balls and the red dots on the ball. Needed for the animation
+Position of the centers of the balls and the red dots on the ball. Needed for the animation
+
+.. jupyter-execute::
+
     Dmc_loc = []
     punkt_loc = []
     for i in range(n):
         Dmc_loc.append([me.dot(Dmc[i].pos_from(P[0]), uv) for uv in N])
         punkt_loc.append([me.dot(punkt[i].pos_from(P[0]), uv) for uv in N])
 
-    # Lambdification
+Lambdification, that is converting sympy functions into numpy functions. cse = True speeds up numerical integration substantially.
+
+.. jupyter-execute::
+
     qL = q1 + u1
     pL = [m, m1, g, r, l, iXX, iYY, iZZ, reibung, k]
 
@@ -197,9 +220,11 @@ integration.  - of course I do not know for sure.
 
     print('it took {:.3f} sec to set up Kanes equations'.format(time.time() - start))
 
+Numerical integration. Frist of all, the various constants and the initial conditions must be given.
+Their meanings are given in the program below.
+
 .. jupyter-execute::
 
-    # numerical integration
     start = time.time()
 
     # Input values
@@ -217,7 +242,7 @@ integration.  - of course I do not know for sure.
     omega1 = 7.5                             # initial rotation speed of ball_i around A[i].y
     u1x, u1y, u1z = 0., omega1, 0.           # initial rotational speed of the ball
 
-    intervall = 2.
+    intervall = 4.
     #======================================================================
     schritte = 100 * int(intervall)
     times = np.linspace(0., intervall, schritte)
@@ -246,9 +271,10 @@ integration.  - of course I do not know for sure.
     print("To numerically integrate an intervall of {:.3f} sec the routine cycled {} times and it took {:.3f} sec"
           .format(intervall, resultat1.nfev, time.time() - start))
 
-.. jupyter-execute::
 
-    # plot the energies
+Plot the energies. The total energy must be constant, absent of any friction.
+
+.. jupyter-execute::
 
     pot_np = np.empty(schritte)
     kin_np = np.empty(schritte)
@@ -268,7 +294,7 @@ integration.  - of course I do not know for sure.
         print('deviation of total energy from being constant is {:.5f} % of max. total energy'
               .format((total_max - total_min)/total_max*100) )
 
-    fig, ax = plt.subplots(figsize=(15, 10))
+    fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(times, pot_np, label='potential energy')
     ax.plot(times, kin_np, label='kinetic energy')
     ax.plot(times, spring_np, label='spring energy')
@@ -276,8 +302,11 @@ integration.  - of course I do not know for sure.
     ax.set_title('Energies of the system', fontsize=20)
     ax.legend();
 
-    #plot the main rotational speeds, uy_r
-    fig, ax = plt.subplots(figsize=(15, 10))
+Plot the main rotational speeds, of course an arbitrary selection.
+    
+.. jupyter-execute::
+
+    fig, ax = plt.subplots(figsize=(10, 5))
     for i in range(n, 2*n):
         ax.plot(times, resultat[:, 3*i+1],
             label='rotational speed of body {} in Y direction in its coordinate system'.format(i-n))
@@ -307,6 +336,13 @@ rotation is fully correct, just played around until it 'looked' reasonable.
     Rot_lam = sm.lambdify(winkel, Rotation1.T, cse=True)
     Rotation = Rot_lam(np.pi/2.)
 
+The 4 x 4 matrices hold this information: In the 3 x 3 upper left submatrix the values of the body fixed matrix are stored
+in the bottom left 1 x 3 matrix the location of the origin of the body fixed matrix is stored.
+I do not know, what the other entries hold.
+Of course for the animation to work, these values must the stored for every time step. All this is now done below.
+
+.. jupyter-execute::
+
     TC_store = []
     TR_store = []
     TP_store = []
@@ -331,15 +367,17 @@ rotation is fully correct, just played around until it 'looked' reasonable.
         TP_lam = sm.lambdify(qL + pL, TP, cse=True)
 
 
-    # store the information about the body, expressed in TAc for every time step.
         TCs = []   # for the ball
         TRs = []   # for the rod
         TPs = []   # for the red dot
 
-    # Create the TAs, containing 'one TA' for each time step
-    # resultat contains the results of the numeric integration.
-    # where the numeric integration was evaluated
-    # scala is the factor by which the position of the body is changed, to keep it on the screen.
+Create the TAs, containing 'one TA' for each time step
+resultat contains the results of the numeric integration, where the numeric integration was evaluated.
+"scala" is the factor by which the position of the body is changed, to keep it on the screen. 
+I knew of no better way to do it.
+
+.. jupyter-execute::
+
         scala = 1.
         for k in range(resultat.shape[0]):
             zeit = times[i]
@@ -347,10 +385,12 @@ rotation is fully correct, just played around until it 'looked' reasonable.
             TRi = TR_lam(*[resultat[k, l] for l in range(resultat.shape[1])], *pL_vals)  # the rod
             TPi = TP_lam(*[resultat[k, l] for l in range(resultat.shape[1])], *pL_vals)  # the dot
 
-    # TAi[12], TAi[13], TAi[14] hold the location of A2 w.r.t. N.
-    # As the axis chosen for solving the equations of motion, and the axis given by pythreejs do not
-    # coincide, the values for TAi[..] must be given accordingly.
-    # of course here different locations for center of ball and center of mass.
+TCi[12], TCi[13], TCi[14], same for TRi, TPi hold the locations of the origins of the body fixed frames w.r.t. N.
+As the axis chosen for solving the equations of motion, and the axis given by pythreejs do not
+coincide, the values for TCi[..], etc must be permutated accordingly.
+    
+.. jupyter-execute::
+
             TRi[12] = -Dmc_loc_lam(*[resultat[k, l] for l in range(resultat.shape[1])], *pL_vals)[i][1]
             TRi[13] = Dmc_loc_lam(*[resultat[k, l] for l in range(resultat.shape[1])], *pL_vals)[i][0] / scala
             TRi[14] = Dmc_loc_lam(*[resultat[k, l] for l in range(resultat.shape[1])], *pL_vals)[i][2] / scala
@@ -371,24 +411,38 @@ rotation is fully correct, just played around until it 'looked' reasonable.
         TR_store.append(TRs)
         TP_store.append(TPs)
 
-    # Create the objects, which will move
-    # 1. The ball
+Create the objects, which will move:
+
+1. The ball
+
+.. jupyter-execute::
+
         body_geom_C = p3js.SphereGeometry(r1, 12, 12)
         body_material_C = p3js.MeshStandardMaterial(color=farben[i], wireframe=False)
         body_mesh_C = p3js.Mesh(geometry=body_geom_C, material=body_material_C, name='ball_' + str(i))
 
-    # 2. Rod
+2. The rod
+
+.. jupyter-execute::
+
         body_geom_R = p3js.CylinderGeometry(radiusTop=0.05, radiusBottom=0.05, height=l1,
                         radialSegments=6, heightSegments=10, openEnded=False)
         body_material_R = p3js.MeshStandardMaterial(color='black', wireframe=False)
         body_mesh_R = p3js.Mesh(geometry=body_geom_R, material=body_material_R, name='rod_' + str(i))
 
-    # 3. the dot
+3. The dot
+    
+.. jupyter-execute::
+
         body_geom_P = p3js.SphereGeometry(0.25, 12, 12)
         body_material_P = p3js.MeshStandardMaterial(color='red', wireframe=False)
         body_mesh_P = p3js.Mesh(geometry=body_geom_P, material=body_material_P, name='punkt_' + str(i))
 
-    # locate the body in 3D space and add the coordinate system of the body
+Locate the body in 3D space and add the coordinate system of the body.
+I know little about pythreejs, basically as mentioned above, this was copied from an example by JM.
+
+.. jupyter-execute::
+
         body_mesh_R.matrixAutoUpdate = False
         body_mesh_R.add(p3js.AxesHelper(0.1))  # length of the axis of the ball system A2
         body_mesh_R.matrix = TR_store[i][0]             # starting point of the animation
@@ -407,13 +461,15 @@ rotation is fully correct, just played around until it 'looked' reasonable.
         body_mesh_store.append(body_mesh_P)
 
 
-    # Create the 'picture'.
-    # all the 'paramters' are taken by trial and error.
+Create the 'picture'.
+All the 'paramters' are taken by trial and error.
+
+.. jupyter-execute::
+
     view_width = 1200
     view_height = 400
 
-    # Values just found by trial an error.
-    if n == 3:
+     if n == 3:
         p1, p2 = 7, 7
         p3 = 35
     elif n == 4:
@@ -443,7 +499,9 @@ rotation is fully correct, just played around until it 'looked' reasonable.
     renderer = p3js.Renderer(camera=camera, scene=scene, controls=[controller],
                              width=view_width, height=view_height)
 
-    # Create the action, simply copied from JM's lecture.
+Create the action, simply copied from JM's lecture.
+
+.. jupyter-execute::
 
     for i in range(n):
         eigenname = 'ball_'+str(i)
@@ -470,6 +528,9 @@ rotation is fully correct, just played around until it 'looked' reasonable.
     clip = p3js.AnimationClip(tracks=track_store, duration=duration)
     action = p3js.AnimationAction(p3js.AnimationMixer(scene), clip, scene)
     renderer
+
+This action must be run, to start everything. Sometimes at the end of the section above an error comes up, at least on my machine (an iPad)
+this does not seem to have any negative effect.
 
 .. jupyter-execute::
 
