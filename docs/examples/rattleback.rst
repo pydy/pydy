@@ -32,10 +32,20 @@ the rattleback with the plane is from this paper.
 Notes:
 ======
 
-- The geometric center of the rattleback is fixed in the inertial frame N,
-  hence not fully realistic.
-- The numerical integration is quite sensitive.
-- This may be the reason the total energy is not correct.
+- The numerical integration seems very sensitive:
+
+  - method=DOP853, rtol=1.e-5, atol=1.e-6 seems the minimum to get a
+    qualitatively reasonable result.
+  - changing C = :math:`1.7 \cdot 10^{-3}` (one of the moments of inertia)
+    to C = :math:`1.65 \cdot 10^{-3}`
+    or C = :math:`1.75 \cdot 10^{-3}` makes the integration fail.
+  - changing the initial angular velocity :math:`u_3` from -1.0 to -1.25
+    makes the integration fail. The paper gives -5.0.
+  - An indication of the difficulty is that to integrate an interval of 5 sec,
+    ``solve_ivp`` needs more than 800,000 function evaluations.
+
+- The total energy does not decrease as expected, maybe due to numerical
+  problems
 
 
 
@@ -61,24 +71,27 @@ Set up the Equations of Motion
 
     N, R = sm.symbols('N, R', cls=me.ReferenceFrame)
     O = me.Point('O')
+    Oe = me.Point('Oe')
     t = me.dynamicsymbols._t
     O.set_vel(N, 0)
 
-Ro is the mass center of the rattleback, S is the contact point with the plane.
+``Ro`` is the mass center of the rattleback, ``S`` is the contact point with
+the plane.
 
 .. jupyter-execute::
 
     S, Ro = sm.symbols('S, Ro', cls=me.Point)
 
-Rotation angles and speeds of R w.r.t. N
+Rotation angles and speeds of ``R`` w.r.t. ``N``
 
 .. jupyter-execute::
 
     q1, q2, q3, u1, u2, u3 = me.dynamicsymbols('q1, q2, q3, u1, u2, u3')
     x1, x2, x3, ux1, ux2, ux3 = me.dynamicsymbols('x1, x2, x3, ux1, ux2, ux3')
+    xe, ye, ze, uxe, uye, uze = me.dynamicsymbols('xe, ye, ze, uxe, uye, uze')
 
-symjit cannot use dynamicsymbols, so regular symbols for replacement in the
-compilation are defined
+symjit cannot use dynamicsymbols, so sympy symbols for replacement in the
+compilation are defined.
 
 .. jupyter-execute::
 
@@ -87,7 +100,7 @@ compilation are defined
     xs1, xs2, xs3 = sm.symbols('xs1, xs2, xs3')
     uxs1, uxs2, uxs3 = sm.symbols('uxs1, uxs2, uxs3')
 
-Some physical parameters
+Some physical parameters.
 
 .. jupyter-execute::
 
@@ -95,7 +108,7 @@ Some physical parameters
     a, b, c = sm.symbols('a, b, c')
     friktion = sm.symbols('friktion')
 
-Set up the geometry and kinematics
+Set up the geometry and the kinematics.
 
 .. jupyter-execute::
 
@@ -103,30 +116,43 @@ Set up the geometry and kinematics
     rot = R.ang_vel_in(N)
     R.set_ang_vel(N, u1 * R.x + u2 * R.y + u3 * R.z)
     rot1 = R.ang_vel_in(N)
-    Ro.set_pos(O, -h * R.z)
 
-The coordinates and the speeds of the contact point S in R will be calculated
-numerically during the integration.
+``Oe`` is the geometric center of the rattleback. The dynamics of the system
+does not depend on it.
 
 .. jupyter-execute::
 
-    S.set_pos(O, x1*R.x + x2*R.y + x3*R.z)
+    Oe.set_pos(O, xe * N.x + ye * N.y + ze * N.z)
+    Oe.set_vel(N, uxe * N.x + uye * N.y + uze * N.z)
+
+``Ro`` is the mass center of the rattleback.
+
+.. jupyter-execute::
+
+    Ro.set_pos(Oe, -h * R.z)
+
+The coordinates and the speeds of the contact point ``S`` in ``R`` will be
+calculated numerically during the integration.
+
+.. jupyter-execute::
+
+    S.set_pos(Oe, x1*R.x + x2*R.y + x3*R.z)
     S.set_vel(R, ux1*R.x + ux2*R.y + ux3*R.z)
 
-No slip condition: S is at rest in N momentarily
+No slip condition: ``S`` is at rest in ``N`` momentarily.
 
 .. jupyter-execute::
 
     Ro.set_vel(N, R.ang_vel_in(N).cross(Ro.pos_from(S)))
 
-Define the rigid body of the rattleback
+Define the rigid body of the rattleback.
 
 .. jupyter-execute::
 
     inert = me.inertia(R, A, B, C, D, 0, 0)
     rattleback = me.RigidBody('Rattleback', Ro, R, m, (inert, Ro))
 
-Finish to set up Kane's equations.
+Finish setting up Kane's equations.
 
 .. jupyter-execute::
 
@@ -149,7 +175,7 @@ Finish to set up Kane's equations.
                                     x2.diff(t): ux2,
                                     x3.diff(t): ux3})
 
-Print some information about the equations of motion
+Print some information about the equations of motion.
 
 .. jupyter-execute::
 
@@ -198,7 +224,7 @@ to kane.q
     schluessel = [i.diff(t) for i in q_ind]
     kin_eqs_solved = sm.Matrix([loesung[i] for i in schluessel])
 
-Create the rhs function
+Create the rhs function.
 
 .. jupyter-execute::
 
@@ -221,7 +247,8 @@ Create the rhs function
 
 
 Get the position of the contact point, using Kane's explicit solution given in
-the paper mentioned above. Compile with symjit.
+the paper mentioned above. As they are evaluated in every call to the r.h.s.
+during numerical integration, compile with ``symjit`` for speed.
 
 .. jupyter-execute::
 
@@ -245,7 +272,7 @@ the paper mentioned above. Compile with symjit.
                               params=pL_pos)
 
 
-Get the speed of (subsequent) contact points
+Get the speed of (subsequent) contact points, compile with ``symjit``.
 
 .. jupyter-execute::
 
@@ -269,8 +296,69 @@ Get the speed of (subsequent) contact points
                                     speed_kane,
                                     params=pL_speed)
 
+While the speed of ``S`` has no ``N.z`` component, the position of ``S``
+in ``N.z`` is not constant, as per the set up to get Kane's equations. To
+compensate for this, ``ze_wert`` is defined.
+Needed later for the potential energy.
+
+.. jupyter-execute::
+
+    ze_wert = sm.solve(S.pos_from(O).dot(N.z), ze)[0]
+
+
+Show numerically that
+
+- the speed of ``S`` has zero ``N.z`` component within numerical accuracy
+- ``ze_wert`` 'compensates' ``S.pos_from(Oe)`` within numerical accuracy
+
+.. jupyter-execute::
+
+    kd_solved = sm.solve(kd, (q1.diff(t), q2.diff(t), q3.diff(t)))
+
+    test = (x11dt * R.x + x21dt * R.y + x31dt * R.z).dot(N.z)
+    test = test.subs(kd_solved)
+    test_lam = sm.lambdify((q1, q2, q3, u1, u2, u3, a, b, c), test, cse=True)
+
+    S_coord_N =[(x11 * R.x + x21 * R.y + x31 * R.z).dot(uv) for uv in N]
+    S_coord_N_lam = sm.lambdify((q1, q2, q3, a, b, c), S_coord_N, cse=True)
+    S_coords_R_lam = sm.lambdify((q1, q2, q3, a, b, c), [x11, x21, x31],
+                                 cse=True)
+    Sz_wert_lam = sm.lambdify((q1, q2, q3, x1, x2, x3, a, b, c), ze_wert,
+                              cse=True)
+
+    a1 = 1
+    b1 = 2
+    c1 = 3
+    zaehler = 0
+    for i in range(50):
+        q1v = np.random.rand() * 2 * np.pi
+        q2v = np.random.rand() * 2 * np.pi
+        q3v = np.random.rand() * 2 * np.pi
+        u1v = np.random.randn() * 10
+        u2v = np.random.randn() * 10
+        u3v = np.random.randn() * 10
+        x11v, x21v, x31v = S_coords_R_lam(q1v, q2v, q3v, a1, b1, c1)
+        Sz_wert1 = Sz_wert_lam(q1v, q2v, q3v, x11v, x21v, x31v, a1, b1, c1)
+        res = test_lam(q1v, q2v, q3v, u1v, u2v, u3v, a1, b1, c1)
+        Sz = S_coord_N_lam(q1v, q2v, q3v, a1, b1, c1)[2]
+        if np.abs(res) > 1.e-13:
+            zaehler += 1
+            print(f"Result {i + 1}: {res}")
+        if np.abs(Sz + Sz_wert1) > 1.e-13:
+            zaehler += 1
+            print(f"Sz check {i + 1}: {Sz} + {Sz_wert1} = {Sz}")
+
+    if zaehler == 0:
+        print("All tests passed successfully.")
+
+
 Numerical Integration
 ---------------------
+
+Seems quite difficult to integrate numerically. If rtol and atol are too
+large, the integration may finish successfully, but the results will be
+qualitatively different.
+
 
 Input values, taken from the paper mentioned above.
 
@@ -293,7 +381,16 @@ Input values, taken from the paper mentioned above.
 
     u11 = 0.0                     # initial angular velocities
     u21 = 0.0
+
+In the paper :math:`u_{31}` is set to -5 rad/sec. Here, if it is decreased to
+less than -1.0 the numerical integration will fail.
+
+.. jupyter-execute::
+
     u31 = -1.0
+
+.. jupyter-execute::
+
     xs11, xs21, xs31, uxs11, uxs21, uxs31 = 0.1, 0.1, 0.1, 0.1, 0.1, 0.1
     pL_vals = [m1, g1, a1, b1, c1, h1, A1, B1, C1, D1, friktion1,
                xs11, xs21, xs31, uxs11, uxs21, uxs31]
@@ -354,8 +451,8 @@ Find the solution.
           "cycled {:,} times".format(interval, resultat1.nfev))
 
 
-Plot the rotation angles and speeds.
-------------------------------------
+Plot the Rotation Angles and Speeds
+-----------------------------------
 
 .. jupyter-execute::
 
@@ -374,11 +471,11 @@ Plot the rotation angles and speeds.
     ax[0].legend()
     _ = ax[1].legend()
 
-Plot the energy.
-----------------
+Plot the Energy
+---------------
 
-It is not perfectly conserved, maybe due to numerical
-errors.
+It does not behave as expected, it should drop due to friction being present.
+Maybe due to numerical inaccuracies.
 
 ``args_list`` and ``time_list`` have many more entries than ``resultat``
 (850,000 vs. 5000) so the entries in time_list (and hence in args_list) that
@@ -398,13 +495,14 @@ also contribute to the energy not being perfectly conserved.
         np.abs(times - time_list[left]) <= np.abs(times - time_list[right]),
         left, right)
 
-Define and compile the energy expressions
+Define and compile the energy expressions.
 
 .. jupyter-execute::
 
     qL = [q1, q2, q3, u1, u2, u3]
 
-    pot_energy = m * g * Ro.pos_from(O).dot(N.z).subs(symbol_dict_1)
+    pot_energy = m * g * (Ro.pos_from(Oe).dot(N.z).subs(symbol_dict_1) +
+                          ze_wert.subs(symbol_dict_1))
     kin_energy = rattleback.kinetic_energy(N).subs(symbol_dict_1)
     pot_lam = sm.lambdify(qL + pL, pot_energy, cse=True)
     kin_lam = sm.lambdify(qL + pL, kin_energy, cse=True)
@@ -428,7 +526,7 @@ Define and compile the energy expressions
     ax2.set_xlabel('Time [s]')
     _ = ax2.legend()
 
-Coordinates and speeds of the Contact Point S as seen in R and N
+Coordinates and speeds of the Contact Point S as seen in R and N.
 
 .. jupyter-execute::
 
@@ -460,12 +558,12 @@ Coordinates and speeds of the Contact Point S as seen in R and N
                                  sm.Derivative(xs3, t): uxs3,
                                 }
 
-    S_N = S.pos_from(O)
+    S_N = S.pos_from(Oe)
     S_N = [S_N.dot(N.x).subs(repl_dict),
            S_N.dot(N.y).subs(repl_dict),
-           S_N.dot(N.z).subs(repl_dict)]
+           S_N.dot(N.z).subs(repl_dict) + ze_wert.subs(repl_dict)]
 
-    Sdt_N = (S.pos_from(O).diff(t, N))
+    Sdt_N = (S.pos_from(Oe).diff(t, R))
     Sdt_N = [Sdt_N.dot(N.x).subs(repl_dict),
              Sdt_N.dot(N.y).subs(repl_dict),
              Sdt_N.dot(N.z).subs(repl_dict)]
@@ -495,13 +593,31 @@ Coordinates and speeds of the Contact Point S as seen in R and N
     _ = ax[3].legend()
 
 
+The ``N.z`` component of the speed of ``S`` should be zero within numerical
+accuracy. The ``N.z`` component of the position of ``S`` should be compensated
+by ``ze_wert`` to zero within numerical accuracy. While the position seems to
+be very accurate, the speed is less so. This may affect the kinetic energy.
+
+.. jupyter-execute::
+
+    Nz_deviation = [S_N_lam(*resultat[j], *args_list[idxs_final[j]])
+                            [2] for j in range(resultat.shape[0])]
+    Nzdt_deviation = [Sdt_N_lam(*resultat[j], *args_list[idxs_final[j]])
+                                [2] for j in range(resultat.shape[0])]
+    print(f"Maximal N.z deviation of S: {np.max(np.abs(Nz_deviation)):.2e}",
+          "ideally should be zero")
+    print(f"Maximal d(N.z)/dt deviation of S: "
+          f"{np.max(np.abs(Nzdt_deviation)):.2e}"
+          " ideally should be zero")
+
 Visualization
+-------------
 
 .. jupyter-execute::
 
     point1, point2, point3 = sm.symbols('point1, point2, point3', cls=me.Point)
-    point1.set_pos(O, a/2 * R.x + c/2 * R.z)
-    point2.set_pos(O, a * R.x)
+    point1.set_pos(Oe, a/2 * R.x + c/2 * R.z)
+    point2.set_pos(Oe, a * R.x)
     farben = ['red', 'green', 'blue']
 
     viz_frames = []
@@ -520,7 +636,7 @@ differently, they are rotated to match pythreejs' axes.
     B = me.ReferenceFrame('B')
     B.orient_body_fixed(N, (sm.pi/2, 0, 0), 'XYZ')
 
-Start the animation
+Start the animation.
 
 .. jupyter-execute::
 
@@ -542,7 +658,7 @@ Start the animation
                                              point,
                                              point_shape))
 
-    scene = Scene(B, O, *viz_frames)
+    scene = Scene(B, Oe, *viz_frames)
 
     scene.times = times
     pL_vals_adjusted = [val * groesse for val in pL_vals]
