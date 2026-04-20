@@ -27,6 +27,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           channels: conda-forge
       - name: Install basic dependencies
-        run: conda install -q -y cython jupyter_sphinx "jupyter_core<5" matplotlib numpy numpydoc pythreejs setuptools "sphinx<7" symjit sympy scipy
+        run: conda install -q -y "cython=0.29.*" "jupyter_sphinx=0.3.*" "matplotlib-base=3.5.*" "numpy=1.21.*" "numpydoc=1.2.*" pythreejs "setuptools=44.1.*" "sphinx=4.3.*" symjit "sympy=1.9.*" "scipy=1.8.*"
       - name: Test building documentation
         run: cd docs && make clean && make html && cd ..
