@@ -895,12 +895,40 @@ class Scene(object):
             for actor, trnf_mat in zip(actors, self._transform_mats):
                 actor.user_matrix = np.array(trnf_mat[i]).reshape(4, 4).T
             #time.sleep(0.1)
+            plotter.render()
 
-        plotter.add_timer_event(
-            max_steps=len(self.times),
-            duration=500,
-            callback=callback,
-        )
+        import ipywidgets as widgets
+
+        def time_controls(callback, tmin=3, tmax=20, step=2):
+
+            def set_time(change):
+                step = change["new"]
+                if step < 0:
+                    step = 0
+                if step >= tmax:
+                    step = tmax - 1
+                callback(step)
+
+            play = widgets.Play(
+                value=tmin,
+                min=tmin,
+                max=tmax,
+                step=step,
+                description="Time Step",
+            )
+            play.observe(set_time, "value")
+
+            slider = widgets.IntSlider(min=tmin, max=tmax, step=step, continuous_update=True)
+            widgets.jslink((play, "value"), (slider, "value"))
+            return widgets.HBox([play, slider])
+
+
+        w = time_controls(callback, tmin=0, tmax=len(self.times), step=1)
+        #plotter.add_timer_event(
+            #max_steps=len(self.times),
+            #duration=500,
+            #callback=callback,
+        #)
 
         #plotter.add_slider_widget(callback, (0, len(self.times)))
         #plotter.camera.position = (1.0, 1.0, 0.0)
@@ -915,4 +943,4 @@ class Scene(object):
             else:
                 plotter.show()
 
-        return plotter
+        return plotter, w

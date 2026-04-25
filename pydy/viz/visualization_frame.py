@@ -505,4 +505,5 @@ class VisualizationFrame(object):
         # of lists with shape(n, 16). It seems pyvista needs the transpose of
         # what we store.
         trnf_mat = np.array(self._transform_mats[0]).reshape(4, 4).T
+        pyvista.set_new_attribute(self._mesh, 'user_matrix', trnf_mat)
         self._mesh.user_matrix = trnf_mat
