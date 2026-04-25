@@ -34,14 +34,12 @@ can provide the user with their desired workflow, including:
 
 We started by building the SymPy_ `mechanics package`_ which provides an API
 for building models and generating the symbolic equations of motion for complex
-multibody systems. More recently we developed two packages, `pydy.codegen` and
-`pydy.viz`, for simulation and visualization of the models, respectively.  This
-Python package contains these two packages and other tools for working with
-mathematical models generated from SymPy mechanics. The remaining tools
-currently used in the PyDy workflow are popular scientific Python packages such
-as NumPy_, SciPy_, IPython_, Jupyter_, ipywidgets_, pythreejs_, and matplotlib_
-which provide additional code for numerical analyses, simulation, and
-visualization.
+multibody systems. This Python package contains tools for working with
+mathematical models generated from SymPy mechanics and establishes the bridge
+between these symbolic models and efficient numeric versions of the models. We
+leverage popular scientific Python packages such as NumPy_, SciPy_, IPython_,
+Jupyter_, ipywidgets_, pythreejs_, and matplotlib_ which provide additional
+code for numerical analyses, simulation, and visualization.
 
 .. _SymPy: http://sympy.org
 .. _mechanics package: http://docs.sympy.org/latest/modules/physics/mechanics/index.html
@@ -56,14 +54,15 @@ visualization.
 Installation
 ============
 
-We recommend the conda_ package manager and the Anaconda_ or Miniconda_
-distributions for easy cross platform installation.
+We recommend the conda_ package manager and the Anaconda_, Miniconda_, or
+Miniforge_ distributions for easy cross platform installation.
 
 .. _conda: http://conda.pydata.org/
 .. _Anaconda: http://docs.continuum.io/anaconda/
 .. _Miniconda: https://docs.conda.io/en/latest/miniconda.html
+.. _Miniforge: https://conda-forge.org/miniforge/
 
-Once Anaconda (or Miniconda) is installed type::
+Once conda is installed type::
 
    $ conda install -c conda-forge pydy
 
@@ -94,14 +93,11 @@ package can be downloaded from PyPi\ [#]_::
 
 .. [#] Change ``X.X.X`` to the latest version number.
 
-and extracted and installed\ [#]_::
+and extracted and installed::
 
    $ tar -zxvf pydy-X.X.X.tar.gz
    $ cd pydy-X.X.X
-   $ python setup.py install
-
-.. [#] For system wide installs you may need root permissions (perhaps prepend
-   commands with ``sudo``).
+   $ python -m pip install .
 
 Dependencies
 ------------
@@ -109,24 +105,26 @@ Dependencies
 PyDy has hard dependencies on the following software\ [#]_:
 
 .. [#] We only test PyDy with these minimum dependencies; these module versions
-       are provided in the Ubuntu 20.04 packages. Previous versions may work.
+       are provided in the Ubuntu 24.04 packages. Previous versions may work.
 
-- Python >= 3.9
-- setuptools >= 44.1.1
-- NumPy_ >= 1.21.5
-- SciPy_ >= 1.8.0
-- SymPy_ >= 1.9
-- PyWin32 >= 303 (Windows Only)
+- Python >= 3.10
+- setuptools >= 68.1.2
+- packaging >= 24.0
+- NumPy_ >= 1.26.4
+- SciPy_ >= 1.11.4
+- SymPy_ >= 1.12
+- PyWin32 >= 306 (Windows Only)
 
 PyDy has optional dependencies for extended code generation on:
 
-- Cython_ >= 0.29.28
+- Cython_ >= 0.29.37
 - Theano_ >= 1.0.5
+- Symjit_ >= 2.5.0
 
 and animated visualizations with ``Scene.display_jupyter()`` on:
 
-- `Jupyter Notebook`_ >= 6.0.0 or `Jupyter Lab` >= 1.0.0
-- ipywidgets_ >= 6.0.0
+- `Jupyter Notebook`_ >= 6.4.12 or `Jupyter Lab` >= 1.0.0
+- ipywidgets_ >= 8.1.1
 - pythreejs_ >= 2.1.1
 
 or interactive animated visualizations with ``Scene.display_ipython()`` on:
@@ -136,12 +134,13 @@ or interactive animated visualizations with ``Scene.display_ipython()`` on:
 
 .. _Cython: http://cython.org/
 .. _Theano: http://deeplearning.net/software/theano/
+.. _Symjit: https://github.com/siravan/symjit
 .. _Jupyter Notebook: https://jupyter-notebook.readthedocs.io
 .. _Jupyter Lab: https://jupyterlab.readthedocs.io
 
 The examples may require these dependencies:
 
-- matplotlib_ >= 3.5.1
+- matplotlib_ >= 3.6.3
 - version_information_
 
 .. _version_information: https://pypi.python.org/pypi/version_information
@@ -267,8 +266,8 @@ Code Generation (codegen)
 
 This package provides code generation facilities. It generates functions that
 can numerically evaluate the right hand side of the ordinary differential
-equations generated with sympy.physics.mechanics_ with three different
-backends: SymPy's lambdify_, Theano, and Cython.
+equations generated with sympy.physics.mechanics_ with four different
+backends: SymPy's lambdify_, Theano, Cython, and Symjit.
 
 .. _sympy.physics.mechanics: http://docs.sympy.org/latest/modules/physics/mechanics
 .. _lambdify: http://docs.sympy.org/latest/modules/utilities/lambdify.html#sympy.utilities.lambdify.lambdify
@@ -319,17 +318,17 @@ The following installation assumes you have virtualenvwrapper_ in addition to
 virtualenv and all the dependencies needed to build the various packages::
 
    $ mkvirtualenv pydy-dev
-   (pydy-dev)$ pip install numpy scipy cython pytest theano sympy ipython "notebook<5.0" "ipywidgets<5.0" version_information
+   (pydy-dev)$ pip install numpy scipy cython pytest theano symjit sympy ipython notebook ipywidgets version_information pip setuptools
    (pydy-dev)$ pip install matplotlib # make sure to do this after numpy
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
-   (pydy-dev)$ python setup.py develop
+   (pydy-dev)$ python -m pip install -e .
 
 .. _virtualenvwrapper: https://pypi.python.org/pypi/virtualenvwrappe://pypi.python.org/pypi/virtualenvwrapper
 
 Or with conda_::
 
-   $ conda create -c pydy -n pydy-dev setuptools numpy scipy ipython "notebook<5.0" "ipywidgets<5.0" cython pytest theano sympy matplotlib version_information
+   $ conda create -c pydy -n pydy-dev setuptools numpy scipy ipython "notebook<5.0" "ipywidgets<5.0" cython pytest theano symjit sympy matplotlib version_information
    $ source activate pydy-dev
    (pydy-dev)$ git clone git@github.com:pydy/pydy.git
    (pydy-dev)$ cd pydy
@@ -364,6 +363,13 @@ publications or on the web. This citation can be used:
    Technical Conferences and Computers and Information in Engineering
    Conference, 2013, `10.1115/DETC2013-13470
    <http://dx.doi.org/10.1115/DETC2013-13470>`_.
+
+
+.. raw:: html
+
+   <p>PyDy is built by (made with <a
+   href="https://contrib.rocks">contrib.rocks</a> :</p>
+   <a href="https://github.com/pydy/pydy/graphs/contributors"><img src="https://contrib.rocks/image?repo=pydy/pydy"></a>
 
 Questions, Bugs, Feature Requests
 =================================

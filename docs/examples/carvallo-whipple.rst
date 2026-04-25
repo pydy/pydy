@@ -8,6 +8,11 @@ Carvallo-Whipple Bicycle Model
    :jupyter-download:script:`carvallo-whipple` or Jupyter notebook:
    :jupyter-download:notebook:`carvallo-whipple`.
 
+.. warning::
+
+   This example requires SymPy >= 1.13 due to the use of the Cramer's rule
+   linear solver.
+
 This example creates a nonlinear model and simulation of the Carvallo-Whipple
 Bicycle Model ([Carvallo1899]_, [Whipple1899]_). This formulation uses the
 conventions described in [Moore2012]_ which are equivalent to the models
@@ -113,7 +118,8 @@ Orientation of Reference Frames
 
 Declare the orientation of each frame to define the yaw, roll, and pitch of the
 rear frame relative to the Newtonian frame. The define steer of the front frame
-relative to the rear frame.
+relative to the rear frame. The wheel rotations are ignorable coordinates and
+skipped for convenience.
 
 .. jupyter-execute::
 
@@ -150,6 +156,7 @@ physical parameters.
 
 .. jupyter-execute::
 
+   # geometry
    rf, rr = sm.symbols('rf rr')
    d1, d2, d3 = sm.symbols('d1 d2 d3')
    l1, l2, l3, l4 = sm.symbols('l1 l2 l3 l4')
@@ -184,8 +191,12 @@ Position Vectors
 
 .. jupyter-execute::
 
+   # inertial origin
+   o = mec.Point('o')
+
    # rear wheel contact point
    dn = mec.Point('dn')
+   dn.set_pos(o, q1*N['1'] + q2*N['2'])
 
    # rear wheel contact point to rear wheel center
    do = mec.Point('do')
@@ -238,7 +249,9 @@ Define the generalized speeds all as :math:`u=\dot{q}`.
 
    t = mec.dynamicsymbols._t
 
-   kinematical = [q3.diff(t) - u3,  # yaw
+   kinematical = [q1.diff(t) - u1,  # x
+                  q2.diff(t) - u2,  # y
+                  q3.diff(t) - u3,  # yaw
                   q4.diff(t) - u4,  # roll
                   q5.diff(t) - u5,  # pitch
                   q7.diff(t) - u7]  # steer
@@ -260,8 +273,11 @@ Linear Velocities
 
 .. jupyter-execute::
 
-   # rear wheel contact stays in ground plane and does not slip
-   dn.set_vel(N, 0.0 * N['1'])
+   # origin is fixed in N
+   o.set_vel(N, 0*N['1'])
+
+   # rear wheel contact stays in ground plane
+   dn.set_vel(N, u1*N['1'] + u2*N['2'])
 
    # mass centers
    do.v2pt_theory(dn, N, D)
@@ -276,24 +292,21 @@ Linear Velocities
 Motion Constraints
 ==================
 
-Enforce the no slip condition at the front wheel contact point. Note that the
-no-slip condition is already enforced with the velocity of :math:`n_o` set to
-0. Also include an extra motion constraint not allowing vertical motion of the
+Enforce the no slip condition at the rear and front wheel contact point. Also
+include an extra motion constraint not allowing vertical motion of the front
 contact point. Note that this is an integrable constraint, i.e. the derivative
 of ``nonholonomic`` above. It is not a nonholonomic constraint, but we include
 it because we can't easy eliminate a dependent generalized coordinate with
 ``nonholonmic``.
 
-.. warning:: The floating point numerical stability of the solution is affected
-   by the order of the nonholonomic constraint expressions in the following
-   list. If ordered ``A['1'],A['2'],A['3']`` stability degrades.
-
 .. jupyter-execute::
 
    nonholonomic = [
+       dn.vel(N).dot(A['1']),
+       dn.vel(N).dot(A['2']),
        fn.vel(N).dot(A['1']),
-       fn.vel(N).dot(A['3']),
        fn.vel(N).dot(A['2']),
+       fn.vel(N).dot(A['3']),
    ]
 
 Inertia
@@ -303,10 +316,10 @@ The inertia dyadics are defined with respect to the rear and front frames.
 
 .. jupyter-execute::
 
-   Ic = mec.inertia(C, ic11, ic22, ic33, 0.0, 0.0, ic31)
-   Id = mec.inertia(C, id11, id22, id11, 0.0, 0.0, 0.0)
-   Ie = mec.inertia(E, ie11, ie22, ie33, 0.0, 0.0, ie31)
-   If = mec.inertia(E, if11, if22, if11, 0.0, 0.0, 0.0)
+   Ic = mec.inertia(C, ic11, ic22, ic33, 0, 0, ic31)
+   Id = mec.inertia(C, id11, id22, id11, 0, 0, 0)
+   Ie = mec.inertia(E, ie11, ie22, ie33, 0, 0, ie31)
+   If = mec.inertia(E, if11, if22, if11, 0, 0, 0)
 
 Rigid Bodies
 ============
@@ -323,6 +336,8 @@ Rigid Bodies
 Loads
 =====
 
+Gravity acts on each rigid body:
+
 .. jupyter-execute::
 
    # gravity
@@ -331,6 +346,10 @@ Loads
    Feo = (eo, me*g*A['3'])
    Ffo = (fo, mf*g*A['3'])
 
+Control torques for the three degrees of freedom:
+
+.. jupyter-execute::
+
    # input torques
    Tc = (C, T4*A['1'] - T6*B['2'] - T7*C['3'])
    Td = (D, T6*C['2'])
@@ -338,19 +357,45 @@ Loads
 
    loads = [Fco, Fdo, Feo, Ffo, Tc, Td, Te]
 
+Baumgarte's Stabilization
+=========================
+
+The holonomic constraint, the single algebraic equation in the equations of
+motion, will drift during numerical integration. Baumgarte's stabilization
+technique can be used to limit the drift [Baumgarte1972]_. This requires
+manually setting the acceleration level constraint equations in ``KanesMethod``
+with ones that append the Baumgarte force to the holonomic constraint.
+
+.. jupyter-execute::
+
+   acc_constraints = [c.diff(t) for c in nonholonomic]
+   alpha = sm.symbols('alpha')
+   acc_constraints[-1] += 2*alpha*nonholonomic[-1] + alpha**2*holonomic
+
 Kane's Method
 =============
+
+Provide all of the kinematic information to ``KanesMethod``, selecting the
+three independent generalized speeds. The constraint solver uses the Cramer's
+rule based linear solver to mitigate divide-by-zero issues for the constraint
+equations.
 
 .. jupyter-execute::
 
    kane = mec.KanesMethod(N,
-                          [q3, q4, q7],  # yaw, roll, steer
+                          [q1, q2, q3, q4, q7],  # x, y, yaw, roll, steer
                           [u4, u6, u7],  # roll rate, rear wheel rate, steer rate
                           kd_eqs=kinematical,
                           q_dependent=[q5],  # pitch angle
                           configuration_constraints=[holonomic],
-                          u_dependent=[u3, u5, u8],  # yaw rate, pitch rate, front wheel rate
-                          velocity_constraints=nonholonomic)
+                          u_dependent=[u1, u2, u3, u5, u8],  # x', y', yaw rate, pitch rate, front wheel rate
+                          velocity_constraints=nonholonomic,
+                          acceleration_constraints=acc_constraints,
+                          constraint_solver='CRAMER')
+
+Provide the rigid bodies and all loads to generate Kane's equations:
+
+.. jupyter-execute::
 
    fr, frstar = kane.kanes_equations(bodies, loads)
 
@@ -362,7 +407,6 @@ integrate the equations of motion using numerical values of constants.
 
 .. jupyter-execute::
 
-    from pydy.system import System
     sys = System(kane)
 
 Now, we specify the numerical values of the constants and the initial values of
@@ -397,7 +441,8 @@ states in the form of a dict. The are the benchmark values used in
        ie22: 0.06,
        ie31: 0.009119225261946298,
        ie33: 0.007586622998470264,
-       g: 9.81
+       g: 9.81,
+       alpha: 10.0,
     }
 
 Setup the initial conditions such that the bicycle is traveling at some forward
@@ -411,37 +456,34 @@ speeds and has an initial positive roll rate.
 The initial configuration will be the upright equilibrium position. The
 holonomic constraint requires that either the roll, pitch, or steer angle need
 be dependent. Below, the pitch angle is taken as dependent and solved for using
-`fsolve()`. Note that it is equivalent to the steer axis tilt [Meijaard2007]_.
+`fsolve()`. Note that it is equivalent to the steer axis tilt in the nominal
+configuratio shown in [Meijaard2007]_.
 
 .. jupyter-execute::
 
     eval_holonomic = sm.lambdify((q5, q4, q7, d1, d2, d3, rf, rr), holonomic)
-    initial_pitch_angle = float(fsolve(eval_holonomic, 0.0,
-                                       args=(0.0,  # q4
-                                             1e-8,  # q7
-                                             sys.constants[d1],
-                                             sys.constants[d2],
-                                             sys.constants[d3],
-                                             sys.constants[rf],
-                                             sys.constants[rr])))
+    initial_pitch_angle = fsolve(eval_holonomic, 0.0,
+                                 args=(0.0,  # q4
+                                       0.0,  # q7
+                                       sys.constants[d1],
+                                       sys.constants[d2],
+                                       sys.constants[d3],
+                                       sys.constants[rf],
+                                       sys.constants[rr]))[0]
     np.rad2deg(initial_pitch_angle)
 
 Set all of the initial conditions.
 
-.. warning::
-
-   A divide-by-zero will occur if the steer angle is set to zero. Thus the
-   `1e-8` values. The integration is also sensitive to the size of this value.
-   This shouldn't be the case and may point to some errors in the derivation
-   and implementation. More careful attention to the integration tolerances may
-   help too.
-
 .. jupyter-execute::
 
-    sys.initial_conditions = {q3: 0.0,
+    sys.initial_conditions = {q1: 0.0,
+                              q2: 0.0,
+                              q3: 0.0,
                               q4: 0.0,
                               q5: initial_pitch_angle,
-                              q7: 1e-8,
+                              q7: 0.0,
+                              u1: initial_speed,
+                              u2: 0.0,
                               u3: 0.0,
                               u4: initial_roll_rate,
                               u5: 0.0,
@@ -454,23 +496,29 @@ Generate a time vector over which the integration will be carried out.
 .. jupyter-execute::
 
     fps = 30  # frames per second
-    duration = 6.0  # seconds
+    duration = 10.0  # seconds
     sys.times = np.linspace(0.0, duration, num=int(duration*fps))
 
 The trajectory of the states over time can be found by calling the
 ``.integrate()`` method. But due to the complexity of the equations of motion
-it is helpful to use the `cython` generator for faster numerical evaluation.
-
-.. warning::
-
-   The holonomic constraint equation is not explicitly enforced, as PyDy does
-   not yet support integration of differential algebraic equations (DAEs) yet.
-   The solution will drift from the true solution over time with magnitudes
-   dependent on the intiial conditions and constants values.
+it is helpful to use the ``cython`` generator for faster numerical evaluation
+and the symbolic linear solver can also be set to maximize performance as well
+as avoid divide-by-zero issues.
 
 .. jupyter-execute::
 
-   sys.generate_ode_function(generator='cython')
+   _ = sys.generate_ode_function(generator='cython',
+                                 linear_sys_solver='sympy:CRAMER')
+
+Test that the initial condition gives a valid result.
+
+.. jupyter-execute::
+
+   sys.evaluate_ode()
+
+Now integrate the equations of motion through time.
+
+.. jupyter-execute::
 
    x_trajectory = sys.integrate()
 
@@ -478,9 +526,9 @@ Evaluate the holonomic constraint across the simulation.
 
 .. jupyter-execute::
 
-   holonomic_vs_time  = eval_holonomic(x_trajectory[:, 3],  # q5
-                                       x_trajectory[:, 1],  # q4
-                                       x_trajectory[:, 2],  # q7
+   holonomic_vs_time  = eval_holonomic(x_trajectory[:, 5],  # q5
+                                       x_trajectory[:, 3],  # q4
+                                       x_trajectory[:, 4],  # q7
                                        sys.constants[d1],
                                        sys.constants[d2],
                                        sys.constants[d3],
@@ -494,7 +542,7 @@ Plot the State Trajectories
 
    import matplotlib.pyplot as plt
    fig, axes = plt.subplots(len(sys.states) + 1, 1, sharex=True)
-   fig.set_size_inches(8, 10)
+   fig.set_size_inches(8, 16)
    for ax, traj, s in zip(axes, x_trajectory.T, sys.states):
        ax.plot(sys.times, traj)
        ax.set_ylabel(s)
@@ -548,7 +596,7 @@ Create the scene and add the visualization frames.
 
 .. jupyter-execute::
 
-    scene = Scene(N, dn, system=sys)
+    scene = Scene(N, o, system=sys)
     scene.visualization_frames = [front_wheel_vframe, rear_wheel_vframe,
                                   d1_frame, d2_frame, d3_frame,
                                   co_frame, eo_frame]
@@ -566,16 +614,19 @@ References
    Bicycle." Quarterly Journal of Pure and Applied Mathematics 30 (1899): 312–48.
 .. [Carvallo1899] Carvallo, E. Théorie Du Mouvement Du Monocycle et de La
    Bicyclette. Paris, France: Gauthier- Villars, 1899.
-.. [Moore2012] Moore, Jason K. "Human Control of a Bicycle." Doctor of
-   Philosophy, University of California, 2012.
-   http://moorepants.github.io/dissertation.
-.. [Meijaard2007] Meijaard, J. P., Jim M. Papadopoulos, Andy Ruina, and A. L.
-   Schwab. "Linearized Dynamics Equations for the Balance and Steer of a
-   Bicycle: A Benchmark and Review." Proceedings of the Royal Society A:
-   Mathematical, Physical and Engineering Sciences 463, no. 2084 (August 8,
-   2007): 1955–82.
+.. [Baumgarte1972] Baumgarte, J. (1972). Stabilization of Constraints and
+   Integrals of Motion in Dynamical  Systems. Computer Methods in Applied
+   Mechanics and Engineering, 1, 1–16.
 .. [Basu-Mandal2007] Basu-Mandal, Pradipta, Anindya Chatterjee, and J.M
    Papadopoulos. "Hands-Free Circular Motions of a Benchmark Bicycle."
    Proceedings of the Royal Society A: Mathematical, Physical and Engineering
    Sciences 463, no. 2084 (August 8, 2007): 1983–2003.
    https://doi.org/10.1098/rspa.2007.1849.
+.. [Meijaard2007] Meijaard, J. P., Jim M. Papadopoulos, Andy Ruina, and A. L.
+   Schwab. "Linearized Dynamics Equations for the Balance and Steer of a
+   Bicycle: A Benchmark and Review." Proceedings of the Royal Society A:
+   Mathematical, Physical and Engineering Sciences 463, no. 2084 (August 8,
+   2007): 1955–82.
+.. [Moore2012] Moore, Jason K. "Human Control of a Bicycle." Doctor of
+   Philosophy, University of California, 2012.
+   http://moorepants.github.io/dissertation.

@@ -2,10 +2,7 @@
 
 import os
 
-try:
-    from sympy.printing.octave import OctaveCodePrinter
-except ImportError:
-    raise ImportError('Octave code printing is only available with SymPy >= 0.7.6.')
+from sympy.printing.octave import OctaveCodePrinter
 
 from .matrix_generator import MatrixGenerator
 

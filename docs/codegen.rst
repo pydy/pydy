@@ -12,18 +12,22 @@ needs. The generated code can also be auto-wrapped for immediate use in a
 Python session or script. Each component of the code generators and wrappers
 are accessible so that you can use just the raw code or the wrapper versions.
 
-We currently support three backends:
+We currently support four backends:
 
 ``lambdify``
    This generates NumPy-aware Python code which is defined in a Python
-   ``lambda`` function, using the ``sympy.utilities.lambdify`` module and is
-   the default generator.
+   function, using the :external+sympy:py:mod:`~sympy.utilities.lambdify`
+   module and is the default generator.
 ``Theano``
    This generates Theano trees that are compiled into low level code, using the
-   ``sympy.printers.theano_code`` module.
+   :external+sympy:py:mod:`~sympy.printers.theanocode` module. (Requies SymPy <
+   1.8)
 ``Cython``
    This generates C code that can be called from Python, using SymPy's C code
    printer utilities and Cython.
+``Symjit``
+   This generates native machine code directly from SymPy expressions via
+   Symjit.
 
 On Windows
 ==========

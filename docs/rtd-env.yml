@@ -7,8 +7,11 @@ dependencies:
   - matplotlib-base
   - numpy
   - numpydoc
-  - python =3.8.*
+  - packaging
+  - python =3.14.*
   - pythreejs
   - scipy
+  - setuptools
   - sphinx
+  - symjit
   - sympy

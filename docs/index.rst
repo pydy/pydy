@@ -17,7 +17,6 @@ Table of Contents
    models.rst
    system.rst
    viz/viz.rst
-   viz/api.rst
    utils.rst
    changelog.rst
 

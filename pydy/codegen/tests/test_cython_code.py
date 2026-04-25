@@ -6,8 +6,20 @@ import numpy as np
 import sympy as sm
 
 from ...models import multi_mass_spring_damper
-from ..c_code import _CLUsolveGenerator
+from ..c_code import _CSymbolicLinearSolveGenerator
 from ..cython_code import CythonMatrixGenerator
+
+
+def test_pi_windows():
+    # Fix for issue #499: Windows needs a define for math constants in C
+    a, b = sm.symbols('a, b')
+    matrices = (sm.Matrix([a*sm.pi, b*sm.cos(sm.pi)]),)
+    generator = CythonMatrixGenerator(((a, b),), matrices)
+    f = generator.compile()
+    outp = np.empty(2)
+    inp = np.array([1.0, 4.5])
+    f(inp, outp)
+    np.testing.assert_allclose([np.pi, -4.5], outp)
 
 
 class TestCythonMatrixGenerator(object):
@@ -211,7 +223,8 @@ def test_lusolve_generator():
 
     generator = CythonMatrixGenerator(arguments, outputs)
     # patch in the special generator
-    generator.c_matrix_generator = _CLUsolveGenerator(arguments, outputs)
+    generator.c_matrix_generator = _CSymbolicLinearSolveGenerator(arguments,
+                                                                  outputs)
     func = generator.compile()
 
     # setup the input and output arrays

@@ -78,6 +78,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.ifconfig',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'numpydoc',
 ]
@@ -132,7 +133,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'PyDy Distribution'
+project = u'PyDy'
 copyright = u'{}, PyDy Authors'.format(COPYRIGHT_YEARS)
 
 # The version info for the project you're documenting, acts as replacement for
@@ -182,17 +183,32 @@ pygments_style = 'sphinx'
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
 
+# Setup intersphinx so that we can reference the SymPy documentation.
+# :external:py:func:`~sympy.physics.vector.functions.dot` for example.
+intersphinx_mapping = {
+    #'matplotlib': ('https://matplotlib.org/stable/', None),
+    #'numpy': ('https://numpy.org/doc/stable/', None),
+    #'py3js': ('https://pythreejs.readthedocs.io/en/stable', None),
+    #'python': ('http://docs.python.org/', None),
+    #'scipy': ('https://docs.scipy.org/doc/scipy/', None),
+    'sympy': ('https://docs.sympy.org/latest/', None),
+}
 
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#html_theme = 'default'
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    'github_repo': 'pydy',
+    'github_type': 'star',
+    'github_user': 'pydy',
+    'page_width': '1080px',  # 960 doesn't show 79 linewidth examples
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -280,8 +296,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'PyDyDistribution.tex', u'PyDy Distribution Documentation',
-   u'PyDy Authors', 'manual'),
+    ('index', 'PyDyDistribution.tex', u'PyDy Distribution Documentation',
+     u'PyDy Authors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -324,9 +340,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'PyDyDistribution', u'PyDy Distribution Documentation',
-   u'PyDy Authors', 'PyDyDistribution', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'PyDyDistribution', u'PyDy Distribution Documentation',
+     u'PyDy Authors', 'PyDyDistribution', 'One line description of project.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -402,6 +418,4 @@ epub_copyright = u'{}, PyDy Authors'.format(COPYRIGHT_YEARS)
 # If false, no index is generated.
 #epub_use_index = True
 
-
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}

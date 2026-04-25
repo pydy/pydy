@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 import sys
-if sys.version_info > (3, 0):
-    from collections.abc import Sequence
-else:
-    from collections import Sequence
+from collections.abc import Sequence
 from itertools import chain
+import logging
+from importlib import metadata
+import textwrap
+from warnings import warn
 
 import numpy as np
 import numpy.linalg
@@ -13,13 +14,18 @@ import scipy.linalg
 import sympy as sm
 import sympy.physics.mechanics as me
 from sympy.core.function import UndefinedFunction, Derivative
+from packaging.version import parse as parse_version
 Cython = sm.external.import_module('Cython')
 theano = sm.external.import_module('theano')
+symjit = sm.external.import_module('symjit')
 if theano:
     from sympy.printing.theanocode import theano_function
+if symjit:
+    from symjit import compile_func
 
-from .c_code import _CLUsolveGenerator
+from .c_code import _CSymbolicLinearSolveGenerator
 from .cython_code import CythonMatrixGenerator
+from ..utils import sympy_equal_to_or_newer_than
 
 
 class ODEFunctionGenerator(object):
@@ -28,20 +34,24 @@ class ODEFunctionGenerator(object):
     needed to compute xdot for the three different system specification
     types."""
 
+    _time_par_template = """\
+t : float
+    The current time.
+"""
+
     _rhs_doc_template = \
 """\
 Returns the derivatives of the states, i.e. numerically evaluates the right
 hand side of the first order differential equation.
 
-x' = f(x, t,{specified_call_sig} p)
+x' = f({x_and_t},{specified_call_sig} p)
 
 Parameters
 ==========
-x : ndarray, shape({num_states},)
+{time_par_before}x : ndarray, shape({num_states},)
     The state vector is ordered as such:
 {state_list}
-t : float
-    The current time.{specifieds_explanation}{constants_explanation}
+{time_par_after}{specifieds_explanation}{constants_explanation}
 
 Returns
 =======
@@ -53,7 +63,7 @@ dx : ndarray, shape({num_states},)
     _constants_doc_templates = {}
 
     _constants_doc_templates[None] = \
-"""
+"""\
 p : dictionary len({num_constants}) or ndarray shape({num_constants},)
     Either a dictionary that maps the constants symbols to their numerical
     values or an array with the constants in the following order:
@@ -61,7 +71,7 @@ p : dictionary len({num_constants}) or ndarray shape({num_constants},)
 """
 
     _constants_doc_templates['array'] = \
-"""
+"""\
 p : ndarray shape({num_constants},)
     A ndarray of floats that give the numerical values of the constants in
     this order:
@@ -69,7 +79,7 @@ p : ndarray shape({num_constants},)
 """
 
     _constants_doc_templates['dictionary'] = \
-"""
+"""\
 p : dictionary len({num_constants})
     A dictionary that maps the constants symbols to their numerical values
     with at least these keys:
@@ -79,7 +89,7 @@ p : dictionary len({num_constants})
     _specifieds_doc_templates = {}
 
     _specifieds_doc_templates[None] = \
-"""
+"""\
 r : dictionary; ndarray, shape({num_specified},); function
 
     There are three options for this argument. (1) is more flexible but
@@ -89,68 +99,68 @@ r : dictionary; ndarray, shape({num_specified},); function
     ndarrays, or functions that produce ndarrays. The keys can be a single
     specified symbolic function of time or a tuple of symbols. The total
     number of symbols must be equal to {num_specified}. If the value is a
-    function it must be of the form g(x, t), where x is the current state
+    function it must be of the form g({x_and_t}), where x is the current state
     vector ndarray and t is the current time float and it must return an
     ndarray of the correct shape. For example::
 
       r = {{a: 1.0,
            (d, b) : np.array([1.0, 2.0]),
-           (e, f) : lambda x, t: np.array(x[0], x[1]),
-           c: lambda x, t: np.array(x[2])}}
+           (e, f) : lambda {x_and_t}: np.array(x[0], x[1]),
+           c: lambda {x_and_t}: np.array(x[2])}}
 
     (2) A ndarray with the specified values in the correct order and of the
     correct shape.
 
-    (3) A function that must be of the form g(x, t), where x is the current
+    (3) A function that must be of the form g({x_and_t}), where x is the current
     state vector and t is the current time and it must return an ndarray of
     the correct shape.
 
     The specified inputs are, in order:
-{specified_list}\
+{specified_list}
 """
 
     _specifieds_doc_templates['array'] = \
-"""
+"""\
 r : ndarray, shape({num_specified},)
 
     A ndarray with the specified values in the correct order and of the
     correct shape.
 
     The specified inputs are, in order:
-{specified_list}\
+{specified_list}
 """
 
     _specifieds_doc_templates['function'] = \
-"""
+"""\
 r : function
 
-    A function that must be of the form g(x, t), where x is the current
+    A function that must be of the form g({x_and_t}), where x is the current
     state vector and t is the current time and it must return an ndarray of
     shape({num_specified},).
 
     The specified inputs are, in order:
-{specified_list}\
+{specified_list}
 """
 
     _specifieds_doc_templates['dictionary'] = \
-"""
+"""\
 r : dictionary
 
     A dictionary that maps the specified functions of time to floats,
     ndarrays, or functions that produce ndarrays. The keys can be a single
     specified symbolic function of time or a tuple of symbols. The total
     number of symbols must be equal to {num_specified}. If the value is a
-    function it must be of the form g(x, t), where x is the current state
+    function it must be of the form g({x_and_t}), where x is the current state
     vector ndarray and t is the current time float and it must return an
     ndarray of the correct shape. For example::
 
       r = {{a: 1.0,
            (d, b) : np.array([1.0, 2.0]),
-           (e, f) : lambda x, t: np.array(x[0], x[1]),
-           c: lambda x, t: np.array(x[2])}}
+           (e, f) : lambda {x_and_t}: np.array(x[0], x[1]),
+           c: lambda {x_and_t}: np.array(x[2])}}
 
     The specified inputs are, in order:
-{specified_list}\
+{specified_list}
 """
 
     @staticmethod
@@ -180,7 +190,8 @@ r : dictionary
     def __init__(self, right_hand_side, coordinates, speeds, constants=(),
                  mass_matrix=None, coordinate_derivatives=None,
                  specifieds=None, linear_sys_solver='numpy',
-                 constants_arg_type=None, specifieds_arg_type=None):
+                 constants_arg_type=None, specifieds_arg_type=None,
+                 time_first=False):
         """Generates a numerical function which can evaluate the right hand
         side of the first order ordinary differential equations from a
         system described by one of the following three symbolic forms:
@@ -194,15 +205,15 @@ r : dictionary
 
         where
 
-            x : states, i.e. [q, u]
-            t : time
-            r : specified (exogenous) inputs
-            p : constants
-            q : generalized coordinates
-            u : generalized speeds
-            M : mass matrix (full or minimum)
-            F : right hand side (full or minimum)
-            G : right hand side of the kinematical differential equations
+            - x : states, i.e. [q, u]
+            - t : time
+            - r : specified (exogenous) inputs
+            - p : constants
+            - q : generalized coordinates
+            - u : generalized speeds
+            - M : mass matrix (full or minimum)
+            - F : right hand side (full or minimum)
+            - G : right hand side of the kinematical differential equations
 
         The generated function is of the form F(x, t, p) or F(x, t, r, p)
         depending on whether the system has specified inputs or not.
@@ -228,7 +239,7 @@ r : dictionary
             This can be either the "full" mass matrix as in [2] or the
             "minimal" mass matrix as in [3]. The rows and columns must be
             ordered to match the order of the coordinates and speeds. In the
-            case of the full mass matrix, the speeds should always be
+            case of the full mass matrix, the coordinates should always be
             ordered before the speeds, i.e. x = [q, u].
         coordinate_derivatives : sympy.Matrix, shape(m, 1), optional
             If the "minimal" mass matrix, form [3], is supplied, then this
@@ -238,11 +249,18 @@ r : dictionary
             The specified exogenous inputs to the system. These should be
             functions of time and the order does not matter.
         linear_sys_solver : string or function
-            Specify either `numpy` or `scipy` to use the linear solvers
-            provided in each package or supply a function that solves a
-            linear system Ax=b with the call signature x = solve(A, b). For
+            Specify either ``numpy`` or ``scipy`` to use the linear solvers
+            provided in each package or supply a function that solves a linear
+            system ``Ax=b`` with the call signature ``x = solve(A, b)``. For
             example, if you need to use custom kwargs for the SciPy solver,
-            pass in a lambda function that wraps the solver and sets them.
+            pass in a lambda function that wraps the solver and sets them. If
+            ``sympy`` or ``sympy:<method>`` is provided, the linear system will
+            be solved symbolically in an efficient manner. ``<method>`` method
+            can be any valid method for
+            :external+sympy:meth:`~sympy.matrices.matrixbase.MatrixBase.solve`,
+            such as ``LU``, ``CH``, or ``CRAMER``. The default is ``LU`` if
+            only ``sympy`` is provided.  The symbolic solve only works with the
+            Cython generator.
         constants_arg_type : string
             The generated function accepts two different types of arguments
             for the numerical values of the constants: either a ndarray of
@@ -265,7 +283,10 @@ r : dictionary
             what arg types you want to support choose either ``array``,
             ``function``, or ``dictionary``. The speed of each, from fast to
             slow, are ``array``, ``function``, ``dictionary``, None.
-
+        time_first : boolean, optional
+            By default the argument order of the generated function is ``F(x,
+            t, r, p)`` and, if this is set to true, it will be ``F(t, x, r,
+            p)``.
         """
 
         self.right_hand_side = right_hand_side
@@ -278,8 +299,9 @@ r : dictionary
         self.linear_sys_solver = linear_sys_solver
         self.constants_arg_type = constants_arg_type
         self.specifieds_arg_type = specifieds_arg_type
+        self.time_first = time_first
 
-        # As the order of the constants and specifieds arguments if not
+        # As the order of the constants and specifieds arguments is not
         # important, allow Sets to be used as input. However, the order must be
         # maintained and converted to a Sequence.
         if constants is not None and not isinstance(constants, Sequence):
@@ -315,7 +337,7 @@ r : dictionary
 
     @linear_sys_solver.setter
     def linear_sys_solver(self, v):
-
+        logging.debug(f'Linear system solver set to {v}.')
         if isinstance(v, type(lambda x: x)):
             self._solve_linear_system = v
             self._linear_sys_solver = v
@@ -325,10 +347,14 @@ r : dictionary
         elif v == 'scipy':
             self._solve_linear_system = scipy.linalg.solve
             self._linear_sys_solver = v
-        elif v == 'sympy':
+        elif isinstance(v, str) and v.startswith('sympy'):
             # dummy function
             self._solve_linear_system = lambda A, b: np.nan*np.ones_like(b)
-            self._linear_sys_solver = v
+            self._linear_sys_solver = 'sympy'
+            if ':' in v:
+                self._sympy_solver = v.split(':')[-1]
+            else:
+                self._sympy_solver = 'LU'
         else:
             msg = '{} is not a valid solver.'
             raise ValueError(msg.format(self.linear_sys_solver))
@@ -368,7 +394,7 @@ r : dictionary
         """Returns an array of numerical values from the constants
         dictionary in the correct order."""
 
-        # NOTE : It's unfortunate that this has to be run at every rhs eval,
+        # TODO : It's unfortunate that this has to be run at every rhs eval,
         # because subsequent calls to rhs() doesn't require different
         # constants. I suppose you can sub out all the constants in the EoMs
         # before passing them into the generator. That would beg for the
@@ -446,26 +472,33 @@ r : dictionary
 
     def _generate_rhs_docstring(self):
 
-        template_values = {'num_states': self.num_states,
-                           'state_list': self.list_syms(8, self.coordinates
-                                                        + self.speeds),
-                           'specified_call_sig': '',
-                           'constants_explanation':
-                               self._constants_doc_templates[
-                                   self.constants_arg_type].format(**{
-                                       'num_constants': self.num_constants,
-                                       'constant_list': self.list_syms(
-                                           8, self.constants)}),
-                           'specifieds_explanation': ''}
+        template_values = {
+            'num_states': self.num_states,
+            'state_list': self.list_syms(8, self.coordinates + self.speeds),
+            'specified_call_sig': '',
+            'constants_explanation': self._constants_doc_templates[
+                self.constants_arg_type].format(**{
+                    'num_constants': self.num_constants,
+                    'constant_list': self.list_syms(8, self.constants)
+                }),
+            'specifieds_explanation': '',
+            'x_and_t': 't, x' if self.time_first else 'x, t',
+            'time_par_before': (self._time_par_template if self.time_first
+                                else ''),
+            'time_par_after': ('' if self.time_first
+                               else self._time_par_template),
+        }
 
         if self.specifieds is not None:
             template_values['specified_call_sig'] = ' r,'
             specified_template_values = {
                 'num_specified': self.num_specifieds,
-                'specified_list': self.list_syms(8, self.specifieds)}
+                'specified_list': self.list_syms(8, self.specifieds),
+                'x_and_t': 't, x' if self.time_first else 'x, t'}
             template_values['specifieds_explanation'] = \
-                self._specifieds_doc_templates[self.specifieds_arg_type].format(
-                    **specified_template_values)
+                self._specifieds_doc_templates[
+                    self.specifieds_arg_type].format(
+                        **specified_template_values)
 
         return self._rhs_doc_template.format(**template_values)
 
@@ -476,6 +509,8 @@ r : dictionary
         p_arg_type = self.constants_arg_type
         r_arg_type = self.specifieds_arg_type
 
+        x_idx = 1 if self.time_first else 0
+
         if p_arg_type is None and r_arg_type is None:
             def rhs(*args):
                 # args: x, t, p
@@ -484,8 +519,8 @@ r : dictionary
 
                 args = self._parse_all_args(*args)
 
-                q = args[0][:self.num_coordinates]
-                u = args[0][self.num_coordinates:]
+                q = args[x_idx][:self.num_coordinates]
+                u = args[x_idx][self.num_coordinates:]
 
                 if self.constants:
                     xdot = self._base_rhs(q, u, *args[2:])
@@ -514,15 +549,15 @@ r : dictionary
             r = lambda *li : self._convert_specifieds_dict_to_array(*li[:3])
 
         elif r_arg_type == 'function':
-            r = lambda *li: li[2](*li[2:])
+            r = lambda *li: li[2](*li[:2])
 
         def rhs(*args):
             # args: x, t, p
             # or
             # args: x, t, r, p
 
-            q = args[0][:self.num_coordinates]
-            u = args[0][self.num_coordinates:]
+            q = args[x_idx][:self.num_coordinates]
+            u = args[x_idx][self.num_coordinates:]
 
             if self.specifieds is None:
                 if self.constants:
@@ -630,13 +665,32 @@ r : dictionary
 
 class CythonODEFunctionGenerator(ODEFunctionGenerator):
 
+    _extra_doc = \
+"""\
+cse : boolean, optional, default True
+    Find and replace common sub-expressions if True.
+force_c_contiguous : boolean, optional, default False
+    Arrays passed to the generated ode function must be C contiguous. If true,
+    all arrays will be coerced into C contiguous arrays at a performance cost.
+prefix : string, optional, default 'pydy_codegen'
+    The desired prefix for the generated files.
+tmp_dir : string, optional, default None
+    The path to an existing or non-existing directory where all of
+    the generated files will be stored.
+verbose : boolean, optional, default False
+    If true the output of the completed compilation steps will be
+    printed.
+"""
+
     def __init__(self, *args, **kwargs):
 
-        self._options = {'tmp_dir': None,
-                         'prefix': 'pydy_codegen',
-                         'cse': True,
-                         'verbose': False,
-                         }
+        self._options = {
+            'cse': True,
+            'force_c_contiguous': False,
+            'prefix': 'pydy_codegen',
+            'tmp_dir': None,
+            'verbose': False,
+        }
         for k, v in self._options.items():
             self._options[k] = kwargs.pop(k, v)
 
@@ -645,7 +699,9 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
         else:
             super(CythonODEFunctionGenerator, self).__init__(*args, **kwargs)
 
-    __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
+    __init__.__doc__ = (textwrap.dedent(' '*8 +
+                                        ODEFunctionGenerator.__init__.__doc__)
+                        + _extra_doc)
 
     def _cythonize(self, outputs, inputs):
         g = CythonMatrixGenerator(inputs, outputs,
@@ -660,19 +716,34 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
             raise ValueError(msg)
         g = CythonMatrixGenerator(inputs, outputs,
                                   prefix=self._options['prefix'],
-                                  cse=True)
+                                  cse=self._options['cse'])
         # patch in the special generator
-        g.c_matrix_generator = _CLUsolveGenerator(inputs, outputs)
+        g.c_matrix_generator = _CSymbolicLinearSolveGenerator(
+            inputs, outputs, sympy_solver=self._sympy_solver)
         return g.compile(tmp_dir=self._options['tmp_dir'],
                          verbose=self._options['verbose'])
 
     def _set_eval_array(self, f):
 
+        # NOTE : The generated Cython function requires C contiguous arrays
+        # and, for example, SciPy's solve_ivp does not guarantee C contiguous
+        # arrays in all of their integration routines. So we take a performance
+        # hit to make a copy of the arrays if they are Fortran contiguous.
+        c = np.ascontiguousarray
+
         if self.specifieds is None:
-            self.eval_arrays = lambda q, u, p: f(q, u, p, *self._empties)
+            if self._options['force_c_contiguous']:
+                self.eval_arrays = lambda q, u, p: f(c(q), c(u), c(p),
+                                                     *self._empties)
+            else:
+                self.eval_arrays = lambda q, u, p: f(q, u, p, *self._empties)
         else:
-            self.eval_arrays = lambda q, u, r, p: f(q, u, r, p,
-                                                    *self._empties)
+            if self._options['force_c_contiguous']:
+                self.eval_arrays = lambda q, u, r, p: f(c(q), c(u), c(r), c(p),
+                                                        *self._empties)
+            else:
+                self.eval_arrays = lambda q, u, r, p: f(q, u, r, p,
+                                                        *self._empties)
 
     def generate_full_rhs_function(self):
 
@@ -719,47 +790,42 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
 
 class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
 
+    _extra_doc = \
+"""\
+cse : boolean, optional, default True
+    Find and replace common sub-expressions if True.
+"""
+
     def __init__(self, *args, **kwargs):
 
-        self._options = {'cse': True}
+        # NOTE : pydy.tests.test_system.test_specifying_coordinate_issue_339
+        # fails in SymPy 1.12 if cse is True. lambdfiy cse=True has a bug when
+        # an argument is a Derivative, see
+        # https://github.com/sympy/sympy/issues/26404 dummification. Fixed in
+        # this PR which is in SymPy 1.14:
+        # https://github.com/sympy/sympy/pull/26678 with origial issue:
+        if ('specifieds' in kwargs and kwargs['specifieds'] is not None and
+                any([isinstance(inp, sm.Derivative)
+                     for inp in kwargs['specifieds']])):
+            if sympy_equal_to_or_newer_than('1.14'):
+                self._options = {'cse': True}
+            else:
+                self._options = {'cse': False}
+        else:
+            self._options = {'cse': True}
 
         for k, v in self._options.items():
             self._options[k] = kwargs.pop(k, v)
 
         super(LambdifyODEFunctionGenerator, self).__init__(*args, **kwargs)
 
-    __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
+    __init__.__doc__ = (textwrap.dedent(' '*8 +
+                                        ODEFunctionGenerator.__init__.__doc__)
+                        + _extra_doc)
 
     def _lambdify(self, outputs):
-        # TODO : We could forgo this substitution for generation speed
-        # purposes and have lots of args for lambdify (like it used to be
-        # done) but there may be some limitations on number of args.
-        subs = {}
-        vec_inputs = []
-        if self.specifieds is None:
-            def_vecs = ['q', 'u', 'p']
-        else:
-            def_vecs = ['q', 'u', 'r', 'p']
-
-        for syms, vec_name in zip(self.inputs, def_vecs):
-            v = sm.DeferredVector(vec_name)
-            for i, sym in enumerate(syms):
-                subs[sym] = v[i]
-            vec_inputs.append(v)
-
-        try:
-            outputs = [me.msubs(output, subs) for output in outputs]
-        except AttributeError:
-            # msubs doesn't exist in SymPy < 0.7.6.
-            outputs = [output.subs(subs) for output in outputs]
-
-        modules = [{'ImmutableMatrix': np.array}, 'numpy']
-
-        try:
-            return sm.lambdify(vec_inputs, outputs, modules=modules,
-                               cse=self._options['cse'])
-        except TypeError:  # cse added in SymPy 1.9
-            return sm.lambdify(vec_inputs, outputs, modules=modules)
+        return sm.lambdify(self.inputs, outputs, modules='numpy',
+                           cse=self._options['cse'])
 
     def generate_full_rhs_function(self):
 
@@ -810,6 +876,10 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
         if theano is None:
             raise ImportError('Theano must be installed to use this class.')
         else:
+            msg = ('Support for Theano code generation is deprecated as of '
+                   'PyDy version 0.9.0. It will be removed in a future '
+                   'version.')
+            warn(msg, DeprecationWarning, stacklevel=2)
             super(TheanoODEFunctionGenerator, self).__init__(*args, **kwargs)
 
     __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
@@ -892,15 +962,147 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
         self.eval_arrays = eval_arrays
 
 
+class SymjitODEFunctionGenerator(ODEFunctionGenerator):
+
+    _extra_doc = \
+"""\
+cse : boolean, optional, default True
+    Find and replace common sub-expressions if True.
+"""
+
+    def __init__(self, *args, **kwargs):
+
+        if symjit is None:
+            raise ImportError('Symjit must be installed to use this class.')
+
+        symjit_version = metadata.version('symjit')
+        if parse_version(symjit_version) < parse_version('2.5.0'):
+            raise ImportError('Symjit >= 2.5.0 is required.')
+
+        self._options = {'cse': True}
+
+        for k, v in self._options.items():
+            self._options[k] = kwargs.pop(k, v)
+
+        super().__init__(*args, **kwargs)
+
+    __init__.__doc__ = (textwrap.dedent(' '*8 +
+                                        ODEFunctionGenerator.__init__.__doc__)
+                        + _extra_doc)
+
+    def _symjitify(self, outputs):
+        # NOTE : symjit currently only works with expressions made up of
+        # Symbol() not Function()(Symbol()) so we have to replace all functions
+        # of time with symbols.
+        repl = {}
+        for seq in self.inputs[:-1]:  # skip p
+            for v in seq:
+                repl[v] = sm.Symbol(v.name)  # TODO : apply assumptions
+
+        # NOTE : symjit only accepts an expression or a list of expressions, so
+        # we have to flatten the matrices and make a long list of all
+        # expressions.
+        new_outputs = []
+        for o in outputs:
+            for expr in o:
+                new_outputs.append(expr.xreplace(repl))
+
+        # NOTE : symjit does not allow iterable of iterables as the function
+        # arguments so all symbols in the expression are expanded into one long
+        # list.
+        new_inputs = list(repl.values()) + list(self.inputs[-1])
+
+        return compile_func(new_inputs, new_outputs, cse=self._options['cse'])
+
+    def generate_full_rhs_function(self):
+
+        self.define_inputs()
+        outputs = [self.right_hand_side]
+
+        f = self._symjitify(outputs)
+
+        # NOTE : symjit outputs a list of floats, not a NumPy array of floats.
+        if self.specifieds is None:
+            def wrapper(q, u, p):
+                return np.asarray(f.apply(np.hstack((q, u, p))))
+        else:
+            def wrapper(q, u, r, p):
+                return np.asarray(f.apply(np.hstack((q, u, r, p))))
+
+        self.eval_arrays = wrapper
+
+    def generate_full_mass_matrix_function(self):
+
+        self.define_inputs()
+        outputs = [self.mass_matrix, self.right_hand_side]
+
+        f = self._symjitify(outputs)
+
+        m_dim = len(self.inputs[0]) + len(self.inputs[1])
+
+        if self.specifieds is None:
+            def wrapper(q, u, p):
+                all_vals = np.asarray(f.apply(np.hstack((q, u, p))))
+                m_vals = all_vals[:m_dim*m_dim].reshape(m_dim, m_dim)
+                f_vals = all_vals[m_dim*m_dim:]
+                return m_vals, f_vals
+        else:
+            def wrapper(q, u, r, p):
+                all_vals = np.asarray(f.apply(np.hstack((q, u, r, p))))
+                m_vals = all_vals[:m_dim*m_dim].reshape(m_dim, m_dim)
+                f_vals = all_vals[m_dim*m_dim:]
+                return m_vals, f_vals
+
+        self.eval_arrays = wrapper
+
+    def generate_min_mass_matrix_function(self):
+
+        self.define_inputs()
+        outputs = [self.mass_matrix, self.right_hand_side,
+                   self.coordinate_derivatives]
+
+        f = self._symjitify(outputs)
+
+        m_dim = len(self.inputs[1])
+
+        if self.specifieds is None:
+            def convert_symjit_output(q, u, p):
+                all_vals = np.asarray(f.apply(np.hstack((q, u, p))))
+                m_vals = all_vals[:m_dim*m_dim].reshape(m_dim, m_dim)
+                f_vals = all_vals[m_dim*m_dim:m_dim*m_dim + m_dim]
+                k_vals = all_vals[m_dim*m_dim + m_dim:]
+                return m_vals, f_vals, k_vals
+        else:
+            def convert_symjit_output(q, u, r, p):
+                all_vals = np.asarray(f.apply(np.hstack((q, u, r, p))))
+                m_vals = all_vals[:m_dim*m_dim].reshape(m_dim, m_dim)
+                f_vals = all_vals[m_dim*m_dim:m_dim*m_dim + m_dim]
+                k_vals = all_vals[m_dim*m_dim + m_dim:]
+                return m_vals, f_vals, k_vals
+
+        self.eval_arrays = convert_symjit_output
+
+
 def generate_ode_function(*args, **kwargs):
     """This is a function wrapper to the above classes. The docstring is
     automatically generated below."""
 
     generators = {'lambdify': LambdifyODEFunctionGenerator,
                   'cython': CythonODEFunctionGenerator,
-                  'theano': TheanoODEFunctionGenerator}
+                  'theano': TheanoODEFunctionGenerator,
+                  'symjit': SymjitODEFunctionGenerator}
 
     generator = kwargs.pop('generator', 'lambdify')
+
+    try:
+        lin_solver = kwargs['linear_sys_solver']
+    except KeyError:
+        pass
+    else:
+        if (isinstance(lin_solver, str) and lin_solver.startswith('sympy') and
+                generator != 'cython'):
+            msg = f'{generator} does not support the symbolic linear solver.'
+            raise ValueError(msg)
 
     try:
         # See if user passed in a custom class.
@@ -922,16 +1124,20 @@ def generate_ode_function(*args, **kwargs):
 _docstr = ODEFunctionGenerator.__init__.__doc__
 _extra_parameters_doc = \
 """\
-        generator : string or and ODEFunctionGenerator, optional
-            The method used for generating the numeric right hand side. The
-            string options are {'lambdify'|'theano'|'cython'} with
-            'lambdify' being the default. You can also pass in a custom
-            subclass of ODEFunctionGenerator.
+generator : string or ODEFunctionGenerator, optional
+    The method used for generating the numeric right hand side. The string
+    options are ``{'lambdify'|'theano'|'cython'|'symjit'}`` with ``lambdify``
+    being the default. You can also pass in a custom subclass of
+    ODEFunctionGenerator.
+kwargs
+    Extra keyword arguments are passed to the :py:class:`ODEFunctionGenerator`.
 
-        Returns
-        =======
-        rhs : function
-            A function which evaluates the derivaties of the states. See the
-            function's docstring for more details after generation.
+Returns
+=======
+rhs : function
+    A function which evaluates the derivaties of the states. See the
+    function's docstring for more details after generation.
 """
-generate_ode_function.__doc__ = ('' * 4 + _docstr + _extra_parameters_doc)
+# NOTE : I do not understand why this ' '*8 is needed.
+generate_ode_function.__doc__ = (textwrap.dedent(' '*8 + _docstr) +
+                                 _extra_parameters_doc)

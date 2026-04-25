@@ -2,8 +2,71 @@
 Release Notes
 =============
 
-0.8.0 (TBA)
-===========
+0.9.0.dev0
+==========
+
+- Added ``System.evaluate_ode()`` which evaluates the system's differential
+  equations at the set initial condition and initial time. [PR `#566`_]
+- Cython generated ODE functions require C contiguous arrays as inputs. Added
+  an option to coerce Fortran contiguous arrays into C contiguous (at a
+  performance penalty). System() will do the coercion if user supplied ODE
+  solver routines are applied but can be overridden. [PR `#563`_]
+- Theano code generation is deprecated.
+- Drop support for Python 3.9. [PR `#560`_]
+- Add support for Python 3.14. [PR `#560`_]
+- Bump minimum supported dependencies to those available in Ubuntu 24.04 LTS. [PR `#560`_]
+- Fixed a bug where the lambdify ODE generator would fail if there were
+  derivatives in the specifieds when cse was enabled for SymPy 1.12 and SymPy
+  1.13. [PR `#560`_]
+- Use Baumgarte's stabilization technique in the Carvallo-Whipple bicycle model
+  example. [PR `#559`_]
+- Added option to swap argument order in the ODEFunctionGenerators to support
+  both SciPy's odeint() and solve_ivp(). [PR `#546`_]
+- Added a SymjitODEFunctionGenerator, depends on symjit >= 2.5.0 (optional).
+  [PR `#530`_]
+- The symbolic linear system solver option is now public and supports selecting
+  optional symbolic linear system solvers. [PR `#525`_]
+- Removed more tests and code paths for unsupported SymPy < 1.9. [PRs `#522`_,
+  `#524`_, `#527`_]
+- Moved viz API to a sublevel in the docs instead of top level.
+
+.. _#522: https://github.com/pydy/pydy/pull/522
+.. _#524: https://github.com/pydy/pydy/pull/524
+.. _#525: https://github.com/pydy/pydy/pull/525
+.. _#527: https://github.com/pydy/pydy/pull/527
+.. _#530: https://github.com/pydy/pydy/pull/530
+.. _#546: https://github.com/pydy/pydy/pull/546
+.. _#559: https://github.com/pydy/pydy/pull/559
+.. _#560: https://github.com/pydy/pydy/pull/560
+.. _#563: https://github.com/pydy/pydy/pull/563
+.. _#566: https://github.com/pydy/pydy/pull/566
+
+0.8.0 (August 28, 2025)
+=======================
+
+- Support NumPy 2.0. [PR `#502`_]
+- Migrate from nose to pytest. [PR `#503`_]
+- Bump minimum dependency versions to match those in Ubuntu 22.04 LTS and drop
+  support for Python 3.8. [PR `#504`_]
+- Update benchmark script to run without optional dependencies. [PR `#505`_]
+- Fixed bug where incorrect specified arguments were being selected if using
+  functions for specifieds. [PR `#510`_]
+- Support math symbols in C compilation on Windows. [PR `#511`_]
+- Add support for Python 3.13. [PR `#512`_]
+- Add dependency on packaging package for version parsing and comparison (in
+  place of deprecated pkg_resources). [PR `#514`_]
+- Make argument checking optional the MatrixGenerator due to low performance on
+  large expressions. [PR `#515`_]
+
+.. _#502: https://github.com/pydy/pydy/pull/502
+.. _#503: https://github.com/pydy/pydy/pull/503
+.. _#504: https://github.com/pydy/pydy/pull/504
+.. _#505: https://github.com/pydy/pydy/pull/505
+.. _#510: https://github.com/pydy/pydy/pull/510
+.. _#511: https://github.com/pydy/pydy/pull/511
+.. _#512: https://github.com/pydy/pydy/pull/512
+.. _#514: https://github.com/pydy/pydy/pull/514
+.. _#515: https://github.com/pydy/pydy/pull/515
 
 0.7.1 (March 4, 2023)
 =====================

@@ -5,23 +5,8 @@ matrices generated from sympy.physics.mechanics."""
 
 import os
 
-from pkg_resources import parse_version
 import sympy as sm
-
-SYMPY_VERSION = sm.__version__
-
-try:
-    try:
-        if parse_version(SYMPY_VERSION) >= parse_version('1.7'):
-            from sympy.printing.c import C99CodePrinter as CCodePrinter
-        else:
-            from sympy.printing.ccode import C99CodePrinter as CCodePrinter
-    except ImportError:
-        # SymPy 1.0 and lower uses this version.
-        from sympy.printing.ccode import CCodePrinter
-except ModuleNotFoundError:
-    # SymPy > 1.5 renamed the module ccode to c
-    from sympy.printing.c import C99CodePrinter as CCodePrinter
+from sympy.printing.c import C99CodePrinter as CCodePrinter
 
 from .matrix_generator import MatrixGenerator
 from ..utils import wrap_and_indent
@@ -47,7 +32,7 @@ void evaluate(
 */"""
 
     _c_source_template = """\
-#include <math.h>{header_include}
+{win_math_def}#include <math.h>{header_include}
 
 void evaluate(
 {input_args}
@@ -65,7 +50,7 @@ void evaluate(
     def _generate_code_blocks(self):
         """Writes the blocks of code for the C file."""
 
-        # TODO : This could use the super classes method with some tweaks.
+        # TODO : This could use the super class's method with some tweaks.
 
         printer = self._generate_pydy_printer()()
 
@@ -101,16 +86,7 @@ void evaluate(
         for i, output in enumerate(self.simplified_matrices):
             nr, nc = output.shape
             lhs = sm.MatrixSymbol('output_{}'.format(i), nr, nc)
-            try:
-                code_str = printer.doprint(output, lhs)
-            except AttributeError:
-                # The above fails in SymPy 0.7.4.1 because Matrix printing
-                # isn't supported.
-                code_lines = []
-                for j, element in enumerate(output):
-                    assignment = 'output_{}[{}]'.format(i, j)
-                    code_lines.append(printer.doprint(element, assignment))
-                code_str = '\n'.join(code_lines)
+            code_str = printer.doprint(output, lhs)
             outputs += wrap_and_indent(code_str.split('\n'))
             if i != len(self.simplified_matrices) - 1:
                 outputs += '\n\n'  # space between each output
@@ -127,11 +103,15 @@ void evaluate(
             include statement to to be added to the source.
 
         """
-
         if prefix is not None:
             filling = {'header_include': '\n#include "{}.h"'.format(prefix)}
         else:
             filling = {'header_include': ''}
+
+        if os.name == 'nt':
+            filling['win_math_def'] = '#define _USE_MATH_DEFINES\n'
+        else:
+            filling['win_math_def'] = ''
 
         filling.update(self.code_blocks)
 
@@ -163,27 +143,55 @@ void evaluate(
             f.write(source)
 
 
-class _CLUsolveGenerator(CMatrixGenerator):
+class _CSymbolicLinearSolveGenerator(CMatrixGenerator):
     """This is a private undocumented class that supports the
-    ``linear_sys_solver='sympy'`` in CythonMatrixGenerator. It cse's A and b of
-    a linear system Ax=b, then solves the linear system symbolically and cse's
-    the result x. This is a more efficient way to get the symbolic solution of
-    a linear system encoded in generated C code."""
+    ``linear_sys_solver='sympy:<method>'`` in CythonMatrixGenerator. It cse's A
+    and b of a linear system Ax=b, then solves the linear system symbolically
+    and cse's the result x. This is a more efficient way to get the symbolic
+    solution of a linear system encoded in generated C code.
+
+    Parameters
+    ==========
+    sympy_solver : string
+        Method used to solve the symbolic linear system of the form ``A*x=b``.
+        This should should be a valid method for the SymPy method
+        :meth:`sympy.matrices.matrixbase.MatrixBase.solve`.  The default is
+        ``'LU'`` which corresponds to SymPy's
+        :meth:`sympy.matrices.matrixbase.MatrixBase.LUsolve`. Some other
+        options are: ``'GJ'`` or ``'GE'`` for Gauss-Jordan elimination,
+        ``'QR'`` for :meth:`sympy.matrices.matrixbase.MatrixBase.QRsolve,
+        ``'PINV'`` for :meth:`sympy.matrices.matrixbase.MatrixBase.pinv_solve,
+        ``'CRAMER'`` for
+        :meth:`sympy.matrices.matrixbase.MatrixBase.cramer_solve`, ``'CH'``,
+        :meth:`sympy.matrices.matrixbase.MatrixBase.cholesky_solve`, and
+        ``'LDL'`` for :meth:`sympy.matrices.matrixbase.MatrixBase.LDLsolve`.
+
+    """
+
+    def __init__(self, arguments, matrices, cse=True, verify_arguments=False,
+                 sympy_solver='LU'):
+        self.sympy_solver = sympy_solver
+        super().__init__(arguments, matrices, cse=True, verify_arguments=False)
 
     def _generate_cse(self, prefix='pydy_'):
         # NOTE : This assumes the first two items in self.matrices are A and b
         # of and Ax=b system. This also ignores cse=False.
 
+        # NOTE : For large systems this hangs on cse(), the order='none' is set
+        # to drastically improve peformance. This is critical for len(A) > 10
+        # or so!
+
         gen1 = sm.numbered_symbols(prefix)
-        subexprs1, mats_simp = sm.cse(self.matrices, symbols=gen1)
+        subexprs1, mats_simp = sm.cse(self.matrices, symbols=gen1,
+                                      order='none')
 
         A_simp = mats_simp[0]
         b_simp = mats_simp[1]
 
-        x = A_simp.LUsolve(b_simp)
+        x = sm.Matrix.solve(A_simp, b_simp, method=self.sympy_solver)
 
         gen2 = sm.numbered_symbols(prefix, start=len(subexprs1))
-        subexprs2, x_simp = sm.cse(x, symbols=gen2)
+        subexprs2, x_simp = sm.cse(x, symbols=gen2, order='none')
 
         # swap the b matrix with the x result
         mats_simp[1] = x_simp[0]

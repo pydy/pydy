@@ -2,38 +2,299 @@
 
 from random import choice
 import warnings
+from importlib import metadata
 
 import numpy as np
 import scipy as sp
 import sympy as sm
+import sympy.physics.mechanics as me
 from pydy.codegen.ode_function_generators import generate_ode_function
+import pytest
+from packaging.version import parse as parse_version
 
 Cython = sm.external.import_module('Cython')
 theano = sm.external.import_module('theano')
+symjit = sm.external.import_module('symjit')
 
 from ... import models
 from ..ode_function_generators import (ODEFunctionGenerator,
                                        LambdifyODEFunctionGenerator,
                                        CythonODEFunctionGenerator,
-                                       TheanoODEFunctionGenerator)
+                                       TheanoODEFunctionGenerator,
+                                       SymjitODEFunctionGenerator)
 
 from ...utils import PyDyImportWarning
 
 warnings.simplefilter('once', PyDyImportWarning)
 
 
-def test_symbolic_lusolve_full_mass_matrix():
+def test_ccontiguous():
+
+    x1, x2, v1, v2 = me.dynamicsymbols('x1, x2, v1, v2')
+    f1, f2 = me.dynamicsymbols('f1, f2')
+    a = sm.symbols('a')
+
+    rhs = generate_ode_function(
+        sm.Matrix([v1, v2, a*f1, f2]),
+        [x1, x2],
+        [v1, v2],
+        constants=(a,),
+        specifieds=(f1, f2),
+        generator='cython',
+        force_c_contiguous=True,
+    )
+
+    arr = np.arange(16, dtype=np.float64).reshape(4, 4)
+
+    np.testing.assert_allclose(
+        rhs(arr[0, :], 0.0, np.array([1., 2.]), np.array([1.])),
+        np.array([2., 3., 1., 2.]),
+    )
+
+    # Fails with "ValueError: ndarray is not C-contiguous" if
+    # force_c_contiguous=False.
+    np.testing.assert_allclose(
+        rhs(arr[:, 0], 0.0, np.array([1., 2.]), np.array([1.])),
+        np.array([8., 12., 1., 2.]),
+    )
+
+
+def test_rhs_arg_order():
+
+    sys = models.n_link_pendulum_on_cart(n=2, cart_force=False,
+                                         joint_torques=True)
+
+    g_x_t = LambdifyODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        list(sm.ordered(sys.constants_symbols)),
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        specifieds=list(sm.ordered(sys.specifieds_symbols)),
+    )
+    rhs_func_x_t = g_x_t.generate()
+
+    g_t_x = LambdifyODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        list(sm.ordered(sys.constants_symbols)),
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        specifieds=list(sm.ordered(sys.specifieds_symbols)),
+        time_first=True,
+    )
+    rhs_func_t_x = g_t_x.generate()
+
+    x = np.random.random(g_x_t.num_coordinates + g_x_t.num_speeds)
+    t = 5.125
+    p = np.random.random(g_x_t.num_constants)
+    r = np.random.random(g_x_t.num_specifieds)
+
+    def eval_r_x_t(x, t):
+        np.testing.assert_allclose(5.125, t)
+        return r
+
+    def eval_r_t_x(t, x):
+        np.testing.assert_allclose(5.125, t)
+        return r
+
+    np.testing.assert_allclose(rhs_func_x_t(x, t, eval_r_x_t, p),
+                               rhs_func_t_x(t, x, eval_r_t_x, p))
+    expected_x_t_doc = """\
+Returns the derivatives of the states, i.e. numerically evaluates the right
+hand side of the first order differential equation.
+
+x' = f(x, t, r, p)
+
+Parameters
+==========
+x : ndarray, shape(6,)
+    The state vector is ordered as such:
+        - q0(t)
+        - q1(t)
+        - q2(t)
+        - u0(t)
+        - u1(t)
+        - u2(t)
+t : float
+    The current time.
+r : dictionary; ndarray, shape(2,); function
+
+    There are three options for this argument. (1) is more flexible but
+    (2) and (3) are much more efficient.
+
+    (1) A dictionary that maps the specified functions of time to floats,
+    ndarrays, or functions that produce ndarrays. The keys can be a single
+    specified symbolic function of time or a tuple of symbols. The total
+    number of symbols must be equal to 2. If the value is a
+    function it must be of the form g(x, t), where x is the current state
+    vector ndarray and t is the current time float and it must return an
+    ndarray of the correct shape. For example::
+
+      r = {a: 1.0,
+           (d, b) : np.array([1.0, 2.0]),
+           (e, f) : lambda x, t: np.array(x[0], x[1]),
+           c: lambda x, t: np.array(x[2])}
+
+    (2) A ndarray with the specified values in the correct order and of the
+    correct shape.
+
+    (3) A function that must be of the form g(x, t), where x is the current
+    state vector and t is the current time and it must return an ndarray of
+    the correct shape.
+
+    The specified inputs are, in order:
+        - T1(t)
+        - T2(t)
+p : dictionary len(6) or ndarray shape(6,)
+    Either a dictionary that maps the constants symbols to their numerical
+    values or an array with the constants in the following order:
+        - g
+        - l0
+        - l1
+        - m0
+        - m1
+        - m2
+
+Returns
+=======
+dx : ndarray, shape(6,)
+    The derivative of the state vector.
+
+"""
+    assert rhs_func_x_t.__doc__ == expected_x_t_doc
+
+    expected_t_x_doc = """\
+Returns the derivatives of the states, i.e. numerically evaluates the right
+hand side of the first order differential equation.
+
+x' = f(t, x, r, p)
+
+Parameters
+==========
+t : float
+    The current time.
+x : ndarray, shape(6,)
+    The state vector is ordered as such:
+        - q0(t)
+        - q1(t)
+        - q2(t)
+        - u0(t)
+        - u1(t)
+        - u2(t)
+r : dictionary; ndarray, shape(2,); function
+
+    There are three options for this argument. (1) is more flexible but
+    (2) and (3) are much more efficient.
+
+    (1) A dictionary that maps the specified functions of time to floats,
+    ndarrays, or functions that produce ndarrays. The keys can be a single
+    specified symbolic function of time or a tuple of symbols. The total
+    number of symbols must be equal to 2. If the value is a
+    function it must be of the form g(t, x), where x is the current state
+    vector ndarray and t is the current time float and it must return an
+    ndarray of the correct shape. For example::
+
+      r = {a: 1.0,
+           (d, b) : np.array([1.0, 2.0]),
+           (e, f) : lambda t, x: np.array(x[0], x[1]),
+           c: lambda t, x: np.array(x[2])}
+
+    (2) A ndarray with the specified values in the correct order and of the
+    correct shape.
+
+    (3) A function that must be of the form g(t, x), where x is the current
+    state vector and t is the current time and it must return an ndarray of
+    the correct shape.
+
+    The specified inputs are, in order:
+        - T1(t)
+        - T2(t)
+p : dictionary len(6) or ndarray shape(6,)
+    Either a dictionary that maps the constants symbols to their numerical
+    values or an array with the constants in the following order:
+        - g
+        - l0
+        - l1
+        - m0
+        - m1
+        - m2
+
+Returns
+=======
+dx : ndarray, shape(6,)
+    The derivative of the state vector.
+
+"""
+    assert rhs_func_t_x.__doc__ == expected_t_x_doc
+
+    # NOTE : This has to have the exact wrapping as the docstrings it is
+    # assembled from.
+    expected_end = """\
+time_first : boolean, optional
+    By default the argument order of the generated function is ``F(x,
+    t, r, p)`` and, if this is set to true, it will be ``F(t, x, r,
+    p)``.
+generator : string or ODEFunctionGenerator, optional
+    The method used for generating the numeric right hand side. The string
+    options are ``{'lambdify'|'theano'|'cython'|'symjit'}`` with ``lambdify``
+    being the default. You can also pass in a custom subclass of
+    ODEFunctionGenerator.
+kwargs
+    Extra keyword arguments are passed to the :py:class:`ODEFunctionGenerator`.
+
+Returns
+=======
+rhs : function
+    A function which evaluates the derivaties of the states. See the
+    function's docstring for more details after generation.
+"""
+
+    assert generate_ode_function.__doc__.endswith(expected_end)
+
+
+def test_symbolic_linear_solve_full_mass_matrix():
     sys = models.n_link_pendulum_on_cart(n=5, cart_force=False,
                                          joint_torques=False)
 
-    g_symbolic_solve = CythonODEFunctionGenerator(
+    # symbolic solve only works with cython, raises with lambdify or theano
+    with pytest.raises(ValueError):
+        generate_ode_function(
+            sys.eom_method.forcing_full,
+            sys.coordinates,
+            sys.speeds,
+            sys.constants_symbols,
+            mass_matrix=sys.eom_method.mass_matrix_full,
+            linear_sys_solver='sympy',
+            generator='lambdify')
+
+    with pytest.raises(ValueError):
+        generate_ode_function(
+            sys.eom_method.forcing_full,
+            sys.coordinates,
+            sys.speeds,
+            sys.constants_symbols,
+            mass_matrix=sys.eom_method.mass_matrix_full,
+            linear_sys_solver='sympy:BOOGER',
+            generator='cython')
+
+    # NOTE : Make sure passing a callable works.
+    generate_ode_function(
         sys.eom_method.forcing_full,
         sys.coordinates,
         sys.speeds,
         sys.constants_symbols,
         mass_matrix=sys.eom_method.mass_matrix_full,
-        linear_sys_solver='sympy')
-    rhs_symbolic_solve = g_symbolic_solve.generate()
+        linear_sys_solver=lambda A, b: np.linalg.solve)
+
+    rhs_symbolic_solve = generate_ode_function(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        linear_sys_solver='sympy:CH',
+        generator='cython')
 
     g_numeric_solve = CythonODEFunctionGenerator(
         sys.eom_method.forcing_full,
@@ -41,19 +302,18 @@ def test_symbolic_lusolve_full_mass_matrix():
         sys.speeds,
         sys.constants_symbols,
         mass_matrix=sys.eom_method.mass_matrix_full,
-        linear_sys_solver='numpy')
+    )
     rhs_numeric_solve = g_numeric_solve.generate()
 
-    x = np.random.random(g_symbolic_solve.num_coordinates +
-                         g_symbolic_solve.num_speeds)
+    x = np.random.random(len(sys.states))
     t = 5.125
-    p = np.random.random(g_symbolic_solve.num_constants)
+    p = np.random.random(len(sys.constants_symbols))
 
     np.testing.assert_allclose(rhs_numeric_solve(x, t, p),
                                rhs_symbolic_solve(x, t, p))
 
 
-def test_symbolic_lusolve_min_mass_matrix():
+def test_symbolic_linear_solve_min_mass_matrix():
     sys = models.n_link_pendulum_on_cart(n=5, cart_force=False,
                                          joint_torques=False)
     kin_diff_eqs = sys.eom_method.kindiffdict()
@@ -67,7 +327,7 @@ def test_symbolic_lusolve_min_mass_matrix():
         sys.constants_symbols,
         mass_matrix=sys.eom_method.mass_matrix,
         coordinate_derivatives=coord_derivs,
-        linear_sys_solver='sympy')
+        linear_sys_solver='sympy')  # LUsolve by default
     rhs_symbolic_solve = g_symbolic_solve.generate()
 
     g_numeric_solve = CythonODEFunctionGenerator(
@@ -275,6 +535,16 @@ class TestODEFunctionGeneratorSubclasses(object):
         warnings.warn("Theano was not found so the related tests are being"
                       " skipped.", PyDyImportWarning)
 
+    if symjit:
+        symjit_version = metadata.version('symjit')
+    else:
+        symjit_version = '0.0.1'
+    if parse_version(symjit_version) >= parse_version('2.5.0'):
+        ode_function_subclasses.append(SymjitODEFunctionGenerator)
+    else:
+        warnings.warn("Symjit was not found so the related tests are being"
+                      " skipped.", PyDyImportWarning)
+
     def setup_method(self):
 
         self.sys = models.multi_mass_spring_damper()
@@ -301,8 +571,8 @@ class TestODEFunctionGeneratorSubclasses(object):
     def test_init_doc(self):
 
         for Subclass in self.ode_function_subclasses:
-            assert (Subclass.__init__.__doc__ ==
-                    ODEFunctionGenerator.__init__.__doc__)
+            assert (''.join(ODEFunctionGenerator.__init__.__doc__.split()) in
+                    ''.join(Subclass.__init__.__doc__.split()))
 
     def test_generate_full_rhs(self):
 
@@ -430,23 +700,22 @@ class TestODEFunctionGeneratorSubclasses(object):
         p['array'] = p_array
         p['dictionary'] = p_dct
 
-        r_array = np.array([1.0, 2.0, 3.0, 4.0])
+        x = np.random.random(len(sys.states))
+        t_val = 1.23
+
+        r_array = t_val*x[:4]
         r_dct_1 = dict(zip(specifieds, r_array))
-        r_dct_2 = {tuple(specifieds):
-                   lambda x, t: r_array}
-        r_dct_3 = {specifieds[0]: lambda x, t: np.ones(1),
-                   (specifieds[3], specifieds[1]):
-                   lambda x, t: np.array([4.0, 2.0]),
-                   specifieds[2]: 3.0 * np.ones(1)}
-        r_func = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
+        r_dct_2 = {tuple(specifieds): lambda x, t: t*x[:4]}
+        r_dct_3 = {specifieds[0]: lambda x, t: t*x[0],
+                   (specifieds[3], specifieds[1]): lambda x, t: t*x[[3, 1]],
+                   specifieds[2]: r_array[2]}
+        r_func = lambda x, t: t*x[:4]
 
         r = {}
         r[None] = choice([r_array, r_dct_1, r_dct_2, r_dct_3, r_func])
         r['array'] = r_array
         r['dictionary'] = choice([r_dct_1, r_dct_2, r_dct_3])
         r['function'] = r_func
-
-        x = np.random.random(len(sys.states))
 
         for p_arg_type in constants_arg_types:
             for r_arg_type in specifieds_arg_types:
@@ -460,7 +729,7 @@ class TestODEFunctionGeneratorSubclasses(object):
                                                  specifieds_arg_type=r_arg_type)
                 rhs = g.generate()
 
-                xdot = rhs(x, 0.0, r[r_arg_type], p[p_arg_type])
+                xdot = rhs(x, t_val, r[r_arg_type], p[p_arg_type])
 
                 try:
                     np.testing.assert_allclose(xdot, last_xdot)
@@ -490,7 +759,7 @@ class TestODEFunctionGeneratorSubclasses(object):
 
                 rhs = g.generate()
 
-                xdot = rhs(x, 0.0, p[p_arg_type])
+                xdot = rhs(x, t_val, p[p_arg_type])
 
                 try:
                     np.testing.assert_allclose(xdot, last_xdot)

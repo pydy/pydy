@@ -13,7 +13,7 @@ from collections import OrderedDict
 import time
 
 # external
-from pkg_resources import parse_version
+from packaging.version import parse as parse_version
 import numpy as np
 from sympy import latex
 from sympy.physics.mechanics import ReferenceFrame, Point, dynamicsymbols

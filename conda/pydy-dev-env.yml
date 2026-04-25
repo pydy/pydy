@@ -3,7 +3,7 @@
 # the documentation. After the environment is activated, you can install the
 # development version of PyDy into this environment with:
 #
-# `pip install --no-deps -e .`
+# `python -m pip install --no-deps --no-build-isolation -e .`
 #
 name: pydy-dev
 channels:
@@ -19,10 +19,14 @@ dependencies:
   - matplotlib
   - numpy
   - numpydoc
-  - pydy
+  - packaging
+  - pip
   - pytest
   - python=3.*
   - pythreejs
   - pyvista
+  - scipy
+  - setuptools
   - sphinx
+  - symjit
   - sympy

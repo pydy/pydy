@@ -3,7 +3,7 @@
 import os
 import argparse
 
-from pkg_resources import parse_version
+from packaging.version import parse as parse_version
 import IPython
 
 parser = argparse.ArgumentParser()

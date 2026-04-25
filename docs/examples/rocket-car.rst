@@ -8,14 +8,18 @@ Modeling of a Variable-Mass Nonholonomic Gyrostatic Rocket Car Using Extended Ka
     :jupyter-download:script:`rocket-car` or Jupyter notebook:
     :jupyter-download:notebook:`rocket-car`.
 
-This is an implementation of the nonholonomic rocket-engine-powered jet racing car example from [Ge1982]_. This example provides insight into analytically modeling variable-mass systems using Kane's method and the extended Kane's equations for variable-mass systems. It also demonstrates the efficacy of Kane's method in the modeling of complex dynamical systems. 
+This is an implementation of the nonholonomic rocket-engine-powered jet racing
+car example from [Ge1982]_. This example provides insight into analytically
+modeling variable-mass systems using Kane's method and the extended Kane's
+equations for variable-mass systems. It also demonstrates the efficacy of
+Kane's method in the modeling of complex dynamical systems.
 
 .. image:: rocket-car.svg
    :width: 600
 
-An idealized model of a jet racing car that is propelled by a rocket
-engine at point P is considered. The rocket engine is treated as a
-variable-mass particle at P.
+An idealized model of a jet racing car that is propelled by a rocket engine at
+point P is considered. The rocket engine is treated as a variable-mass particle
+at P.
 
 Here, :math:`\{a_x: g_3, a_y: g_1, a_z: g_2\}`
 
@@ -288,11 +292,14 @@ Note: ``eq4`` :math:`\equiv` ``eq2``; ``eq8`` :math:`\equiv` ``eq6``
 
 .. jupyter-execute::
 
-    solution = sm.linsolve([eq1, eq2, eq3, eq5, eq6, eq7, eq9, eq10], q1.diff(), q2.diff(), q3.diff(),  q4.diff(), q5.diff(), q6.diff(), q7.diff(), q8.diff())
+    solution = sm.linsolve([eq1, eq2, eq3, eq5, eq6, eq7, eq9, eq10],
+        q1.diff(), q2.diff(), q3.diff(), q4.diff(),
+        q5.diff(), q6.diff(), q7.diff(), q8.diff())
 
 .. jupyter-execute::
 
-    sollist_keys = [q1.diff(), q2.diff(), q3.diff(),  q4.diff(), q5.diff(), q6.diff(), q7.diff(), q8.diff()]
+    sollist_keys = [q1.diff(), q2.diff(), q3.diff(),  q4.diff(),
+                    q5.diff(), q6.diff(), q7.diff(), q8.diff()]
     sollist_keys
 
 .. jupyter-execute::
@@ -733,5 +740,9 @@ active forces
 References
 ----------
 
-.. [Ge1982] Ge, Z., and Cheng, Y. (June 1, 1982). "Extended Kane’s Equations for Nonholonomic Variable Mass System." ASME. J. Appl. Mech. June 1982; 49(2): 429–431. https://doi.org/10.1115/1.3162105
-.. [Kane1978] Kane, T.R., 1978. Nonholonomic multibody systems containing gyrostats. In Dynamics of Multibody Systems (pp. 97-107). Springer, Berlin, Heidelberg.
+.. [Ge1982] Ge, Z., and Cheng, Y. (June 1, 1982). "Extended Kane’s Equations
+   for Nonholonomic Variable Mass System." ASME. J. Appl. Mech. June 1982;
+   49(2): 429–431. https://doi.org/10.1115/1.3162105
+.. [Kane1978] Kane, T.R., 1978. Nonholonomic multibody systems containing
+   gyrostats. In Dynamics of Multibody Systems (pp. 97-107). Springer, Berlin,
+   Heidelberg.

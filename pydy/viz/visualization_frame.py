@@ -16,7 +16,6 @@ except ImportError:
     pyvista = None
 
 from .shapes import Shape
-from ..utils import sympy_equal_to_or_newer_than
 
 
 class VisualizationFrame(object):
@@ -110,10 +109,7 @@ class VisualizationFrame(object):
             self.name = 'unnamed'
 
         try:
-            if sympy_equal_to_or_newer_than('1.0'):
-                self.reference_frame = args[i].frame
-            else:
-                self.reference_frame = args[i].get_frame()
+            self.reference_frame = args[i].frame
             self.origin = args[i].masscenter
 
         except AttributeError:
