@@ -8,7 +8,7 @@ dependencies:
   - numpy
   - numpydoc
   - packaging
-  - python =3.12.*  # use newest on RTD (3.13 is failing)
+  - python =3.14.*
   - pythreejs
   - scipy
   - setuptools

@@ -13,20 +13,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9"]  # use oldest
+        python-version: ["3.10"]  # use oldest
     defaults:
       run:
         shell: bash -el {0}
     steps:
       - name: Checkout CyIpopt
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - uses: conda-incubator/setup-miniconda@v3
         with:
-          auto-update-conda: true
           activate-environment: test-environment
-          python-version: ${{ matrix.python-version }}
+          auto-update-conda: true
           channels: conda-forge
+          conda-remove-defaults: "true"
+          miniforge-version: latest
+          python-version: ${{ matrix.python-version }}
+      # Install latest versions possible with the oldest supported Python.
       - name: Install basic dependencies
-        run: conda install -q -y cython jupyter_sphinx matplotlib numpy numpydoc pythreejs setuptools sphinx symjit sympy scipy
+        run: conda install -q -y cython jupyter jupyter_sphinx matplotlib-base numpy numpydoc pythreejs setuptools sphinx symjit sympy scipy
       - name: Test building documentation
         run: cd docs && make clean && make html && cd ..

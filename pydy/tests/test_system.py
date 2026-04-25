@@ -10,6 +10,7 @@ from numpy import testing
 import sympy as sm
 import sympy.physics.mechanics as me
 from scipy.integrate import odeint
+import pytest
 theano = sm.external.import_module('theano')
 Cython = sm.external.import_module('Cython')
 
@@ -364,6 +365,26 @@ class TestSystem():
 
         testing.assert_allclose(xd_01, xd_02)
 
+    def test_evaluate_ode(self):
+
+        self.sys.times = np.array([0.0, 1.0])
+        x = self.sys.evaluate_ode()
+        x_expected = np.array([0.0, 10.3])
+        np.testing.assert_allclose(x, x_expected)
+
+        def force(x, t):
+            f = 5.8*t
+            return f
+
+        # make sure t is passed through
+        self.sys.specifieds = {self.specified_symbol: force}
+        self.sys.initial_conditions = {self.sys.states[0]: 5.1,
+                                       self.sys.states[1]: -4.5}
+        self.sys.times = np.array([1.2, 1.3])
+        x = self.sys.evaluate_ode()
+        x_expected = np.array([-4.5, 10.58])
+        np.testing.assert_allclose(x, x_expected)
+
     def test_integrate(self):
 
         times = np.linspace(0, 1, 100)
@@ -432,6 +453,26 @@ class TestSystem():
         else:
             warnings.warn("Cython was not found so the related tests are being"
                           " skipped.", PyDyImportWarning)
+
+    def test_c_contiguous(self):
+
+        def ode_solver(f, x0, t, args=None):
+            a = np.zeros((len(x0), len(x0)))
+            for i in range(len(x0)):
+                a[:, 0] = np.asarray(x0)
+            #print('c', a[0, :].data.c_contiguous)
+            #print('f', a[:, 0].data.f_contiguous)
+            f(a[:, 0], t[0], *args)  # test with f contiguous array
+            return odeint(f, a[:, 0], t, args=args)
+
+        sys = System(self.kane_nlink, ode_solver=ode_solver)
+        sys.times = np.linspace(0.0, 1.0)
+        sys.generate_ode_function(generator='cython', force_c_contiguous=False)
+        with pytest.raises(ValueError):
+            sys.integrate()
+        sys.generate_ode_function(generator='cython')
+        sys.integrate()
+
     def cleanup(self):
         shutil.rmtree(self.tempdirpath)
 

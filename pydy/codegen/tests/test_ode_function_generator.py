@@ -7,6 +7,7 @@ from importlib import metadata
 import numpy as np
 import scipy as sp
 import sympy as sm
+import sympy.physics.mechanics as me
 from pydy.codegen.ode_function_generators import generate_ode_function
 import pytest
 from packaging.version import parse as parse_version
@@ -25,6 +26,37 @@ from ..ode_function_generators import (ODEFunctionGenerator,
 from ...utils import PyDyImportWarning
 
 warnings.simplefilter('once', PyDyImportWarning)
+
+
+def test_ccontiguous():
+
+    x1, x2, v1, v2 = me.dynamicsymbols('x1, x2, v1, v2')
+    f1, f2 = me.dynamicsymbols('f1, f2')
+    a = sm.symbols('a')
+
+    rhs = generate_ode_function(
+        sm.Matrix([v1, v2, a*f1, f2]),
+        [x1, x2],
+        [v1, v2],
+        constants=(a,),
+        specifieds=(f1, f2),
+        generator='cython',
+        force_c_contiguous=True,
+    )
+
+    arr = np.arange(16, dtype=np.float64).reshape(4, 4)
+
+    np.testing.assert_allclose(
+        rhs(arr[0, :], 0.0, np.array([1., 2.]), np.array([1.])),
+        np.array([2., 3., 1., 2.]),
+    )
+
+    # Fails with "ValueError: ndarray is not C-contiguous" if
+    # force_c_contiguous=False.
+    np.testing.assert_allclose(
+        rhs(arr[:, 0], 0.0, np.array([1., 2.]), np.array([1.])),
+        np.array([8., 12., 1., 2.]),
+    )
 
 
 def test_rhs_arg_order():
@@ -208,6 +240,8 @@ generator : string or ODEFunctionGenerator, optional
     options are ``{'lambdify'|'theano'|'cython'|'symjit'}`` with ``lambdify``
     being the default. You can also pass in a custom subclass of
     ODEFunctionGenerator.
+kwargs
+    Extra keyword arguments are passed to the :py:class:`ODEFunctionGenerator`.
 
 Returns
 =======
@@ -537,8 +571,8 @@ class TestODEFunctionGeneratorSubclasses(object):
     def test_init_doc(self):
 
         for Subclass in self.ode_function_subclasses:
-            assert (Subclass.__init__.__doc__ ==
-                    ODEFunctionGenerator.__init__.__doc__)
+            assert (''.join(ODEFunctionGenerator.__init__.__doc__.split()) in
+                    ''.join(Subclass.__init__.__doc__.split()))
 
     def test_generate_full_rhs(self):
 
