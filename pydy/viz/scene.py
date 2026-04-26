@@ -862,7 +862,7 @@ class Scene(object):
             self._transform_mats.append(vizframe._transform_mats)
             self._meshes.append(vizframe._mesh)
 
-    def display_pyvista(self, axes_arrow_length=None,
+    def display_pyvista(self, axes_arrow_length=None, style='trame_controls',
                         plotter_kwargs={}):
         """Returns a pyvista.Plotter containing the scene.
 
@@ -872,6 +872,11 @@ class Scene(object):
             If a positive value is supplied a red (x), green (y), and blue (z)
             arrows of the supplied length will be displayed as arrows for the
             global axes.
+        style : str
+            'trame_controls'
+            'ipywidget_controls'
+            'vtk_controls'
+            'autoanimate'
         plotter_kwargs : dictionary
             Passed to ``pyvista.Plotter(**plotter_kwargs)``.
 
@@ -887,46 +892,12 @@ class Scene(object):
         if pyvista is None:
             raise ImportError('pyvista needs to be installed.')
 
-        import asyncio
-
-        from pyvista.trame.ui.vuetify3 import button, slider, text_field
-
-        def btn_play():
-            state.play = not state.play
-            state.flush()
-
-        def custom_tools():
-            button(
-                click=btn_play,
-                icon='mdi-play',
-                tooltip='Play',
-            )
-            slider(
-                model=("frame", 0),
-                tooltip="Frame Slider",
-                min=3,
-                max=len(self.times),
-                step=1,
-                dense=True,
-                hide_details=True,
-                style="width: 300px",
-                classes='my-0 py-0 ml-1 mr-1',
-                )
-            text_field(
-                model=("frame", 0),
-                tooltip="Frame #",
-                readonly=True,
-                type="number",
-                dense=True,
-                hide_details=True,
-                style="min-width: 40px; width: 80px",
-                classes='my-0 py-0 ml-1 mr-1',
-                )
-
         plotter = pyvista.Plotter(**plotter_kwargs)
         plotter.add_axes()
 
         self._generate_pyvista_mesh_tracks()  # creates _meshes
+
+        dt = np.diff(self.times).mean()
 
         actors = []
         for mesh, vf, tf in zip(self._meshes, self.visualization_frames,
@@ -935,84 +906,148 @@ class Scene(object):
             actor.user_matrix = np.array(tf[0]).reshape(4, 4).T
             actors.append(actor)
 
-        def callback(i):
-            i = int(i)
-            for actor, trnf_mat in zip(actors, self._transform_mats):
-                actor.user_matrix = np.array(trnf_mat[i]).reshape(4, 4).T
-            plotter.render()
+        return_args = (plotter,)
 
-        def time_controls(callback, tmin=3, tmax=20, step=2):
+        if style == 'trame_controls':
+            import asyncio
+            from pyvista.trame.ui.vuetify3 import button, slider, text_field
 
-            def set_time(change):
-                step = change["new"]
-                if step < 0:
-                    step = 0
-                if step >= tmax:
-                    step = tmax - 1
-                callback(step)
-
-            play = widgets.Play(
-                value=tmin,
-                min=tmin,
-                max=tmax,
-                step=step,
-                description="Time Step",
-            )
-            play.observe(set_time, "value")
-
-            slider = ipywidgets.IntSlider(min=tmin, max=tmax, step=step,
-                                          continuous_update=True)
-            ipywidgets.jslink((play, "value"), (slider, "value"))
-            return widgets.HBox([play, slider])
-
-        w = time_controls(callback, tmin=0, tmax=len(self.times), step=4)
-        dt = np.diff(self.times).mean()
-        #plotter.add_timer_event(
-            #max_steps=len(self.times),
-            #duration=int(dt*1000),
-            #callback=callback,
-        #)
-
-        plotter.add_slider_widget(callback, (0, len(self.times)),
-                                  interaction_event='always')
-        plotter.add_camera_orientation_widget()
-        #plotter.camera.position = (1.0, 1.0, 0.0)
-        #plotter.camera.focal_point = (0.0, 0.0, 0.0)
-        #try:
-            #plotter_kwargs['notebook']
-        #except KeyError:
-            #plotter.show()
-        #else:
-            #if plotter_kwargs['notebook']:
-                # NOTE: setting trame seems to kill the kernel
-                #plotter.show(jupyter_backend='client')
-            #else:
-                #plotter.show()
-
-        viewer = plotter.show(jupyter_backend='trame',
-                              jupyter_kwargs=dict(add_menu_items=custom_tools),
-                              return_viewer=True)
-
-        state, ctrl = viewer.viewer.server.state, viewer.viewer.server.controller
-        state.play = False
-        ctrl.view_update = viewer.viewer.update
-
-        # trame callbacks
-        @state.change("play")
-        async def _play(play, **kwargs):
-            while state.play:
-                state.frame += 1
+            def play():
+                state.play = not state.play
                 state.flush()
-                if state.frame >= len(self.times) - 1:
+
+            def stop():
+                if state.play:
                     state.play = False
-                #await asyncio.sleep(dt)
-                await asyncio.sleep(0.01)
+                    state.flush()
 
-        @state.change("frame")
-        def update_frame(frame, **kwargs):
-            i = int(frame)
-            for actor, trnf_mat in zip(actors, self._transform_mats):
-                actor.user_matrix = np.array(trnf_mat[i]).reshape(4, 4).T
-            ctrl.view_update()
+            def custom_tools():
+                button(
+                    click=play,
+                    icon='mdi-play',
+                    tooltip='Play',
+                )
+                button(
+                    click=stop,
+                    icon='mdi-stop',
+                    tooltip='Stop',
+                )
+                slider(
+                    model=("frame", 0),
+                    tooltip="Frame Slider",
+                    min=1,
+                    max=len(self.times),
+                    step=1,
+                    dense=True,
+                    hide_details=True,
+                    style="width: 300px",
+                    classes='my-0 py-0 ml-1 mr-1',
+                )
+                text_field(
+                    model=("frame", 0),
+                    tooltip="Frame #",
+                    readonly=True,
+                    type="number",
+                    dense=True,
+                    hide_details=True,
+                    style="min-width: 40px; width: 80px",
+                    classes='my-0 py-0 ml-1 mr-1',
+                )
 
-        return plotter, w, viewer
+            viewer = plotter.show(
+                jupyter_backend='trame',
+                jupyter_kwargs=dict(add_menu_items=custom_tools),
+                return_viewer=True,
+            )
+
+            state = viewer.viewer.server.state
+            ctrl = viewer.viewer.server.controller
+            state.play = False
+            ctrl.view_update = viewer.viewer.update
+
+            @state.change("play")
+            async def _play(play, **kwargs):
+                while state.play:
+                    state.frame += 1
+                    state.flush()
+                    if state.frame >= len(self.times) - 1:
+                        state.play = False
+                    # TODO : Somehow use the simulation time step here.
+                    await asyncio.sleep(0.01)
+
+            @state.change("frame")
+            def update_frame(frame, **kwargs):
+                i = int(frame)
+                for actor, trnf_mat in zip(actors, self._transform_mats):
+                    actor.user_matrix = np.array(trnf_mat[i]).reshape(4, 4).T
+                ctrl.view_update()
+
+            return viewer
+
+        elif style == 'ipywidget_controls':
+
+            def callback(i):
+                i = int(i)
+                for actor, trnf_mat in zip(actors, self._transform_mats):
+                    actor.user_matrix = np.array(trnf_mat[i]).reshape(4, 4).T
+                plotter.render()
+
+            def time_controls(callback, tmin=3, tmax=20, step=2):
+
+                def set_time(change):
+                    step = change["new"]
+                    if step < 0:
+                        step = 0
+                    if step >= tmax:
+                        step = tmax - 1
+                    callback(step)
+
+                play = widgets.Play(
+                    value=tmin,
+                    min=tmin,
+                    max=tmax,
+                    step=step,
+                    description="Time Step",
+                )
+                play.observe(set_time, "value")
+
+                slider = ipywidgets.IntSlider(min=tmin, max=tmax, step=step,
+                                              continuous_update=True)
+                ipywidgets.jslink((play, "value"), (slider, "value"))
+                return widgets.HBox([play, slider])
+
+            w = time_controls(callback, tmin=0, tmax=len(self.times), step=4)
+
+            return_args = (plotter, w)
+
+        elif style == 'autoanimate':
+            def callback(i):
+                i = int(i)
+                for actor, trnf_mat in zip(actors, self._transform_mats):
+                    actor.user_matrix = np.array(trnf_mat[i]).reshape(4, 4).T
+
+            plotter.add_timer_event(
+                max_steps=len(self.times),
+                duration=int(dt*1000),
+                callback=callback,
+            )
+
+        elif style == 'vtk_controls':
+            plotter.add_slider_widget(callback, (0, len(self.times)),
+                                      interaction_event='always')
+            plotter.add_camera_orientation_widget()
+            #plotter.camera.position = (1.0, 1.0, 0.0)
+            #plotter.camera.focal_point = (0.0, 0.0, 0.0)
+
+        try:
+            plotter_kwargs['notebook']
+        except KeyError:
+            plotter.show()
+        else:
+            if plotter_kwargs['notebook']:
+                # NOTE: setting trame seems to kill the kernel
+                plotter.show(jupyter_backend='client')
+            else:
+                plotter.show()
+
+        return return_args
