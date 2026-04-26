@@ -9,24 +9,40 @@ name: pydy-dev
 channels:
   - conda-forge
 dependencies:
-  - coverage
-  - cython
-  - ipython
-  - ipywidgets
-  - jupyter
-  - jupyter_sphinx
-  - jupyterlab
-  - matplotlib
+  # #####################
+  # required depedencies
+  # #####################
   - numpy
-  - numpydoc
   - packaging
-  - pip
-  - pytest
   - python=3.*
-  - pythreejs
-  - pyvista
   - scipy
   - setuptools
-  - sphinx
-  - symjit
   - sympy
+  # #####################
+  # optional dependencies
+  # #####################
+  - cython
+  - ipywidgets
+  - jupyter
+  - jupyterlab
+  - matplotlib
+  - pythreejs
+  - symjit
+  # pyvista
+  # NOTE : I'm not exactly sure if I need all these for pyvista, nor why they
+  # don't get installed as dependencies of pyvista.
+  - nest_asyncio2
+  - pyvista
+  - trame
+  - trame-vtk
+  - trame-vuetify
+  # ########################
+  # development dependencies
+  # ########################
+  - coverage
+  - ipython
+  - jupyter_sphinx
+  - numpydoc
+  - pip
+  - pytest
+  - sphinx

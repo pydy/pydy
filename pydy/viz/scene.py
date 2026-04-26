@@ -25,6 +25,8 @@ try:
     import pyvista
 except ImportError:
     pyvista = None
+else:
+    import ipywidgets
 
 # local
 from .camera import PerspectiveCamera
@@ -877,6 +879,10 @@ class Scene(object):
         =======
         pyvista.Plotter
 
+        from pyvista.trame.jupyter import launch_server
+        await launch_server().ready
+        p, w = scene.display_pyvista(plotter_kwargs={'notebook': True})
+
         """
         if pyvista is None:
             raise ImportError('pyvista needs to be installed.')
@@ -887,17 +893,16 @@ class Scene(object):
         self._generate_pyvista_mesh_tracks()  # creates _meshes
 
         actors = []
-        for mesh, vf in zip(self._meshes, self.visualization_frames):
-            actors.append(plotter.add_mesh(mesh, color=vf.shape.color))
+        for mesh, vf, tf in zip(self._meshes, self.visualization_frames,
+                                self._transform_mats):
+            actor = plotter.add_mesh(mesh, color=vf.shape.color)
+            actor.user_matrix = np.array(tf[0]).reshape(4, 4).T
+            actors.append(actor)
 
         def callback(i):
-            #i = int(i)  # needed for slider
             for actor, trnf_mat in zip(actors, self._transform_mats):
                 actor.user_matrix = np.array(trnf_mat[i]).reshape(4, 4).T
-            #time.sleep(0.1)
             plotter.render()
-
-        import ipywidgets as widgets
 
         def time_controls(callback, tmin=3, tmax=20, step=2):
 
@@ -918,10 +923,10 @@ class Scene(object):
             )
             play.observe(set_time, "value")
 
-            slider = widgets.IntSlider(min=tmin, max=tmax, step=step, continuous_update=True)
-            widgets.jslink((play, "value"), (slider, "value"))
+            slider = ipywidgets.IntSlider(min=tmin, max=tmax, step=step,
+                                          continuous_update=True)
+            ipywidgets.jslink((play, "value"), (slider, "value"))
             return widgets.HBox([play, slider])
-
 
         w = time_controls(callback, tmin=0, tmax=len(self.times), step=1)
         #plotter.add_timer_event(
