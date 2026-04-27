@@ -13,13 +13,15 @@ Explorer Anomaly
 Objectives
 ==========
 
-- Show how to use ``generate_ode_function`` as a fast alternative for
-  ``lambdify``
+- Show how calculate reaction forces with System
+- Show how to use some specific ode_solver
 - Show how to use PyDy Visualization to create a 3D animation
 
 Description
 ===========
 
+This picture showes some details
+https://chatgpt.com/backend-api/estuary/content?id=file_000000000b8872469e83f70233357b49&ts=493644&p=fs&cid=1&sig=aa3aa355b96bddf404cf8fae37a9629c394aef2058cc7a866d845839e5338ded&v=0
 It is known, that for a rigid body the rotation around the axes of maximum or
 minimum moment of inertia is stable. Explorer1 showed, that the rotation
 around the axis of minimum moment of inertia may be unstable if the body is
@@ -55,12 +57,6 @@ Notes
 - As there is dampening, the total energy of the system decreases.
 - As there are no external forces or torques, the angular momentum of the
   system must be constant.
-- For the determination of the reaction forces at the connection points the
-  accelerations are needed. As generate_ode_function needs C - contiguous
-  arrays if generator='cython' is used, a bit of care must be taken.
-- With ``solve_ivp`` some methods, e.g. Radau, return non C-contiguous arrays.
-  Then rhs_gen cannot be used in solve_ivp directy, but a function must be
-  defined which converts the array accordingly.
 - With PyDy Visualisation the axis of a cylinder is always in the Y direction.
   If this was not considered when setting up the system, it must be corrected
   when defining the visualization frames - as it is done here.
@@ -110,15 +106,11 @@ Notes
     import sympy as sm
     import matplotlib.pyplot as plt
     import sympy.physics.mechanics as me
-    import time
     from scipy.integrate import solve_ivp
+    from pydy.system import System
     from scipy.optimize import root
     from scipy.interpolate import CubicSpline
     from pydy.codegen.ode_function_generators import generate_ode_function
-    from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
-    from matplotlib import animation
-
-    start_time = time.time()
 
 
 Equations of Motion, Kane's Method
@@ -138,27 +130,27 @@ Points where the antennae attach to the explorer.
 
     P0, P1, P2, P3 = sm.symbols('P0 P1 P2 P3', cls=me.Point)
 
-Mass centers of the explorer and antennae
+Mass centers of the explorer and antennae.
 
 .. jupyter-execute::
 
     Aoe, Aoa0, Aoa1, Aoa2, Aoa3 = sm.symbols('Aoe Aoa0 Aoa1 Aoa2 Aoa3',
                                              cls=me.Point)
 
-Coordinates of the mass center of the explorer
+Coordinates of the mass center of the explorer.
 
 .. jupyter-execute::
 
     x, y, z, ux, uy, uz = me.dynamicsymbols('x, y, z, ux, uy, uz')
 
-Coordinates of body fixed frame of the explorer
+Coordinates of body fixed frame of the explorer.
 
 .. jupyter-execute::
 
     qex, qey, qez = me.dynamicsymbols('qex, qey, qez')
     uex, uey, uez = me.dynamicsymbols('uex, uey, uez')
 
-Coordinates of the body fixed frames of the antennae
+Coordinates of the body fixed frames of the antennae.
 
 .. jupyter-execute::
 
@@ -181,7 +173,7 @@ Virtual velocities and the reaction forces.
         'aux3x, aux3y, aux3z, f3x, f3y, f3z')
 
 Place holders for the :math:`\dfrac{du_i}{dt}` in the reaction forces,
-parameters
+parameters.
 
 .. jupyter-execute::
 
@@ -197,7 +189,7 @@ rot, rot1 are used for the kinematical differential equations.
 
     rot, rot1 = [], []
 
-Explorer body frame
+Explorer body frame.
 
 .. jupyter-execute::
 
@@ -206,7 +198,7 @@ Explorer body frame
     Ae.set_ang_vel(N, uex*Ae.x + uey*Ae.y + uez*Ae.z)
     rot1.append(Ae.ang_vel_in(N))
 
-Antenna 0 to antenna 3 body frames
+Antenna 0 to antenna 3 body frames.
 
 .. jupyter-execute::
 
@@ -230,10 +222,10 @@ Antenna 0 to antenna 3 body frames
     Aa3.set_ang_vel(Ae, u3y*Aa3.y + u3z*Aa3.z)
     rot1.append(Aa3.ang_vel_in(N))
 
-Set the points
+Set the Points
 --------------
 
-Center of gravity of explorer
+Center of gravity of explorer.
 
 .. jupyter-execute::
 
@@ -259,7 +251,7 @@ Note how the virtual velocities are added to get the reaction forces.
     vP3 = P3.v2pt_theory(Aoe, N, Ae)
     P3.set_vel(N, vP3 + aux3x*Ae.x + aux3y*Ae.y + aux3z*Ae.z)
 
-Set the mass centers of the antennae
+Set the mass centers of the antennae.
 
 .. jupyter-execute::
 
@@ -298,10 +290,10 @@ explorer. Also set the reaction forces at the attachment points.
         (Ae, -(torque0x + torque0z + torque1x + torque1z +
                torque2y + torque2z + torque3y + torque3z)),
 
-        (P0, f0x*Ae.x + f0y*Ae.y + f0z*Ae.z),
-        (P1, f1x*Ae.x + f1y*Ae.y + f1z*Ae.z),
-        (P2, f2x*Ae.x + f2y*Ae.y + f2z*Ae.z),
-        (P3, f3x*Ae.x + f3y*Ae.y + f3z*Ae.z),
+        (P0, f0x*N.x + f0y*N.y + f0z*N.z),
+        (P1, f1x*N.x + f1y*N.y + f1z*N.z),
+        (P2, f2x*N.x + f2y*N.y + f2z*N.z),
+        (P3, f3x*N.x + f3y*N.y + f3z*N.z),
     ]
 
 Bodies and their inertias, Explorer is a hollow tube, the antennae are thin
@@ -327,7 +319,7 @@ rods.
 
     bodies = [explorer1, link0, link1, link2, link3]
 
-Define various lists needed for Kane's method
+Define various lists needed for Kane's method.
 
 .. jupyter-execute::
 
@@ -358,7 +350,7 @@ Kinematical differential equations. Note how rot and rot1 are used.
         *[(rot[4] - rot1[4]).dot(uv) for uv in (Aa3.y, Aa3.z)],
     ])
 
-Set up Kane's Equations
+Set up Kane's Equations.
 
 .. jupyter-execute::
 
@@ -372,8 +364,8 @@ Set up Kane's Equations
 
     fr, frstar = kane.kanes_equations(bodies, torques)
 
-Reaction forces, rhs_list are used to substitute for the accelerations which
-will be calculated numerically later
+Reaction forces, rhs_list are used to substitute for the accelerations
+:math:`\ddot{q}` which will be calculated numerically later.
 
 .. jupyter-execute::
 
@@ -399,55 +391,108 @@ Energy and Angular Momentum.
              for body in bodies]),
     ]
 
-Compilation using generate_ode_function.
-----------------------------------------
+Define some specific ODE solver.
+
+.. jupyter-execute::
+
+    def ode_solver(func, y0, times, args=(), **kwargs):
+        res = solve_ivp(lambda t, y, *args: func(y, t, *args),
+                       (times[0], times[-1]),
+                        y0,
+                        args=args,
+                        t_eval=times,
+                        method='DOP853',
+                        atol=1.e-10,
+                        rtol=1.e-10,
+                        **kwargs)
+        return res.y.T
+
+
+Initialize System. If a specific ODE solver is used, it must be passed on
+to System.
+
+.. jupyter-execute::
+
+    sys = System(kane, ode_solver=ode_solver)
+
+Define the constants of the system.
+
+.. jupyter-execute::
+
+    sys.constants = {
+    Le: 2.05,
+    rei: 0.060,
+    reo: 0.076,
+    dist: 0.076,
+    La: 0.56,
+    m_e: 13.9,
+    m_a: 13.9 / 100.0,
+    shift: 0.1,
+    k_torque: 0.565,
+    mu_torque: 1.13,
+    }
+
+
+Set the initial_conditions.
+
+.. jupyter-execute::
+
+    sys.initial_conditions = {
+    x: 0.0,
+    y: 0.0,
+    z: 0.0,
+    ux: 0.0,
+    uy: 0.0,
+    uz: 0.0,
+    qex: 0.0,
+    qey: 0.0,
+    qez: 0.0,
+
+    uez: 750.0 * 2 * np.pi / 60,  # 750 rpm
+    uex: 750.0 / 1.e3,
+    uey: 750.0 / 1.e3,
+
+    q0x: 0.0,
+    q0z: 0.0,
+    u0x: 0.0,
+    u0z: 0.0,
+    q1x: 0.0,
+    q1z: 0.0,
+    u1x: 0.0,
+    u1z: 0.0,
+    q2y: 0.0,
+    q2z: 0.0,
+    u2y: 0.0,
+    u2z: 0.0,
+    q3y: 0.0,
+    q3z: 0.0,
+    u3y: 0.0,
+    u3z: 0.0,
+    }
+
+#    print(list(kane.q), list(kane.u))
+#    sort_dict = {}
+#    for key in list(kane.q) + list(kane.u):
+#        sort_dict[key] = sys.initial_conditions[key]
+#    sys.initial_conditions = sort_dict
+
+In the force vector are the reaction forces and the virtual speeds.
+As they do no work, they are set to zero.
+
+.. jupyter-execute::
+
+    spec_sym = sys.specifieds_symbols
+    sys.specifieds = {'symbols': spec_sym, 'values': np.zeros(12)}
+
+
+As speed is of no concern here, lambdify is used to compile the
+sympy function to numerical functions.
 
 .. jupyter-execute::
 
     qL = q_ind + u_ind
     pL = [m_e, m_a, rei, reo, dist, shift, La, Le, k_torque, mu_torque]
 
-    specified = None
-    constants = np.array(pL)
-
-The solution must be sorted so that it corresponds to KM.q
-
-.. jupyter-execute::
-
-    loesung = sm.solve(kd, [q_ind[i].diff(t) for i in range(len(q_ind))])
-    schluessel = [i.diff(t) for i in kane.q]
-    kin_eqs_solved = sm.Matrix([loesung[i] for i in schluessel])
-
-``generate_ode_function`` does not want the expanded form of the mass matrix
-
-.. jupyter-execute::
-
-    mass_matrix = me.msubs(kane.mass_matrix, {i: 0 for i in aux})
-    force = me.msubs(kane.forcing, {i: 0 for i in aux + F_r})
-
-Set up the rhs_gen function. Note that time_first=True, as ``solve_ivp``
-needs the time as second argument.
-
-.. jupyter-execute::
-
-    rhs_gen = generate_ode_function(
-        force,
-        kane.q,
-        kane.u,
-        constants=constants,
-        mass_matrix=mass_matrix,
-        specifieds=specified,
-        coordinate_derivatives=kin_eqs_solved,
-        generator='cython',
-        linear_sys_solver='numpy',
-        constants_arg_type='array',
-        specifieds_arg_type='array',
-        time_first=True,
-    )
-
-As speed is of no concern here, lambdify is used.
-
-.. jupyter-execute::
 
     kin_lam = sm.lambdify(qL + pL, kin_energy, cse=True)
     spring_lam = sm.lambdify(qL + pL, spring_energy, cse=True)
@@ -456,85 +501,26 @@ As speed is of no concern here, lambdify is used.
     eingepraegt_lam = sm.lambdify(F_r + qL + pL + rhs_list,
                                   eingepraegt, cse=True)
 
+    # for later use
+    pL_vals = [sys.constants[key] for key in pL]
+
+
 
 Numerical Integration
 =====================
 
 .. jupyter-execute::
 
-    Le1 = 2.05
-    rei1 = 0.060
-    reo1 = 0.076
-    dist1 = reo1
-    La1 = 0.56
-    m_e1 = 13.9
-    m_a1 = m_e1 / 100.0
-    shift1 = 0.1
-    k_torque1 = 0.565
-    mu_torque1 = 1.13
+    sys.generate_ode_function(generator='cython', linear_sys_solver='numpy')
 
-    x1, y1, z1 = 0.0, 0.0, 0.0
-    ux1, uy1, uz1 = 0.0, 0.0, 0.0
-    qex1, qey1, qez1 = 0.0, 0.0, 0.0
+    sys.times = np.linspace(0., 100.0, 1000)
+    times = sys.times   # for later use
 
-    uez1 = 750.0 * 2 * np.pi / 60  # 750 rpm
-    uex1 = uez1 / 1.e3
-    uey1 = uez1 / 1.e3
+    resultat = sys.integrate()
 
-    q0x1, q0z1 = 0.0, 0.0
-    u0x1, u0z1 = 0.0, 0.0
-    q1x1, q1z1 = 0.0, 0.0
-    u1x1, u1z1 = 0.0, 0.0
-    q2y1, q2z1 = 0.0, 0.0
-    u2y1, u2z1 = 0.0, 0.0
-    q3y1, q3z1 = 0.0, 0.0
-    u3y1, u3z1 = 0.0, 0.0
-
-    pL_vals = np.array([m_e1, m_a1, rei1, reo1, dist1, shift1, La1, Le1,
-                        k_torque1, mu_torque1])
-
-    y0 = [
-        x1, y1, z1,
-        qex1, qey1, qez1,
-        q0x1, q0z1,
-        q1x1, q1z1,
-        q2y1, q2z1,
-        q3y1, q3z1,
-        ux1, uy1, uz1,
-        uex1, uey1, uez1,
-        u0x1, u0z1,
-        u1x1, u1z1,
-        u2y1, u2z1,
-        u3y1, u3z1,
-    ]
-
-    iXXe1 = m_e1/12 * (3*(rei1**2 + reo1**2) + Le1**2)
-    iZZe1 = m_e1/2 * (rei1**2 + reo1**2)
-    iYYe1 = iXXe1
-
-    interval = 100.0  # seconds
-    schritte = 1000
-    times = np.linspace(0., interval, schritte)
-    t_span = (0., interval)
-
-    resultat1 = solve_ivp(
-        rhs_gen,
-        t_span,
-        y0,
-        t_eval=times,
-        args=(pL_vals,),
-        atol=1.e-8,
-        rtol=1.e-8,
-        )
-
-    resultat = resultat1.y.T
     print('resultat shape', resultat.shape)
-    print(resultat1.message, '\n')
 
-    print(f"To numerically integrate an interval of {interval} sec the "
-          f"routine cycled {resultat1.nfev:,} times")
-
-Plot some generalized coordinates
+Plot some generalized coordinates.
 
 .. jupyter-execute::
 
@@ -591,12 +577,13 @@ Plot Energy and Angular Momentum
     ax[0].set_title('Energy of the system')
     _ = ax[0].legend()
 
-    max_x = np.max(ang_momentum_lam(*(resultat.T), *pL_vals)[0])
-    max_y = np.max(ang_momentum_lam(*(resultat.T), *pL_vals)[1])
-    max_z = np.max(ang_momentum_lam(*(resultat.T), *pL_vals)[2])
-    min_x = np.min(ang_momentum_lam(*(resultat.T), *pL_vals)[0])
-    min_y = np.min(ang_momentum_lam(*(resultat.T), *pL_vals)[1])
-    min_z = np.min(ang_momentum_lam(*(resultat.T), *pL_vals)[2])
+    angular_momentum_np = ang_momentum_lam(*(resultat.T), *pL_vals)
+    max_x = np.max(angular_momentum_np[0])
+    max_y = np.max(angular_momentum_np[1])
+    max_z = np.max(angular_momentum_np[2])
+    min_x = np.min(angular_momentum_np[0])
+    min_y = np.min(angular_momentum_np[1])
+    min_z = np.min(angular_momentum_np[2])
     max_mom = max_x + max_y + max_z
     min_mom = min_x + min_y + min_z
     error = (max_mom - min_mom) / max_mom
@@ -604,26 +591,28 @@ Plot Energy and Angular Momentum
 
 
     for i, j in enumerate(['x', 'y', 'z']):
-        ax[1].plot(times[: resultat.shape[0]], ang_momentum_lam(
-            *(resultat.T), *pL_vals)[i], label=f'angular momentum {j}')
+        ax[1].plot(times[: resultat.shape[0]], angular_momentum_np[i],
+                   label=f'angular momentum {j}')
         ax[1].set_ylabel('Angular momentum [kg m²/s]')
         ax[1].set_title('Angular momentum of the system')
     _ = ax[1].legend()
 
 
-Calculate Reaction Forces on Points, where the Antennas are attached to
-Explorer
+Calculate reaction forces on points, where the antennas are attached to
+Explorer.
 
-Calculate the accelerations needed for the reaction forces. rhs_gen needs
-C - contiguous arrays if ``generator='cython'`` is used,
-so the inputs have to be converted here accordingly.
+Calculate the accelerations needed for the reaction forces.
 
 .. jupyter-execute::
 
+    rhs_gen = sys.evaluate_ode
+
     RHS = np.empty((resultat.shape))
     for i in range(resultat.shape[0]):
-        res_C = np.ascontiguousarray(resultat[i])
-        RHS[i] = rhs_gen(0.0, res_C, pL_vals)
+        for j, key in enumerate(sys.initial_conditions.keys()):
+            sys.initial_conditions[key] = resultat[i, j]
+
+        RHS[i] = rhs_gen()
 
     reaction_forces = np.empty((resultat.shape[0], 12))
     summe_np = np.empty(resultat.shape[0])
@@ -654,7 +643,7 @@ so the inputs have to be converted here accordingly.
     _ = ax[-1].set_xlabel('Time [s]')
     ax[0].plot(times[begin:], summe_np[begin:], 'r--',
                 label='Sum of all Forces')
-    _ = ax[0].legend()
+    _ = ax[0].legend(loc='upper right')
 
 Animation using PyDy Visualization
 ----------------------------------
@@ -665,7 +654,7 @@ Animation using PyDy Visualization
     from pydy.viz.scene import Scene
     from pydy.viz.visualization_frame import VisualizationFrame
 
-Define the right frames so the cylinders point in the Y direction
+Define the right frames so the cylinders point in the Y direction.
 
 .. jupyter-execute::
 
@@ -688,7 +677,7 @@ A point just to make the rotation of the explorer more visible.
 
     groesse = 2.0
 
-Set up the animation
+Set up the animation.
 
 .. jupyter-execute::
 
@@ -701,7 +690,7 @@ Set up the animation
     for i, antenna in enumerate(bodies[1:]):
         antenna_shape = Cylinder(name='antenna{}'.format(i),
                                  radius=0.025 / groesse,
-                                 length=La1,
+                                 length=sys.constants[La] / groesse,
                                  color=farben[i])
 
         viz_frames.append(VisualizationFrame('antenna_frame{}'.format(i),
@@ -711,8 +700,8 @@ Set up the animation
                                              antenna_shape))
 
     explorer_shape = Cylinder(name='explorer',
-                              radius=reo1 / groesse,
-                              length=Le1 / groesse,
+                              radius=sys.constants[reo] / groesse,
+                              length=sys.constants[Le] / groesse,
                               color=farben[0])
 
     viz_frames.append(VisualizationFrame('explorer_frame',
@@ -747,10 +736,3 @@ Shorten the animation.
 
     scene.display_jupyter(axes_arrow_length=10 / groesse)
 
-Duration of the simulation
-
-.. jupyter-execute::
-
-    end_time = time.time()
-    print(f"Total duration of the simulation: {end_time - start_time:.3f} "
-          f"sec")
