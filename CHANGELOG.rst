@@ -2,8 +2,19 @@
 Release Notes
 =============
 
-0.9.0.dev0
-==========
+0.9.4 (April 26, 2026)
+======================
+
+- Remove contribrocks from the README, it is to difficult to satisfy both PyPi
+  and Sphinx (latex).
+
+0.9.3 (April 26, 2026)
+======================
+
+- Fixed issue with Sphinx LaTeX build (skip svg files).
+
+0.9.2 (April 26, 2026)
+======================
 
 - Added ``System.evaluate_ode()`` which evaluates the system's differential
   equations at the set initial condition and initial time. [PR `#566`_]
@@ -20,8 +31,12 @@ Release Notes
   1.13. [PR `#560`_]
 - Use Baumgarte's stabilization technique in the Carvallo-Whipple bicycle model
   example. [PR `#559`_]
+- Use Cramer's rule linear solver in the Carvallo-Whipple bicycle model
+  example. [PR `#565`_]
 - Added option to swap argument order in the ODEFunctionGenerators to support
   both SciPy's odeint() and solve_ivp(). [PR `#546`_]
+- Solve the linear system using only dynamical differential equation mass
+  matrix in System(). [PR `#532`_]
 - Added a SymjitODEFunctionGenerator, depends on symjit >= 2.5.0 (optional).
   [PR `#530`_]
 - The symbolic linear system solver option is now public and supports selecting
@@ -35,10 +50,12 @@ Release Notes
 .. _#525: https://github.com/pydy/pydy/pull/525
 .. _#527: https://github.com/pydy/pydy/pull/527
 .. _#530: https://github.com/pydy/pydy/pull/530
+.. _#532: https://github.com/pydy/pydy/pull/532
 .. _#546: https://github.com/pydy/pydy/pull/546
 .. _#559: https://github.com/pydy/pydy/pull/559
 .. _#560: https://github.com/pydy/pydy/pull/560
 .. _#563: https://github.com/pydy/pydy/pull/563
+.. _#565: https://github.com/pydy/pydy/pull/565
 .. _#566: https://github.com/pydy/pydy/pull/566
 
 0.8.0 (August 28, 2025)

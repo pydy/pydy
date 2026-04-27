@@ -44,7 +44,7 @@ setup(
     version=__version__,
     author='PyDy Authors',
     author_email='pydy@googlegroups.com',
-    url="http://pydy.org",
+    url="https://pydy.org",
     description='Python tool kit for multi-body dynamics.',
     long_description=open('README.rst').read(),
     keywords="multibody dynamics",
