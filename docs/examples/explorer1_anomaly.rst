@@ -21,7 +21,7 @@ Description
 ===========
 
 This picture showes some details
-https://chatgpt.com/backend-api/estuary/content?id=file_000000000b8872469e83f70233357b49&ts=493644&p=fs&cid=1&sig=aa3aa355b96bddf404cf8fae37a9629c394aef2058cc7a866d845839e5338ded&v=0
+https://media02.stockfood.com/largepreviews/NDM5MTU4ODY1/14166415-Explorer-1-satellite-illustration.jpg
 It is known, that for a rigid body the rotation around the axes of maximum or
 minimum moment of inertia is stable. Explorer1 showed, that the rotation
 around the axis of minimum moment of inertia may be unstable if the body is
