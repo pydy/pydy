@@ -6,6 +6,7 @@ from itertools import chain
 import logging
 from importlib import metadata
 import textwrap
+from warnings import warn
 
 import numpy as np
 import numpy.linalg
@@ -664,12 +665,30 @@ r : dictionary
 
 class CythonODEFunctionGenerator(ODEFunctionGenerator):
 
+    _extra_doc = \
+"""\
+cse : boolean, optional, default True
+    Find and replace common sub-expressions if True.
+force_c_contiguous : boolean, optional, default False
+    Arrays passed to the generated ode function must be C contiguous. If true,
+    all arrays will be coerced into C contiguous arrays at a performance cost.
+prefix : string, optional, default 'pydy_codegen'
+    The desired prefix for the generated files.
+tmp_dir : string, optional, default None
+    The path to an existing or non-existing directory where all of
+    the generated files will be stored.
+verbose : boolean, optional, default False
+    If true the output of the completed compilation steps will be
+    printed.
+"""
+
     def __init__(self, *args, **kwargs):
 
         self._options = {
-            'tmp_dir': None,
-            'prefix': 'pydy_codegen',
             'cse': True,
+            'force_c_contiguous': False,
+            'prefix': 'pydy_codegen',
+            'tmp_dir': None,
             'verbose': False,
         }
         for k, v in self._options.items():
@@ -680,7 +699,9 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
         else:
             super(CythonODEFunctionGenerator, self).__init__(*args, **kwargs)
 
-    __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
+    __init__.__doc__ = (textwrap.dedent(' '*8 +
+                                        ODEFunctionGenerator.__init__.__doc__)
+                        + _extra_doc)
 
     def _cythonize(self, outputs, inputs):
         g = CythonMatrixGenerator(inputs, outputs,
@@ -704,11 +725,25 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
 
     def _set_eval_array(self, f):
 
+        # NOTE : The generated Cython function requires C contiguous arrays
+        # and, for example, SciPy's solve_ivp does not guarantee C contiguous
+        # arrays in all of their integration routines. So we take a performance
+        # hit to make a copy of the arrays if they are Fortran contiguous.
+        c = np.ascontiguousarray
+
         if self.specifieds is None:
-            self.eval_arrays = lambda q, u, p: f(q, u, p, *self._empties)
+            if self._options['force_c_contiguous']:
+                self.eval_arrays = lambda q, u, p: f(c(q), c(u), c(p),
+                                                     *self._empties)
+            else:
+                self.eval_arrays = lambda q, u, p: f(q, u, p, *self._empties)
         else:
-            self.eval_arrays = lambda q, u, r, p: f(q, u, r, p,
-                                                    *self._empties)
+            if self._options['force_c_contiguous']:
+                self.eval_arrays = lambda q, u, r, p: f(c(q), c(u), c(r), c(p),
+                                                        *self._empties)
+            else:
+                self.eval_arrays = lambda q, u, r, p: f(q, u, r, p,
+                                                        *self._empties)
 
     def generate_full_rhs_function(self):
 
@@ -755,40 +790,41 @@ class CythonODEFunctionGenerator(ODEFunctionGenerator):
 
 class LambdifyODEFunctionGenerator(ODEFunctionGenerator):
 
+    _extra_doc = \
+"""\
+cse : boolean, optional, default True
+    Find and replace common sub-expressions if True.
+"""
+
     def __init__(self, *args, **kwargs):
 
-        self._options = {'cse': True}
+        # NOTE : pydy.tests.test_system.test_specifying_coordinate_issue_339
+        # fails in SymPy 1.12 if cse is True. lambdfiy cse=True has a bug when
+        # an argument is a Derivative, see
+        # https://github.com/sympy/sympy/issues/26404 dummification. Fixed in
+        # this PR which is in SymPy 1.14:
+        # https://github.com/sympy/sympy/pull/26678 with origial issue:
+        if ('specifieds' in kwargs and kwargs['specifieds'] is not None and
+                any([isinstance(inp, sm.Derivative)
+                     for inp in kwargs['specifieds']])):
+            if sympy_equal_to_or_newer_than('1.14'):
+                self._options = {'cse': True}
+            else:
+                self._options = {'cse': False}
+        else:
+            self._options = {'cse': True}
 
         for k, v in self._options.items():
             self._options[k] = kwargs.pop(k, v)
 
         super(LambdifyODEFunctionGenerator, self).__init__(*args, **kwargs)
 
-    __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
+    __init__.__doc__ = (textwrap.dedent(' '*8 +
+                                        ODEFunctionGenerator.__init__.__doc__)
+                        + _extra_doc)
 
     def _lambdify(self, outputs):
-        if sympy_equal_to_or_newer_than('1.11.1'):
-            vec_inputs = self.inputs
-            modules = 'numpy'
-        else:  # TODO : remove this clause when SymPy < 1.11.1 is dropped
-            subs = {}
-            vec_inputs = []
-            if self.specifieds is None:
-                def_vecs = ['q', 'u', 'p']
-            else:
-                def_vecs = ['q', 'u', 'r', 'p']
-
-            for syms, vec_name in zip(self.inputs, def_vecs):
-                v = sm.DeferredVector(vec_name)
-                for i, sym in enumerate(syms):
-                    subs[sym] = v[i]
-                vec_inputs.append(v)
-
-            outputs = [me.msubs(output, subs) for output in outputs]
-
-            modules = [{'ImmutableMatrix': np.array}, 'numpy']
-
-        return sm.lambdify(vec_inputs, outputs, modules=modules,
+        return sm.lambdify(self.inputs, outputs, modules='numpy',
                            cse=self._options['cse'])
 
     def generate_full_rhs_function(self):
@@ -840,6 +876,10 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
         if theano is None:
             raise ImportError('Theano must be installed to use this class.')
         else:
+            msg = ('Support for Theano code generation is deprecated as of '
+                   'PyDy version 0.9.0. It will be removed in a future '
+                   'version.')
+            warn(msg, DeprecationWarning, stacklevel=2)
             super(TheanoODEFunctionGenerator, self).__init__(*args, **kwargs)
 
     __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
@@ -924,6 +964,12 @@ class TheanoODEFunctionGenerator(ODEFunctionGenerator):
 
 class SymjitODEFunctionGenerator(ODEFunctionGenerator):
 
+    _extra_doc = \
+"""\
+cse : boolean, optional, default True
+    Find and replace common sub-expressions if True.
+"""
+
     def __init__(self, *args, **kwargs):
 
         if symjit is None:
@@ -940,7 +986,9 @@ class SymjitODEFunctionGenerator(ODEFunctionGenerator):
 
         super().__init__(*args, **kwargs)
 
-    __init__.__doc__ = ODEFunctionGenerator.__init__.__doc__
+    __init__.__doc__ = (textwrap.dedent(' '*8 +
+                                        ODEFunctionGenerator.__init__.__doc__)
+                        + _extra_doc)
 
     def _symjitify(self, outputs):
         # NOTE : symjit currently only works with expressions made up of
@@ -1081,6 +1129,8 @@ generator : string or ODEFunctionGenerator, optional
     options are ``{'lambdify'|'theano'|'cython'|'symjit'}`` with ``lambdify``
     being the default. You can also pass in a custom subclass of
     ODEFunctionGenerator.
+kwargs
+    Extra keyword arguments are passed to the :py:class:`ODEFunctionGenerator`.
 
 Returns
 =======

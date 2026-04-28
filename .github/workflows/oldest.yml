@@ -17,15 +17,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04"]
-        python-version: ["3.9"]
+        os: ["ubuntu-24.04"]
+        python-version: ["3.10"]
 
     defaults:
       run:
         shell: bash -l {0}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
       - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
@@ -34,7 +34,7 @@ jobs:
           channels: conda-forge
       - name: Install basic dependencies
         run: |
-          conda install -q -y coverage cython=0.29.* matplotlib=3.5.* packaging=21.3 pytest pytest-cov numpy=1.21.* pythreejs sympy=1.9.* scipy=1.8.* "setuptools>=44.1.1,<70"
+          conda install -q -y coverage cython=0.29.* matplotlib=3.6.* packaging=24.* pytest pytest-cov numpy=1.26.* pythreejs sympy=1.12.* scipy=1.11.* "setuptools>=68.1.2,<70"
       - name: Test with pytest
         run: pytest -cov .
       - name: Test installation of PyDy
