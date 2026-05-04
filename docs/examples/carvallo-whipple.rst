@@ -280,14 +280,11 @@ Linear Velocities
    dn.set_vel(N, u1*N['1'] + u2*N['2'])
 
    # mass centers
-   do.v2pt_theory(dn, N, D)
+   do.v2pt_theory(dn, N, C)
    co.v2pt_theory(do, N, C)
    ce.v2pt_theory(do, N, C)
    fo.v2pt_theory(ce, N, E)
-   eo.v2pt_theory(fo, N, E)
-
-   # wheel contact velocities
-   fn.v2pt_theory(fo, N, F);  # supress output
+   eo.v2pt_theory(fo, N, E);  # suppress output
 
 Motion Constraints
 ==================
@@ -301,12 +298,16 @@ it because we can't easy eliminate a dependent generalized coordinate with
 
 .. jupyter-execute::
 
+   # wheel contact velocities (for nonholonomic constraints)
+   N_v_dn = do.vel(N) + D.ang_vel_in(N).cross(dn.pos_from(do))
+   N_v_fn = fo.vel(N) + F.ang_vel_in(N).cross(fn.pos_from(fo))
+
    nonholonomic = [
-       dn.vel(N).dot(A['1']),
-       dn.vel(N).dot(A['2']),
-       fn.vel(N).dot(A['1']),
-       fn.vel(N).dot(A['2']),
-       fn.vel(N).dot(A['3']),
+       N_v_dn.dot(A['1']),
+       N_v_dn.dot(A['2']),
+       N_v_fn.dot(A['1']),
+       N_v_fn.dot(A['2']),
+       N_v_fn.dot(A['3']),
    ]
 
 Inertia
