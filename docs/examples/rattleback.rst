@@ -11,7 +11,7 @@ Rattleback
 Objectives
 ==========
 
-- Show how to define some special ODE solver.
+- Show how to define a special ODE solver.
 - Show a use of PyDy's visualization module to visualize the results of
   a simulation.
 
@@ -22,7 +22,7 @@ This simulation is taken from this article:
 https://www.sciencedirect.com/science/article/abs/pii/0020746282900178
 The equations of motion are set up using Kane's method from SymPy's
 ``physics.mechanics`` module. The ingenious way to get the contact points of
-the rattleback with the plane is from this paper.
+the rattleback with the plane is from the paper.
 
 Notes:
 ======
@@ -67,7 +67,7 @@ the plane.
 
     S, Ro = sm.symbols('S, Ro', cls=me.Point)
 
-Rotation angles and speeds of ``R`` w.r.t. ``N``
+Rotation angles and speeds.
 
 .. jupyter-execute::
 
@@ -140,7 +140,7 @@ Finish setting up Kane's equations.
         (R, -friktion * R.ang_vel_in(N))
     ]
 
-Calculate the position of the contact point as per D. Levinson.
+Calculate the position of the contact point as per the a.m. paper.
 
 .. jupyter-execute::
 
@@ -162,8 +162,8 @@ Get the speed constraints for Oe.
     speed_constr_Oe = sm.Matrix([
             uxe - Oe.vel(N).dot(N.x),
             uye - Oe.vel(N).dot(N.y),
-            uze - Oe.vel(N).dot(N.z)
-])
+            uze - Oe.vel(N).dot(N.z),
+    ])
 
 Combine the speed constraints.
 
@@ -199,7 +199,7 @@ Get Kane's equations.
     fr, frstar = kane.kanes_equations(bodies, forces)
 
 
-Set up a ODE solver for increased accuracy needed for this system.
+Set up an ODE solver for increased accuracy needed for this system.
 
 .. jupyter-execute::
 
@@ -260,7 +260,7 @@ Values taken from the paper mentioned above.
 
 Get the position and speed of the contact point for consistent initial
 conditions. The position of Oe ist set such that S is at O initially,
-and the speed of Oe is set such that S is at rest initially.
+and the speed of Oe is set such that S is at rest in N initially.
 
 .. jupyter-execute::
 
@@ -472,14 +472,16 @@ It drops as it should, since there is friction in the system.
 Visualization
 -------------
 
-``groesse`` is an empirical value to make the animation a good size.
+``groesse`` is an empirical value to control the size of the rattleback
+in the animation.
 
 .. jupyter-execute::
 
-groesse = 2.5
+    groesse = 2.5
+
+Define some points on the rattleback.
 
 .. jupyter-execute::
-
 
     point1, point2, point3 = sm.symbols('point1, point2, point3', cls=me.Point)
     point1.set_pos(Oe, a/2 * R.x + c/2 * R.z)
