@@ -395,18 +395,9 @@ Define some specific ODE solver.
 
 .. jupyter-execute::
 
-    def ode_solver(func, y0, times, args=(), **kwargs):
-        res = solve_ivp(lambda t, y, *args: func(y, t, *args),
-                       (times[0], times[-1]),
-                        y0,
-                        args=args,
-                        t_eval=times,
-                        method='DOP853',
-                        atol=1.e-10,
-                        rtol=1.e-10,
-                        **kwargs)
-        return res.y.T
-
+    def ode_solver(f, x0, ts, args=(), **kwargs):
+        return solve_ivp(lambda t, x: f(x, t, *args), ts[[0, -1]], x0,
+                         t_eval=ts, **kwargs).y.T
 
 Initialize System. If a specific ODE solver is used, it must be passed on
 to System.
@@ -515,9 +506,8 @@ Numerical Integration
     sys.generate_ode_function(generator='cython', linear_sys_solver='numpy')
 
     sys.times = np.linspace(0., 100.0, 1000)
-    times = sys.times   # for later use
 
-    resultat = sys.integrate()
+    resultat = sys.integrate(method='DOP853', atol=1.e-10, rtol=1.e-10)
 
     print('resultat shape', resultat.shape)
 
@@ -532,7 +522,7 @@ Plot some generalized coordinates.
 
     for i in (17, 18, 19):
         begin = 0
-        ax[0].plot(times[begin: resultat.shape[0]], resultat[begin:, i],
+        ax[0].plot(sys.times[begin: resultat.shape[0]], resultat[begin:, i],
                    label=bezeichnung[i])
         ax[0].axhline(1.35, color='black', lw=0.5, ls='--')
         ax[0].axhline(-1.35, color='black', lw=0.5, ls='--')
@@ -541,18 +531,18 @@ Plot some generalized coordinates.
     _ = ax[0].legend()
 
     for i in (0, 1, 2):
-        ax[1].plot(times[begin: resultat.shape[0]], resultat[begin:, i],
+        ax[1].plot(sys.times[begin: resultat.shape[0]], resultat[begin:, i],
                    label=bezeichnung[i])
         ax[1].set_title('Various generalized coordinates as selected')
     _ = ax[1].legend()
 
     for i in (6, 7, 8, 9, 10, 11, 12, 13):
-        ax[2].plot(times[begin: resultat.shape[0]], resultat[begin:, i],
+        ax[2].plot(sys.times[begin: resultat.shape[0]], resultat[begin:, i],
                    label=bezeichnung[i])
     _ = ax[2].legend()
 
     for i in (20, 21, 22, 23):
-        ax[3].plot(times[begin: resultat.shape[0]], resultat[begin:, i],
+        ax[3].plot(sys.times[begin: resultat.shape[0]], resultat[begin:, i],
                    label=bezeichnung[i])
     ax[-1].set_xlabel('Time [s]')
     _ = ax[3].legend()
@@ -568,11 +558,11 @@ Plot Energy and Angular Momentum
     spring_np = spring_lam(*(resultat.T), *pL_vals)
     total_np = kin_np + spring_np
     begin = 0
-    ax[0].plot(times[begin: resultat.shape[0]], kin_np[begin:],
+    ax[0].plot(sys.times[begin: resultat.shape[0]], kin_np[begin:],
                label='kinetic energy')
-    ax[0].plot(times[begin: resultat.shape[0]], spring_np[begin:],
+    ax[0].plot(sys.times[begin: resultat.shape[0]], spring_np[begin:],
                label='spring energy')
-    ax[0].plot(times[begin: resultat.shape[0]], total_np[begin:],
+    ax[0].plot(sys.times[begin: resultat.shape[0]], total_np[begin:],
                label='total energy')
     ax[0].set_ylabel('Energy [J]')
     ax[0].set_title('Energy of the system')
@@ -592,7 +582,7 @@ Plot Energy and Angular Momentum
 
 
     for i, j in enumerate(['x', 'y', 'z']):
-        ax[1].plot(times[: resultat.shape[0]], angular_momentum_np[i],
+        ax[1].plot(sys.times[: resultat.shape[0]], angular_momentum_np[i],
                    label=f'angular momentum {j}')
         ax[1].set_ylabel('Angular momentum [kg m²/s]')
         ax[1].set_title('Angular momentum of the system')
@@ -606,7 +596,7 @@ Calculate the accelerations needed for the reaction forces.
 
 .. jupyter-execute::
 
-    RHS = sys.evaluate_ode(x=resultat, t=sys.times)
+    RHS = sys.evaluate_ode(x=resultat)
 
     reaction_forces = np.empty((resultat.shape[0], 12))
     summe_np = np.empty(resultat.shape[0])
@@ -629,13 +619,14 @@ Calculate the accelerations needed for the reaction forces.
                            sharex=True)
     for i in range(4):
         for k, j in zip(reaction_forces[:, 3*i:3*i+3].T, ('x', 'y', 'z')):
-            ax[i].plot(times[begin:], k[begin:], label=f'Reaction Force {j}')
+            ax[i].plot(sys.times[begin:], k[begin:],
+                       label=f'Reaction Force {j}')
         ax[i].set_ylabel('Force [N]')
         ax[i].set_title(f'Reaction Forces at the Antennae Mounting Point P{i} '
                         'in the Explorer Frame Ae')
         ax[i].legend()
     _ = ax[-1].set_xlabel('Time [s]')
-    ax[0].plot(times[begin:], summe_np[begin:], 'r--',
+    ax[0].plot(sys.times[begin:], summe_np[begin:], 'r--',
                 label='Sum of all Forces')
     _ = ax[0].legend(loc='upper right')
 
@@ -719,7 +710,7 @@ Shorten the animation.
 
 .. jupyter-execute::
 
-    times1 = times[0: 400]
+    times1 = sys.times[0: 400]
     resultat1 = resultat[0: 400, :]
 
     scene.times = times1
