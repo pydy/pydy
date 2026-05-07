@@ -13,7 +13,7 @@ Explorer Anomaly
 Objectives
 ==========
 
-- Show how calculate reaction forces with System
+- Show how calculate reaction forces with System.evaluate_ode()
 - Show how to use some specific ode_solver
 - Show how to use PyDy Visualization to create a 3D animation
 
@@ -477,7 +477,8 @@ Set the initial_conditions.
 #    sys.initial_conditions = sort_dict
 
 In the force vector are the reaction forces and the virtual speeds.
-As they do no work, they are set to zero.
+As they do no work, they are set to zero. This is not really necessary as
+System() will do this automatically, but it is done here for clarity.
 
 .. jupyter-execute::
 
@@ -605,14 +606,7 @@ Calculate the accelerations needed for the reaction forces.
 
 .. jupyter-execute::
 
-    rhs_gen = sys.evaluate_ode
-
-    RHS = np.empty((resultat.shape))
-    for i in range(resultat.shape[0]):
-        for j, key in enumerate(sys.initial_conditions.keys()):
-            sys.initial_conditions[key] = resultat[i, j]
-
-        RHS[i] = rhs_gen()
+    RHS = sys.evaluate_ode(x=resultat, t=sys.times)
 
     reaction_forces = np.empty((resultat.shape[0], 12))
     summe_np = np.empty(resultat.shape[0])
