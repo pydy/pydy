@@ -178,7 +178,8 @@ Get Kane's equations.
 
 .. jupyter-execute::
 
-    q_ind = [q1, q2, q3, x1, x2, x3, xe, ye, ze]
+    q_ind = [q1, q2, q3, x1, x2, x3]
+    q_dep = [xe, ye, ze]
     u_ind = [u1, u2, u3]
     u_dep = [ux1, ux2, ux3, uxe, uye, uze]
 
@@ -196,8 +197,10 @@ Get Kane's equations.
         q_ind,
         u_ind,
         u_dependent=u_dep,
+        q_dependent=q_dep,
         kd_eqs=kd,
         velocity_constraints=speed_constr,
+        configuration_constraints=config_constr,
     )
     fr, frstar = kane.kanes_equations(bodies, forces)
 
@@ -349,7 +352,7 @@ Plot Some Results
 
 .. jupyter-execute::
 
-    qL1 = q_ind + u_ind + u_dep
+    qL1 = q_ind + q_dep + u_ind + u_dep
     bezeichnung = [str(i) for i in qL1]
 
     S_vel_N = S.vel(N).subs({i.diff(t): j for i, j in zip(q_ind,
@@ -372,7 +375,7 @@ Plot Some Results
                                   *pL_vals)
 
 
-    fig, ax = plt.subplots(4, 1, figsize=(8, 10), constrained_layout=True,
+    fig, ax = plt.subplots(4, 1, figsize=(8, 8), constrained_layout=True,
                               sharex=True)
 
     max_vel_S_z = np.max(np.abs(S_vel_N_np[:, 2]))
@@ -400,7 +403,6 @@ Plot Some Results
     ax[2].set_ylabel('[m]')
     ax[2].set_title('Position of S in N. Max deviation of S from zero in '
                 f'N.z direction is {max_pos_S_z:.2e} m')
-    ax[2].set_xlabel('Time [s]')
     ax[2].legend()
 
     ax[3].plot(sys.times, np.rad2deg(resultat[:, 2]), label='$q_3$')
@@ -439,14 +441,21 @@ Verify that the constraints are satisfied.
 .. jupyter-execute::
 
     speed_constraints = sys.evaluate_nonholonomic(x=resultat)
+    config_constraints = sys.evaluate_holonomic(x=resultat)
 
-    fig, ax = plt.subplots(1, 1, figsize=(8, 3), constrained_layout=True)
+    fig, ax = plt.subplots(2, 1, figsize=(8, 4), constrained_layout=True,
+                           sharex=True)
     for i in range(speed_constraints.shape[1]):
-        ax.plot(sys.times, speed_constraints[:, i], label=f'constraint {i}')
-    ax.set_title('Speed constraints. They should be zero, and they are.')
-    ax.set_xlabel('Time [s]')
-    ax.set_ylabel('Constraint value')
-    ax.legend()
+        ax[0].plot(sys.times, speed_constraints[:, i], label=f'constraint {i}')
+    ax[0].set_title('Speed constraints. Ideally they should be zero.')
+    ax[0].set_ylabel('Constraint value')
+    for i in range(config_constraints.shape[1]):
+        ax[1].plot(sys.times, config_constraints[:, i], label=f'constraint {i}')
+    ax[1].set_title('Configuration constraints. Ideally they should be zero.')
+    ax[1].set_xlabel('Time [s]')
+    ax[1].set_ylabel('Constraint value')
+    ax[0].legend()
+    _ =ax[1].legend()
 
 Plot Total Energy
 -----------------
@@ -535,7 +544,7 @@ Start the animation.
     sys.constants1 = {key: sys.constants[key] * groesse
                       for key in sys.constants.keys()}
     scene.constants = sys.constants1
-    scene.states_symbols = q_ind + u_ind + u_dep
+    scene.states_symbols = q_ind + q_dep + u_ind + u_dep
     scene.states_trajectories = resultat
 
     print(f"Time for the simulation {time.time() - start_time:.2f} seconds")
