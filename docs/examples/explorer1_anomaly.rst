@@ -106,6 +106,7 @@ Notes
     import sympy as sm
     import matplotlib.pyplot as plt
     import sympy.physics.mechanics as me
+    import time
     from scipy.integrate import solve_ivp
     from pydy.system import System
     from scipy.optimize import root
@@ -117,6 +118,8 @@ Equations of Motion, Kane's Method
 ==================================
 
 .. jupyter-execute::
+
+    start_time = time.time()
 
     N, Ae, Aa0, Aa1, Aa2, Aa3 = sm.symbols('N Ae Aa0 Aa1 Aa2 Aa3',
                                            cls=me.ReferenceFrame)
@@ -505,9 +508,9 @@ Numerical Integration
 
     sys.generate_ode_function(generator='cython', linear_sys_solver='numpy')
 
-    sys.times = np.linspace(0., 100.0, 1000)
+    sys.times = np.linspace(0., 100.0, 250)
 
-    resultat = sys.integrate(method='DOP853', atol=1.e-10, rtol=1.e-10)
+    resultat = sys.integrate(method='DOP853', atol=1.e-6, rtol=1.e-6)
 
     print('resultat shape', resultat.shape)
 
@@ -710,8 +713,8 @@ Shorten the animation.
 
 .. jupyter-execute::
 
-    times1 = sys.times[0: 400]
-    resultat1 = resultat[0: 400, :]
+    times1 = sys.times[0: 200]
+    resultat1 = resultat[0: 200, :]
 
     scene.times = times1
     pL_vals = [val / groesse for val in pL_vals]
@@ -719,5 +722,8 @@ Shorten the animation.
     scene.states_symbols = q_ind + u_ind
     scene.states_trajectories = resultat1
 
+    print(f"It took {time.time() - start_time:.2f} sec to run the simulation")
+
     scene.display_jupyter(axes_arrow_length=10 / groesse)
+
 
