@@ -23,9 +23,9 @@ Import the necessary libraries, classes, and functions:
 .. jupyter-execute::
 
    import numpy as np
-   from scipy.optimize import fsolve
    import sympy as sm
    import sympy.physics.mechanics as mec
+   import matplotlib.pyplot as plt
    from pydy.system import System
    from pydy.viz import Sphere, Cylinder, VisualizationFrame, Scene
 
@@ -173,8 +173,8 @@ physical parameters.
    ie11, ie22, ie33, ie31 = sm.symbols('ie11 ie22 ie33 ie31')
    if11, if22 = sm.symbols('if11 if22')
 
-Specified
-=========
+Specifieds
+==========
 
 Declare three specified torques that are functions of time.
 
@@ -400,7 +400,7 @@ Provide the rigid bodies and all loads to generate Kane's equations:
 
    fr, frstar = kane.kanes_equations(bodies, loads)
 
-Simulating the system
+Simulating the System
 =====================
 
 PyDy's ``System`` is a wrapper that holds the ``KanesMethod`` object to
@@ -453,27 +453,11 @@ speeds and has an initial positive roll rate.
 
     initial_speed = 4.6  # m/s
     initial_roll_rate = 0.5  # rad/s
+    pitch_guess = np.deg2rad(20.0)
+    wheel_speed_guess = -initial_speed/0.3
 
-The initial configuration will be the upright equilibrium position. The
-holonomic constraint requires that either the roll, pitch, or steer angle need
-be dependent. Below, the pitch angle is taken as dependent and solved for using
-`fsolve()`. Note that it is equivalent to the steer axis tilt in the nominal
-configuratio shown in [Meijaard2007]_.
-
-.. jupyter-execute::
-
-    eval_holonomic = sm.lambdify((q5, q4, q7, d1, d2, d3, rf, rr), holonomic)
-    initial_pitch_angle = fsolve(eval_holonomic, 0.0,
-                                 args=(0.0,  # q4
-                                       0.0,  # q7
-                                       sys.constants[d1],
-                                       sys.constants[d2],
-                                       sys.constants[d3],
-                                       sys.constants[rf],
-                                       sys.constants[rr]))[0]
-    np.rad2deg(initial_pitch_angle)
-
-Set all of the initial conditions.
+Set all of the initial conditions and provide guesses for dependent coordinates
+and speeds.
 
 .. jupyter-execute::
 
@@ -481,16 +465,30 @@ Set all of the initial conditions.
                               q2: 0.0,
                               q3: 0.0,
                               q4: 0.0,
-                              q5: initial_pitch_angle,
+                              q5: pitch_guess,
                               q7: 0.0,
                               u1: initial_speed,
                               u2: 0.0,
                               u3: 0.0,
                               u4: initial_roll_rate,
                               u5: 0.0,
-                              u6: -initial_speed/sys.constants[rr],
+                              u6: wheel_speed_guess,
                               u7: 0.0,
-                              u8: -initial_speed/sys.constants[rf]}
+                              u8: wheel_speed_guess}
+
+Solve for the dependent states given the values of the independent states and
+guesses for the dependent states.
+
+.. jupyter-execute::
+
+    sys.set_dependent_initial_conditions(dep_vars=(q5, u2, u3, u5, u6, u8))
+    sys.initial_conditions
+
+Check if the initial conditions satisfy the constraints.
+
+.. jupyter-execute::
+
+   np.isclose(sys.evaluate_constraints(), 0.0)
 
 Generate a time vector over which the integration will be carried out.
 
@@ -522,35 +520,52 @@ Now integrate the equations of motion through time.
 .. jupyter-execute::
 
    x_trajectory = sys.integrate()
+   xdot_trajectory = sys.evaluate_ode(x=x_trajectory)
 
-Evaluate the holonomic constraint across the simulation.
-
-.. jupyter-execute::
-
-   holonomic_vs_time  = eval_holonomic(x_trajectory[:, 5],  # q5
-                                       x_trajectory[:, 3],  # q4
-                                       x_trajectory[:, 4],  # q7
-                                       sys.constants[d1],
-                                       sys.constants[d2],
-                                       sys.constants[d3],
-                                       sys.constants[rf],
-                                       sys.constants[rr])
-
-Plot the State Trajectories
-===========================
+Evaluate the constraints at each time value.
 
 .. jupyter-execute::
 
-   import matplotlib.pyplot as plt
-   fig, axes = plt.subplots(len(sys.states) + 1, 1, sharex=True)
+   con_trajectory = sys.evaluate_constraints(x=x_trajectory)
+
+Plot the Trajectories
+=====================
+
+State trajectories:
+
+.. jupyter-execute::
+
+   fig, axes = plt.subplots(len(sys.states), 1, sharex=True,
+                            layout='constrained')
    fig.set_size_inches(8, 16)
    for ax, traj, s in zip(axes, x_trajectory.T, sys.states):
        ax.plot(sys.times, traj)
-       ax.set_ylabel(s)
-   axes[-1].plot(sys.times, np.squeeze(holonomic_vs_time))
-   axes[-1].set_ylabel('Holonomic\nconstraint [m]')
-   axes[-1].set_xlabel('Time [s]')
-   plt.tight_layout()
+       ax.set_ylabel(sm.latex(s, mode='inline'))
+   axes[-1].set_xlabel('Time [s]');
+
+Acceleration trajectories:
+
+.. jupyter-execute::
+
+   fig, axes = plt.subplots(len(sys.speeds), 1, sharex=True,
+                            layout='constrained')
+   fig.set_size_inches(8, 8)
+   for ax, traj, s in zip(axes, xdot_trajectory.T[6:], sys.speeds):
+       ax.plot(sys.times, traj)
+       ax.set_ylabel(sm.latex(s.diff(), mode='inline'))
+   axes[-1].set_xlabel('Time [s]');
+
+Constraint trajectories:
+
+.. jupyter-execute::
+
+   fig, axes = plt.subplots(con_trajectory.shape[1], 1,
+                            sharex=True,
+                            layout='constrained')
+   fig.set_size_inches(8, 6)
+   for ax, traj in zip(axes, con_trajectory.T):
+       ax.plot(sys.times, traj)
+   axes[-1].set_xlabel('Time [s]');
 
 Visualizing the System Motion
 =============================
