@@ -40,6 +40,7 @@ Notes:
     import sympy as sm
     import sympy.physics.mechanics as me
     import matplotlib.pyplot as plt
+    import time
     from matplotlib.collections import LineCollection
     from scipy.integrate import solve_ivp
     from pydy.system import System
@@ -53,6 +54,8 @@ Set up the Equations of Motion
 ------------------------------
 
 .. jupyter-execute::
+
+    start_time = time.time()
 
     N, R = sm.symbols('N, R', cls=me.ReferenceFrame)
     O = me.Point('O')
@@ -199,21 +202,14 @@ Get Kane's equations.
     fr, frstar = kane.kanes_equations(bodies, forces)
 
 
+
 Set up an ODE solver for increased accuracy needed for this system.
 
 .. jupyter-execute::
 
-    def ode_solver(func, y0, times, args=(), **kwargs):
-        res = solve_ivp(lambda t, y, *args: func(y, t, *args),
-                       (times[0], times[-1]),
-                        y0,
-                        args=args,
-                        t_eval=times,
-                        method='DOP853',
-                        atol=1.e-12,
-                        rtol=1.e-12,
-                        **kwargs)
-        return res.y.T
+    def ode_solver(f, x0, ts, args=(), **kwargs):
+        return solve_ivp(lambda t, x: f(x, t, *args), ts[[0, -1]], x0,
+                         t_eval=ts, **kwargs).y.T
 
 Set up an instance of System.
 
@@ -240,7 +236,7 @@ Define the constants of the system, taken from the paper mentioned above.
     }
 
     print('Constants of the system:')
-    sys.constants
+    print(sys.constants)
 
 
 Set the initials conditions of the independent coordinates and speeds.
@@ -316,21 +312,21 @@ Initial conditions for Oe speed in N, so that S is at rest initially.
     Oe_speed_N = [me.msubs(Oe_speed_N[uxe], dict_Oe_pos_N, dict_S_pos),
                   me.msubs(Oe_speed_N[uye], dict_Oe_pos_N, dict_S_pos),
                   me.msubs(Oe_speed_N[uze], dict_Oe_pos_N, dict_S_pos)]
-    Oe_speed_N_lam = sm.lambdify(qL + pL_pos, Oe_speed_N)
+    Oe_speed_N_lam = sm.lambdify(qL + pL_pos, Oe_speed_N, cse=True)
     uxe1, uye1, uze1 = Oe_speed_N_lam(*qL_vals, *pL_vals)
     dict_Oe_speed_N = {uxe: uxe1, uye: uye1, uze: uze1}
 
-Print the initial conditions.
+Collect the initial conditions and print them.
 
 .. jupyter-execute::
 
     sys.initial_conditions = {**sys.initial_conditions, **dict_S_pos,
-                          **dict_S_speed_R, **dict_Oe_pos_N,
-                          **dict_Oe_speed_N}
+                              **dict_S_speed_R, **dict_Oe_pos_N,
+                              **dict_Oe_speed_N}
 
     print('Initial conditions:')
     dict_clean = {k: float(v) for k, v in sys.initial_conditions.items()}
-    dict_clean
+    print(dict_clean)
 
 
 Numerical Integration
@@ -341,11 +337,10 @@ Numerical Integration
     sys.generate_ode_function(generator='cython', linear_sys_solver='numpy')
 
     interval = 5.0
-    schritte = int(1000 * interval)
+    schritte = int(100 * interval)
     sys.times = np.linspace(0., interval, schritte)
-    times = sys.times
 
-    resultat = sys.integrate()
+    resultat = sys.integrate(method='DOP853', atol=1.e-8, rtol=1.e-8)
     print('Shape of resultat', resultat.shape)
 
 
@@ -439,6 +434,20 @@ Plot Some Results
     cbar.set_label('Time [s]')
 
 
+Verify that the constraints are satisfied.
+
+.. jupyter-execute::
+
+    speed_constraints = sys.evaluate_nonholonomic(x=resultat)
+
+    fig, ax = plt.subplots(1, 1, figsize=(8, 3), constrained_layout=True)
+    for i in range(speed_constraints.shape[1]):
+        ax.plot(sys.times, speed_constraints[:, i], label=f'constraint {i}')
+    ax.set_title('Speed constraints. They should be zero, and they are.')
+    ax.set_xlabel('Time [s]')
+    ax.set_ylabel('Constraint value')
+    ax.legend()
+
 Plot Total Energy
 -----------------
 
@@ -522,10 +531,13 @@ Start the animation.
 
     scene = Scene(Bh, Oe, *viz_frames)
 
-    scene.times = times
+    scene.times = sys.times
     sys.constants1 = {key: sys.constants[key] * groesse
                       for key in sys.constants.keys()}
     scene.constants = sys.constants1
     scene.states_symbols = q_ind + u_ind + u_dep
     scene.states_trajectories = resultat
+
+    print(f"Time for the simulation {time.time() - start_time:.2f} seconds")
+
     scene.display_jupyter(axes_arrow_length=5)
