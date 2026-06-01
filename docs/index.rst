@@ -89,7 +89,9 @@ Table of Contents
              :target: examples/rocket-car.html
 
              Nonholonomic Rocket Car.
-        -
+        - :doc:`examples/3d-n-body-pendulum`
+
+          3D N-body pendulum with elastic collisions.
 
 Indices and tables
 ==================
