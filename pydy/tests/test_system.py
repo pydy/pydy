@@ -1166,3 +1166,38 @@ def test_explicit_time():
                        [ 4.31701656, 7.82602082],
                        [13.45662943, 9.24246248]])
     np.testing.assert_allclose(xs, exp_xs)
+
+
+def test_issue_427():
+    #  ensure integrate works with constants being an empty dict
+
+    f = 3.0
+
+    t = sm.Symbol('t')
+    x, xv = me.dynamicsymbols('x xv')
+    thetav = me.dynamicsymbols('thetav')
+    xd = me.dynamicsymbols('x', 1)
+
+    BaseFrame = me.ReferenceFrame('BaseFrame')
+    RodFrame = BaseFrame.orientnew('RodFrame', 'Axis', [0, BaseFrame.z])
+    RodFrame.set_ang_vel(BaseFrame, thetav*BaseFrame.z)
+
+    origin  = me.Point('origin')
+    rodcentre  = origin.locatenew('rodcentre', x*BaseFrame.x)
+    rodcentre.set_vel(BaseFrame, rodcentre.pos_from(origin).diff(t, BaseFrame))
+
+    Izz = me.outer(RodFrame.z, RodFrame.z)*10
+    rodbody = me.RigidBody(name="rod", masscenter=rodcentre, frame=RodFrame,
+                           mass=10, inertia=(Izz, rodcentre))
+
+    forces = [(rodcentre, f*RodFrame.x)]
+    bodies = [rodbody]
+
+    KM = me.KanesMethod(BaseFrame, q_ind=[x], u_ind=[xv], kd_eqs=[ xd - xv ])
+    KM.kanes_equations(bodies, forces)
+
+    sys = System(KM,
+                constants={},
+                initial_conditions={x:0., xv:10.},
+                times=np.linspace(0.0, 6, 60))
+    sys.integrate()
