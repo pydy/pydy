@@ -1,7 +1,6 @@
 from sympy.matrices.expressions import Identity
 
 from .visualization_frame import VisualizationFrame
-from ..utils import sympy_equal_to_or_newer_than
 
 __all__ = ['PointLight']
 
@@ -61,7 +60,7 @@ class PointLight(VisualizationFrame):
         >>> light = PointLight('light', I, O)
         >>> Ixx, Iyy, Izz, mass = symbols('Ixx Iyy Izz mass')
         >>> i = inertia(I, Ixx, Iyy, Izz)
-        >>> rbody = RigidBody('rbody', O, I, mass, (inertia, O))
+        >>> rbody = RigidBody('rbody', O, I, mass, (i, O))
         >>> # Initializing with a rigidbody ..
         >>> light = PointLight('frame2', rbody)
         >>> Pa = Particle('Pa', O, mass)
@@ -85,11 +84,7 @@ class PointLight(VisualizationFrame):
             self._name = 'unnamed'
 
         try:
-            if sympy_equal_to_or_newer_than('1.0'):
-                self._reference_frame = args[i].frame
-            else:
-                self._reference_frame = args[i].get_frame()
-
+            self._reference_frame = args[i].frame
             self._origin = args[i].masscenter
 
         except AttributeError:

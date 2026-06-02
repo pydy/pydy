@@ -3,12 +3,8 @@
 import re
 import textwrap
 
-from pkg_resources import parse_version
-from setuptools import __version__ as SETUPTOOLS_VERSION
+from packaging.version import parse as parse_version
 import sympy as sm
-from sympy.core.function import AppliedUndef
-from sympy.utilities.iterables import iterable
-from sympy.physics.mechanics import dynamicsymbols
 
 SYMPY_VERSION = sm.__version__
 
@@ -22,12 +18,10 @@ def sympy_equal_to_or_newer_than(version, installed_version=None):
     else:
         v = installed_version
 
-    if v.endswith('-git') and \
-            parse_version(SETUPTOOLS_VERSION) >= parse_version('8.0'):
-
+    if v.endswith('-git'):
         msg = ('You are using an older development version of SymPy with a '
                'non-PEP440 compliant version number: {}. Please install '
-               'setuptools < 8.0 or a newer development version of SymPy.')
+               'a newer development version of SymPy.')
         raise ValueError(msg.format(v))
 
     return parse_version(v) >= parse_version(version)
@@ -75,7 +69,7 @@ def wrap_and_indent(lines, indentation=4, width=79, continuation=None,
     # deal with that.
     # add whitespace before and after [*/] binary operands between
     # subexpressions and input/output
-    pattern = re.compile('(\w\])([*/])(\w)')
+    pattern = re.compile(r'(\w\])([*/])(\w)')
     for line in lines:
         if line != '\n':
             line = pattern.sub(lambda m: ' '.join(m.groups()), line)
@@ -97,43 +91,17 @@ def wrap_and_indent(lines, indentation=4, width=79, continuation=None,
     return ' ' * indentation + spacer.join(new_lines)
 
 
-# This is a copy of the function in SymPy. It doesn't exist in SymPy 0.7.4
-# so we keep it here for now.
-def find_dynamicsymbols(expression, exclude=None):
-    """Find all dynamicsymbols in expression.
-
-    >>> from sympy.physics.mechanics import dynamicsymbols, find_dynamicsymbols
-    >>> x, y = dynamicsymbols('x, y')
-    >>> expr = x + x.diff()*y
-    >>> find_dynamicsymbols(expr)
-    set([x(t), y(t), Derivative(x(t), t)])
-
-    If the optional ``exclude`` kwarg is used, only dynamicsymbols
-    not in the iterable ``exclude`` are returned.
-
-    >>> find_dynamicsymbols(expr, [x, y])
-    set([Derivative(x(t), t)])
-    """
-    t_set = set([dynamicsymbols._t])
-    if exclude:
-        if iterable(exclude):
-            exclude_set = set(exclude)
-        else:
-            raise TypeError("exclude kwarg must be iterable")
-    else:
-        exclude_set = set()
-    return set([i for i in expression.atoms(AppliedUndef, sm.Derivative) if
-                i.free_symbols == t_set]) - exclude_set
-
-
 class PyDyDeprecationWarning(DeprecationWarning):
     pass
+
 
 class PyDyImportWarning(ImportWarning):
     pass
 
+
 class PyDyFutureWarning(FutureWarning):
     pass
+
 
 class PyDyUserWarning(UserWarning):
     pass

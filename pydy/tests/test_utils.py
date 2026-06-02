@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from pkg_resources import parse_version
-from setuptools import __version__ as SETUPTOOLS_VERSION
-from nose.tools import assert_raises
+import pytest
+
+from packaging.version import parse as parse_version
 
 from sympy import cos, sin, tan, sqrt, Matrix
 from sympy.physics.mechanics import dynamicsymbols
@@ -19,9 +19,8 @@ def test_sympy_equal_to_or_newer_than():
     assert sympy_equal_to_or_newer_than('0.7.5', '0.7.6.dev')
     assert sympy_equal_to_or_newer_than('0.6.5', '0.7.6.dev')
     assert not sympy_equal_to_or_newer_than('0.7.7', '0.7.6.dev')
-    if parse_version(SETUPTOOLS_VERSION) >= parse_version('8.0'):
-        with assert_raises(ValueError):
-            sympy_equal_to_or_newer_than('0.7.7', '0.7.6-git')
+    with pytest.raises(ValueError):
+        sympy_equal_to_or_newer_than('0.7.7', '0.7.6-git')
 
 
 def test_codegen_linewrap():

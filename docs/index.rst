@@ -1,54 +1,95 @@
-=============================
-PyDy Package's documentation!
-=============================
+====================
+PyDy's Documentation
+====================
 
-This is the central page for all PyDy's Documentation.
+.. include:: index-opening.txt
 
-.. include:: ../README.rst
-
-system module
-=============
+Table of Contents
+=================
 
 .. toctree::
    :maxdepth: 2
 
-   system.rst
-
-models module
-=============
-
-.. toctree::
-   :maxdepth: 1
-
+   install.rst
+   usage.rst
+   tutorials.rst
+   codegen.rst
    models.rst
+   system.rst
+   viz/viz.rst
+   utils.rst
+   changelog.rst
 
-codegen package
-===============
+.. ifconfig:: INCLUDE_EXAMPLES
 
-.. toctree::
-    :maxdepth: 2
+   .. toctree::
+      :hidden:
 
-    codegen/codegen.rst
-    codegen/api.rst
+      examples/astrobee.rst
+      examples/carvallo-whipple.rst
+      examples/chaos-pendulum.rst
+      examples/kane-levinson-1985-chapter-02.rst
+      examples/kane-levinson-1985-chapter-03.rst
+      examples/mass-spring-damper.rst
+      examples/multidof-holonomic.rst
+      examples/rocket-car.rst
+      examples/three-link-conical-pendulum.rst
+      examples/3d-n-body-pendulum
 
-viz package
-===========
+.. ifconfig:: INCLUDE_EXAMPLES
 
-.. toctree::
-    :maxdepth: 2
+   Examples
+   ========
 
-    viz/viz.rst
-    viz/using_visualizer.rst
-    viz/api.rst
+   .. list-table::
 
-Tutorials
-=========
+      * - .. figure:: examples/mass_spring_damper.svg
+             :width: 200px
+             :target: examples/mass-spring-damper.html
 
-.. toctree::
-    :maxdepth: 2
+             Linear mass-spring-damper system with gravity.
+        - .. figure:: examples/multidof-holonomic.png
+             :width: 200px
+             :target: examples/multidof-holonomic.html
 
-    tutorials/beginners.rst
-    tutorials/advanced.rst
+             A double compound and simple pendulum.
+      * - .. figure:: examples/three-link-conical-pendulum.gif
+             :width: 200px
+             :target: examples/three-link-conical-pendulum.html
+
+             Three link conical compound pendulum.
+        - .. figure:: examples/bicycle-geometry.png
+             :width: 200px
+             :target: examples/carvallo-whipple.html
+
+             Carvallo-Whipple bicycle model.
+      * - .. figure:: examples/astrobee.png
+             :width: 200px
+             :target: examples/astrobee.html
+
+             Astrobee free-flying ISS robot.
+        - .. figure:: examples/chaos-pendulum.svg
+             :width: 200px
+             :target: examples/chaos-pendulum.html
+
+             3D perpendicular axis double pendulum that exhibits chaos.
+
+      * - .. figure:: examples/kane-levinson-1985.png
+             :width: 200px
+             :target: examples/kane-levinson-1985-chapter-02.html
+
+             Exercises from Chapter 2 of Kane & Levinson 1985.
+        - .. figure:: examples/kane-levinson-1985.png
+             :width: 200px
+             :target: examples/kane-levinson-1985-chapter-03.html
+
+             Exercises from Chapter 3 of Kane & Levinson 1985.
+      * - .. figure:: examples/rocket-car.png
+             :width: 200px
+             :target: examples/rocket-car.html
+
+             Nonholonomic Rocket Car.
+        -
 
 Indices and tables
 ==================

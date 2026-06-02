@@ -5,25 +5,25 @@ codegen
 Introduction
 ============
 
-The `pydy.codegen` package contains various tools to generate numerical code
-from symbolic descriptions of the equations of motion of systems. It allows you
-to generate code using a variety of backends depending on your needs. The
-generated code can also be auto-wrapped for immediate use in a Python session
-or script. Each component of the code generators and wrappers are accessible so
-that you can use just the raw code or the wrapper versions.
+The :py:mod:`pydy.codegen` package contains various tools to generate numerical
+code from symbolic descriptions of the equations of motion of systems. It
+allows you to generate code using a variety of backends depending on your
+needs. The generated code can also be auto-wrapped for immediate use in a
+Python session or script. Each component of the code generators and wrappers
+are accessible so that you can use just the raw code or the wrapper versions.
 
-We currently support three backends:
+We currently support these backends:
 
-`lambdify`
-   This generates NumPy-aware Python code which is defined in a Python `lambda`
-   function, using the `sympy.utilities.lambdify` module and is the default
-   generator.
-`Theano`
-   This generates Theano trees that are compiled into low level code, using the
-   `sympy.printers.theano_code` module.
-`Cython`
-   This generates C code that can be called from Python, using
-   SymPy's C code printer utilities and Cython.
+``lambdify``
+   This generates NumPy-aware Python code which is defined in a Python
+   function, using the :external+sympy:py:mod:`~sympy.utilities.lambdify`
+   module and is the default generator.
+``Cython``
+   This generates C code that can be called from Python, using SymPy's C code
+   printer utilities and Cython.
+``Symjit``
+   This generates native machine code directly from SymPy expressions via
+   Symjit.
 
 On Windows
 ==========
@@ -32,13 +32,13 @@ For the Cython backend to work on Windows you must install a suitable compiler.
 See this `Cython wiki page
 <https://github.com/cython/cython/wiki/CythonExtensionsOnWindows>`_ for
 instructions on getting a compiler installed. The easiest solution is to use
-the Microsoft Visual C++ Compiler for Python 2.7.
+the Microsoft Visual C++ Compiler for Python.
 
 Example Use
 ===========
 
-The simplest entry point to the code generation tools is through the `System`
-class.
+The simplest entry point to the code generation tools is through the
+:py:class:`~pydy.system.System` class.
 
 .. code:: pycon
 
@@ -47,7 +47,7 @@ class.
    >>> type(sys)
    <class 'pydy.system.System'>
    >>> rhs = sys.generate_ode_function()
-   >>> help(rhs) # rhs is a function:
+   >>> help(rhs) # doctest: +SKIP
    Returns the derivatives of the states, i.e. numerically evaluates the right
    hand side of the first order differential equation.
 
@@ -75,16 +75,15 @@ class.
 
 
    >>> import numpy as np
-   >>> rhs(np.array([1.0, 2.0]), 0.0, np.array([1.0, 2.0, 3.0]))
-   array([ 2., -7.])
+   >>> rhs(np.array([1.0, 2.0]), 0.0, np.array([2.0, 2.0, 2.0]))
+   array([ 2., -3.])
 
 You can also use the functional interface to the code generation/wrapper
 classes:
 
 .. code:: pycon
 
-   >>> from numpy import array
-   >>> from pydy.models import multi_mass_spring_damper
+   >>> import numpy as np
    >>> from pydy.codegen.ode_function_generators import generate_ode_function
    >>> sys = multi_mass_spring_damper()
    >>> sym_rhs = sys.eom_method.rhs()
@@ -92,33 +91,69 @@ classes:
    >>> u = sys.speeds
    >>> p = sys.constants_symbols
    >>> rhs = generate_ode_function(sym_rhs, q, u, p)
-   >>> rhs(array([1.0, 2.0]), 0.0, array([1.0, 2.0, 3.0]))
-   array([ 2., -7.])
+   >>> rhs(np.array([1.0, 2.0]), 0.0, np.array([2.0, 2.0, 2.0]))
+   array([ 2., -3.])
 
-Other backends can be used by simply passing in the `generator` keyword
-argument, e.g.:
+Other backends can be used by passing in the ``generator`` keyword argument,
+e.g.:
 
 .. code:: pycon
 
    >>> rhs = generate_ode_function(sym_rhs, q, u, p, generator='cython')
-   >>> rhs(array([1.0, 2.0]), 0.0, array([1.0, 2.0, 3.0]))
-   array([ 2., -7.])
+   >>> rhs(np.array([1.0, 2.0]), 0.0, np.array([2.0, 2.0, 2.0]))
+   array([ 2., -3.])
 
-The backends are implemented as subclasses of `ODEFunctionGenerator`. You can
-make use of the `ODEFunctionGenerator` classes directly:
+The backends are implemented as subclasses of
+:py:class:`~pydy.codegen.ode_function_generators.ODEFunctionGenerator`. You can
+make use of the ``ODEFunctionGenerator`` classes directly:
 
 .. code:: pycon
 
    >>> from pydy.codegen.ode_function_generators import LambdifyODEFunctionGenerator
    >>> g = LambdifyODEFunctionGenerator(sym_rhs, q, u, p)
    >>> rhs = g.generate()
-   >>> rhs(array([1.0, 2.0]), 0.0, array([1.0, 2.0, 3.0]))
-   array([ 2., -7.])
+   >>> rhs(np.array([1.0, 2.0]), 0.0, np.array([2.0, 2.0, 2.0]))
+   array([ 2., -3.])
 
-Furthermore, for direct control over evaluating matrices you can use the
-`lamdify` and `theano_functions` in SymPy or utilize the
-`CythonMatrixGenerator` class in PyDy. For example, this shows you how to
-generate C and Cython code to evaluate matrices:
+The ordinary differential equation generators also accept the implicit form of
+the equations in two other formats:
+
+.. code:: pycon
+
+   >>> M = sys.eom_method.mass_matrix_full
+   >>> F = sys.eom_method.forcing_full
+   >>> g = LambdifyODEFunctionGenerator(F, q, u, p, mass_matrix=M)
+   >>> rhs = g.generate()
+   >>> rhs(np.array([1.0, 2.0]), 0.0, np.array([2.0, 2.0, 2.0]))
+   array([ 2., -3.])
+
+.. code:: pycon
+
+   >>> from sympy import Matrix
+   >>> M = sys.eom_method.mass_matrix
+   >>> F = sys.eom_method.forcing
+   >>> qd = Matrix([sys.eom_method.kindiffdict()[qi.diff()] for qi in q])
+   >>> g = LambdifyODEFunctionGenerator(F, q, u, p, mass_matrix=M,
+   ...     coordinate_derivatives=qd)
+   >>> rhs = g.generate()
+   >>> rhs(np.array([1.0, 2.0]), 0.0, np.array([2.0, 2.0, 2.0]))
+   array([ 2., -3.])
+
+Additional output equations can also be simulatenously evaluated:
+
+.. code:: pycon
+
+   >>> outputs = Matrix([b.kinetic_energy(sys.eom_method._inertial) for b in sys.eom_method.bodies])
+   >>> g = LambdifyODEFunctionGenerator(sym_rhs, q, u, p, outputs=outputs)
+   >>> rhs = g.generate()
+   >>> rhs(np.array([1.0, 2.0]), 0.0, np.array([2.0, 2.0, 2.0]))
+   (array([ 2., -3.]), array([4.]))
+
+Furthermore, for direct control over evaluating matrices you can use
+:external+sympy:py:func:`~sympy.utilities.lambdify.lambdify` in SymPy or
+utilize the :py:class:`~pydy.codegen.cython_code.CythonMatrixGenerator` class
+in PyDy. For example, this shows you how to generate C and Cython code to
+evaluate matrices:
 
 .. code:: pycon
 
@@ -130,7 +165,7 @@ generate C and Cython code to evaluate matrices:
    >>> sym_rhs = sys.eom_method.rhs()
    >>> g = CythonMatrixGenerator([q, u, p], [sym_rhs])
    >>> setup_py, cython_src, c_header, c_src = g.doprint()
-   >>> print(setup_py)
+   >>> print(setup_py)  # doctest: +SKIP
    #!/usr/bin/env python
 
    from distutils.core import setup
@@ -147,7 +182,7 @@ generate C and Cython code to evaluate matrices:
    setup(name="pydy_codegen",
          ext_modules=cythonize([extension]))
 
-   >>> print(cython_src)
+   >>> print(cython_src)  # doctest: +SKIP
    import numpy as np
    cimport numpy as np
    cimport cython
@@ -180,7 +215,7 @@ generate C and Cython code to evaluate matrices:
                output_0
               )
 
-   >>> print(c_src)
+   >>> print(c_src)  # doctest: +SKIP
    #include <math.h>
    #include "pydy_codegen_c.h"
 
@@ -199,7 +234,7 @@ generate C and Cython code to evaluate matrices:
 
    }
 
-   >>> print(c_header)
+   >>> print(c_header) # doctest: +SKIP
    void evaluate(
                  double input_0[1],
                  double input_1[1],
@@ -215,9 +250,9 @@ generate C and Cython code to evaluate matrices:
    */
 
    >>> rhs = g.compile()
-   >>> res = array([0.0, 0.0])
-   >>> rhs(array([1.0]), array([2.0]), array([1.0, 2.0, 3.0]), res)
-   array([ 2., -7.])
+   >>> res = np.array([0.0, 0.0])
+   >>> rhs(np.array([1.0]), np.array([2.0]), np.array([2.0, 2.0, 2.0]), res)
+   array([ 2., -3.])
 
 We also support generating Octave/Matlab code as shown below:
 
@@ -231,7 +266,7 @@ We also support generating Octave/Matlab code as shown below:
    >>> sym_rhs = sys.eom_method.rhs()
    >>> g = OctaveMatrixGenerator([q + u, p], [sym_rhs])
    >>> m_src = g.doprint()
-   >>> print(m_src)
+   >>> print(m_src)  # doctest: +SKIP
    function [output_1] = eval_mats(input_1, input_2)
    % function [output_1] = eval_mats(input_1, input_2)
    %
@@ -244,3 +279,26 @@ We also support generating Octave/Matlab code as shown below:
        input_2(1).*input_1(1))./input_2(2)];
 
    end
+
+API
+===
+
+.. automodule:: pydy.codegen.c_code
+   :members:
+   :special-members: __init__
+
+.. automodule:: pydy.codegen.cython_code
+   :members:
+   :special-members: __init__
+
+.. automodule:: pydy.codegen.matrix_generator
+   :members:
+   :special-members: __init__
+
+.. automodule:: pydy.codegen.octave_code
+   :members:
+   :special-members: __init__
+
+.. automodule:: pydy.codegen.ode_function_generators
+   :members:
+   :special-members: __init__

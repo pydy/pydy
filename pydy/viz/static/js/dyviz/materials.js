@@ -1,4 +1,4 @@
-DynamicsVisualizer.Geometries = ['Cube', 'Cylinder',
+DynamicsVisualizer.Geometries = ['Box', 'Cube', 'Cylinder',
                                  'Cone', 'Sphere', 'Circle',
                                  'Plane', 'Tetrahedron',
                                  'Octahedron', 'Icosahedron',

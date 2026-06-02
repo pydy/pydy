@@ -51,8 +51,8 @@ sphereR_viz_frame = VisualizationFrame('sphereR', N, R, sphere)
 # this, we create a world frame that is rotated +90 degrees about the N frame's
 # z direction.
 world_frame = N.orientnew('world', 'Axis', [0.5 * pi, N.z])
-scene = Scene(world_frame, O,
-        linkP_viz_frame, linkR_viz_frame, sphereP_viz_frame, sphereR_viz_frame)
+scene = Scene(world_frame, O, linkP_viz_frame, linkR_viz_frame,
+              sphereP_viz_frame, sphereR_viz_frame)
 
 
 # Create the visualization
@@ -61,7 +61,7 @@ scene = Scene(world_frame, O,
 scene.generate_visualization_json_system(sys)
 
 if __name__ == "__main__":
-    try: #If called from inside notebook,
-        scene.display_ipython()
-    except:#If called from interpreter
+    try:  # If called from inside notebook,
+        scene.display_jupyter()
+    except:  # If called from interpreter
         scene.display()

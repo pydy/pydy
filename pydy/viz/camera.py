@@ -74,7 +74,7 @@ class PerspectiveCamera(VisualizationFrame):
         >>> # Initializing with a RigidBody
         >>> Ixx, Iyy, Izz, mass = symbols('Ixx Iyy Izz mass')
         >>> i = inertia(I, Ixx, Iyy, Izz)
-        >>> rbody = RigidBody('rbody', O, I, mass, (inertia, O))
+        >>> rbody = RigidBody('rbody', O, I, mass, (i, O))
         >>> camera2 = PerspectiveCamera('frame2', rbody)
 
         >>> # initializing with Particle, reference_frame
@@ -160,14 +160,14 @@ class OrthoGraphicCamera(VisualizationFrame):
     inherited from ``VisualizationFrame``, and thus behaves similarly. It can
     be attached to dynamics objects, hence we can get a moving camera. All the
     transformation matrix generation methods are applicable to a
-    ``OrthoGraphicCameraCamera``.
+    ``OrthoGraphicCamera``.
 
 
     """
 
     def __init__(self, *args, **kwargs):
-        """Initialises a OrthoGraphicCameraCamera object. To initialize a
-        OrthoGraphicCameraCamera, one needs to supply a name (optional), a
+        """Initialises a OrthoGraphicCamera object. To initialize a
+        OrthoGraphicCamera, one needs to supply a name (optional), a
         reference frame, a point, field of view (fov) (optional), near plane
         distance (optional) and far plane distance (optional).
 
@@ -175,26 +175,26 @@ class OrthoGraphicCamera(VisualizationFrame):
         these three argument sequences:
 
         Rigidbody
-           ``OrthoGraphicCameraCamera(rigid_body)``
+           ``OrthoGraphicCamera(rigid_body)``
         ReferenceFrame, Point
-           ``OrthoGraphicCameraCamera(ref_frame, point)``
+           ``OrthoGraphicCamera(ref_frame, point)``
         ReferenceFrame, Particle
-           ``OrthoGraphicCameraCamera(ref_frame, particle)``
+           ``OrthoGraphicCamera(ref_frame, particle)``
 
         Note that you can also supply and optional name as the first positional
         argument, e.g.::
 
-            OrthoGraphicCameraCamera('camera_name', rigid_body)
+            OrthoGraphicCamera('camera_name', rigid_body)
 
         Additional optional keyword arguments are below:
 
         Parameters
         ==========
         near : float
-            The distance of near plane of the OrthoGraphicCameraCamera. All
+            The distance of near plane of the OrthoGraphicCamera. All
             objects closer to this distance are not displayed.
         far : int or float
-            The distance of far plane of the OrthoGraphicCameraCamera. All
+            The distance of far plane of the OrthoGraphicCamera. All
             objects farther than this distance are not displayed.
 
         Examples
@@ -204,22 +204,22 @@ class OrthoGraphicCamera(VisualizationFrame):
         >>> from sympy.physics.mechanics import (ReferenceFrame, Point,
         ...                                      RigidBody, Particle,
         ...                                      inertia)
-        >>> from pydy.viz import OrthoGraphicCameraCamera
+        >>> from pydy.viz import OrthoGraphicCamera
         >>> I = ReferenceFrame('I')
         >>> O = Point('O')
 
         >>> # initializing with reference frame, point
-        >>> camera1 = OrthoGraphicCameraCamera('frame1', I, O)
+        >>> camera1 = OrthoGraphicCamera('frame1', I, O)
 
         >>> # Initializing with a RigidBody
         >>> Ixx, Iyy, Izz, mass = symbols('Ixx Iyy Izz mass')
         >>> i = inertia(I, Ixx, Iyy, Izz)
-        >>> rbody = RigidBody('rbody', O, I, mass, (inertia, O))
-        >>> camera2 = OrthoGraphicCameraCamera('frame2', rbody)
+        >>> rbody = RigidBody('rbody', O, I, mass, (i, O))
+        >>> camera2 = OrthoGraphicCamera('frame2', rbody)
 
         >>> # initializing with Particle, reference_frame
         >>> Pa = Particle('Pa', O, mass)
-        >>> camera3 = OrthoGraphicCameraCamera('frame3', I, Pa)
+        >>> camera3 = OrthoGraphicCamera('frame3', I, Pa)
 
         """
         # NOTE: This allows us to use inhertiance even though cameras don't

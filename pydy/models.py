@@ -10,12 +10,12 @@ import sympy.physics.mechanics as me
 
 # local
 from .system import System
-from .utils import sympy_newer_than
 
 
 def multi_mass_spring_damper(n=1, apply_gravity=False,
-                             apply_external_forces=False):
-    """Returns a system containing the symbolic equations of motion and
+                             apply_external_forces=False,
+                             external_force_as_sin_of_t=False):
+    r"""Returns a system containing the symbolic equations of motion and
     associated variables for a simple mutli-degree of freedom point mass,
     spring, damper system with optional gravitational and external
     specified forces. For example, a two mass system under the influence of
@@ -49,6 +49,8 @@ def multi_mass_spring_damper(n=1, apply_gravity=False,
         If true, gravity will be applied to each mass.
     apply_external_forces : boolean
         If true, a time varying external force will be applied to each mass.
+    external_force_as_sin_of_t : boolean
+        If true, the external forces will each be replaced with sin(t).
 
     Returns
     -------
@@ -65,7 +67,10 @@ def multi_mass_spring_damper(n=1, apply_gravity=False,
 
     coordinates = me.dynamicsymbols('x:{}'.format(n))
     speeds = me.dynamicsymbols('v:{}'.format(n))
-    specifieds = me.dynamicsymbols('f:{}'.format(n))
+    if external_force_as_sin_of_t:
+        specifieds = [sm.sin(me.dynamicsymbols._t) for i in range(n)]
+    else:
+        specifieds = me.dynamicsymbols('f:{}'.format(n))
 
     ceiling = me.ReferenceFrame('N')
     origin = me.Point('origin')
@@ -109,10 +114,7 @@ def multi_mass_spring_damper(n=1, apply_gravity=False,
     kane = me.KanesMethod(ceiling, q_ind=coordinates, u_ind=speeds,
                           kd_eqs=kinematic_equations)
 
-    if sympy_newer_than('1.0'):
-        kane.kanes_equations(particles, forces)
-    else:
-        kane.kanes_equations(forces, particles)
+    kane.kanes_equations(particles, forces)
 
     return System(kane)
 
@@ -230,9 +232,6 @@ def n_link_pendulum_on_cart(n=1, cart_force=True, joint_torques=False):
         specified.append(F)
 
     kane = me.KanesMethod(I, q_ind=q, u_ind=u, kd_eqs=kindiffs)
-    if sympy_newer_than('1.0'):
-        kane.kanes_equations(particles, forces)
-    else:
-        kane.kanes_equations(forces, particles)
+    kane.kanes_equations(particles, forces)
 
     return System(kane)

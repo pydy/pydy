@@ -136,5 +136,5 @@ u = omega + delta
 # Now the equations of motion of the system can be formed.
 print("Generating equations of motion.")
 kane = me.KanesMethod(I, q_ind=q, u_ind=u, kd_eqs=kinematic_differentials)
-fr, frstar = kane.kanes_equations(forces, total_system)
+fr, frstar = kane.kanes_equations(loads=forces, bodies=total_system)
 print("Derivation complete.")

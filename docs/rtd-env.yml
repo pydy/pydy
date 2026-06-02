@@ -1,0 +1,17 @@
+name: rtd-env
+channels:
+  - conda-forge
+dependencies:
+  - cython
+  - jupyter_sphinx
+  - matplotlib-base
+  - numpy
+  - numpydoc
+  - packaging
+  - python =3.14.*
+  - pythreejs
+  - scipy
+  - setuptools
+  - sphinx
+  - symjit
+  - sympy

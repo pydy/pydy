@@ -2,27 +2,556 @@
 
 from random import choice
 import warnings
+from importlib import metadata
 
 import numpy as np
 import scipy as sp
 import sympy as sm
+import sympy.physics.mechanics as me
+from pydy.codegen.ode_function_generators import generate_ode_function
+import pytest
+from packaging.version import parse as parse_version
 
 Cython = sm.external.import_module('Cython')
-theano = sm.external.import_module('theano')
+symjit = sm.external.import_module('symjit')
 
 from ... import models
 from ..ode_function_generators import (ODEFunctionGenerator,
                                        LambdifyODEFunctionGenerator,
                                        CythonODEFunctionGenerator,
-                                       TheanoODEFunctionGenerator)
+                                       SymjitODEFunctionGenerator)
+
 from ...utils import PyDyImportWarning
 
 warnings.simplefilter('once', PyDyImportWarning)
 
 
+def test_outputs():
+    m1, m2, l1, l2, c, g = sm.symbols('m1, m2, l1, l2, c, g')
+    q1, q2, u1, u2, T1, T2 = me.dynamicsymbols('q1, q2, u1, u2, T1, T2')
+    u3, u4 = me.dynamicsymbols('u3, u4')
+
+    N = me.ReferenceFrame('N')
+    A = me.ReferenceFrame('A')
+    B = me.ReferenceFrame('B')
+
+    A.orient_axis(N, q1, N.z)
+    B.orient_axis(N, q2, N.z)
+    A.set_ang_vel(N, u1*N.z)
+    B.set_ang_vel(N, u2*N.z)
+
+    O = me.Point('O')
+    P1 = O.locatenew('P1', -l1*A.y)
+    P2 = P1.locatenew('P2', -l2*B.y)
+
+    O.set_vel(N, 0)
+    P1.v2pt_theory(O, N, A)
+    P1.set_vel(N, P1.vel(N) - u3*A.y)
+    P2.v2pt_theory(P1, N, B)
+    P2.set_vel(N, P2.vel(N) - u4*B.y)
+
+    bob1 = me.Particle('bob1', P1, m1)
+    bob2 = me.Particle('bob2', P2, m2)
+
+    loads = (
+        (P1, -m1*g*N.y + T1*A.y - T2*B.y),
+        (P2, -m2*g*N.y + T2*B.y),
+        (A, -c*u1*N.z + c*(u2 - u1)*N.z),
+        (B, - c*(u2 - u1)*N.z),
+    )
+
+    kane = me.KanesMethod(
+        N,
+        (q1, q2),
+        (u1, u2),
+        kd_eqs=[q1.diff() - u1, q2.diff() - u2],
+        bodies=(bob1, bob2),
+        forcelist=loads,
+        u_auxiliary=(u3, u4),
+    )
+    kane.kanes_equations()
+
+    qdot = sm.Matrix([u1, u2])
+
+    # augment the mass matrix for noncontributing forces
+    u = sm.Matrix([u1, u2])
+    lam = sm.Matrix([T1, T2])
+    int_of_lam = sm.Matrix([me.dynamicsymbols('I_{T1}, I_{T2}')])
+    x = u.diff().col_join(lam)
+
+    aux_eqs = kane.auxiliary_eqs
+    MuMj = aux_eqs.jacobian(x)  # [Mu Mj]
+    Fa = -aux_eqs.xreplace({fi: 0 for fi in x})  # [Fa]
+    Md = kane.mass_matrix
+    Mz = sm.zeros(Md.shape[0], len(lam))
+    mass_matrix = Md.row_join(Mz).col_join(MuMj)
+    Fd = kane.forcing
+    forcing = Fd.col_join(Fa)
+
+    # extra outputs
+    p1_x, p1_y, p1_z = P1.pos_from(O).to_matrix(N)
+    p2_x, p2_y, p2_z = P2.pos_from(O).to_matrix(N)
+    constraint = P2.pos_from(O).dot(N.x) - sm.sin(2*sm.pi)
+    kinetic_energy = (m1/2*P1.vel(N).dot(P1.vel(N)) +
+                      m2/2*P2.vel(N).dot(P2.vel(N))).xreplace({u3: 0, u4: 0})
+    potential_energy = m1*g*p1_y + m2*g*p2_y
+    outputs = sm.Matrix([
+        p1_x,
+        p1_y,
+        p2_x,
+        p2_y,
+        kinetic_energy,
+        potential_energy,
+        constraint,
+    ])
+
+    x = sm.Matrix((q1, q2, u1, u2, int_of_lam[0], int_of_lam[1]))
+    p = sm.Matrix((m1, m2, l1, l2, c, g))
+
+    t_val = 1.2
+    x_vals = np.deg2rad([3.0, -4.0, -20.0, 10.0, 0.0, 0.0])
+    p_vals = np.array([1.0, 2.0, 3.0, 4.0, 10.0, 9.81])
+
+    qdot_exp = list(x_vals[2:4])
+    udot_exp = np.array(mass_matrix.LUsolve(forcing).xreplace(
+        dict(zip(x, x_vals))).xreplace((dict(zip(p, p_vals)))).evalf()[:],
+        dtype=float)
+    y_exp = np.array(sm.Matrix((p1_x, p1_y, p2_x, p2_y, kinetic_energy,
+                       potential_energy, constraint,)).xreplace(
+                           dict(zip(x, x_vals))).xreplace(
+                               (dict(zip(p, p_vals)))).evalf()[:], dtype=float)
+
+    generators = ['lambdify']
+    try:
+        import Cython
+    except ImportError:
+        pass
+    else:
+        generators.append('cython')
+    try:
+        import symjit
+    except ImportError:
+        pass
+    else:
+        generators.append('symjit')
+
+    for generator in generators:
+        rhs = generate_ode_function(
+            forcing,
+            kane.q[:],
+            kane.u[:] + int_of_lam[:],
+            mass_matrix=mass_matrix,
+            coordinate_derivatives=qdot,
+            constants=p[:],
+            outputs=outputs,
+            generator=generator,
+        )
+        xdot, y = rhs(x_vals, t_val, p_vals)
+        np.testing.assert_allclose(np.hstack((qdot_exp, udot_exp)), xdot)
+        np.testing.assert_allclose(y_exp, y)
+
+    expected_end = \
+"""\
+y : ndarray, shape(7,)
+    Values of the provided outputs.
+        - y0(t)
+        - y1(t)
+        - y2(t)
+        - y3(t)
+        - y4(t)
+        - y5(t)
+        - y6(t)
+
+"""
+    assert rhs.__doc__.endswith(expected_end)
+
+
+def test_ccontiguous():
+
+    x1, x2, v1, v2 = me.dynamicsymbols('x1, x2, v1, v2')
+    f1, f2 = me.dynamicsymbols('f1, f2')
+    a = sm.symbols('a')
+
+    rhs = generate_ode_function(
+        sm.Matrix([v1, v2, a*f1, f2]),
+        [x1, x2],
+        [v1, v2],
+        constants=(a,),
+        specifieds=(f1, f2),
+        generator='cython',
+        force_c_contiguous=True,
+    )
+
+    arr = np.arange(16, dtype=np.float64).reshape(4, 4)
+
+    np.testing.assert_allclose(
+        rhs(arr[0, :], 0.0, np.array([1., 2.]), np.array([1.])),
+        np.array([2., 3., 1., 2.]),
+    )
+
+    # Fails with "ValueError: ndarray is not C-contiguous" if
+    # force_c_contiguous=False.
+    np.testing.assert_allclose(
+        rhs(arr[:, 0], 0.0, np.array([1., 2.]), np.array([1.])),
+        np.array([8., 12., 1., 2.]),
+    )
+
+
+def test_rhs_arg_order():
+
+    sys = models.n_link_pendulum_on_cart(n=2, cart_force=False,
+                                         joint_torques=True)
+
+    g_x_t = LambdifyODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        list(sm.ordered(sys.constants_symbols)),
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        specifieds=list(sm.ordered(sys.specifieds_symbols)),
+    )
+    rhs_func_x_t = g_x_t.generate()
+
+    g_t_x = LambdifyODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        list(sm.ordered(sys.constants_symbols)),
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        specifieds=list(sm.ordered(sys.specifieds_symbols)),
+        time_first=True,
+    )
+    rhs_func_t_x = g_t_x.generate()
+
+    x = np.random.random(g_x_t.num_coordinates + g_x_t.num_speeds)
+    t = 5.125
+    p = np.random.random(g_x_t.num_constants)
+    r = np.random.random(g_x_t.num_specifieds)
+
+    def eval_r_x_t(x, t):
+        np.testing.assert_allclose(5.125, t)
+        return r
+
+    def eval_r_t_x(t, x):
+        np.testing.assert_allclose(5.125, t)
+        return r
+
+    np.testing.assert_allclose(rhs_func_x_t(x, t, eval_r_x_t, p),
+                               rhs_func_t_x(t, x, eval_r_t_x, p))
+    expected_x_t_doc = """\
+Returns the derivatives of the states, i.e. numerically evaluates the right
+hand side of the first order differential equation.
+
+x' = f(x, t, r, p)
+
+Parameters
+==========
+x : ndarray, shape(6,)
+    The state vector is ordered as such:
+        - q0(t)
+        - q1(t)
+        - q2(t)
+        - u0(t)
+        - u1(t)
+        - u2(t)
+t : float
+    The current time.
+r : dictionary; ndarray, shape(2,); function
+
+    There are three options for this argument. (1) is more flexible but
+    (2) and (3) are much more efficient.
+
+    (1) A dictionary that maps the specified functions of time to floats,
+    ndarrays, or functions that produce ndarrays. The keys can be a single
+    specified symbolic function of time or a tuple of symbols. The total
+    number of symbols must be equal to 2. If the value is a
+    function it must be of the form g(x, t), where x is the current state
+    vector ndarray and t is the current time float and it must return an
+    ndarray of the correct shape. For example::
+
+      r = {a: 1.0,
+           (d, b) : np.array([1.0, 2.0]),
+           (e, f) : lambda x, t: np.array(x[0], x[1]),
+           c: lambda x, t: np.array(x[2])}
+
+    (2) A ndarray with the specified values in the correct order and of the
+    correct shape.
+
+    (3) A function that must be of the form g(x, t), where x is the current
+    state vector and t is the current time and it must return an ndarray of
+    the correct shape.
+
+    The specified inputs are, in order:
+        - T1(t)
+        - T2(t)
+p : dictionary len(6) or ndarray shape(6,)
+    Either a dictionary that maps the constants symbols to their numerical
+    values or an array with the constants in the following order:
+        - g
+        - l0
+        - l1
+        - m0
+        - m1
+        - m2
+
+Returns
+=======
+dx : ndarray, shape(6,)
+    The derivative of the state vector.
+
+"""
+    assert rhs_func_x_t.__doc__ == expected_x_t_doc
+
+    expected_t_x_doc = """\
+Returns the derivatives of the states, i.e. numerically evaluates the right
+hand side of the first order differential equation.
+
+x' = f(t, x, r, p)
+
+Parameters
+==========
+t : float
+    The current time.
+x : ndarray, shape(6,)
+    The state vector is ordered as such:
+        - q0(t)
+        - q1(t)
+        - q2(t)
+        - u0(t)
+        - u1(t)
+        - u2(t)
+r : dictionary; ndarray, shape(2,); function
+
+    There are three options for this argument. (1) is more flexible but
+    (2) and (3) are much more efficient.
+
+    (1) A dictionary that maps the specified functions of time to floats,
+    ndarrays, or functions that produce ndarrays. The keys can be a single
+    specified symbolic function of time or a tuple of symbols. The total
+    number of symbols must be equal to 2. If the value is a
+    function it must be of the form g(t, x), where x is the current state
+    vector ndarray and t is the current time float and it must return an
+    ndarray of the correct shape. For example::
+
+      r = {a: 1.0,
+           (d, b) : np.array([1.0, 2.0]),
+           (e, f) : lambda t, x: np.array(x[0], x[1]),
+           c: lambda t, x: np.array(x[2])}
+
+    (2) A ndarray with the specified values in the correct order and of the
+    correct shape.
+
+    (3) A function that must be of the form g(t, x), where x is the current
+    state vector and t is the current time and it must return an ndarray of
+    the correct shape.
+
+    The specified inputs are, in order:
+        - T1(t)
+        - T2(t)
+p : dictionary len(6) or ndarray shape(6,)
+    Either a dictionary that maps the constants symbols to their numerical
+    values or an array with the constants in the following order:
+        - g
+        - l0
+        - l1
+        - m0
+        - m1
+        - m2
+
+Returns
+=======
+dx : ndarray, shape(6,)
+    The derivative of the state vector.
+
+"""
+    assert rhs_func_t_x.__doc__ == expected_t_x_doc
+
+    # NOTE : This has to have the exact wrapping as the docstrings it is
+    # assembled from.
+    expected_end = """\
+time_first : boolean, optional
+    By default the argument order of the generated function is ``F(x,
+    t, r, p)`` and, if this is set to true, it will be ``F(t, x, r,
+    p)``.
+outputs : sympy.Matrix, shape(o, 1), optional
+    Expressions that are a functions of (q, u, t, r, p).
+generator : string or ODEFunctionGenerator, optional
+    The method used for generating the numeric right hand side. The string
+    options are ``{'lambdify'|'cython'|'symjit'}`` with ``lambdify``
+    being the default. You can also pass in a custom subclass of
+    ODEFunctionGenerator.
+kwargs
+    Extra keyword arguments are passed to the :py:class:`ODEFunctionGenerator`.
+
+Returns
+=======
+rhs : function
+    A function which evaluates the derivaties of the states. See the
+    function's docstring for more details after generation.
+"""
+
+    assert generate_ode_function.__doc__.endswith(expected_end)
+
+
+def test_symbolic_linear_solve_full_mass_matrix():
+    sys = models.n_link_pendulum_on_cart(n=5, cart_force=False,
+                                         joint_torques=False)
+
+    # symbolic solve only works with cython, raises with lambdify
+    with pytest.raises(ValueError):
+        generate_ode_function(
+            sys.eom_method.forcing_full,
+            sys.coordinates,
+            sys.speeds,
+            sys.constants_symbols,
+            mass_matrix=sys.eom_method.mass_matrix_full,
+            linear_sys_solver='sympy',
+            generator='lambdify')
+
+    with pytest.raises(ValueError):
+        generate_ode_function(
+            sys.eom_method.forcing_full,
+            sys.coordinates,
+            sys.speeds,
+            sys.constants_symbols,
+            mass_matrix=sys.eom_method.mass_matrix_full,
+            linear_sys_solver='sympy:BOOGER',
+            generator='cython')
+
+    # NOTE : Make sure passing a callable works.
+    generate_ode_function(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        linear_sys_solver=lambda A, b: np.linalg.solve)
+
+    rhs_symbolic_solve = generate_ode_function(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        linear_sys_solver='sympy:CH',
+        generator='cython')
+
+    g_numeric_solve = CythonODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+    )
+    rhs_numeric_solve = g_numeric_solve.generate()
+
+    x = np.random.random(len(sys.states))
+    t = 5.125
+    p = np.random.random(len(sys.constants_symbols))
+
+    np.testing.assert_allclose(rhs_numeric_solve(x, t, p),
+                               rhs_symbolic_solve(x, t, p))
+
+
+def test_symbolic_linear_solve_min_mass_matrix():
+    sys = models.n_link_pendulum_on_cart(n=5, cart_force=False,
+                                         joint_torques=False)
+    kin_diff_eqs = sys.eom_method.kindiffdict()
+    coord_derivs = sm.Matrix([kin_diff_eqs[c.diff()] for c in
+                              sys.coordinates])
+
+    g_symbolic_solve = CythonODEFunctionGenerator(
+        sys.eom_method.forcing,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix,
+        coordinate_derivatives=coord_derivs,
+        linear_sys_solver='sympy')  # LUsolve by default
+    rhs_symbolic_solve = g_symbolic_solve.generate()
+
+    g_numeric_solve = CythonODEFunctionGenerator(
+        sys.eom_method.forcing,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix,
+        coordinate_derivatives=coord_derivs,
+        linear_sys_solver='numpy')
+    rhs_numeric_solve = g_numeric_solve.generate()
+
+    x = np.random.random(g_symbolic_solve.num_coordinates +
+                         g_symbolic_solve.num_speeds)
+    t = 5.125
+    p = np.random.random(g_symbolic_solve.num_constants)
+
+    np.testing.assert_allclose(rhs_numeric_solve(x, t, p),
+                               rhs_symbolic_solve(x, t, p))
+
+
+def test_cse_same_numerical_results():
+    # NOTE : This ensurses that the same results are always given for the sympy
+    # cse outputs, which seem to change every version.
+
+    if not Cython:
+        return
+
+    sys = models.n_link_pendulum_on_cart(n=5, cart_force=False,
+                                         joint_torques=False)
+
+    g_no_cse = CythonODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        cse=False)
+    rhs_func_no_cse = g_no_cse.generate()
+
+    g_cse = CythonODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        cse=True)
+    rhs_func_cse = g_cse.generate()
+
+    g_lam_cse = LambdifyODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        cse=True)
+    rhs_func_lam_cse = g_lam_cse.generate()
+
+    g_lam_no_cse = LambdifyODEFunctionGenerator(
+        sys.eom_method.forcing_full,
+        sys.coordinates,
+        sys.speeds,
+        sys.constants_symbols,
+        mass_matrix=sys.eom_method.mass_matrix_full,
+        cse=False)
+    rhs_func_lam_no_cse = g_lam_no_cse.generate()
+
+    x = np.random.random(g_cse.num_coordinates + g_cse.num_speeds)
+    t = 5.125
+    p = np.random.random(g_cse.num_constants)
+
+    np.testing.assert_allclose(rhs_func_no_cse(x, t, p),
+                               rhs_func_cse(x, t, p))
+
+    np.testing.assert_allclose(rhs_func_lam_no_cse(x, t, p),
+                               rhs_func_lam_cse(x, t, p))
+
+    np.testing.assert_allclose(rhs_func_lam_cse(x, t, p),
+                               rhs_func_cse(x, t, p))
+
+
 class TestODEFunctionGenerator(object):
 
-    def setup(self):
+    def setup_method(self):
 
         self.sys = models.multi_mass_spring_damper(2)
         self.rhs = self.sys.eom_method.rhs()
@@ -30,6 +559,11 @@ class TestODEFunctionGenerator(object):
                                               self.sys.coordinates,
                                               self.sys.speeds,
                                               self.sys.constants_symbols)
+        self.outputs = sm.Matrix([
+            b.kinetic_energy(self.sys.eom_method._inertial)
+            for b in self.sys.eom_method.bodies
+        ])
+
 
     def test_init_full_rhs(self):
 
@@ -74,6 +608,16 @@ class TestODEFunctionGenerator(object):
         assert g.num_states == 4
         assert g.system_type == 'min mass matrix'
 
+    def test_init_outputs(self):
+
+        g = ODEFunctionGenerator(self.rhs,
+                                 self.sys.coordinates,
+                                 self.sys.speeds,
+                                 self.sys.constants_symbols,
+                                 outputs=self.outputs)
+
+        assert g.num_outputs == 2
+
     def test_set_linear_system_solver(self):
 
         g = ODEFunctionGenerator(self.sys.eom_method.forcing_full,
@@ -82,6 +626,7 @@ class TestODEFunctionGenerator(object):
                                  self.sys.constants_symbols,
                                  mass_matrix=self.sys.eom_method.mass_matrix_full)
 
+        assert g.linear_sys_solver == 'numpy'
         assert g._solve_linear_system == np.linalg.solve
 
         g = ODEFunctionGenerator(self.sys.eom_method.forcing_full,
@@ -91,6 +636,7 @@ class TestODEFunctionGenerator(object):
                                  mass_matrix=self.sys.eom_method.mass_matrix_full,
                                  linear_sys_solver='numpy')
 
+        assert g.linear_sys_solver == 'numpy'
         assert g._solve_linear_system == np.linalg.solve
 
         g = ODEFunctionGenerator(self.sys.eom_method.forcing_full,
@@ -100,6 +646,7 @@ class TestODEFunctionGenerator(object):
                                  mass_matrix=self.sys.eom_method.mass_matrix_full,
                                  linear_sys_solver='scipy')
 
+        assert g.linear_sys_solver == 'scipy'
         assert g._solve_linear_system == sp.linalg.solve
 
         solver = lambda A, b: np.dot(np.inv(A), b)
@@ -111,7 +658,20 @@ class TestODEFunctionGenerator(object):
                                  mass_matrix=self.sys.eom_method.mass_matrix_full,
                                  linear_sys_solver=solver)
 
+        assert g.linear_sys_solver == solver
         assert g._solve_linear_system == solver
+
+    def test_no_constants(self):
+        sys = models.multi_mass_spring_damper()
+        constant_vals = {sm.Symbol('m0'): 1.0, sm.Symbol('c0'): 2.0, sm.Symbol('k0'): 3.0}
+
+        sym_rhs = sys.eom_method.rhs()
+
+        rhs = generate_ode_function(sym_rhs, sys.coordinates, sys.speeds, constant_vals)
+        rhs2 = generate_ode_function(sym_rhs.subs(constant_vals), sys.coordinates, sys.speeds)
+
+        assert np.array_equal(rhs(np.array([1.0, 2.0]), 0.0, constant_vals),
+                              rhs2(np.array([1.0, 2.0]), 0.0))
 
 
 class TestODEFunctionGeneratorSubclasses(object):
@@ -124,20 +684,28 @@ class TestODEFunctionGeneratorSubclasses(object):
         warnings.warn("Cython was not found so the related tests are being"
                       " skipped.", PyDyImportWarning)
 
-    if theano:
-        ode_function_subclasses.append(TheanoODEFunctionGenerator)
+    if symjit:
+        symjit_version = metadata.version('symjit')
     else:
-        warnings.warn("Theano was not found so the related tests are being"
+        symjit_version = '0.0.1'
+    if parse_version(symjit_version) >= parse_version('2.5.0'):
+        ode_function_subclasses.append(SymjitODEFunctionGenerator)
+    else:
+        warnings.warn("Symjit was not found so the related tests are being"
                       " skipped.", PyDyImportWarning)
 
-    def setup(self):
+    def setup_method(self):
 
         self.sys = models.multi_mass_spring_damper()
         # Best keep these in order, otherwise it may change between SymPy
         # versions.
         self.constants = list(sm.ordered(self.sys.constants_symbols))
+        self.outputs = sm.Matrix([
+            b.kinetic_energy(self.sys.eom_method._inertial)
+            for b in self.sys.eom_method.bodies
+        ])
 
-    def eval_rhs(self, rhs):
+    def eval_rhs(self, rhs, with_outputs=False, with_sint=False):
 
         # In order:
         c0 = 1.0
@@ -147,17 +715,27 @@ class TestODEFunctionGeneratorSubclasses(object):
         x0 = 1.0
         v0 = 2.0
 
-        xdot = rhs(np.array([x0, v0]), 0.0, np.array([c0, k0, m0]))
+        t = 1.39
 
-        expected_xdot = np.array([v0, (-c0 * v0 - k0 * x0) / m0])
+        if with_sint:
+            expected_xdot = np.array([v0,
+                                      (-c0 * v0 - k0 * x0) / m0 + np.sin(t)])
+        else:
+            expected_xdot = np.array([v0, (-c0 * v0 - k0 * x0) / m0])
+
+        if with_outputs:
+            xdot, y = rhs(np.array([x0, v0]), t, np.array([c0, k0, m0]))
+            np.testing.assert_allclose(y, [m0*v0**2/2])
+        else:
+            xdot = rhs(np.array([x0, v0]), t, np.array([c0, k0, m0]))
 
         np.testing.assert_allclose(xdot, expected_xdot)
 
     def test_init_doc(self):
 
         for Subclass in self.ode_function_subclasses:
-            assert (Subclass.__init__.__doc__ ==
-                    ODEFunctionGenerator.__init__.__doc__)
+            assert (''.join(ODEFunctionGenerator.__init__.__doc__.split()) in
+                    ''.join(Subclass.__init__.__doc__.split()))
 
     def test_generate_full_rhs(self):
 
@@ -173,6 +751,25 @@ class TestODEFunctionGeneratorSubclasses(object):
             rhs_func = g.generate()
 
             self.eval_rhs(rhs_func)
+
+    def test_generate_full_rhs_with_explicit_t(self):
+
+        t = me.dynamicsymbols._t
+
+        rhs = self.sys.eom_method.rhs()
+        rhs[1, 0] = rhs[1, 0] + sm.sin(t)
+
+        for Subclass in self.ode_function_subclasses:
+
+            g = Subclass(rhs,
+                         self.sys.coordinates,
+                         self.sys.speeds,
+                         self.constants)
+
+            rhs_func = g.generate()
+
+            self.eval_rhs(rhs_func, with_sint=True)
+
 
     def test_generate_full_mass_matrix(self):
 
@@ -265,6 +862,59 @@ class TestODEFunctionGeneratorSubclasses(object):
 
                 np.testing.assert_allclose(xdot, expected)
 
+    def test_generate_full_rhs_with_outputs(self):
+
+        rhs = self.sys.eom_method.rhs()
+
+        for Subclass in self.ode_function_subclasses:
+
+            g = Subclass(rhs,
+                         self.sys.coordinates,
+                         self.sys.speeds,
+                         self.constants,
+                         outputs=self.outputs)
+
+            rhs_func = g.generate()
+
+            self.eval_rhs(rhs_func, with_outputs=True)
+
+    def test_generate_full_mass_matrix_with_outputs(self):
+
+        for Subclass in self.ode_function_subclasses:
+
+            g = Subclass(self.sys.eom_method.forcing_full,
+                         self.sys.coordinates,
+                         self.sys.speeds,
+                         self.constants,
+                         mass_matrix=self.sys.eom_method.mass_matrix_full,
+                         outputs=self.outputs)
+
+            rhs_func = g.generate()
+
+            print(self.outputs)
+
+            self.eval_rhs(rhs_func, with_outputs=True)
+
+    def test_generate_min_mass_matrix_with_outputs(self):
+
+        kin_diff_eqs = self.sys.eom_method.kindiffdict()
+        coord_derivs = sm.Matrix([kin_diff_eqs[c.diff()] for c in
+                                  self.sys.coordinates])
+
+        for Subclass in self.ode_function_subclasses:
+
+            g = Subclass(self.sys.eom_method.forcing,
+                         self.sys.coordinates,
+                         self.sys.speeds,
+                         self.constants,
+                         mass_matrix=self.sys.eom_method.mass_matrix,
+                         coordinate_derivatives=coord_derivs,
+                         outputs=self.outputs)
+
+            rhs_func = g.generate()
+
+            self.eval_rhs(rhs_func, with_outputs=True)
+
     def test_rhs_args(self):
         # This test takes a while to run but it checks all the combinations.
 
@@ -285,23 +935,22 @@ class TestODEFunctionGeneratorSubclasses(object):
         p['array'] = p_array
         p['dictionary'] = p_dct
 
-        r_array = np.array([1.0, 2.0, 3.0, 4.0])
+        x = np.random.random(len(sys.states))
+        t_val = 1.23
+
+        r_array = t_val*x[:4]
         r_dct_1 = dict(zip(specifieds, r_array))
-        r_dct_2 = {tuple(specifieds):
-                   lambda x, t: r_array}
-        r_dct_3 = {specifieds[0]: lambda x, t: np.ones(1),
-                   (specifieds[3], specifieds[1]):
-                   lambda x, t: np.array([4.0, 2.0]),
-                   specifieds[2]: 3.0 * np.ones(1)}
-        r_func = lambda x, t: np.array([1.0, 2.0, 3.0, 4.0])
+        r_dct_2 = {tuple(specifieds): lambda x, t: t*x[:4]}
+        r_dct_3 = {specifieds[0]: lambda x, t: t*x[0],
+                   (specifieds[3], specifieds[1]): lambda x, t: t*x[[3, 1]],
+                   specifieds[2]: r_array[2]}
+        r_func = lambda x, t: t*x[:4]
 
         r = {}
         r[None] = choice([r_array, r_dct_1, r_dct_2, r_dct_3, r_func])
         r['array'] = r_array
         r['dictionary'] = choice([r_dct_1, r_dct_2, r_dct_3])
         r['function'] = r_func
-
-        x = np.random.random(len(sys.states))
 
         for p_arg_type in constants_arg_types:
             for r_arg_type in specifieds_arg_types:
@@ -315,7 +964,7 @@ class TestODEFunctionGeneratorSubclasses(object):
                                                  specifieds_arg_type=r_arg_type)
                 rhs = g.generate()
 
-                xdot = rhs(x, 0.0, r[r_arg_type], p[p_arg_type])
+                xdot = rhs(x, t_val, r[r_arg_type], p[p_arg_type])
 
                 try:
                     np.testing.assert_allclose(xdot, last_xdot)
@@ -345,7 +994,7 @@ class TestODEFunctionGeneratorSubclasses(object):
 
                 rhs = g.generate()
 
-                xdot = rhs(x, 0.0, p[p_arg_type])
+                xdot = rhs(x, t_val, p[p_arg_type])
 
                 try:
                     np.testing.assert_allclose(xdot, last_xdot)

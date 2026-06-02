@@ -14,6 +14,8 @@
 
 import sys
 import os
+import datetime
+import shutil
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -22,58 +24,45 @@ sys.path.insert(0, os.path.abspath('..'))
 
 import pydy
 
-# This allows readthedocs to use autodoc.
-if os.environ.get('READTHEDOCS', None) == 'True':
-    print('docs/conf.py: on READTHEDOCS')
+COPYRIGHT_YEARS = '2009-{}'.format(datetime.datetime.now().year)
 
-    # This allows the Sphinx docs to build without the required modules.
-    # http://docs.readthedocs.org/en/latest/faq.html#my-project-isn-t-building-with-autodoc
-    from mock import Mock as MagicMock
+# Extract stuff from the readme
+with open('../README.rst') as f:
+    readme_text = f.read()
 
-    class Mock(MagicMock):
-        @classmethod
-        def __getattr__(cls, name):
-                return Mock()
+headings = ['PyDy',  # 1
+            'Installation',  # 2
+            'Usage',  # 3
+            'Documentation',  # 4
+            'Modules and Packages',  # 5
+            'Development Environment',  # 6
+            'Benchmark',  # 7
+            'Citation',  # 8
+            'Questions, Bugs, Feature Requests',  # 9
+            'Related Packages']  # 10
 
-    # Every module that is imported in PyDy is required to be in this list.
-    MOCK_MODULES = ['numpy',
-                    'numpy.linalg',
-                    'numpy.testing',
-                    'scipy',
-                    'scipy.linalg',
-                    'scipy.integrate',
-                    'matplotlib',
-                    'sympy',
-                    'sympy.core',
-                    'sympy.core.function',
-                    'sympy.utilities',
-                    'sympy.utilities.iterables',
-                    'sympy.printing',
-                    'sympy.printing.ccode',
-                    'sympy.printing.theanocode',
-                    'sympy.physics',
-                    'sympy.physics.mechanics',
-                    'sympy.physics.mechanics.functions',
-                    'sympy.matrices',
-                    'sympy.matrices.expressions',
-                    'IPython',
-                    'IPython.html',
-                    'IPython.display',
-                    'nose',
-                    'nose.tools',
-                    'Cython',
-                    'Cython.Build',
-                    'pkg_resources',
-                    'setuptools']
+headings_with_lines = [heading + '\n' + '='*len(heading)
+                       for heading in headings]
 
-    pairs = []
-    for mod_name in MOCK_MODULES:
-        mocked = Mock()
-        # This is necessary for the version checks in pydy.utils.
-        if mod_name == 'sympy':
-            mocked.__version__ = '0.7.6'
-        pairs.append((mod_name, mocked))
-    sys.modules.update(pairs)
+for h in headings_with_lines:
+    readme_text = readme_text.replace(h, 'SPLIT HERE!!')
+
+parts = readme_text.split('SPLIT HERE!!')
+
+with open('index-opening.txt', 'w') as f:
+    opening = parts[1] + '\n' + parts[8] + '\n' + parts[9]
+    f.write(opening)
+
+with open('install.rst', 'w') as f:
+    bar = len(headings[1])*'='
+    f.write(bar + '\n' + headings[1] + '\n' + bar + parts[2])
+
+with open('usage.rst', 'w') as f:
+    bar = len(headings[2])*'='
+    f.write(bar + '\n' + headings[2] + '\n' + bar + parts[3])
+
+shutil.copyfile('../CHANGELOG.rst', 'changelog.rst')
+shutil.copyfile('../readme-msd-result.png', 'readme-msd-result.png')
 
 # -- General configuration ------------------------------------------------
 
@@ -87,10 +76,47 @@ import numpydoc
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.viewcode',
     'numpydoc',
 ]
+
+# NOTE : jupyter_sphinx is only available on Python 3.5+, make it an optional
+# dependency and don't build the examples if not installed.
+# TODO : The examples could be built when jupyter_sphinx is not available if
+# the .. jupyter-execute:: directives were dynamically swapped out with ..
+# code:: directives.
+try:
+    import jupyter_sphinx
+except ImportError:
+    def setup(app):
+        app.add_config_value('INCLUDE_EXAMPLES', False, 'env')
+    exclude_patterns = ['*/examples/*.rst']
+else:
+    del jupyter_sphinx
+
+    def setup(app):
+        app.add_config_value('INCLUDE_EXAMPLES', True, 'env')
+    extensions.append('jupyter_sphinx')
+    # NOTE : The default order causes SymPy output to show the png math images
+    # instead of MathJax so I moved the LaTeX above the images.
+    jupyter_execute_data_priority = [
+        'application/vnd.jupyter.widget-view+json',
+        'text/html',
+        'text/latex',
+        'image/svg+xml',
+        'image/png',
+        'image/jpeg',
+        'text/plain',
+    ]
+
+    # NOTE: This is required so that when jupyter_sphinx executes it picks up
+    # the uninstalled pydy package.
+    package_path = os.path.abspath('..')
+    os.environ['PYTHONPATH'] = ':'.join((package_path,
+                                         os.environ.get('PYTHONPATH', '')))
 
 numpydoc_show_class_members = False
 
@@ -107,8 +133,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'PyDy Distribution'
-copyright = u'2009-2017, PyDy Authors'
+project = u'PyDy'
+copyright = u'{}, PyDy Authors'.format(COPYRIGHT_YEARS)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -157,17 +183,32 @@ pygments_style = 'sphinx'
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
 
+# Setup intersphinx so that we can reference the SymPy documentation.
+# :external:py:func:`~sympy.physics.vector.functions.dot` for example.
+intersphinx_mapping = {
+    #'matplotlib': ('https://matplotlib.org/stable/', None),
+    #'numpy': ('https://numpy.org/doc/stable/', None),
+    #'py3js': ('https://pythreejs.readthedocs.io/en/stable', None),
+    #'python': ('http://docs.python.org/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/', None),
+    'sympy': ('https://docs.sympy.org/latest/', None),
+}
 
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    'github_repo': 'pydy',
+    'github_type': 'star',
+    'github_user': 'pydy',
+    'page_width': '1080px',  # 960 doesn't show 79 linewidth examples
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -255,8 +296,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'PyDyDistribution.tex', u'PyDy Distribution Documentation',
-   u'PyDy Authors', 'manual'),
+    ('index', 'PyDyDistribution.tex', u'PyDy Distribution Documentation',
+     u'PyDy Authors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -299,9 +340,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'PyDyDistribution', u'PyDy Distribution Documentation',
-   u'PyDy Authors', 'PyDyDistribution', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'PyDyDistribution', u'PyDy Distribution Documentation',
+     u'PyDy Authors', 'PyDyDistribution', 'One line description of project.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -323,7 +364,7 @@ texinfo_documents = [
 epub_title = u'PyDy Distribution'
 epub_author = u'PyDy Authors'
 epub_publisher = u'PyDy Authors'
-epub_copyright = u'2009-2017, PyDy Authors'
+epub_copyright = u'{}, PyDy Authors'.format(COPYRIGHT_YEARS)
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
@@ -377,6 +418,4 @@ epub_copyright = u'2009-2017, PyDy Authors'
 # If false, no index is generated.
 #epub_use_index = True
 
-
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}

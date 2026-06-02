@@ -89,6 +89,7 @@ setup(name="{prefix}",
         self.arguments = arguments
         self.num_matrices = len(matrices)
         self.num_arguments = len(arguments)
+        # TODO : Should prefix be passed into the CMatrixGenerator?
         self.c_matrix_generator = CMatrixGenerator(arguments, matrices,
                                                    cse=cse)
 
