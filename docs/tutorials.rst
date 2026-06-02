@@ -14,7 +14,7 @@ Tutorials:
   - :ref:`Linear Mass-Spring-Damper with Gravity <mass-spring-damper>`
   - `Inverted pendulum model of a standing human`_
 
-.. _`Inverted pendulum model of a standing human`: http://nbviewer.ipython.org/github/pydy/pydy-tutorial-human-standing/blob/online-read/notebooks/n00_python_intro.ipynb
+.. _`Inverted pendulum model of a standing human`: https://github.com/pydy/pydy-tutorial-human-standing
 
 Advanced
 ========
