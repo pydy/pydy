@@ -98,7 +98,7 @@ def test_n_link_pendulum_on_cart_regression():
     g = sm.symbols('g')
 
     sys = n_link_pendulum_on_cart(n, cart_force=False)
-    sys.times = np.linspace(0, 3, num_time_steps)
+    sys.times = np.linspace(0.0, 3.0, num_time_steps)
 
     x0 = np.hstack(
         (0,
