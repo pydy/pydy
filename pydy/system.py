@@ -188,7 +188,7 @@ class System(object):
         *before* constructing this system.
     constants : dict, optional (default: all 1.0)
         This dictionary maps SymPy
-        :external+sympy:py:class:`~sympy.cor.symbol.Symbol` objects to floats.
+        :external+sympy:py:class:`~sympy.core.symbol.Symbol` objects to floats.
     specifieds : dict, optional (default: all 0.0)
         This dictionary maps SymPy Functions of time objects, or tuples of
         them, to floats, NumPy arrays, or functions of the state and time.
