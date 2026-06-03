@@ -12,13 +12,10 @@
 Objectives
 ----------
 
-- Show how to use ``PyDy Visualization`` to generate a 3D animation.
-- Show how to use a specific ODE_solver.
-- Show how to calculate noncontributing forces. (here they are the reaction
-  forces at the suspension point)
-- Show how to calculate the energies of the system and plot them, using
-  System.outputs.
-
+- Show how to use ``pydy.viz`` to generate a 3D animation.
+- Show how to use a non-default ODE_solver.
+- Show how to calculate noncontributing forces.
+- Show how to calculate the energies of the system and plot them.
 
 Description
 -----------
@@ -35,7 +32,6 @@ There may be speed dependent friction between
 the rod and the ball, with coefficient of friction :math:`\textrm{reibung}`.
 A particle with mass :math:`m_1` is attached to each ball.
 
-
 .. jupyter-execute::
 
     import sympy as sm
@@ -43,12 +39,10 @@ A particle with mass :math:`m_1` is attached to each ball.
     import numpy as np
     import matplotlib.pyplot as plt
     from scipy.integrate import solve_ivp
-    #from scipy.optimize import root
     from pydy.system import System
     from pydy.viz.shapes import Cylinder, Sphere
     from pydy.viz.scene import Scene
     from pydy.viz.visualization_frame import VisualizationFrame
-
 
 Equations of Motion, Kane's Method
 ==================================
@@ -106,13 +100,11 @@ the 'child frame', otherwise the equations of motion become very large.
         A[i].set_ang_vel(N, u[3*i]*A[i].x + u[3*i+1]*A[i].y + u[3*i+2]*A[i].z)
         rot1.append(A[i].ang_vel_in(N))
 
-
 Set virtual speeds and noncontributing forces.
 
 .. jupyter-execute::
 
     auxx, auxy, auxz, fx, fy, fz = me.dynamicsymbols('auxx auxy auxz fx fy fz')
-
 
 Locate the various points, and define their speeds. Add the virtual speeds to
 the suspension point P[0].
@@ -158,8 +150,7 @@ Make the list of the bodies.
         inert_link = me.inertia(A[i], m_link*l**2/12., 0, m_link*l**2/12.)
         links.append(me.RigidBody('link' + str(i), Dmc_link[i], A[i], m_link,
                                   (inert_link, Dmc_link[i])))
-    BODY = balls + points + links
-
+    bodies = balls + points + links
 
 Set up the forces.
 
@@ -192,13 +183,13 @@ There are:
         friction_i = (A[i], -reibung * u[3*i + 1] * A[i].y)  # around A[i].y
         FB.append(friction_i)
 
-    FL = FG + FB
+    loads = FG + FB
 
 Add the noncontributing forces (here: reaction forces) to the list of forces.
 
 .. jupyter-execute::
 
-    FL += [(P[0], fx * N.x + fy * N.y + fz * N.z)]
+    loads += [(P[0], fx * N.x + fy * N.y + fz * N.z)]
 
 Kinematic equations.
 
@@ -227,9 +218,10 @@ Finish Kanes's equations.
         u_ind=u1,
         kd_eqs=kd,
         u_auxiliary=aux
+        bodies=bodies,
+        loads=loads,
     )
-
-    fr, frstar = KM.kanes_equations(BODY, FL)
+    fr, frstar = KM.kanes_equations()
 
 Numerically Integrate the Equations of Motion
 =============================================
@@ -261,7 +253,7 @@ Determine the expressions for the energies.
         sum([m_link*g*me.dot(Dmc_link[i].pos_from(P[0]), N.y)
         for i in range(3)]))
 
-    kin_energie = sum([BODY[i].kinetic_energy(N) for i in range(9)])
+    kin_energie = sum([bodies[i].kinetic_energy(N) for i in range(9)])
 
 The virtual speeds appear in the kinetic energy. They must be set to zero
 as body.kinetic_energy(N) cannot know that they are virtual speeds.
@@ -299,14 +291,14 @@ Define the constants of the system.
 .. jupyter-execute::
 
     sys.constants = {
-    g: 9.8,                       # gravitational acceleration
-    r: 1.5,                       # radius of the ball
-    m: 1.0,                       # mass of the ball
-    m1: 1.0 / 5.0,                # mass of the red dot
-    m_link: 0.5,                  # mass of the link
-    l: 6.0,                       # length of the massless rod of the pendulum
-    k: 1000.0,                    # 'spring constant' of the balls
-    reibung: 0.0,                 # friction in the joints
+        g: 9.8,                       # gravitational acceleration
+        r: 1.5,                       # radius of the ball
+        m: 1.0,                       # mass of the ball
+        m1: 1.0 / 5.0,                # mass of the red dot
+        m_link: 0.5,                  # mass of the link
+        l: 6.0,                       # length of the massless rod of the pendulum
+        k: 1000.0,                    # 'spring constant' of the balls
+        reibung: 0.0,                 # friction in the joints
     }
 
 Set the initial conditions.
@@ -314,13 +306,12 @@ Set the initial conditions.
 .. jupyter-execute::
 
     sys.initial_conditions = {
-    q[0]: 0.0,
-    q[1]: 1.0,
-    q[2]: 0.2,  # initial deflection of the first rod
-
-    u[0]: 0.0,
-    u[1]: 0.0,
-    u[2]: 0.0  # initial ang. velocity of the first rod
+        q[0]: 0.0,
+        q[1]: 1.0,
+        q[2]: 0.2,  # initial deflection of the first rod
+        u[0]: 0.0,
+        u[1]: 0.0,
+        u[2]: 0.0  # initial ang. velocity of the first rod
     }
 
     q_keys = [q[i] for i in range(3, 9)]
@@ -338,9 +329,7 @@ Give the list of noncontributing forces.
 .. jupyter-execute::
 
     sys.noncontributing_forces = [fx, fy, fz]
-
-    print('output symbols', sys.outputs_symbols)
-
+    sys.outputs_symbols
 
 Below lambdify is used as speed is of no concern.
 Dmc_loc, punkt_loc are needed for the animation only.
@@ -362,20 +351,15 @@ Dmc_loc, punkt_loc are needed for the animation only.
     # For later use in the animation.
     pL_vals = [sys.constants[p] for p in pL]
 
-
-
 Numerical Integration.
 
 .. jupyter-execute::
 
-    sys.generate_ode_function(linear_sys_solver='numpy')
-
-    sys.times = np.linspace(0., 8.0, 100)
+    sys.times = np.linspace(0., 2.0, 100)
 
     resultat = sys.integrate(method='Radau', atol=1.e-6, rtol=1.e-6)
 
     print('resultat shape', resultat.shape)
-
 
 Plot Some Results
 -----------------
@@ -391,7 +375,6 @@ Plot some Angular Speeds.
     ax.set_title('Rotational speeds')
     ax.set_ylabel('Rotational speed')
     _ = ax.legend()
-
 
 Calculate and plot the reaction forces.
 
@@ -430,7 +413,6 @@ Plot the energies.
         delta = (max_total_energy - min_total_energy) / max_total_energy * 100
         print('Max deviation of total energy from being constant: '
               f'{delta:.3e} %')
-
 
 Animation with PyDy Visualization
 =================================
