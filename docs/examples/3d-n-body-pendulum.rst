@@ -219,7 +219,7 @@ Finish Kanes's equations.
         kd_eqs=kd,
         u_auxiliary=aux,
         bodies=bodies,
-        loads=loads,
+        forcelist=loads,
     )
     fr, frstar = KM.kanes_equations()
 
