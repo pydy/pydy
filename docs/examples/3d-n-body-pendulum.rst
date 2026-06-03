@@ -217,7 +217,7 @@ Finish Kanes's equations.
         q_ind=q1,
         u_ind=u1,
         kd_eqs=kd,
-        u_auxiliary=aux
+        u_auxiliary=aux,
         bodies=bodies,
         loads=loads,
     )
