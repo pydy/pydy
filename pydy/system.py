@@ -1496,7 +1496,7 @@ class System(object):
 
         Returns
         -------
-        x_history : ndarray, shape(num_integrator_time_steps, 2)
+        x_history : ndarray, shape(num_integrator_time_steps, num_states)
             The trajectory of states (coordinates and speeds) through the
             requested time interval. num_integrator_time_steps is either
             len(times) if len(times) > 2, or is determined by the
