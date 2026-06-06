@@ -158,6 +158,7 @@ from itertools import repeat
 
 import numpy as np
 import sympy as sm
+import matplotlib.pyplot as plt
 from sympy.physics.mechanics import dynamicsymbols, find_dynamicsymbols
 from scipy.integrate import odeint
 from scipy.optimize import root
@@ -693,7 +694,7 @@ class System(object):
     def outputs(self, outputs):
         self._outputs = outputs
         self._parse_outputs()
-        # NOTE : It the output equations are updated they may have new symbols.
+        # NOTE : If the output equations are updated they may have new symbols.
         exprs = []
         if self._simple_outputs_symbols:
             exprs += self._simple_outputs_matrix[:]
@@ -1584,3 +1585,48 @@ class System(object):
         constants = unique_symbols
         constants.remove(dynamicsymbols._t)
         return constants
+
+
+    def plot_noncontributing_forces(self, result, axes=None):
+        """Returns the axes for a plot. The plot displays the noncontributing
+        forces versus time.
+
+        Parameters
+        ==========
+        result : ndarray, (len(times), num_outputs)
+            The solution obtained from pydy.system.System.evaluate_outputs or a
+            similar array.
+        axes : ndarray of AxesSubplot, shape(len(noncontributing_forces),)
+            An array of matplotlib axes to plot to.
+
+        Returns
+        =======
+        axes : ndarray of AxesSubplot
+            A matplotlib axes with the noncontributing forces plotted.
+
+        """
+
+        num_plots = len(self._noncontributing_forces)
+        if axes is None:
+            fig, axes = plt.subplots(num_plots, 1, sharex=True,
+                                     layout='compressed',
+                                     figsize=(6.4, 0.8*num_plots))
+        else:
+            if len(axes) != num_plots:
+                raise ValueError(f'axes must have shape ({num_plots},).')
+
+        # Ensure that the correct columns of the result are plotted.
+        pos, names = [], []
+        for i, name in enumerate(self.outputs_symbols):
+            if name in self._noncontributing_forces :
+                pos.append(i)
+                names.append(name)
+
+        for i, name in zip(range(num_plots), names):
+            axes[i].plot(self.times, result[:, pos[i]])
+            axes[i].set_ylabel(sm.latex(name, mode='inline'))
+
+        axes[-1].set_xlabel('time')
+        axes[0].set_title('Noncontributing Forces')
+
+        return axes
