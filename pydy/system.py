@@ -1016,7 +1016,7 @@ class System(object):
     def constraints(self):
         """A column matrix of configuration and nonholonomic constraints
         expressions, ordered as stored in
-        :external+sympy:py:class:~sympy.physics.mechanics.kane.KanesMethod."""
+        :external+sympy:py:class:`~sympy.physics.mechanics.kane.KanesMethod`."""
         constraints = sm.Matrix([])
 
         if self.holonomic_constraints or self.nonholonomic_constraints:
@@ -1034,7 +1034,8 @@ class System(object):
     @property
     def num_constraints(self):
         """Total number of configuration and nonholonomic constaints."""
-        return self.num_holonomic_constraints + self.num_nonholonomic_constraints
+        return (self.num_holonomic_constraints +
+                self.num_nonholonomic_constraints)
 
     def set_dependent_initial_conditions(self, dep_vars=None, use_jac=False,
                                          **root_kwargs):
@@ -1483,8 +1484,8 @@ class System(object):
             return con[:, :self.num_holonomic_constraints]
 
     def evaluate_velocity_constraints(self, x=None, t=None):
-        """Returns the values of the motion at the initial condition or,
-        alternatively, for the provided state vector.
+        """Returns the values of the velocity constraints at the initial
+        condition or, alternatively, for the provided state vector.
 
         Parameters
         ==========
