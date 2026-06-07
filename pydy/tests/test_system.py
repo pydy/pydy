@@ -57,11 +57,11 @@ class TestSystem():
         assert sys.initial_conditions == dict()
         assert sys.noncontributing_forces == []
         assert sys.num_auxiliaries == 0
-        assert sys.num_config_constraints == 0
+        assert sys.num_holonomic_constraints == 0
         assert sys.num_constants == 4
         assert sys.num_constraints == 0
         assert sys.num_coordinates == 1
-        assert sys.num_motion_constraints == 0
+        assert sys.num_velocity_constraints == 0
         assert sys.num_outputs == 0
         assert sys.num_specifieds == 1
         assert sys.num_speeds == 1
@@ -432,9 +432,9 @@ class TestSystem():
         with pytest.raises(ValueError):
             self.sys.evaluate_constraints()
         with pytest.raises(ValueError):
-            self.sys.evaluate_config_constraints()
+            self.sys.evaluate_holonomic_constraints()
         with pytest.raises(ValueError):
-            self.sys.evaluate_motion_constraints()
+            self.sys.evaluate_velocity_constraints()
 
     def test_integrate(self):
 
@@ -655,9 +655,9 @@ def test_system_with_constraints(plot=False):
 
     sys = System(kane)
 
-    assert sys.num_config_constraints == 1
+    assert sys.num_holonomic_constraints == 1
     assert sys.num_nonholonomic_constraints == 2
-    assert sys.num_motion_constraints == 3
+    assert sys.num_velocity_constraints == 3
     assert sys.num_constraints == 3
 
     sys.constants = {
@@ -706,9 +706,9 @@ def test_system_with_constraints(plot=False):
     np.testing.assert_allclose(x0[u5], np.deg2rad(100.0))
     np.testing.assert_allclose(x0[u6], speed/sys.constants[r])
 
-    np.testing.assert_allclose(sys.evaluate_config_constraints(), 0.0,
+    np.testing.assert_allclose(sys.evaluate_holonomic_constraints(), 0.0,
                                atol=1e-12)
-    np.testing.assert_allclose(sys.evaluate_motion_constraints(), 0.0,
+    np.testing.assert_allclose(sys.evaluate_velocity_constraints(), 0.0,
                                atol=1e-12)
     np.testing.assert_allclose(sys.evaluate_constraints(), 0.0, atol=1e-12)
 
@@ -784,9 +784,9 @@ def test_system_with_constraints(plot=False):
     np.testing.assert_allclose(x0[u5], np.deg2rad(100.0))
     np.testing.assert_allclose(x0[u6], speed/sys.constants[r])
 
-    np.testing.assert_allclose(sys.evaluate_config_constraints(), 0.0,
+    np.testing.assert_allclose(sys.evaluate_holonomic_constraints(), 0.0,
                                atol=1e-10)
-    np.testing.assert_allclose(sys.evaluate_motion_constraints(), 0.0,
+    np.testing.assert_allclose(sys.evaluate_velocity_constraints(), 0.0,
                                atol=1e-10)
     np.testing.assert_allclose(sys.evaluate_constraints(), 0.0, atol=1e-10)
 
@@ -960,9 +960,9 @@ def test_system_with_noncontributing_forces(plot=False):
     assert sys._simple_outputs_symbols == [T_, fn]
     assert sys.noncontributing_forces == [T1, T2]
     assert sys.constraints == sm.Matrix([mot_con])
-    assert sys.num_config_constraints == 0
+    assert sys.num_holonomic_constraints == 0
     assert sys.num_constraints == 1
-    assert sys.num_motion_constraints == 1
+    assert sys.num_velocity_constraints == 1
     assert sys.num_outputs == 4
     assert sys.outputs_symbols == [T_, fn, T1, T2]
 
@@ -973,10 +973,10 @@ def test_system_with_noncontributing_forces(plot=False):
     np.testing.assert_allclose(sys.evaluate_outputs(),
         [1.151171,  0.0, 30.235328, 18.345324])
 
-    np.testing.assert_allclose(sys.evaluate_motion_constraints(), [0.0])
+    np.testing.assert_allclose(sys.evaluate_velocity_constraints(), [0.0])
     np.testing.assert_allclose(sys.evaluate_constraints(), [0.0])
     with pytest.raises(ValueError):
-        sys.evaluate_config_constraints()
+        sys.evaluate_holonomic_constraints()
 
     ###########################################################################
     # Check that the system will skip automatic parsing of the auxiliary
@@ -1005,9 +1005,9 @@ def test_system_with_noncontributing_forces(plot=False):
     with pytest.raises(ValueError):
         sys.evaluate_constraints()
     with pytest.raises(ValueError):
-        sys.evaluate_config_constraints()
+        sys.evaluate_holonomic_constraints()
     with pytest.raises(ValueError):
-        sys.evaluate_motion_constraints()
+        sys.evaluate_velocity_constraints()
     np.testing.assert_allclose(sys.evaluate_ode(),
                                [0.0, 0.0, 0.0, 0.0])
     np.testing.assert_allclose(sys.evaluate_outputs(),
