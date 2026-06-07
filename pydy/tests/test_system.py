@@ -631,11 +631,13 @@ def test_system_with_constraints(plot=False):
     gravity = (Q, -m*g*N.z)
 
     q = [x, y, yaw, roll, pitch]
-    qdot_exprs = list(sm.solve(kd_eqs, [x.diff(), y.diff(), yaw.diff(), roll.diff(),
-                                   pitch.diff()]).values())
+    qdot_exprs = list(sm.solve(
+        kd_eqs,
+        [x.diff(), y.diff(), yaw.diff(), roll.diff(), pitch.diff()]).values())
     h_idxs, nh_idxs = _sort_velocity_constraints(nonholonomic, q, qdot_exprs)
-    holonomic_constraints = nonholonomic[h_idxs]
-    nonholonomic_constraints = nonholonomic[nh_idxs]
+
+    assert h_idxs == [2]
+    assert nh_idxs == [0, 1]
 
     kane = me.KanesMethod(
         N,
@@ -654,8 +656,9 @@ def test_system_with_constraints(plot=False):
     sys = System(kane)
 
     assert sys.num_config_constraints == 1
+    assert sys.num_nonholonomic_constraints == 2
     assert sys.num_motion_constraints == 3
-    assert sys.num_constraints == 4
+    assert sys.num_constraints == 3
 
     sys.constants = {
         r: 0.3,

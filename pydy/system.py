@@ -163,7 +163,8 @@ from scipy.integrate import odeint
 from scipy.optimize import root
 
 from .codegen.ode_function_generators import generate_ode_function
-from .utils import PyDyFutureWarning, PyDyUserWarning
+from .utils import (PyDyFutureWarning, PyDyUserWarning,
+                    _sort_velocity_constraints)
 
 SYMPY_VERSION = sm.__version__
 
@@ -949,25 +950,51 @@ class System(object):
         return kwargs
 
     def _extract_constraints(self):
-        """Extracts the configuration and motion constraints from the
-        eom_method and stores them in attributes."""
+        """Extracts the configuration, nonholonomic, and motion constraints
+        from the eom_method and stores them in attributes."""
 
         if self.eom_method._f_h:
             self.config_constraints = self.eom_method._f_h
         else:
             self.config_constraints = sm.Matrix([])
 
+        self._num_config_constraints = len(self.config_constraints)
+
         if self.eom_method._k_nh:
-            # rebuild the nonholonomic constraints from KanesMethod
             # TODO : KanesMethod and _Method should store the original
             # constraints passed by the user. Fix in sympy.physics.mechanics!
-            self.motion_constraints = (
+
+            # rebuild the velocity constraints from KanesMethod, note that
+            # these can include time differentiated holonomic constraints
+            velocity_constraints = (
                 self.eom_method._k_nh*self.eom_method.u +
                 self.eom_method._f_nh)
+
+            self.motion_constraints = velocity_constraints
+
+            if self.config_constraints:
+                h_idxs, nh_idxs = _sort_velocity_constraints(
+                    velocity_constraints,
+                    self.coordinates[:],
+                    list(self.eom_method.kindiffdict().values()))
+
+                if len(h_idxs) != self.num_config_constraints:
+                    raise ValueError('There should be the same number of time'
+                                    ' differentiated holonomic constraints '
+                                    ' present in the velocity constraints to '
+                                    ' that of the holonomic constraints.')
+                if len(nh_idxs) == 0:
+                    self.nonholonomic_constraints = sm.Matrix([])
+                else:
+                    self.nonholonomic_constraints = sm.Matrix(
+                        velocity_constraints)[nh_idxs, 0]
+            else:
+                self.nonholonomic_constraints = velocity_constraints
         else:
             self.motion_constraints = sm.Matrix([])
+            self.nonholonomic_constraints = sm.Matrix([])
 
-        self._num_config_constraints = len(self.config_constraints)
+        self._num_nonholonomic_constraints = len(self.nonholonomic_constraints)
         self._num_motion_constraints = len(self.motion_constraints)
 
     @property
@@ -976,32 +1003,38 @@ class System(object):
         return self._num_config_constraints
 
     @property
+    def num_nonholonomic_constraints(self):
+        """Number of nonholonomic constraints."""
+        return self._num_nonholonomic_constraints
+
+    @property
     def num_motion_constraints(self):
         """Number of motion constraints."""
         return self._num_motion_constraints
 
     @property
     def constraints(self):
-        """A column matrix of configuration and motion constraints expressions,
-        ordered as stored in
+        """A column matrix of configuration and nonholonomic constraints
+        expressions, ordered as stored in
         :external+sympy:py:class:~sympy.physics.mechanics.kane.KanesMethod."""
         constraints = sm.Matrix([])
 
-        if self.config_constraints or self.motion_constraints:
+        if self.config_constraints or self.nonholonomic_constraints:
             if self.config_constraints:
                 constraints = self.config_constraints
 
-            if constraints and self.motion_constraints:
-                constraints = constraints.col_join(self.motion_constraints)
+            if constraints and self.nonholonomic_constraints:
+                constraints = constraints.col_join(
+                    self.nonholonomic_constraints)
             else:
-                constraints = self.motion_constraints
+                constraints = self.nonholonomic_constraints
 
         return constraints
 
     @property
     def num_constraints(self):
-        """Total number of configuration and motion constaints."""
-        return self.num_config_constraints + self.num_motion_constraints
+        """Total number of configuration and nonholonomic constaints."""
+        return self.num_config_constraints + self.num_nonholonomic_constraints
 
     def set_dependent_initial_conditions(self, dep_vars=None, use_jac=False,
                                          **root_kwargs):
@@ -1034,16 +1067,20 @@ class System(object):
             raise ValueError(msg)
         else:
             num_holo = self.num_config_constraints
-            num_nonh = self.num_motion_constraints
+            num_nonh = self.num_nonholonomic_constraints
 
         # TODO : These variables should be publicly accessible on KanesMethod.
+        # NOTE : If there are holonomic constraints, then you have to solve for
+        # both the dependent coordinate and dependent speed associated with
+        # this constraint, i.e. the time differentiated holoomic constraints is
+        # treated as a nonholonomic constraint.
         if dep_vars is None:
             dep_vars = self.eom_method._qdep[:] + self.eom_method._udep[:]
 
         # TODO : Would be nice to check if the dependent variables are present
         # in the constraints and that the right number of coordinates and
         # speeds are each supplied.
-        if len(dep_vars) != self.num_constraints:
+        if len(dep_vars) != (2*num_holo + num_nonh):
             msg = (f'You must supply {num_holo} dependent coordinates and '
                    f'{num_nonh} dependent speeds.')
             raise ValueError(msg)
@@ -1055,21 +1092,30 @@ class System(object):
         dep_guess = [x0_dict[xi] for xi in dep_vars]
         dep_idxs = [self.states.index(xi) for xi in dep_vars]
 
+        # NOTE : M + (M + m) equations.
+        # TODO : Create a ._evaluate_all_constraints() method for this.
+        constraints = self.config_constraints.col_join(
+            self.motion_constraints)
+
         if use_jac:
-            jac = self.constraints.jacobian(dep_vars)
-            eval_jac = sm.lambdify((self.states, self.constants_symbols), jac,
-                                   cse=True)
+            jac = constraints.jacobian(dep_vars)
+            eval_jac = sm.lambdify((self.states, self.constants_symbols),
+                                   (constraints, jac), cse=True)
 
             def eval_f(x_dep, p):
                 x[dep_idxs] = x_dep
-                return self.evaluate_constraints(x=x), eval_jac(x, p)
+                con_vals, jac_vals = eval_jac(x, p)
+                return con_vals.squeeze(), jac_vals
 
             fprime = True
         else:
+            # TODO : Create a ._evaluate_all_constraints() method for this.
+            eval_con = sm.lambdify((self.states, self.constants_symbols),
+                                   constraints, cse=True)
 
             def eval_f(x_dep, p):
                 x[dep_idxs] = x_dep
-                return self.evaluate_constraints(x=x)
+                return eval_con(x, p).squeeze()
 
             fprime = False
 
