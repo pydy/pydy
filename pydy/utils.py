@@ -2,11 +2,65 @@
 
 import re
 import textwrap
+import itertools
 
 from packaging.version import parse as parse_version
 import sympy as sm
+import sympy.physics.mechanics as me
+import numpy as np
 
 SYMPY_VERSION = sm.__version__
+
+
+def _sort_velocity_constraints(velocity_constraints, q, qdot_exprs):
+    """Return the time differentiated holonomic constraints and nonholonomic
+    constraints separately.
+
+    Given velcoity leval constraings that may be a combination of time
+    differentiated holonomic constraints and nonholonomic constraints, this
+    function uses the symmetry of second derivatives check to distinguish the
+    constraints.
+
+    If the velocity constraints are large expressions, this could be slow due
+    to the need to simplify for zero checking.
+
+    Parameters
+    ==========
+    velocity_constraints : iterable of Expr
+    q : iterable of Function of time
+        Generalized coordinates.
+    qdot_exprs : iteraable of Expr
+        Expressions for the q' definitions.
+
+    Returns
+    =======
+    holonomic_idxs : list of integer
+        Indices that identify the rows of ``velocity_constraints`` which are
+        time differentiated holonomic constraints.
+    nonholonomic_idxs : list of integer
+        Indices that identify the rows of ``velocity_constraints`` which are
+        nonholonomic constraints.
+
+    """
+    # TODO : This could be something useful to implement in SymPy.
+    velocity_constraints = sm.Matrix(velocity_constraints)
+    jac, _ = sm.linear_eq_to_matrix(velocity_constraints, qdot_exprs)
+    nonholonomic_idxs = []
+    idxs = list(range(len(qdot_exprs)))
+    comb_idxs = itertools.combinations(idxs, 2)
+    for i, row in enumerate(jac.tolist()):
+        for (j, k) in comb_idxs:
+            zero = row[j].diff(q[k]) - row[k].diff(q[j])
+            syms = list(zero.atoms(sm.Symbol) | me.find_dynamicsymbols(zero))
+            eval_zero = sm.lambdify(syms, zero)
+            vals = np.random.random(len(syms))
+            if not np.allclose(eval_zero(*vals), 0.0, atol=1e-12):
+                nonholonomic_idxs.append(i)
+                break
+    all_idxs = range(len(velocity_constraints))
+    holonomic_idxs = [i for i in all_idxs if i not in nonholonomic_idxs]
+
+    return holonomic_idxs, nonholonomic_idxs
 
 
 def sympy_equal_to_or_newer_than(version, installed_version=None):
