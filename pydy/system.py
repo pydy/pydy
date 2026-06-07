@@ -1590,7 +1590,7 @@ class System(object):
         constants.remove(dynamicsymbols._t)
         return constants
 
-    def plot_state_trajectories(self, x, axes=None):
+    def plot_states(self, x, axes=None):
         """Returns the axes for a plot. The plot displays the state
         trajectories versus time.
 
@@ -1611,8 +1611,7 @@ class System(object):
         """
 
         if x.shape[0] != len(self.times):
-            raise ValueError('x must have the same number of rows as '
-                             'len(self.times).')
+            raise ValueError('x.shape[0] = len(self.times) is violated.')
 
         num_plots = len(self.eom_method.q[:]) + len(self.eom_method.u[:])
         if axes is None:
