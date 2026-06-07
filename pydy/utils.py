@@ -6,6 +6,8 @@ import itertools
 
 from packaging.version import parse as parse_version
 import sympy as sm
+import sympy.physics.mechanics as me
+import numpy as np
 
 SYMPY_VERSION = sm.__version__
 
@@ -44,18 +46,17 @@ def _sort_velocity_constraints(velocity_constraints, q, qdot_exprs):
     velocity_constraints = sm.Matrix(velocity_constraints)
     jac, _ = sm.linear_eq_to_matrix(velocity_constraints, qdot_exprs)
     nonholonomic_idxs = []
-    q_perm = itertools.permutations(q, 2)
+    idxs = list(range(len(qdot_exprs)))
+    comb_idxs = itertools.combinations(idxs, 2)
     for i, row in enumerate(jac.tolist()):
-        p = itertools.permutations(row, 2)
-        for dfdqi_pair, q_pair in zip(p, q_perm):
-            zero = sm.trigsimp(dfdqi_pair[0].diff(q_pair[1]) -
-                               dfdqi_pair[1].diff(q_pair[0]))
-            print(zero)
-            if zero != 0:
-                print('not', zero)
+        for (j, k) in comb_idxs:
+            zero = row[j].diff(q[k]) - row[k].diff(q[j])
+            syms = list(zero.atoms(sm.Symbol) | me.find_dynamicsymbols(zero))
+            eval_zero = sm.lambdify(syms, zero)
+            vals = np.random.random(len(syms))
+            if not np.allclose(eval_zero(*vals), 0.0, atol=1e-12):
                 nonholonomic_idxs.append(i)
                 break
-
     all_idxs = range(len(velocity_constraints))
     holonomic_idxs = [i for i in all_idxs if i not in nonholonomic_idxs]
 
