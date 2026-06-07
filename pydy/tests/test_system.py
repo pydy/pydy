@@ -16,7 +16,7 @@ symjit = sm.external.import_module('symjit')
 
 from ..system import System
 from ..models import multi_mass_spring_damper, n_link_pendulum_on_cart
-from ..utils import PyDyImportWarning
+from ..utils import PyDyImportWarning, _sort_velocity_constraints
 
 SYMPY_VERSION = sm.__version__
 
@@ -629,6 +629,13 @@ def test_system_with_constraints(plot=False):
     disc = me.RigidBody('disc', Q, C, m, inertia)
 
     gravity = (Q, -m*g*N.z)
+
+    q = [x, y, yaw, roll, pitch]
+    qdot_exprs = list(sm.solve(kd_eqs, [x.diff(), y.diff(), yaw.diff(), roll.diff(),
+                                   pitch.diff()]).values())
+    h_idxs, nh_idxs = _sort_velocity_constraints(nonholonomic, q, qdot_exprs)
+    holonomic_constraints = nonholonomic[h_idxs]
+    nonholonomic_constraints = nonholonomic[nh_idxs]
 
     kane = me.KanesMethod(
         N,

@@ -2,11 +2,64 @@
 
 import re
 import textwrap
+import itertools
 
 from packaging.version import parse as parse_version
 import sympy as sm
 
 SYMPY_VERSION = sm.__version__
+
+
+def _sort_velocity_constraints(velocity_constraints, q, qdot_exprs):
+    """Return the time differentiated holonomic constraints and nonholonomic
+    constraints separately.
+
+    Given velcoity leval constraings that may be a combination of time
+    differentiated holonomic constraints and nonholonomic constraints, this
+    function uses the symmetry of second derivatives check to distinguish the
+    constraints.
+
+    If the velocity constraints are large expressions, this could be slow due
+    to the need to simplify for zero checking.
+
+    Parameters
+    ==========
+    velocity_constraints : iterable of Expr
+    q : iterable of Function of time
+        Generalized coordinates.
+    qdot_exprs : iteraable of Expr
+        Expressions for the q' definitions.
+
+    Returns
+    =======
+    holonomic_idxs : list of integer
+        Indices that identify the rows of ``velocity_constraints`` which are
+        time differentiated holonomic constraints.
+    nonholonomic_idxs : list of integer
+        Indices that identify the rows of ``velocity_constraints`` which are
+        nonholonomic constraints.
+
+    """
+    # TODO : This could be something useful to implement in SymPy.
+    velocity_constraints = sm.Matrix(velocity_constraints)
+    jac, _ = sm.linear_eq_to_matrix(velocity_constraints, qdot_exprs)
+    nonholonomic_idxs = []
+    q_perm = itertools.permutations(q, 2)
+    for i, row in enumerate(jac.tolist()):
+        p = itertools.permutations(row, 2)
+        for dfdqi_pair, q_pair in zip(p, q_perm):
+            zero = sm.trigsimp(dfdqi_pair[0].diff(q_pair[1]) -
+                               dfdqi_pair[1].diff(q_pair[0]))
+            print(zero)
+            if zero != 0:
+                print('not', zero)
+                nonholonomic_idxs.append(i)
+                break
+
+    all_idxs = range(len(velocity_constraints))
+    holonomic_idxs = [i for i in all_idxs if i not in nonholonomic_idxs]
+
+    return holonomic_idxs, nonholonomic_idxs
 
 
 def sympy_equal_to_or_newer_than(version, installed_version=None):
