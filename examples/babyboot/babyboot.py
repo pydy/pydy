@@ -57,7 +57,7 @@ ForceList = [(Acm, - mA * g * N.z), (Bcm, - mB * g * N.z)]
 kd = [qAd -uA, qBd - uB] # TODO constrain upper rod to O?
 
 KM = KanesMethod(N, q_ind=[qA, qB], u_ind=[uA, uB], kd_eqs=kd)
-(fr, frstar) = KM.kanes_equations(ForceList, BodyList)
+(fr, frstar) = KM.kanes_equations(BodyList, ForceList)
 
 # Get equations of motion.
 MM = KM.mass_matrix
