@@ -1,41 +1,36 @@
-# This code requires sympy 1.0 to run
+"""Example demonstrating how to obtain the equations of motion of a simple
+pendulum with Lagrange's method."""
 
-from sympy import *
+from sympy import symbols, pprint
 from sympy.physics.mechanics import LagrangesMethod, Lagrangian
 from sympy.physics.mechanics import ReferenceFrame, Particle, Point
 from sympy.physics.mechanics import dynamicsymbols
 
-# System state variables
+# The pendulum angle is the single generalized coordinate.
 theta = dynamicsymbols('theta')
-thetad = dynamicsymbols('theta', 1)
 
-# Other system variables
-m, l, g = symbols('m l g')
+# The bob has a mass m, the pendulum lenth is l, and acceleration due to
+# gravity is g.
+m, l, g = symbols('m, l, g')
 
-# Set up the reference frames
-# Reference frame A set up in the plane perpendicular to the page containing
-# segment OP
+# Rotate the reference frame A relative to the inertial reference frame N.
 N = ReferenceFrame('N')
-A = N.orientnew('A', 'Axis', [theta, N.z])
+A = N.orientnew('A', 'Axis', (theta, N.z))
 
-# Set up the points and particles
+# Locate the bob relative to the hinge, which is fixed in N.
 O = Point('O')
-P = O.locatenew('P', l * A.x)
-
-Pa = Particle('Pa', P, m)
-
-# Set up velocities
-A.set_ang_vel(N, thetad * N.z)
 O.set_vel(N, 0)
-P.v2pt_theory(O, N, A)
+P = O.locatenew('P', l*A.x)
 
-# Set up the lagrangian
+# The velocity of the bob can be calculated.
+pprint(P.vel(N))
+
+# Create the Lagrangian for the system by ensurnig the particle has kinetic and
+# potential energy.
+Pa = Particle('Pa', P, m)
+Pa.potential_energy = -m*g*P.pos_from(O).dot(N.x)
 L = Lagrangian(N, Pa)
 
-# Create the list of forces acting on the system
-fl = [(P, g * m * N.x)]
-
-# Create the equations of motion using lagranges method
-l = LagrangesMethod(L, [theta], forcelist=fl, frame=N)
-
-pprint(l.form_lagranges_equations())
+# Create the equations of motion using Lagrange's method.
+lm = LagrangesMethod(L, [theta], frame=N)
+pprint(lm.form_lagranges_equations())
