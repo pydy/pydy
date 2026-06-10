@@ -1059,9 +1059,6 @@ class System(object):
             :external+scipy:py:func:`scipy.optimize.root`.
 
         """
-        # TODO : The nonholonomic constraints can be solved analytically, root
-        # is only required for the coordinates.
-
         if self.num_constraints == 0:
             msg = ('This system does not have constraints, set all initial '
                    'conditions yourself.')
@@ -1076,32 +1073,44 @@ class System(object):
         # this constraint, i.e. the time differentiated holoomic constraints is
         # treated as a nonholonomic constraint.
         if dep_vars is None:
-            dep_vars = self.eom_method._qdep[:] + self.eom_method._udep[:]
+            dep_q = self.eom_method._qdep[:]
+            dep_u = self.eom_method._udep[:]
+        else:
+            dep_q = [vari for vari in dep_vars if vari in self.coordinates]
+            dep_u = [vari for vari in dep_vars if vari in self.speeds]
 
         # TODO : Would be nice to check if the dependent variables are present
         # in the constraints and that the right number of coordinates and
         # speeds are each supplied.
-        if len(dep_vars) != (2*num_holo + num_nonh):
+        if len(dep_q) != num_holo or len(dep_u) != (num_holo + num_nonh):
             msg = (f'You must supply {num_holo} dependent coordinates and '
                    f'{num_nonh} dependent speeds.')
             raise ValueError(msg)
+
+        if num_holo > 0:
+            dep_q_vals = self._solve_dep_coordinates(dep_q, use_jac,
+                                                     root_kwargs)
+            for si, vi in zip(dep_q, dep_q_vals):
+                self.initial_conditions[si] = vi
+
+        if num_holo > 0 or num_nonh > 0:
+            dep_u_vals = self._solve_dep_speeds(dep_u)
+            for si, vi in zip(dep_u, dep_u_vals):
+                self.initial_conditions[si] = vi
+
+    def _solve_dep_coordinates(self, dep_q, use_jac, root_kwargs):
 
         x = self._initial_conditions_array
         p = self._constants_array
 
         x0_dict = self._initial_conditions_padded_with_defaults()
-        dep_guess = [x0_dict[xi] for xi in dep_vars]
-        dep_idxs = [self.states.index(xi) for xi in dep_vars]
-
-        # NOTE : M + (M + m) equations.
-        # TODO : Create a ._evaluate_all_constraints() method for this.
-        constraints = self.holonomic_constraints.col_join(
-            self.velocity_constraints)
+        dep_guess = [x0_dict[xi] for xi in dep_q]
+        dep_idxs = [self.states.index(xi) for xi in dep_q]
 
         if use_jac:
-            jac = constraints.jacobian(dep_vars)
+            jac = self.holonomic_constraints.jacobian(dep_q)
             eval_jac = sm.lambdify((self.states, self.constants_symbols),
-                                   (constraints, jac), cse=True)
+                                   (self.holonomic_constraints, jac), cse=True)
 
             def eval_f(x_dep, p):
                 x[dep_idxs] = x_dep
@@ -1110,9 +1119,8 @@ class System(object):
 
             fprime = True
         else:
-            # TODO : Create a ._evaluate_all_constraints() method for this.
             eval_con = sm.lambdify((self.states, self.constants_symbols),
-                                   constraints, cse=True)
+                                    self.holonomic_constraints, cse=True)
 
             def eval_f(x_dep, p):
                 x[dep_idxs] = x_dep
@@ -1132,10 +1140,14 @@ class System(object):
                    'message: ' + sol.message)
             warnings.warn(msg, PyDyUserWarning, stacklevel=2)
 
-        dep_vals = sol.x
+        return sol.x
 
-        for si, vi in zip(dep_vars, dep_vals):
-            self.initial_conditions[si] = vi
+    def _solve_dep_speeds(self, dep_u):
+        x = self._initial_conditions_array
+        p = self._constants_array
+        A, b = sm.linear_eq_to_matrix(self.velocity_constraints, dep_u)
+        eval_Ab = sm.lambdify((self.states, self.constants_symbols), (A, b))
+        return  np.atleast_1d(np.linalg.solve(*eval_Ab(x, p)).squeeze())
 
     def generate_ode_function(self, **kwargs):
         """Returns a function generated from
