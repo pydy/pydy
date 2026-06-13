@@ -1,0 +1,44 @@
+# This tests from the nightly build of SymPy so we catch breaking changes in
+# PyDy early.
+name: sympy-dev
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  build:
+    name: Build and run tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-26.04"]
+        python-version: ["3.14"]
+
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - uses: conda-incubator/setup-miniconda@v4
+        with:
+          activate-environment: test-environment
+          auto-update-conda: true
+          channels: conda-forge
+          conda-remove-defaults: "true"
+          miniforge-version: latest
+          python-version: ${{ matrix.python-version }}
+      - name: Install basic dependencies
+        run: |
+          conda install -q -y coverage cython matplotlib packaging pip mpmath pytest pytest-cov numpy pythreejs scipy setuptools symjit
+          python -m pip install --no-deps --no-build-isolation -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple sympy
+      - name: Test with pytest
+        run: pytest -cov .
