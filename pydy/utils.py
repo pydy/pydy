@@ -47,9 +47,8 @@ def _sort_velocity_constraints(velocity_constraints, q, qdot_exprs):
     jac, _ = sm.linear_eq_to_matrix(velocity_constraints, qdot_exprs)
     nonholonomic_idxs = []
     idxs = list(range(len(qdot_exprs)))
-    comb_idxs = itertools.combinations(idxs, 2)
     for i, row in enumerate(jac.tolist()):
-        for (j, k) in comb_idxs:
+        for (j, k) in itertools.combinations(idxs, 2):
             zero = row[j].diff(q[k]) - row[k].diff(q[j])
             syms = list(zero.atoms(sm.Symbol) | me.find_dynamicsymbols(zero))
             eval_zero = sm.lambdify(syms, zero)
