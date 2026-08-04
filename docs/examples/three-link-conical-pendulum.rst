@@ -8,9 +8,12 @@ Three Link Conical Pendulum
    :jupyter-download:notebook:`three-link-conical-pendulum`.
 
 This example shows how to simulate a three link conical compound pendulum made
-up of cylindrical bars connecting particles at the joints. The is an example of
+up of cylindrical bars connecting particles at the joints. This is an example of
 a 3D holonomic system. Wikipedia provides a basic description of a `conical
 pendulum`_.
+
+.. image:: three-link-conical-pendulum.svg
+   :width: 600
 
 .. _conical pendulum: https://en.wikipedia.org/wiki/Conical_pendulum
 
