@@ -386,8 +386,6 @@ class System(object):
         """Ensures provided constants are valid and adds new constant
         symbols to the system's tracked symbols.
         """
-        #from sympy.core.function import AppliedUndef
-        #from sympy.physics.mechanics import dynamicsymbols
 
         for k in constants.keys():
             # Reject the time variable and dynamic symbols (functions of time)
