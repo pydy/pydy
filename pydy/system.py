@@ -166,6 +166,11 @@ from .codegen.ode_function_generators import generate_ode_function
 from .utils import (PyDyFutureWarning, PyDyUserWarning,
                     _sort_velocity_constraints)
 
+plt = sm.external.import_module('matplotlib.pyplot',
+                                import_kwargs={'fromlist': ['']},
+                                catch=(RuntimeError,))
+
+
 SYMPY_VERSION = sm.__version__
 
 warnings.simplefilter('once', PyDyFutureWarning)
@@ -1643,3 +1648,44 @@ class System(object):
         constants = unique_symbols
         constants.remove(dynamicsymbols._t)
         return constants
+
+    def plot_states(self, x, axes=None):
+        """Returns the axes for a plot. The plot displays the state
+        trajectories versus time.
+
+        Parameters
+        ==========
+        x : ndarray, (len(times), num_states)
+            The solution obtained from pydy.system.System.integrate or a
+            similar array of state trajectories.
+        axes : ndarray of AxesSubplot,
+            shape(len(eom_method.q) + len(eom_method.u), )
+            An array of matplotlib axes to plot to.
+
+        Returns
+        =======
+        axes : ndarray of AxesSubplot
+            A matplotlib axes with the state trajectories plotted.
+
+        """
+
+        if x.shape[0] != len(self.times):
+            raise ValueError('x.shape[0] = len(self.times) is violated.')
+
+        num_plots = len(self.eom_method.q[:]) + len(self.eom_method.u[:])
+        if axes is None:
+            fig, axes = plt.subplots(num_plots, 1, sharex=True,
+                                     layout='compressed',
+                                     figsize=(6.4, 0.8*num_plots))
+        else:
+            if len(axes) != num_plots:
+                raise ValueError(f'axes must have shape ({num_plots},).')
+
+        for i, name in enumerate(self.eom_method.q[:] + self.eom_method.u[:]):
+            axes[i].plot(self.times, x[:, i])
+            axes[i].set_ylabel(sm.latex(name, mode='inline'))
+
+        axes[-1].set_xlabel('Time')
+        axes[0].set_title('State Trajectories')
+        return axes
+
