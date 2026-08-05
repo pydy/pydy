@@ -159,6 +159,7 @@ from itertools import repeat
 import numpy as np
 import sympy as sm
 from sympy.physics.mechanics import dynamicsymbols, find_dynamicsymbols
+from sympy.core.function import AppliedUndef
 from scipy.integrate import odeint
 from scipy.optimize import root
 
@@ -382,10 +383,19 @@ class System(object):
         return self._constants_symbols
 
     def _check_constants(self, constants):
-        symbols = self.constants_symbols
+        """Ensures provided constants are valid and adds new constant
+        symbols to the system's tracked symbols.
+        """
+        #from sympy.core.function import AppliedUndef
+        #from sympy.physics.mechanics import dynamicsymbols
+
         for k in constants.keys():
-            if k not in symbols:
-                raise ValueError("Symbol {} is not a constant.".format(k))
+            # Reject the time variable and dynamic symbols (functions of time)
+            if k == dynamicsymbols._t or isinstance(k, AppliedUndef):
+                raise ValueError("Symbol {} is not a valid constant.".format(k))
+        
+        # Safely add any new, valid constant keys to the tracked set
+        self._constants_symbols.update(constants.keys())
 
     def _constants_padded_with_defaults(self):
         d = dict(zip(self.constants_symbols, repeat(1.0, self.num_constants)))
