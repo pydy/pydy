@@ -13,3 +13,12 @@ Code written in Python should roughly adhere to PEP8:
 http://www.python.org/dev/peps/pep-0008/.
 
 There are some exceptions, such as naming of variables. Use your best judgment.
+
+Generative AI Policy
+====================
+
+In general, this project does not accept contributions generated with AI (this
+includes contributions to code, documentation, issues, discussions, etc.).
+Issues, discussions, and pull requests that are suspected to be generated
+wholly or partially by AI will be closed. Exceptions may be made based on human
+written request to the software authors.
