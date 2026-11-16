@@ -79,6 +79,10 @@ end
     sym_rhs = sys.eom_method.rhs()
     g = OctaveMatrixGenerator([q, u, p], [sym_rhs])
     if parse_version(SYMPY_VERSION) >= parse_version('1.10'):
-        assert g.doprint() == expected_m_file
+        # SymPy 1.16 can print the two terms in the reciprocal in either order.
+        expected_m_file_reordered = expected_m_file.replace(
+            '-pydy_3.^2.*pydy_4 + pydy_3',
+            'pydy_3 - pydy_3.^2.*pydy_4')
+        assert g.doprint() in (expected_m_file, expected_m_file_reordered)
     else:  # >= sympy 1.2
         assert g.doprint() == expected_m_file_1p2

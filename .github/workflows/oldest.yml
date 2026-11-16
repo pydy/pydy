@@ -38,6 +38,6 @@ jobs:
         run: |
           conda install -q -y coverage cython=0.29.* matplotlib=3.6.* packaging=24.* pytest pytest-cov numpy=1.26.* pythreejs sympy=1.12.* scipy=1.11.* "setuptools>=68.1.2,<70"
       - name: Test with pytest
-        run: pytest -cov .
+        run: pytest --cov .
       - name: Test installation of PyDy
         run: python setup.py install
